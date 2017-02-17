@@ -8,6 +8,7 @@ module.exports = {
     const metaData = utils.getFunctionMetaData(functionName, this.provider.getParsedBindings(), this.serverless);
 
 return this.provider.createZipObject(functionName, metaData.entryPoint, metaData.handlerPath, metaData.params)
-      .then(() => this.provider.createAndUploadZipFunctions());
+      .then(() => this.provider.createAndUploadZipFunctions())
+      .then(() => this.provider.syncTriggers());
   }
 };
