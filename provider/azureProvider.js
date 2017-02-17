@@ -473,6 +473,33 @@ return new BbPromise((resolve, reject) => {
 
   }
 
+  syncTriggers () {
+    let options = {};
+    const requestUrl = ` https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}/functions/synctriggers?api-version=2015-08-01`;
+    options = {
+       'host': 'management.azure.com',
+       'method': 'post',
+       'body': {},
+       'url': requestUrl,
+       'json': true,
+       'headers': {
+         'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+         'Accept': 'application/json,*/*'
+       }
+     };
+
+return new BbPromise((resolve, reject) => {
+        request(options, (err, res, body) => {
+          if (err) {
+            reject(err);
+          }
+          this.serverless.cli.log(`Syncing Triggers....Response statuscode: ${res.statusCode}`);
+          resolve(res);
+        });
+      });
+
+  }
+
   cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
     const deleteFunctionPromises = [];
 
@@ -515,6 +542,10 @@ return new BbPromise((resolve, reject) => {
       this.serverless.cli.log(`Packaging function: ${functionName}`);
       const folderForJSFunction = path.join(functionsFolder, functionName);
       const handlerPath = path.join(this.serverless.config.servicePath, filePath);
+
+      if (!fs.existsSync(functionsFolder)) {
+        fs.mkdirSync(functionsFolder);
+      }
 
       if (!fs.existsSync(folderForJSFunction)) {
         fs.mkdirSync(folderForJSFunction);

@@ -14,6 +14,7 @@ module.exports = {
     });
 
     return BbPromise.all(createFunctionPromises)
-            .then(() => this.provider.createAndUploadZipFunctions());
+            .then(() => this.provider.createAndUploadZipFunctions())
+            .then(() => this.provider.syncTriggers());
   }
 };
