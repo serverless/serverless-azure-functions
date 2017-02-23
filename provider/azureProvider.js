@@ -44,6 +44,7 @@ const constants = {
   'logStreamApiPath': '/api/logstream/application/functions/function/',
   'masterKeyApiApth': '/api/functions/admin/masterkey',
   'providerName': 'azure',
+  'scmCommandApiPath': '/api/command',
   'scmDomain': '.scm.azurewebsites.net',
   'scmVfsPath': '.scm.azurewebsites.net/api/vfs/site/wwwroot/',
   'scmZipApiPath': '.scm.azurewebsites.net/api/zip/site/wwwroot/'
@@ -510,8 +511,38 @@ return new BbPromise((resolve, reject) => {
       });
 
   }
+  
+  runKuduCommand (command) {
+    this.serverless.cli.log(`Running Kudu command ${command}...`);
+    let options = {};
+    const requestUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmCommandApiPath}`;
+    let postBody = {
+    "command": command,
+    "dir": 'site\\wwwroot'
+    }
+    options = {
+       'host': functionAppName + constants.scmDomain,
+       'method': 'post',
+       'body': postBody,
+       'url': requestUrl,
+       'json': true,
+       'headers': {
+         'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+         'Accept': 'application/json,*/*'
+       }
+     };
+return new BbPromise((resolve, reject) => {
+        request(options, (err, res, body) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res);
+        });
+      });
 
-  cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
+  }
+
+ cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
     const deleteFunctionPromises = [];
 
     deployedFunctionNames.forEach((functionName) => {
@@ -545,6 +576,32 @@ return new BbPromise((resolve, reject) => {
           resolve(res);
         }
       });
+    });
+  }
+
+  uploadPackageJson (functionName) {
+    const requestUrl = `https://${functionAppName}${constants.scmVfsPath}package.json`;
+    const options = {
+      'host': functionAppName + constants.scmDomain,
+      'method': 'put',
+      'url': requestUrl,
+      'headers': {
+        'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+        'Accept': '*/*',
+        'Content-Type': constants.jsonContentType
+      }
+    };
+    var packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
+
+return new BbPromise((resolve, reject) => {
+      fs.createReadStream(packageJsonFilePath)
+            .pipe(request.put(options, (err, res, body) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve('Package json file uploaded');
+              }
+            }));
     });
   }
 
