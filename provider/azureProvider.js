@@ -66,10 +66,10 @@ class AzureProvider {
     this.serverless = serverless;
     this.provider = this;
     this.serverless.setProvider(constants.providerName, this);
-    subscriptionId = process.env[azureCredentials.azureSubId];
-    servicePrincipalTenantId = process.env[azureCredentials.azureServicePrincipalTenantId];
-    servicePrincipalClientId = process.env[azureCredentials.azureservicePrincipalClientId];
-    servicePrincipalPassword = process.env[azureCredentials.azureServicePrincipalPassword];
+    subscriptionId = this.getSetting(azureCredentials.azureSubId);
+    servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
+    servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
+    servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
 
     functionAppName = this.serverless.service.service;
     resourceGroupName = `${functionAppName}-rg`;
@@ -83,6 +83,17 @@ class AzureProvider {
     }
 
 return this.parsedBindings;
+  }
+
+  getSetting(key) {
+    // Loop through environment variables looking for the keys, case insentivie
+    for (var k in process.env) {
+      if (process.env.hasOwnProperty(k)) {
+        if(k.toLowerCase() === key.toLowerCase()) {
+          return process.env[k];
+        }
+      }
+    }
   }
 
   LoginWithServicePrincipal () {
