@@ -606,6 +606,7 @@ return new BbPromise((resolve, reject) => {
   }
 
   createZipObjectAndUploadFunction (functionName, entryPoint, filePath, params) {
+
 return new BbPromise((resolve, reject) => {
       this.serverless.cli.log(`Packaging function: ${functionName}`);
       const folderForJSFunction = path.join(functionsFolder, functionName);
@@ -624,11 +625,10 @@ return new BbPromise((resolve, reject) => {
       functionJSON.entryPoint = entryPoint;
       fs.writeFileSync(path.join(folderForJSFunction, 'function.json'), JSON.stringify(functionJSON, null, 4));
       const functionZipFile = path.join(functionsFolder, functionName + '.zip');
-      zipFolder(folderForJSFunction, functionZipFile, function (err) {
-        if (err) {
-          reject(err);
+      zipFolder(folderForJSFunction, functionZipFile, function (createZipErr) {
+        if (createZipErr) {
+          reject(createZipErr);
         } else {
-          resolve('done zipping');
           const requestUrl = `https://${functionAppName}${constants.scmZipApiPath}`;
           const options = {
             'url': requestUrl,
@@ -639,11 +639,11 @@ return new BbPromise((resolve, reject) => {
           };
 
           fs.createReadStream(functionZipFile)
-            .pipe(request.put(options, (err, res, body) => {
-              if (err) {
-                reject(err);
+            .pipe(request.put(options, (uploadZipErr, uploadZipResponse, body) => {
+              if (uploadZipErr) {
+                reject(uploadZipErr);
               } else {
-                resolve('ZipFileCreated and uploaded');
+                resolve(uploadZipResponse);
               }
               fse.removeSync(functionZipFile);
             }));
