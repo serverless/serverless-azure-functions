@@ -87,7 +87,7 @@ module.exports = {
       bindings.push(this.getBinding(bindingType, bindingSettings, bindingUserSettings, serverless));
     }
 
-    if (bindingType === constants.httpTrigger && bindings.length === 1) {
+    if (bindingType === constants.httpTrigger) {
       bindings.push(this.getHttpOutBinding(bindingUserSettings));
     }
 

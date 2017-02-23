@@ -4,41 +4,91 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 ## Getting started
 
+### 1. Get a Serverless Service with Azure as the Provider
 
-### Get a Serverless Service with Azure as the Provider
+1. Recommend using Node v6.5.0
+1. Install the serverless tooling - `npm i -g serverless`
+1. Create boilerplate (change `my-app` to whatever you'd prefer): `serverless install --url https://github.com/azure/boilerplate-azurefunctions --name my-app`
+1. `cd my-app`
+2. `npm install`
 
-1. Clone gitrepo: `git clone -b dev https://github.com/pragnagopa/boilerplate-azurefunctions.git`.
-2. npm install
+### 2. Set up credentials
 
-### Get an Azure Subscription
- - <a href="https://azure.microsoft.com/en-us/free/?b=17.01" target="_blank">Create your free Azure account today</a>
+We'll set up an Azure Subscription and our service principal. You can learn more in the [credentials doc]( https://www.serverless.com/framework/docs/providers/azure/guide/credentials).
 
-### Create Service Principal User for your Azure subscription
-1. Create a Service Principal User with <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal" target="_blank">portal</a> or <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authenticate-service-principal-cli" target="_blank">Azure CLI</a>
-2. <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal#get-tenant-id" target="_blank">Get tenant ID</a>
-3. <a href="https://blogs.msdn.microsoft.com/mschray/2015/05/13/getting-your-azure-guid-subscription-id/" target="_blank">Get Azure subscription ID</a>
-4. <a href="https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal#get-application-id-and-authentication-key" target="_blank">Get application ID</a>. Note this is also referred to as the client id.
+1. Set up an Azure Subscription
+
+    Sign up for a free account @ [https://azure.com](https://azure.microsoft.com/en-us/services/functions/).
+
+    Azure comes with a [free trial](https://azure.microsoft.com/en-us/free/) that includes $200 of free credit. 
 
 
-### Set the following environment variables:
-  
-- azureSubId: YourAzureSubscriptionID
-- azureServicePrincipalTenantId: servicePrincipalTenantId
-- azureservicePrincipalClientId: servicePrincipalClientId
-- azureServicePrincipalPassword: servicePrincipalPassword
+2. . Get the Azure CLI
 
-**Note:** If you created Service Principal User from Portal, servicePrincipalPassword is the authentication key
+    ```
+    npm i -g azure-cli
+    ```
 
-### Update the config in `serverless.yml`
+3. Login to Azure
+
+    ```
+    azure login
+    ```
+
+    This will give you a code and prompt you to visit [aka.ms/devicelogin](https://aka.ms/devicelogin). Provide the code and then login with your Azure identity (this may happen automatically if you're already logged in). You'll then be able to access your account via the CLI.
+
+4. Get your subcription and tenant id
+
+    ```
+    azure account show
+    ```
+
+    Save the subcription and tenant id for later
+
+5. Create a service principal for a given `<name>` and `<password>` and add contributor role.
+
+    ```
+    azure ad sp create -n <name> -p <password>
+    ```
+
+    This should return an object which has the `servicePrincipalNames` property on it and an ObjectId. Save the Object Id and one of the names in the array and the password you provided for later. If you need to look up your service principal later, you can use `azure ad sp -c <name>` where `<name>` is the name provided originally. Note that the `<name>` you provided is not the name you'll provide later, it is a name in the `servicePrincipalNames` array.
+
+    Then grant the SP contributor access with the ObjectId
+
+    ```bash
+    azure role assignment create --objectId <objectIDFromCreateStep> -o Contributor
+    ```
+
+6. Set up environment variables
+
+     You need to set up environment variables for your subscription id, tenant id, service principal name, and password. 
+
+    ```bash
+    # bash
+    export azureSubId='<subscriptionId>'
+    export azureServicePrincipalTenantId='<tenantId>'
+    export azureServicePrincipalClientId='<servicePrincipalName>'
+    export azureServicePrincipalPassword='<password>'
+    ```
+
+    ```powershell
+    # PowerShell
+    $env:azureSubId='<subscriptionId>'
+    $env:azureServicePrincipalTenantId='<tenantId>'
+    $env:azureServicePrincipalClientId='<servicePrincipalName>'
+    $env:azureServicePrincipalPassword='<password>'
+    ```
+
+
+### 3. Update the config in `serverless.yml`
 
 Open up your `serverless.yml` file and update the following information:
-
-#### `service` property
 
 ```yml
 service: my-azure-functions-app # Name of the Azure function App you want to create
 ```
-### Quick Start
+
+### 4. Deploy, test, and remove your service
 
 1. **Deploy a Service:**
 
@@ -68,8 +118,19 @@ service: my-azure-functions-app # Name of the Azure function App you want to cre
   serverless logs -f httpjs -t
   ```
 
-5. **Remove the Service:**
+5. **Remove the Service: (optional)**
 
   Removes all Functions and Resources from your Azure subscription.
   ```bash
   serverless remove
+  ```  
+
+### Contributing
+
+Please create issues in this repo for any problems or questions you find. Before sending a PR for any major changes, please create an issue to discuss.
+
+We're still in the process of getting everying running 100%, but please refer to the [Serverless contributing guidlines](https://github.com/serverless/serverless/blob/master/CONTRIBUTING.md) for information on how to contribute and code of conduct.
+
+## License
+
+[MIT](LICENSE)

@@ -15,6 +15,9 @@ module.exports = {
 
     return BbPromise.all(createFunctionPromises)
             .then(() => this.provider.createAndUploadZipFunctions())
-            .then(() => this.provider.syncTriggers());
+            .then(() => this.provider.syncTriggers())
+            .then(() => this.provider.runKuduCommand('del package.json'))
+            .then(() => this.provider.uploadPackageJson())
+            .then(() => this.provider.runKuduCommand('npm install --production'));
   }
 };
