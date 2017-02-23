@@ -8,7 +8,7 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 1. Recommend using Node v6.5.0
 1. Install the serverless tooling - `npm i -g serverless`
-1. Create boilerplate (change `my-app` to whatever you'd prefer): `serverless install --url https://github.com/pragnagopa/boilerplate-azurefunctions.git --name my-app`
+1. Create boilerplate (change `my-app` to whatever you'd prefer): `serverless install --url https://github.com/azure/boilerplate-azurefunctions --name my-app`
 1. `cd my-app`
 2. `npm install`
 
