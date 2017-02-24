@@ -580,6 +580,7 @@ return new BbPromise((resolve, reject) => {
   }
 
   uploadPackageJson () {
+    this.serverless.cli.log(`Uploading pacakge.json ...`);
     const requestUrl = `https://${functionAppName}${constants.scmVfsPath}package.json`;
     const options = {
       'host': functionAppName + constants.scmDomain,
