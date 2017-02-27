@@ -580,6 +580,7 @@ return new BbPromise((resolve, reject) => {
   }
 
   uploadPackageJson () {
+    const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
     this.serverless.cli.log(`Uploading pacakge.json ...`);
     const requestUrl = `https://${functionAppName}${constants.scmVfsPath}package.json`;
     const options = {
@@ -592,10 +593,10 @@ return new BbPromise((resolve, reject) => {
         'Content-Type': constants.jsonContentType
       }
     };
-    var packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
-
+    
 return new BbPromise((resolve, reject) => {
-      fs.createReadStream(packageJsonFilePath)
+      if (fs.existsSync(packageJsonFilePath)) {
+        fs.createReadStream(packageJsonFilePath)
         .pipe(request.put(options, (err, res, body) => {
           if (err) {
             reject(err);
@@ -603,6 +604,10 @@ return new BbPromise((resolve, reject) => {
             resolve('Package json file uploaded');
           }
         }));
+      }
+      else{
+          resolve('Package json file does not exist');
+      }
     });
   }
 
@@ -630,7 +635,7 @@ return new BbPromise((resolve, reject) => {
         if (createZipErr) {
           reject(createZipErr);
         } else {
-          const requestUrl = `https://${functionAppName}${constants.scmZipApiPath}`;
+          const requestUrl = `https://${functionAppName}${constants.scmZipApiPath}/${functionName}/`;
           const options = {
             'url': requestUrl,
             'headers': {
@@ -644,9 +649,9 @@ return new BbPromise((resolve, reject) => {
               if (uploadZipErr) {
                 reject(uploadZipErr);
               } else {
+                fse.removeSync(functionZipFile);
                 resolve(uploadZipResponse);
               }
-              fse.removeSync(functionZipFile);
             }));
         }
       });
