@@ -429,20 +429,28 @@ return new BbPromise((resolve, reject) => {
     if (eventType === 'http') {
       let queryString = '';
 
-      if (eventData) {
-        Object.keys(eventData).forEach((key) => {
-          const value = eventData[key];
+      if (eventData) {     
+        if (typeof eventData === "string") {
+          try {
+            eventData = JSON.parse(eventData);
+          }
+          catch (error) {
+            return BbPromise.reject("The specified input data isn't a valid JSON string. " +
+                                    "Please correct it and try invoking the function again.");
+          }
+        }
 
-          queryString = `${key}=${value}`;
-        });
+        queryString = Object.keys(eventData)
+                            .map((key) => `${key}=${eventData[key]}`)
+                            .join("&");
       }
+
       options = {
         'host': functionAppName + constants.functionAppDomain,
-        'port': 443,
         'path': `${constants.functionAppApiPath + functionName}?${queryString}`
       };
 
-  return new BbPromise((resolve, reject) => {
+      return new BbPromise((resolve, reject) => {
         https.get(options, (res) => {
           let body = '';
 
@@ -459,8 +467,9 @@ return new BbPromise((resolve, reject) => {
         });
       });
     }
+    
     const requestUrl = `https://${functionAppName}${constants.functionsAdminApiPath}${functionName}`;
-
+      
     options = {
       'host': constants.functionAppDomain,
       'method': 'post',
@@ -473,7 +482,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) {
           reject(err);
@@ -482,7 +491,6 @@ return new BbPromise((resolve, reject) => {
         resolve(res);
       });
     });
-
   }
 
   syncTriggers () {
