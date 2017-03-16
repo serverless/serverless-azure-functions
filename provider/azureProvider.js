@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const fse = require('fs-extra');
 const https = require('https');
-const zipFolder = require('zip-folder');
+const JSZip = require('jszip');
 const request = require('request');
 const dns = require('dns');
 const parseBindings = require('../shared/parseBindings');
@@ -59,7 +59,7 @@ const azureCredentials = {
 
 class AzureProvider {
   static getProviderName () {
-return constants.providerName;
+    return constants.providerName;
   }
 
   constructor (serverless) {
@@ -85,19 +85,19 @@ return constants.providerName;
 return this.parsedBindings;
   }
 
-  getSetting (key) {
+  getSetting(key) {
     // Loop through environment variables looking for the keys, case insentivie
     for (var k in process.env) {
       if (process.env.hasOwnProperty(k)) {
-        if (k.toLowerCase() === key.toLowerCase()) {
-      return process.env[k];
+        if(k.toLowerCase() === key.toLowerCase()) {
+          return process.env[k];
         }
       }
     }
   }
 
   LoginWithServicePrincipal () {
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       msRestAzure.loginWithServicePrincipalSecret(servicePrincipalClientId, servicePrincipalPassword, servicePrincipalTenantId, (error, credentials) => {
         if (error) {
           reject(error);
@@ -111,9 +111,9 @@ return new BbPromise((resolve, reject) => {
 
   CreateResourceGroup () {
     const groupParameters = {
-      'location': this.serverless.service.provider.location,
-      'tags': { 'sampletag': 'sampleValue' }
-    };
+'location': this.serverless.service.provider.location,
+'tags': {'sampletag': 'sampleValue'}
+};
 
     this.serverless.cli.log(`Creating resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
@@ -133,14 +133,14 @@ return new BbPromise((resolve, reject) => {
   CreateFunctionApp (method, params) {
     this.serverless.cli.log(`Creating function app: ${functionAppName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    let parameters = { 'functionAppName': { 'value': functionAppName } };
+    let parameters = {'functionAppName': {'value': functionAppName}};
 
     const gitUrl = this.serverless.service.provider.gitUrl;
 
     if (gitUrl) {
       parameters = {
-        'functionAppName': { 'value': functionAppName },
-        'gitUrl': { 'value': gitUrl }
+        'functionAppName': {'value': functionAppName},
+        'gitUrl': {'value': gitUrl}
       };
     }
 
@@ -157,7 +157,7 @@ return new BbPromise((resolve, reject) => {
       for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
         const item = {};
 
-        item[userParametersKeys[paramIndex]] = { 'value': userParameters[userParametersKeys[paramIndex]] };
+        item[userParametersKeys[paramIndex]] = {'value': userParameters[userParametersKeys[paramIndex]]};
         parameters = _.merge(parameters, item);
       }
     }
@@ -229,7 +229,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       https.get(options, (res) => {
         let body = '';
 
@@ -261,7 +261,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+  return new BbPromise((resolve, reject) => {
       this.serverless.cli.log('Pinging host status...');
       request(options, (err, res, body) => {
         if (err) {
@@ -429,20 +429,28 @@ return new BbPromise((resolve, reject) => {
     if (eventType === 'http') {
       let queryString = '';
 
-      if (eventData) {
-        Object.keys(eventData).forEach((key) => {
-          const value = eventData[key];
+      if (eventData) {     
+        if (typeof eventData === "string") {
+          try {
+            eventData = JSON.parse(eventData);
+          }
+          catch (error) {
+            return BbPromise.reject("The specified input data isn't a valid JSON string. " +
+                                    "Please correct it and try invoking the function again.");
+          }
+        }
 
-          queryString = `${key}=${value}`;
-        });
+        queryString = Object.keys(eventData)
+                            .map((key) => `${key}=${eventData[key]}`)
+                            .join("&");
       }
+
       options = {
         'host': functionAppName + constants.functionAppDomain,
-        'port': 443,
         'path': `${constants.functionAppApiPath + functionName}?${queryString}`
       };
 
-  return new BbPromise((resolve, reject) => {
+      return new BbPromise((resolve, reject) => {
         https.get(options, (res) => {
           let body = '';
 
@@ -459,8 +467,9 @@ return new BbPromise((resolve, reject) => {
         });
       });
     }
+    
     const requestUrl = `https://${functionAppName}${constants.functionsAdminApiPath}${functionName}`;
-
+      
     options = {
       'host': constants.functionAppDomain,
       'method': 'post',
@@ -473,7 +482,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) {
           reject(err);
@@ -482,67 +491,66 @@ return new BbPromise((resolve, reject) => {
         resolve(res);
       });
     });
-
   }
 
   syncTriggers () {
     let options = {};
     const requestUrl = ` https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}/functions/synctriggers?api-version=2015-08-01`;
     options = {
-      'host': 'management.azure.com',
-      'method': 'post',
-      'body': {},
-      'url': requestUrl,
-      'json': true,
-      'headers': {
-        'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
-        'Accept': 'application/json,*/*'
-      }
-    };
+       'host': 'management.azure.com',
+       'method': 'post',
+       'body': {},
+       'url': requestUrl,
+       'json': true,
+       'headers': {
+         'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+         'Accept': 'application/json,*/*'
+       }
+     };
 
 return new BbPromise((resolve, reject) => {
-      request(options, (err, res, body) => {
-        if (err) {
-          reject(err);
-        }
-        this.serverless.cli.log(`Syncing Triggers....Response statuscode: ${res.statusCode}`);
-        resolve(res);
+        request(options, (err, res, body) => {
+          if (err) {
+            reject(err);
+          }
+          this.serverless.cli.log(`Syncing Triggers....Response statuscode: ${res.statusCode}`);
+          resolve(res);
+        });
       });
-    });
 
   }
-
+  
   runKuduCommand (command) {
     this.serverless.cli.log(`Running Kudu command ${command}...`);
     let options = {};
     const requestUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmCommandApiPath}`;
     let postBody = {
-      "command": command,
-      "dir": 'site\\wwwroot'
+    "command": command,
+    "dir": 'site\\wwwroot'
     }
     options = {
-      'host': functionAppName + constants.scmDomain,
-      'method': 'post',
-      'body': postBody,
-      'url': requestUrl,
-      'json': true,
-      'headers': {
-        'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
-        'Accept': 'application/json,*/*'
-      }
-    };
+       'host': functionAppName + constants.scmDomain,
+       'method': 'post',
+       'body': postBody,
+       'url': requestUrl,
+       'json': true,
+       'headers': {
+         'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+         'Accept': 'application/json,*/*'
+       }
+     };
 return new BbPromise((resolve, reject) => {
-      request(options, (err, res, body) => {
-        if (err) {
-          reject(err);
-        }
-        resolve(res);
+        request(options, (err, res, body) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(res);
+        });
       });
-    });
 
   }
 
-  cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
+ cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
     const deleteFunctionPromises = [];
 
     deployedFunctionNames.forEach((functionName) => {
@@ -555,7 +563,7 @@ return new BbPromise((resolve, reject) => {
 return BbPromise.all(deleteFunctionPromises);
   }
 
-  deleteFunction(functionName) {
+  deleteFunction (functionName) {
     const requestUrl = `https://${functionAppName}${constants.scmVfsPath}${functionName}/?recursive=true`;
     const options = {
       'host': functionAppName + constants.scmDomain,
@@ -579,9 +587,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  uploadPackageJson () {
-    const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
-    this.serverless.cli.log(`Uploading pacakge.json ...`);
+  uploadPackageJson (functionName) {
     const requestUrl = `https://${functionAppName}${constants.scmVfsPath}package.json`;
     const options = {
       'host': functionAppName + constants.scmDomain,
@@ -593,27 +599,22 @@ return new BbPromise((resolve, reject) => {
         'Content-Type': constants.jsonContentType
       }
     };
-    
+    var packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
+
 return new BbPromise((resolve, reject) => {
-      if (fs.existsSync(packageJsonFilePath)) {
-        fs.createReadStream(packageJsonFilePath)
-        .pipe(request.put(options, (err, res, body) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve('Package json file uploaded');
-          }
-        }));
-      }
-      else{
-          resolve('Package json file does not exist');
-      }
+      fs.createReadStream(packageJsonFilePath)
+            .pipe(request.put(options, (err, res, body) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve('Package json file uploaded');
+              }
+            }));
     });
   }
 
-  createZipObjectAndUploadFunction (functionName, entryPoint, filePath, params) {
-
-return new BbPromise((resolve, reject) => {
+  createZipObject (functionName, entryPoint, filePath, params) {
+    return new BbPromise((resolve, reject) => {
       this.serverless.cli.log(`Packaging function: ${functionName}`);
       const folderForJSFunction = path.join(functionsFolder, functionName);
       const handlerPath = path.join(this.serverless.config.servicePath, filePath);
@@ -630,12 +631,55 @@ return new BbPromise((resolve, reject) => {
 
       functionJSON.entryPoint = entryPoint;
       fs.writeFileSync(path.join(folderForJSFunction, 'function.json'), JSON.stringify(functionJSON, null, 4));
-      const functionZipFile = path.join(functionsFolder, functionName + '.zip');
-      zipFolder(folderForJSFunction, functionZipFile, function (createZipErr) {
-        if (createZipErr) {
-          reject(createZipErr);
-        } else {
-          const requestUrl = `https://${functionAppName}${constants.scmZipApiPath}/${functionName}/`;
+      fs.readdirSync(functionsFolder).filter((folder) => {
+        const folderName = path.basename(folder);
+
+        if (fs.statSync(path.join(functionsFolder, folder)).isDirectory() && functionName == folderName) {
+          const zip = new JSZip();
+
+          fs.readdir(path.join(functionsFolder, folder), (err, files) => {
+            if (err) {
+              reject(err);
+            } else {
+              let filesInFolder = 0;
+
+              for (let i = 0; i < files.length; i++) {
+                const filepathtobezipped = path.join(functionsFolder, folder, files[i]);
+                const data = fs.readFileSync(filepathtobezipped);
+
+                filesInFolder++;
+                zip.folder(path.basename(folder)).folder(path.basename(folder)).file(path.basename(filepathtobezipped), data);
+                if (filesInFolder === files.length) {
+                  zipArray.push({
+                    'key': path.basename(folder),
+                    'value': zip
+                  });
+                  resolve(`done folder..${folder}`);
+                }
+              }
+            }
+          });
+        }
+      });
+    });
+  }
+
+  createZipFileAndUploadFunction (folder, zip) {
+    return new BbPromise((resolve, reject) => {
+      const generateOptions = {
+        'type': 'nodebuffer',
+        'streamFiles': true
+      };
+      const zipFileName = `${path.basename(folder)}.zip`;
+      const outputZipPath = path.join(functionsFolder, zipFileName);
+
+      zip.folder(path.basename(folder)).generateNodeStream(generateOptions)
+        .pipe(fs.createWriteStream(outputZipPath))
+        .on('error', (error) => {
+          reject(error);
+        })
+        .on('finish', () => {
+          const requestUrl = `https://${functionAppName}${constants.scmZipApiPath}`;
           const options = {
             'url': requestUrl,
             'headers': {
@@ -644,18 +688,27 @@ return new BbPromise((resolve, reject) => {
             }
           };
 
-          fs.createReadStream(functionZipFile)
-            .pipe(request.put(options, (uploadZipErr, uploadZipResponse, body) => {
-              if (uploadZipErr) {
-                reject(uploadZipErr);
+          fs.createReadStream(outputZipPath)
+            .pipe(request.put(options, (err, res, body) => {
+              if (err) {
+                reject(err);
               } else {
-                fse.removeSync(functionZipFile);
-                resolve(uploadZipResponse);
+                resolve('ZipFileCreated and uploaded');
               }
+              fse.removeSync(outputZipPath);
             }));
-        }
-      });
+        });
     });
+  }
+
+  createAndUploadZipFunctions () {
+    const zipFunctions = [];
+
+    for (let j = 0; j < zipArray.length; j++) {
+      zipFunctions.push(this.createZipFileAndUploadFunction(zipArray[j].key, zipArray[j].value));
+    }
+
+return BbPromise.all(zipFunctions);
   }
 }
 module.exports = AzureProvider;
