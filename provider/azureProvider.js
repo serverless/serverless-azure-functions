@@ -58,11 +58,11 @@ const azureCredentials = {
 };
 
 class AzureProvider {
-  static getProviderName () {
+  static getProviderName() {
     return constants.providerName;
   }
 
-  constructor (serverless) {
+  constructor(serverless) {
     this.serverless = serverless;
     this.provider = this;
     this.serverless.setProvider(constants.providerName, this);
@@ -71,14 +71,9 @@ class AzureProvider {
     servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
     servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
 
-    if(this.serverless.service.provider.application) {
-      functionAppName = this.serverless.service.provider.application;
-    }
-    else {
-      functionAppName = this.serverless.service.service;
-    }
+    functionAppName = this.serverless.service.service;
 
-    if(this.serverless.service.provider.resourceGroup) {
+    if (this.serverless.service.provider.resourceGroup) {
       resourceGroupName = this.serverless.service.provider.resourceGroup;
     }
     else {
@@ -89,26 +84,26 @@ class AzureProvider {
     functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
   }
 
-  getParsedBindings () {
+  getParsedBindings() {
     if (!this.parsedBindings) {
       this.parsedBindings = parseBindings.getBindingsMetaData(this.serverless);
     }
 
-return this.parsedBindings;
+    return this.parsedBindings;
   }
 
   getSetting(key) {
     // Loop through environment variables looking for the keys, case insentivie
     for (var k in process.env) {
       if (process.env.hasOwnProperty(k)) {
-        if(k.toLowerCase() === key.toLowerCase()) {
+        if (k.toLowerCase() === key.toLowerCase()) {
           return process.env[k];
         }
       }
     }
   }
 
-  LoginWithServicePrincipal () {
+  LoginWithServicePrincipal() {
     return new BbPromise((resolve, reject) => {
       msRestAzure.loginWithServicePrincipalSecret(servicePrincipalClientId, servicePrincipalPassword, servicePrincipalTenantId, (error, credentials) => {
         if (error) {
@@ -121,16 +116,16 @@ return this.parsedBindings;
     });
   }
 
-  CreateResourceGroup () {
+  CreateResourceGroup() {
     const groupParameters = {
-'location': this.serverless.service.provider.location,
-'tags': {'sampletag': 'sampleValue'}
-};
+      'location': this.serverless.service.provider.location,
+      'tags': { 'sampletag': 'sampleValue' }
+    };
 
     this.serverless.cli.log(`Creating resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.resourceGroups.createOrUpdate(resourceGroupName,
         groupParameters, (error, result, createOrUpdateRequest, response) => {
           if (error) {
@@ -142,17 +137,17 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  CreateFunctionApp (method, params) {
+  CreateFunctionApp(method, params) {
     this.serverless.cli.log(`Creating function app: ${functionAppName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    let parameters = {'functionAppName': {'value': functionAppName}};
+    let parameters = { 'functionAppName': { 'value': functionAppName } };
 
     const gitUrl = this.serverless.service.provider.gitUrl;
 
     if (gitUrl) {
       parameters = {
-        'functionAppName': {'value': functionAppName},
-        'gitUrl': {'value': gitUrl}
+        'functionAppName': { 'value': functionAppName },
+        'gitUrl': { 'value': gitUrl }
       };
     }
 
@@ -169,7 +164,7 @@ return new BbPromise((resolve, reject) => {
       for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
         const item = {};
 
-        item[userParametersKeys[paramIndex]] = {'value': userParameters[userParametersKeys[paramIndex]]};
+        item[userParametersKeys[paramIndex]] = { 'value': userParameters[userParametersKeys[paramIndex]] };
         parameters = _.merge(parameters, item);
       }
     }
@@ -183,7 +178,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.deployments.createOrUpdate(resourceGroupName,
         deploymentName,
         deploymentParameters, (error, result, createOrUpdateRequest, response) => {
@@ -199,11 +194,11 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  DeleteDeployment () {
+  DeleteDeployment() {
     this.serverless.cli.log(`Deleting deployment: ${deploymentName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.deployments.deleteMethod(resourceGroupName,
         deploymentName, (error, result, deleteRequest, response) => {
           if (error) {
@@ -215,11 +210,11 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  DeleteResourceGroup () {
+  DeleteResourceGroup() {
     this.serverless.cli.log(`Deleting resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.resourceGroups.deleteMethod(resourceGroupName, (error, result, deleteRequest, response) => {
         if (error) {
           reject(error);
@@ -230,7 +225,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  getAdminKey () {
+  getAdminKey() {
     const options = {
       'host': functionAppName + constants.scmDomain,
       'port': 443,
@@ -261,7 +256,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  pingHostStatus (functionName) {
+  pingHostStatus(functionName) {
     const requestUrl = `https://${functionAppName}${constants.functionAppDomain}/admin/functions/${functionName}/status`;
     const options = {
       'host': functionAppName + constants.functionAppDomain,
@@ -273,7 +268,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-  return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       this.serverless.cli.log('Pinging host status...');
       request(options, (err, res, body) => {
         if (err) {
@@ -285,10 +280,10 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  isExistingFunctionApp () {
+  isExistingFunctionApp() {
     const host = functionAppName + constants.scmDomain;
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       dns.resolve4(host, (err, addresses) => {
         if (err) {
           if (err.message.includes('ENOTFOUND')) {
@@ -304,7 +299,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  getDeployedFunctionsNames () {
+  getDeployedFunctionsNames() {
     const requestUrl = `https://${functionAppName}${constants.scmDomain}${constants.functionsApiPath}`;
     const options = {
       'host': functionAppName + constants.scmDomain,
@@ -316,7 +311,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       if (existingFunctionApp) {
         this.serverless.cli.log('Looking for deployed functions that are not part of the current deployment...');
         request(options, (err, res, body) => {
@@ -343,7 +338,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  getLogsStream (functionName) {
+  getLogsStream(functionName) {
     const logOptions = {
       'host': functionAppName + constants.scmDomain,
       'port': 443,
@@ -374,7 +369,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  getInvocationId (functionName) {
+  getInvocationId(functionName) {
     const options = {
       'host': functionAppName + constants.scmDomain,
       'port': 443,
@@ -385,7 +380,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       https.get(options, (res) => {
         let body = '';
 
@@ -405,7 +400,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  getLogsForInvocationId () {
+  getLogsForInvocationId() {
     this.serverless.cli.log(`Logs for InvocationId: ${invocationId}`);
     const options = {
       'host': functionAppName + constants.scmDomain,
@@ -417,7 +412,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       https.get(options, (res) => {
         let body = '';
 
@@ -435,7 +430,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  invoke (functionName, eventType, eventData) {
+  invoke(functionName, eventType, eventData) {
     let options = {};
 
     if (eventType === 'http') {
@@ -454,7 +449,7 @@ return new BbPromise((resolve, reject) => {
         'path': `${constants.functionAppApiPath + functionName}?${queryString}`
       };
 
-return new BbPromise((resolve, reject) => {
+      return new BbPromise((resolve, reject) => {
         https.get(options, (res) => {
           let body = '';
 
@@ -471,103 +466,101 @@ return new BbPromise((resolve, reject) => {
         });
       });
     }
-      const requestUrl = `https://${functionAppName}${constants.functionsAdminApiPath}${functionName}`;
-      
-      options = {
-        'host': constants.functionAppDomain,
-        'method': 'post',
-        'body': eventData,
-        'url': requestUrl,
-        'json': true,
-        'headers': {
-          'x-functions-key': functionsAdminKey,
-          'Accept': 'application/json,*/*'
-        }
-      };
+    const requestUrl = `https://${functionAppName}${constants.functionsAdminApiPath}${functionName}`;
 
-return new BbPromise((resolve, reject) => {
-        request(options, (err, res, body) => {
-          if (err) {
-            reject(err);
-          }
-          this.serverless.cli.log(`Invoked function at: ${requestUrl}. \nResponse statuscode: ${res.statusCode}`);
-          resolve(res);
-        });
+    options = {
+      'host': constants.functionAppDomain,
+      'method': 'post',
+      'body': eventData,
+      'url': requestUrl,
+      'json': true,
+      'headers': {
+        'x-functions-key': functionsAdminKey,
+        'Accept': 'application/json,*/*'
+      }
+    };
+
+    return new BbPromise((resolve, reject) => {
+      request(options, (err, res, body) => {
+        if (err) {
+          reject(err);
+        }
+        this.serverless.cli.log(`Invoked function at: ${requestUrl}. \nResponse statuscode: ${res.statusCode}`);
+        resolve(res);
       });
+    });
 
   }
 
-  syncTriggers () {
+  syncTriggers() {
     let options = {};
     const requestUrl = ` https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Web/sites/${functionAppName}/functions/synctriggers?api-version=2015-08-01`;
     options = {
-       'host': 'management.azure.com',
-       'method': 'post',
-       'body': {},
-       'url': requestUrl,
-       'json': true,
-       'headers': {
-         'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
-         'Accept': 'application/json,*/*'
-       }
-     };
+      'host': 'management.azure.com',
+      'method': 'post',
+      'body': {},
+      'url': requestUrl,
+      'json': true,
+      'headers': {
+        'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+        'Accept': 'application/json,*/*'
+      }
+    };
 
-return new BbPromise((resolve, reject) => {
-        request(options, (err, res, body) => {
-          if (err) {
-            reject(err);
-          }
-          this.serverless.cli.log(`Syncing Triggers....Response statuscode: ${res.statusCode}`);
-          resolve(res);
-        });
+    return new BbPromise((resolve, reject) => {
+      request(options, (err, res, body) => {
+        if (err) {
+          reject(err);
+        }
+        this.serverless.cli.log(`Syncing Triggers....Response statuscode: ${res.statusCode}`);
+        resolve(res);
       });
+    });
 
   }
-  
-  runKuduCommand (command) {
+
+  runKuduCommand(command) {
     this.serverless.cli.log(`Running Kudu command ${command}...`);
     let options = {};
     const requestUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmCommandApiPath}`;
     let postBody = {
-    "command": command,
-    "dir": 'site\\wwwroot'
+      "command": command,
+      "dir": 'site\\wwwroot'
     }
     options = {
-       'host': functionAppName + constants.scmDomain,
-       'method': 'post',
-       'body': postBody,
-       'url': requestUrl,
-       'json': true,
-       'headers': {
-         'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
-         'Accept': 'application/json,*/*'
-       }
-     };
-return new BbPromise((resolve, reject) => {
-        request(options, (err, res, body) => {
-          if (err) {
-            reject(err);
-          }
-          resolve(res);
-        });
-      });
-
-  }
-
- cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
-    const deleteFunctionPromises = [];
-
-    deployedFunctionNames.forEach((functionName) => {
-      if (serverlessFunctions.indexOf(functionName) < 0) {
-        this.serverless.cli.log(`Deleting function : ${functionName}`);
-        deleteFunctionPromises.push(this.deleteFunction(functionName));
+      'host': functionAppName + constants.scmDomain,
+      'method': 'post',
+      'body': postBody,
+      'url': requestUrl,
+      'json': true,
+      'headers': {
+        'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+        'Accept': 'application/json,*/*'
       }
+    };
+    return new BbPromise((resolve, reject) => {
+      request(options, (err, res, body) => {
+        if (err) {
+          reject(err);
+        }
+        resolve(res);
+      });
     });
 
-return BbPromise.all(deleteFunctionPromises);
   }
 
-  deleteFunction (functionName) {
+  cleanUpFunctionsBeforeDeploy(serverlessFunctions) {
+    const deleteFunctionPromises = [];
+
+    // delete all functions from the service that are about to be deployed.
+    serverlessFunctions.forEach((functionName) => {
+      deleteFunctionPromises.push(this.deleteFunction(functionName));
+    });
+
+    return BbPromise.all(deleteFunctionPromises);
+  }
+
+  deleteFunction(functionName) {
     const requestUrl = `https://${functionAppName}${constants.scmVfsPath}${functionName}/?recursive=true`;
     const options = {
       'host': functionAppName + constants.scmDomain,
@@ -580,7 +573,7 @@ return BbPromise.all(deleteFunctionPromises);
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) {
           reject(err);
@@ -591,8 +584,8 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  uploadPackageJson (functionName) {
-    const requestUrl = `https://${functionAppName}${constants.scmVfsPath}package.json`;
+  uploadPackageJson(functionName) {
+    const requestUrl = `https://${functionAppName}${constants.scmVfsPath}${functionName}/package.json`;
     const options = {
       'host': functionAppName + constants.scmDomain,
       'method': 'put',
@@ -605,19 +598,19 @@ return new BbPromise((resolve, reject) => {
     };
     var packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       fs.createReadStream(packageJsonFilePath)
-            .pipe(request.put(options, (err, res, body) => {
-              if (err) {
-                reject(err);
-              } else {
-                resolve('Package json file uploaded');
-              }
-            }));
+        .pipe(request.put(options, (err, res, body) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve('Package json file uploaded');
+          }
+        }));
     });
   }
 
-  createZipObject (functionName, entryPoint, filePath, params) {
+  createZipObject(functionName, entryPoint, filePath, params) {
     return new BbPromise((resolve, reject) => {
       this.serverless.cli.log(`Packaging function: ${functionName}`);
       const folderForJSFunction = path.join(functionsFolder, functionName);
@@ -668,7 +661,7 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  createZipFileAndUploadFunction (folder, zip) {
+  createZipFileAndUploadFunction(folder, zip) {
     return new BbPromise((resolve, reject) => {
       const generateOptions = {
         'type': 'nodebuffer',
@@ -705,14 +698,14 @@ return new BbPromise((resolve, reject) => {
     });
   }
 
-  createAndUploadZipFunctions () {
+  createAndUploadZipFunctions() {
     const zipFunctions = [];
 
     for (let j = 0; j < zipArray.length; j++) {
       zipFunctions.push(this.createZipFileAndUploadFunction(zipArray[j].key, zipArray[j].value));
     }
 
-return BbPromise.all(zipFunctions);
+    return BbPromise.all(zipFunctions);
   }
 }
 module.exports = AzureProvider;
