@@ -71,8 +71,20 @@ class AzureProvider {
     servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
     servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
 
-    functionAppName = this.serverless.service.service;
-    resourceGroupName = `${functionAppName}-rg`;
+    if(this.serverless.service.provider.application) {
+      functionAppName = this.serverless.service.provider.application;
+    }
+    else {
+      functionAppName = this.serverless.service.service;
+    }
+
+    if(this.serverless.service.provider.resourceGroup) {
+      resourceGroupName = this.serverless.service.provider.resourceGroup;
+    }
+    else {
+      resourceGroupName = `${functionAppName}-rg`;
+    }
+
     deploymentName = `${resourceGroupName}-deployment`;
     functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
   }
