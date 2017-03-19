@@ -109,6 +109,8 @@ class AzureProvider {
         if (error) {
           reject(error);
         } else {
+          this.serverless.cli.log(`Received ServicePrincipal Credentials.`);
+
           principalCredentials = credentials;
           resolve(credentials);
         }
@@ -552,12 +554,20 @@ class AzureProvider {
   cleanUpFunctionsBeforeDeploy(serverlessFunctions) {
     const deleteFunctionPromises = [];
 
-    // delete all functions from the service that are about to be deployed.
-    serverlessFunctions.forEach((functionName) => {
-      deleteFunctionPromises.push(this.deleteFunction(functionName));
-    });
+    if (this.serverless.config && this.serverless.config.preserveDeployedFunctions) {
+      this.serverless.cli.log(`Skipping cleaning of existing functions as '--preserve' has been specified.`);
 
+      return BbPromise.all(deleteFunctionPromises);
+    }
+
+    deployedFunctionNames.forEach((functionName) => {
+      if (serverlessFunctions.indexOf(functionName) < 0) {
+        this.serverless.cli.log(`Deleting function : ${functionName}`);
+        deleteFunctionPromises.push(this.deleteFunction(functionName));
+      }
+    });
     return BbPromise.all(deleteFunctionPromises);
+
   }
 
   deleteFunction(functionName) {
