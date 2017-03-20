@@ -19,7 +19,7 @@ class AzureIndex {
     this.serverless = serverless;
     this.options = options;
 
-    // if we do this before the addPlugin calls then these options will be passed through
+    // if we do this before the addPlugin calls then these options will be passed through to each of the plugins
     this.serverless.pluginManager.setCliOptions(options);
 
     this.serverless.pluginManager.addPlugin(AzureProvider);

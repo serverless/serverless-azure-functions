@@ -27,6 +27,7 @@ let principalCredentials;
 let functionsFolder;
 let existingFunctionApp = false;
 let parsedBindings;
+let isDefaultResourceGroup = true;
 const zipArray = [];
 const deployedFunctionNames = [];
 
@@ -74,9 +75,11 @@ class AzureProvider {
     functionAppName = this.serverless.service.service;
 
     if (this.serverless.service.provider.resourceGroup) {
+      this.isDefaultResourceGroup = false;
       resourceGroupName = this.serverless.service.provider.resourceGroup;
     }
     else {
+      this.isDefaultResourceGroup = true;
       resourceGroupName = `${functionAppName}-rg`;
     }
 
@@ -315,7 +318,8 @@ class AzureProvider {
 
     return new BbPromise((resolve, reject) => {
       if (existingFunctionApp) {
-        this.serverless.cli.log('Looking for deployed functions that are not part of the current deployment...');
+        this.serverless.cli.log('Loading currently deployed functions...');
+
         request(options, (err, res, body) => {
           if (err) {
             if (err.message.includes('ENOTFOUND')) {
@@ -550,25 +554,33 @@ class AzureProvider {
     });
 
   }
+ 
+  deleteFunctionsExcluding(serverlessFunctions) {
+    return this._deleteFunctions((functionName) => {
+      var result = serverlessFunctions.indexOf(functionName) < 0;
+      return result;
+    });
+  }
 
-  cleanUpFunctionsBeforeDeploy(serverlessFunctions) {
+  deleteFunctions(serverlessFunctions) {
+    return this._deleteFunctions((functionName) => {
+      var result = serverlessFunctions.indexOf(functionName) >= 0;
+      return result;
+    });
+  }
+
+  _deleteFunctions(test) {
     const deleteFunctionPromises = [];
 
-    if (this.serverless.config && this.serverless.config.preserveDeployedFunctions) {
-      this.serverless.cli.log(`Skipping cleaning of existing functions as '--preserve' has been specified.`);
-
-      return BbPromise.all(deleteFunctionPromises);
-    }
-
     deployedFunctionNames.forEach((functionName) => {
-      if (serverlessFunctions.indexOf(functionName) < 0) {
+      if(test(functionName)) {
         this.serverless.cli.log(`Deleting function : ${functionName}`);
         deleteFunctionPromises.push(this.deleteFunction(functionName));
       }
     });
-    return BbPromise.all(deleteFunctionPromises);
 
-  }
+    return BbPromise.all(deleteFunctionPromises);
+  };
 
   deleteFunction(functionName) {
     const requestUrl = `https://${functionAppName}${constants.scmVfsPath}${functionName}/?recursive=true`;
