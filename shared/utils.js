@@ -172,7 +172,7 @@ return binding;
     for (let bindingSettingsIndex = 0; bindingSettingsIndex < bindingSettings.length; bindingSettingsIndex++) {
       const name = bindingSettings[bindingSettingsIndex][constants.name];
 
-      if (bindingUserSettings && bindingUserSettings[name]) {
+      if (bindingUserSettings && bindingUserSettings[name] !== undefined && bindingUserSettings[name] !== null) {
         binding[name] = bindingUserSettings[name];
         continue;
       }
