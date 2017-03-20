@@ -10,6 +10,10 @@ class AzureDeployFunction {
     this.options = options;
     this.provider = this.serverless.getProvider('azure');
 
+    if(this.options.preserve) {
+      this.serverless.config.preserveDeployedFunctions = true;
+    }
+
     Object.assign(
       this,
       loginToAzure,
