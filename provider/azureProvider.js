@@ -68,11 +68,26 @@ class AzureProvider {
     this.serverless = serverless;
     this.provider = this;
     this.serverless.setProvider(constants.providerName, this);
-    subscriptionId = this.getSetting(azureCredentials.azureSubId);
-    servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
-    servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
-    servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
+  }
 
+  initialise(serverless, options) {
+    this.serverless = serverless;
+    this.options = options;
+
+    if(this.serverless.service.provider.credentials) {
+      var credentials = this.serverless.service.provider.credentials;
+
+      subscriptionId = credentials.azureSubId;
+      servicePrincipalTenantId = credentials.azureServicePrincipalTenantId;
+      servicePrincipalClientId = credentials.azureServicePrincipalClientId;
+      servicePrincipalPassword = credentials.azureServicePrincipalPassword;
+    }
+    else {
+      subscriptionId = this.getSetting(azureCredentials.azureSubId);
+      servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
+      servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
+      servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
+    }
 
     functionAppName = this.serverless.service.service;
     if(this.serverless.service.provider.functionAppName) {
@@ -86,12 +101,14 @@ class AzureProvider {
 
     resourceGroupName = `${functionAppName}-rg`;
     if (this.serverless.service.provider.resourceGroup) {
-      this.isDefaultResourceGroup = false;
+      isDefaultResourceGroup = false;
       resourceGroupName = this.serverless.service.provider.resourceGroup;
     }
 
     deploymentName = `${resourceGroupName}-deployment`;
     functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
+
+    return this;
   }
 
   getParsedBindings() {
@@ -152,7 +169,7 @@ class AzureProvider {
   CreateFunctionApp(method, params) {
     this.serverless.cli.log(`Creating function app: ${functionAppName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    let parameters = { 'functionAppName': { 'value': functionAppName } };
+    let parameters = { 'functionAppName': { 'value': functionAppName }, 'hostingPlanName': {'value':hostingPlanName} };
 
     const gitUrl = this.serverless.service.provider.gitUrl;
 

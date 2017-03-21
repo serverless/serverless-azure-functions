@@ -2,6 +2,8 @@
 
 module.exports = {
   cleanUpFunctions () {
+    this.provider.initialise(this.serverless, this.options);
+
     return this.provider.isExistingFunctionApp()
       .then(() => this.provider.getDeployedFunctionsNames())
       .then(() => {

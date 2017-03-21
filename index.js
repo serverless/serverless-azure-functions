@@ -19,7 +19,8 @@ class AzureIndex {
     this.serverless = serverless;
     this.options = options;
 
-    this.serverless.pluginManager.addPlugin(AzureProvider);
+    this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(this.serverless));
+
     this.serverless.pluginManager.addPlugin(AzureDeploy);
     this.serverless.pluginManager.addPlugin(AzureDeployFunction);
     this.serverless.pluginManager.addPlugin(AzureInvoke);

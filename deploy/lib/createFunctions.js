@@ -4,7 +4,9 @@ const BbPromise = require('bluebird');
 const utils = require('../../shared/utils');
 
 module.exports = {
-  createFunctions () {
+  createFunctions() {
+    this.provider.initialise(this.serverless, this.options);
+
     const createFunctionPromises = [];
 
     this.serverless.service.getAllFunctions().forEach((functionName) => {
@@ -14,10 +16,10 @@ module.exports = {
     });
 
     return BbPromise.all(createFunctionPromises)
-            .then(() => this.provider.createAndUploadZipFunctions())
-            .then(() => this.provider.syncTriggers())
-            .then(() => this.provider.runKuduCommand('del package.json'))
-            .then(() => this.provider.uploadPackageJson())
-            .then(() => this.provider.runKuduCommand('npm install --production'));
+      .then(() => this.provider.createAndUploadZipFunctions())
+      .then(() => this.provider.syncTriggers())
+      .then(() => this.provider.runKuduCommand('del package.json'))
+      .then(() => this.provider.uploadPackageJson())
+      .then(() => this.provider.runKuduCommand('npm install --production'));
   }
 };

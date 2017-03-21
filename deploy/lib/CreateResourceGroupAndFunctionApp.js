@@ -1,9 +1,10 @@
 'use strict';
 
 module.exports = {
-  CreateResourceGroupAndFunctionApp () {
+  CreateResourceGroupAndFunctionApp() {
+    this.provider.initialise(this.serverless, this.options);
 
-return this.provider.CreateResourceGroup()
+    return this.provider.CreateResourceGroup()
       .then(() => this.provider.CreateFunctionApp());
   }
 };
