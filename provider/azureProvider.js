@@ -16,6 +16,7 @@ const parseBindings = require('../shared/parseBindings');
 let resourceGroupName;
 let deploymentName;
 let functionAppName;
+let hostingPlanName;
 let subscriptionId;
 let servicePrincipalTenantId;
 let servicePrincipalClientId;
@@ -72,15 +73,21 @@ class AzureProvider {
     servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
     servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
 
-    functionAppName = this.serverless.service.service;
 
+    functionAppName = this.serverless.service.service;
+    if(this.serverless.service.provider.functionAppName) {
+        functionAppName = this.serverless.service.provider.functionAppName;
+    }
+
+    hostingPlanName = this.serverless.service.service + '-hosting';
+    if(this.serverless.service.provider.hostingPlanName) {
+      hostingPlanName = this.serverless.service.provider.hostingPlanName;
+    }
+
+    resourceGroupName = `${functionAppName}-rg`;
     if (this.serverless.service.provider.resourceGroup) {
       this.isDefaultResourceGroup = false;
       resourceGroupName = this.serverless.service.provider.resourceGroup;
-    }
-    else {
-      this.isDefaultResourceGroup = true;
-      resourceGroupName = `${functionAppName}-rg`;
     }
 
     deploymentName = `${resourceGroupName}-deployment`;
@@ -152,6 +159,7 @@ class AzureProvider {
     if (gitUrl) {
       parameters = {
         'functionAppName': { 'value': functionAppName },
+        'hostingPlanName' : { 'value' : hostingPlanName},
         'gitUrl': { 'value': gitUrl }
       };
     }

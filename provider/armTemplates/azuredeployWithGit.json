@@ -8,6 +8,9 @@
                 "description": "The name of the function app that you wish to create."
             }
         },
+        "hostingPlanName": {
+            "type" : "string"
+        },        
         "storageAccountType": {
             "type": "string",
             "defaultValue": "Standard_LRS",
@@ -29,8 +32,6 @@
         }
     },
     "variables": {
-        "functionAppName": "[parameters('functionAppName')]",
-        "hostingPlanName": "[parameters('functionAppName')]",
         "gitRepoUrl": "[parameters('gitUrl')]",
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]"
     },
@@ -47,10 +48,10 @@
         {
             "type": "Microsoft.Web/serverfarms",
             "apiVersion": "2015-04-01",
-            "name": "[variables('hostingPlanName')]",
+            "name": "[parameters('hostingPlanName')]",
             "location": "[resourceGroup().location]",
             "properties": {
-                "name": "[variables('hostingPlanName')]",
+                "name": "[parameters('hostingPlanName')]",
                 "computeMode": "Dynamic",
                 "sku": "Dynamic"
             }
@@ -58,15 +59,15 @@
         {
             "apiVersion": "2015-08-01",
             "type": "Microsoft.Web/sites",
-            "name": "[variables('functionAppName')]",
+            "name": "[parameters('functionAppName')]",
             "location": "[resourceGroup().location]",
             "kind": "functionapp",
             "properties": {
-                "name": "[variables('functionAppName')]",
-                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+                "name": "[parameters('functionAppName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
             },
             "dependsOn": [
-                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
             ],
             "resources": [
@@ -75,7 +76,7 @@
                     "name": "appsettings",
                     "type": "config",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
+                        "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]",
                         "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
                     ],
                     "properties": {
@@ -89,7 +90,7 @@
                     "name": "web",
                     "type": "sourcecontrols",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
+                        "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
                     ],
                     "properties": {
                         "repoUrl": "[variables('gitRepoUrl')]",
