@@ -20,10 +20,6 @@ class AzureDeploy {
       createFunctions
     );
 
-    if(this.options.preserve) {
-      this.serverless.config.preserveDeployedFunctions = true;
-    }
-
     this.hooks = {
       'before:deploy:deploy': () => BbPromise.bind(this)
         .then(this.loginToAzure)

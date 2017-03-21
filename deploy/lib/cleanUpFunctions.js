@@ -7,7 +7,7 @@ module.exports = {
     return this.provider.isExistingFunctionApp()
       .then(() => this.provider.getDeployedFunctionsNames())
       .then(() => {
-        if (this.serverless.config && this.serverless.config.preserveDeployedFunctions) {
+        if (this.options.preserve) {
           this.serverless.cli.log(`Skipping cleaning of existing functions as '--preserve' has been specified.`);
           return;
         }
