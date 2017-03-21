@@ -540,10 +540,16 @@ class AzureProvider {
 
     return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
+        this.serverless.cli.log(`Syncing Triggers....`);
         if (err) {
           reject(err);
         }
-        this.serverless.cli.log(`Syncing Triggers....Response statuscode: ${res.statusCode}`);
+
+        if(res.statusCode != 200) {
+        this.serverless.cli.log(`Syncing Triggers returned a non-200 status code. StatusCode: ${res.statusCode}  Body: ${res.body}`);
+
+        }
+        
         resolve(res);
       });
     });
