@@ -22,12 +22,12 @@ class AzureDeploy {
 
     this.hooks = {
       'before:deploy:deploy': () => BbPromise.bind(this)
-        .then(this.provider.initialise(this.serverless,this.options))
+        .then(this.provider.initialize(this.serverless, this.options))
         .then(this.loginToAzure)
         .then(this.cleanUpFunctions),
 
       'deploy:deploy': () => BbPromise.bind(this)
-        .then(this.provider.initialise(this.serverless,this.options))
+        .then(this.provider.initialize(this.serverless,this.options))
         .then(this.CreateResourceGroupAndFunctionApp)
         .then(this.createFunctions)
         .then(() => this.serverless.cli.log('Successfully created Function App'))

@@ -69,7 +69,7 @@ return constants.providerName;
     this.serverless.setProvider(constants.providerName, this);
   }
 
-  initialise(serverless, options) {
+  initialize(serverless, options) {
     this.serverless = serverless;
     this.options = options;
     

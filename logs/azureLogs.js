@@ -18,11 +18,11 @@ class AzureLogs {
 
     this.hooks = {
       'before:logs:logs': () => BbPromise.bind(this)
-        .then(this.provider.initialise(this.serverless,this.options))
+        .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure),
 
       'logs:logs': () => BbPromise.bind(this)
-        .then(this.provider.initialise(this.serverless,this.options))
+        .then(this.provider.initialize(this.serverless,this.options))
         .then(this.retrieveLogs)
     };
   }
