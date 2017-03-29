@@ -63,9 +63,16 @@ return constants.providerName;
   }
 
   constructor (serverless) {
-    this.serverless = serverless;
     this.provider = this;
+    this.serverless = serverless;
+
     this.serverless.setProvider(constants.providerName, this);
+  }
+
+  initialize(serverless, options) {
+    this.serverless = serverless;
+    this.options = options;
+    
     subscriptionId = this.getSetting(azureCredentials.azureSubId);
     servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
     servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
@@ -75,6 +82,7 @@ return constants.providerName;
     resourceGroupName = `${functionAppName}-rg`;
     deploymentName = `${resourceGroupName}-deployment`;
     functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
+    
   }
 
   getParsedBindings () {
