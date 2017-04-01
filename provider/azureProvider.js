@@ -72,17 +72,25 @@ return constants.providerName;
   initialize(serverless, options) {
     this.serverless = serverless;
     this.options = options;
-    
-    subscriptionId = this.getSetting(azureCredentials.azureSubId);
-    servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
-    servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
-    servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
 
-    functionAppName = this.serverless.service.service;
-    resourceGroupName = `${functionAppName}-rg`;
-    deploymentName = `${resourceGroupName}-deployment`;
-    functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
-    
+    return new BbPromise((resolve, reject) => {
+        subscriptionId = this.getSetting(azureCredentials.azureSubId);
+        servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
+        servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
+        servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
+
+        functionAppName = this.serverless.service.service;
+
+        resourceGroupName = `${functionAppName}-rg`;
+        deploymentName = `${resourceGroupName}-deployment`;
+        functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
+
+        if (!servicePrincipalTenantId || !servicePrincipalClientId || !servicePrincipalPassword || !subscriptionId) {
+            reject(new Error('Azure credentials not provided'));
+        }
+
+        resolve();
+    });
   }
 
   getParsedBindings () {
