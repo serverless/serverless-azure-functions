@@ -2,7 +2,6 @@
 
 const BbPromise = require('bluebird');
 const _ = require('lodash');
-const msRestAzure = require('ms-rest-azure');
 const resourceManagement = require('azure-arm-resource');
 const path = require('path');
 const fs = require('fs');
@@ -12,6 +11,7 @@ const zipFolder = require('zip-folder');
 const request = require('request');
 const dns = require('dns');
 const parseBindings = require('../shared/parseBindings');
+const { login } = require("az-login");
 
 let resourceGroupName;
 let deploymentName;
@@ -50,13 +50,6 @@ const constants = {
   'scmZipApiPath': '.scm.azurewebsites.net/api/zip/site/wwwroot/'
 };
 
-const azureCredentials = {
-  'azureSubId': 'azureSubId',
-  'azureServicePrincipalTenantId': 'azureServicePrincipalTenantId',
-  'azureservicePrincipalClientId': 'azureservicePrincipalClientId',
-  'azureServicePrincipalPassword': 'azureServicePrincipalPassword',
-};
-
 class AzureProvider {
   static getProviderName () {
 return constants.providerName;
@@ -66,10 +59,6 @@ return constants.providerName;
     this.serverless = serverless;
     this.provider = this;
     this.serverless.setProvider(constants.providerName, this);
-    subscriptionId = this.getSetting(azureCredentials.azureSubId);
-    servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
-    servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
-    servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
 
     functionAppName = this.serverless.service.service;
     resourceGroupName = `${functionAppName}-rg`;
@@ -96,16 +85,14 @@ return this.parsedBindings;
     }
   }
 
-  LoginWithServicePrincipal () {
-return new BbPromise((resolve, reject) => {
-      msRestAzure.loginWithServicePrincipalSecret(servicePrincipalClientId, servicePrincipalPassword, servicePrincipalTenantId, (error, credentials) => {
-        if (error) {
-          reject(error);
-        } else {
-          principalCredentials = credentials;
-          resolve(credentials);
-        }
-      });
+  Login() {
+    return login({ interactiveLoginHandler: (code) => {
+        this.serverless.cli.log(`Paste this code (copied to your clipboard) into the launched browser, and complete the authentication process: ${code}`);
+    }}).then((result) => {
+      principalCredentials = result.credentials;
+      subscriptionId = result.subscriptionId;
+
+      return principalCredentials;
     });
   }
 
