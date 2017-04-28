@@ -11,7 +11,7 @@ const zipFolder = require('zip-folder');
 const request = require('request');
 const dns = require('dns');
 const parseBindings = require('../shared/parseBindings');
-const { login } = require("az-login");
+const { login } = require('az-login');
 
 let resourceGroupName;
 let deploymentName;
