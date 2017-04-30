@@ -31,11 +31,22 @@
     "variables": {
         "functionAppName": "[parameters('functionAppName')]",
         "hostingPlanName": "[parameters('functionAppName')]",
+        "insightsName": "[concat(parameters('functionAppName'), '-insights')]",
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'azfunctions')]",
         "storageAccountid": "[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "gitRepoUrl": "[parameters('gitUrl')]"
     },
     "resources": [
+        {
+            "type": "microsoft.insights/components",
+            "kind": "Node.JS",
+            "name": "[variables('insightsName')]",
+            "apiVersion": "2014-04-01",
+            "location": "eastus",
+            "properties": {
+                "ApplicationId": "[variables('insightsName')]"
+            }
+        },
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('storageAccountName')]",
@@ -76,12 +87,17 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[resourceId('Microsoft.insights/components', variables('insightsName'))]"
             ],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "siteConfig": {
                     "appSettings": [
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(variables('insightsName')).InstrumentationKey]"
+                        },
                         {
                             "name": "AzureWebJobsDashboard",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
@@ -91,16 +107,16 @@
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
                         },
                         {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "beta"
+                        },
+                        {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountid'),'2015-05-01-preview').key1)]"
                         },
                         {
                             "name": "WEBSITE_CONTENTSHARE",
                             "value": "[toLower(variables('functionAppName'))]"
-                        },
-                        {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~1"
                         },
                         {
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
