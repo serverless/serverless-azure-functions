@@ -163,7 +163,7 @@ return new BbPromise((resolve, reject) => {
     let templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeploy.json');
 
     if (gitUrl) {
-      templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
+      templateFilePath = path.join(__dirname, 'armTemplates', '.json');
     }
     if (this.serverless.service.provider.armTemplate) {
       templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider.armTemplate.file);
