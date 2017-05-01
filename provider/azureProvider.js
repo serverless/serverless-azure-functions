@@ -11,6 +11,7 @@ const https = require('https');
 const zipFolder = require('zip-folder');
 const request = require('request');
 const dns = require('dns');
+const jsonpath = require('jsonpath');
 const parseBindings = require('../shared/parseBindings');
 
 let resourceGroupName;
@@ -178,7 +179,24 @@ return new BbPromise((resolve, reject) => {
       }
     }
 
-    const template = JSON.parse(fs.readFileSync(templateFilePath, 'utf8'));
+    let template = JSON.parse(fs.readFileSync(templateFilePath, 'utf8'));
+
+    // Check if there are custom environment variables defined that need to be added
+    // to the ARM template used in the deployment.
+    const environmentVariables = this.serverless.service.provider.environment;
+    if (environmentVariables) {
+      const appSettingsPath = '$.resources[?(@.kind=="functionapp")].properties.siteConfig.appSettings';
+      jsonpath.apply(template, appSettingsPath, function (appSettingsList) {
+        Object.keys(environmentVariables).forEach(function (key) {
+          appSettingsList.push({
+            "name": key,
+            "value": environmentVariables[key]
+          });
+        });
+        return appSettingsList;
+      });
+    }
+
     const deploymentParameters = {
       'properties': {
         'mode': 'Incremental',
