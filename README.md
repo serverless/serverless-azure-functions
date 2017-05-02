@@ -1,129 +1,75 @@
-# Azure Functions Plugin 
+# Azure Functions Serverless Plugin 
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
 ## Getting started
 
-### 1. Get a Serverless Service with Azure as the Provider
+### Pre-requisites
 
-1. Recommend using Node v6.5.0
-1. Install the serverless tooling - `npm i -g serverless`
-1. Create boilerplate (change `my-app` to whatever you'd prefer): `serverless install --url https://github.com/azure/boilerplate-azurefunctions --name my-app`
-1. `cd my-app`
-2. `npm install`
+1. Node.js v6.5.0+ *(this is the runtime version supported by Azure Functions)*
+2. Serverless CLI. You can run `npm i -g serverless` if you don't already have it.
+3. An Azure account. If you don't already have one, you can sign up for a [free trial](https://azure.microsoft.com/en-us/free/) that includes $200 of free credit.
 
-### 2. Set up credentials
+### Create a new Azure service
 
-We'll set up an Azure Subscription and our service principal. You can learn more in the [credentials doc]( https://www.serverless.com/framework/docs/providers/azure/guide/credentials).
+1. Create a new service using the standard Node.js template: `serverless create -t azure-nodejs --name <APP_NAME>`
+2. CD into the generated app directory *(`cd <APP_NAME>`)*
+3. Install the app's NPM dependencies, which includes this plugin *(`npm install`)*
+4. Update the `service` property in your `serverless.yml` file, to ensure it specifies a unique app name:
 
-1. Set up an Azure Subscription
-
-    Sign up for a free account @ [https://azure.com](https://azure.microsoft.com/en-us/services/functions/).
-
-    Azure comes with a [free trial](https://azure.microsoft.com/en-us/free/) that includes $200 of free credit. 
-
-
-2. . Get the Azure CLI
-
-    ```
-    npm i -g azure-cli
+    ```yml
+    service: my-azure-functions-app # Name of the Azure function App you want to create
     ```
 
-3. Login to Azure
+### Deploy, test, and remove your service
 
-    ```
-    azure login
-    ```
-
-    This will give you a code and prompt you to visit [aka.ms/devicelogin](https://aka.ms/devicelogin). Provide the code and then login with your Azure identity (this may happen automatically if you're already logged in). You'll then be able to access your account via the CLI.
-
-4. Get your subcription and tenant id
-
-    ```
-    azure account show
-    ```
-
-    Save the subcription and tenant id for later
-
-5. Create a service principal for a given `<name>` and `<password>` and add contributor role.
-
-    ```
-    azure ad sp create -n <name> -p <password>
-    ```
-
-    This should return an object which has the `servicePrincipalNames` property on it and an ObjectId. Save the Object Id and one of the names in the array and the password you provided for later. If you need to look up your service principal later, you can use `azure ad sp -c <name>` where `<name>` is the name provided originally. Note that the `<name>` you provided is not the name you'll provide later, it is a name in the `servicePrincipalNames` array.
-
-    Then grant the SP contributor access with the ObjectId
+1. Deploy your new service to Azure! The first time you do this, you will be asked to authenticate with your Azure account, so the `serverless` CLI can manage Functions on your behalf. Simply follow the provided instructions, and the deployment will continue as soon as the authentication process is completed.
 
     ```bash
-    azure role assignment create --objectId <objectIDFromCreateStep> -o Contributor
+    serverless deploy
     ```
 
-6. Set up environment variables
+    > Note: Once you've authenticated, a new Azure "service principal" will be created, and used for subsequent deployments. This prevents you from needing to manually login again. See [below](#advanced-authentication) if you'd prefer to use a custom service principal instead.
 
-     You need to set up environment variables for your subscription id, tenant id, service principal name, and password. 
+2. Invoke a function, in order to test that it works:
 
     ```bash
-    # bash
-    export azureSubId='<subscriptionId>'
-    export azureServicePrincipalTenantId='<tenantId>'
-    export azureServicePrincipalClientId='<servicePrincipalName>'
-    export azureServicePrincipalPassword='<password>'
+    serverless invoke -f hello
     ```
 
-    ```powershell
-    # PowerShell
-    $env:azureSubId='<subscriptionId>'
-    $env:azureServicePrincipalTenantId='<tenantId>'
-    $env:azureServicePrincipalClientId='<servicePrincipalName>'
-    $env:azureServicePrincipalPassword='<password>'
+3. View the output logs of your newly deployed function:
+
+    ```bash
+    serverless logs -f hello
     ```
 
+5. Remove the service as soon as you're done with it *(optional)*, to ensure you don't incur any unexpected Azure charges:
 
-### 3. Update the config in `serverless.yml`
+    ```bash
+    serverless remove
+    ```  
 
-Open up your `serverless.yml` file and update the following information:
+  6. Make any code changes, `deploy` again, view logs, etc. and provide us feedback on how to make the experience even better!
 
-```yml
-service: my-azure-functions-app # Name of the Azure function App you want to create
+### Advanced Authentication
+
+The getting started walkthrough illustrates the interactive login experience, which is recommended for most users. However, if you'd prefer to create an Azure ["service principal"](https://github.com/Azure/azure-sdk-for-node/blob/master/Documentation/Authentication.md#2-azure-cli) yourself, you can indicate that this plugin should use its credentials instead, by setting the following environment variables:
+
+**Bash**
+```bash
+export azureSubId='<subscriptionId>'
+export azureServicePrincipalTenantId='<tenantId>'
+export azureServicePrincipalClientId='<servicePrincipalName>'
+export azureServicePrincipalPassword='<password>'
 ```
 
-### 4. Deploy, test, and remove your service
-
-1. **Deploy a Service:**
-
-  Use this when you have made changes to your Functions or you simply want to deploy all changes within your Service at the same time.
-  ```bash
-  serverless deploy
-  ```
-
-2. **Deploy the Function:**
-
-  Use this to quickly upload and overwrite your Azure function, allowing you to develop faster.
-  ```bash
-  serverless deploy function -f httpjs
-  ```
-
-3. **Invoke the Function:**
-
-  Invokes an Azure Function on Azure
-  ```bash
-  serverless invoke --path httpQueryString.json -f httpjs
-  ```
-
-4. **Stream the Function Logs:**
-
-  Open up a separate tab in your console and stream all logs for a specific Function using this command.
-  ```bash
-  serverless logs -f httpjs -t
-  ```
-
-5. **Remove the Service: (optional)**
-
-  Removes all Functions and Resources from your Azure subscription.
-  ```bash
-  serverless remove
-  ```  
+**Powershell**
+```powershell
+$env:azureSubId='<subscriptionId>'
+$env:azureServicePrincipalTenantId='<tenantId>'
+$env:azureServicePrincipalClientId='<servicePrincipalName>'
+$env:azureServicePrincipalPassword='<password>'
+```
 
 ### Contributing
 
