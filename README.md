@@ -12,14 +12,9 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 ### Create a new Azure service
 
-1. Create a new service using the standard Node.js template: `serverless create -t azure-nodejs --name <APP_NAME>`
-2. CD into the generated app directory: `cd <APP_NAME>`
+1. Create a new service using the standard Node.js template, specifying a unique name for your app: `serverless create -t azure-nodejs -p <appName>`
+2. CD into the generated app directory: `cd <appName>`
 3. Install the app's NPM dependencies, which includes this plugin: `npm install`
-4. Update the `service` property in your `serverless.yml` file, to ensure it specifies a unique app name:
-
-    ```yml
-    service: my-azure-functions-app # Name of the Azure function App you want to create
-    ```
 
 ### Deploy, test, and diagnose your Azure service
 
@@ -37,13 +32,15 @@ This plugin enables Azure Functions support within the Serverless Framework.
     serverless invoke -f hello
     ```
 
-3. View the output logs of your newly deployed function:
+3. Stream the output logs for your function:
 
     ```bash
     serverless logs -f hello
     ```
  
 4. Make some code changes, `deploy` again, view logs, etc. and provide us feedback on how to make the experience even better!
+
+    > Note: If you're working on a single function, you can use the `serverless deploy function -f <function>` command instead of `serverless deploy`, which will simply deploy the specified function instead of the entire service.
 
 If at any point, you no longer need your service, you can run the following command to remove the Azure Functions that were created, and ensure you don't incur any unexpected charges:
 
