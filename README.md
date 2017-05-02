@@ -21,7 +21,7 @@ This plugin enables Azure Functions support within the Serverless Framework.
     service: my-azure-functions-app # Name of the Azure function App you want to create
     ```
 
-### Deploy, test, and remove your service
+### Deploy, test, and diagnose your Azure service
 
 1. Deploy your new service to Azure! The first time you do this, you will be asked to authenticate with your Azure account, so the `serverless` CLI can manage Functions on your behalf. Simply follow the provided instructions, and the deployment will continue as soon as the authentication process is completed.
 
