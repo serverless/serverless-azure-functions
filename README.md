@@ -7,7 +7,7 @@ This plugin enables Azure Functions support within the Serverless Framework.
 ### Pre-requisites
 
 1. Node.js v6.5.0+ *(this is the runtime version supported by Azure Functions)*
-2. Serverless CLI. You can run `npm i -g serverless` if you don't already have it.
+2. Serverless CLI `v1.9.0+`. You can run `npm i -g serverless` if you don't already have it.
 3. An Azure account. If you don't already have one, you can sign up for a [free trial](https://azure.microsoft.com/en-us/free/) that includes $200 of free credit.
 
 ### Create a new Azure service
