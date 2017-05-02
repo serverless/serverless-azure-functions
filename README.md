@@ -42,14 +42,14 @@ This plugin enables Azure Functions support within the Serverless Framework.
     ```bash
     serverless logs -f hello
     ```
+ 
+4. Make some code changes, `deploy` again, view logs, etc. and provide us feedback on how to make the experience even better!
 
-5. Remove the service as soon as you're done with it *(optional)*, to ensure you don't incur any unexpected Azure charges:
+If at any point, you no longer need your service, you can run the following command to remove the Azure Functions that were created, and ensure you don't incur any unexpected charges:
 
-    ```bash
-    serverless remove
-    ```  
-
-  6. Make any code changes, `deploy` again, view logs, etc. and provide us feedback on how to make the experience even better!
+```bash
+serverless remove
+``` 
 
 ### Advanced Authentication
 
