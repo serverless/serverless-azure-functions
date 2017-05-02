@@ -13,8 +13,8 @@ This plugin enables Azure Functions support within the Serverless Framework.
 ### Create a new Azure service
 
 1. Create a new service using the standard Node.js template: `serverless create -t azure-nodejs --name <APP_NAME>`
-2. CD into the generated app directory *(`cd <APP_NAME>`)*
-3. Install the app's NPM dependencies, which includes this plugin *(`npm install`)*
+2. CD into the generated app directory: `cd <APP_NAME>`
+3. Install the app's NPM dependencies, which includes this plugin: `npm install`
 4. Update the `service` property in your `serverless.yml` file, to ensure it specifies a unique app name:
 
     ```yml
