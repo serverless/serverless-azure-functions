@@ -81,17 +81,6 @@ return constants.providerName;
 return this.parsedBindings;
   }
 
-  getSetting (key) {
-    // Loop through environment variables looking for the keys, case insentivie
-    for (var k in process.env) {
-      if (process.env.hasOwnProperty(k)) {
-        if (k.toLowerCase() === key.toLowerCase()) {
-      return process.env[k];
-        }
-      }
-    }
-  }
-
   Login() {
     return login({ interactiveLoginHandler: (code) => {
         this.serverless.cli.log(`Paste this code (copied to your clipboard) into the launched browser, and complete the authentication process: ${code}`);
