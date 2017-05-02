@@ -2,7 +2,6 @@
 
 const BbPromise = require('bluebird');
 const _ = require('lodash');
-const msRestAzure = require('ms-rest-azure');
 const resourceManagement = require('azure-arm-resource');
 const path = require('path');
 const fs = require('fs');
@@ -13,14 +12,12 @@ const request = require('request');
 const dns = require('dns');
 const jsonpath = require('jsonpath');
 const parseBindings = require('../shared/parseBindings');
+const { login } = require('az-login');
 
 let resourceGroupName;
 let deploymentName;
 let functionAppName;
 let subscriptionId;
-let servicePrincipalTenantId;
-let servicePrincipalClientId;
-let servicePrincipalPassword;
 let functionsAdminKey;
 let invocationId;
 let oldLogs = '';
@@ -51,13 +48,6 @@ const constants = {
   'scmZipApiPath': '.scm.azurewebsites.net/api/zip/site/wwwroot/'
 };
 
-const azureCredentials = {
-  'azureSubId': 'azureSubId',
-  'azureServicePrincipalTenantId': 'azureServicePrincipalTenantId',
-  'azureservicePrincipalClientId': 'azureservicePrincipalClientId',
-  'azureServicePrincipalPassword': 'azureServicePrincipalPassword',
-};
-
 class AzureProvider {
   static getProviderName () {
 return constants.providerName;
@@ -75,20 +65,10 @@ return constants.providerName;
     this.options = options;
 
     return new BbPromise((resolve, reject) => {
-        subscriptionId = this.getSetting(azureCredentials.azureSubId);
-        servicePrincipalTenantId = this.getSetting(azureCredentials.azureServicePrincipalTenantId);
-        servicePrincipalClientId = this.getSetting(azureCredentials.azureservicePrincipalClientId);
-        servicePrincipalPassword = this.getSetting(azureCredentials.azureServicePrincipalPassword);
-
         functionAppName = this.serverless.service.service;
-
         resourceGroupName = `${functionAppName}-rg`;
         deploymentName = `${resourceGroupName}-deployment`;
         functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
-
-        if (!servicePrincipalTenantId || !servicePrincipalClientId || !servicePrincipalPassword || !subscriptionId) {
-            reject(new Error('Azure credentials not provided'));
-        }
 
         resolve();
     });
@@ -102,27 +82,14 @@ return constants.providerName;
 return this.parsedBindings;
   }
 
-  getSetting (key) {
-    // Loop through environment variables looking for the keys, case insentivie
-    for (var k in process.env) {
-      if (process.env.hasOwnProperty(k)) {
-        if (k.toLowerCase() === key.toLowerCase()) {
-      return process.env[k];
-        }
-      }
-    }
-  }
+  Login() {
+    return login({ interactiveLoginHandler: (code) => {
+        this.serverless.cli.log(`Paste this code (copied to your clipboard) into the launched browser, and complete the authentication process: ${code}`);
+    }}).then((result) => {
+      principalCredentials = result.credentials;
+      subscriptionId = result.subscriptionId;
 
-  LoginWithServicePrincipal () {
-return new BbPromise((resolve, reject) => {
-      msRestAzure.loginWithServicePrincipalSecret(servicePrincipalClientId, servicePrincipalPassword, servicePrincipalTenantId, (error, credentials) => {
-        if (error) {
-          reject(error);
-        } else {
-          principalCredentials = credentials;
-          resolve(credentials);
-        }
-      });
+      return principalCredentials;
     });
   }
 
