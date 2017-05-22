@@ -14,6 +14,8 @@ const jsonpath = require('jsonpath');
 const parseBindings = require('../shared/parseBindings');
 const { login } = require('az-login');
 
+let pkg = require('../package.json');
+
 let resourceGroupName;
 let deploymentName;
 let functionAppName;
@@ -50,7 +52,7 @@ const constants = {
 
 class AzureProvider {
   static getProviderName () {
-  return constants.providerName;
+    return constants.providerName;
   }
 
   constructor (serverless) {
@@ -101,6 +103,7 @@ class AzureProvider {
 
     this.serverless.cli.log(`Creating resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
     return new BbPromise((resolve, reject) => {
       resourceClient.resourceGroups.createOrUpdate(resourceGroupName,
@@ -118,6 +121,7 @@ class AzureProvider {
     this.serverless.cli.log(`Creating function app: ${functionAppName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
     let parameters = { 'functionAppName': { 'value': functionAppName } };
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
     const gitUrl = this.serverless.service.provider.gitUrl;
 
@@ -191,6 +195,7 @@ class AzureProvider {
   DeleteDeployment () {
     this.serverless.cli.log(`Deleting deployment: ${deploymentName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
     return new BbPromise((resolve, reject) => {
       resourceClient.deployments.deleteMethod(resourceGroupName,
@@ -207,6 +212,7 @@ class AzureProvider {
   DeleteResourceGroup () {
     this.serverless.cli.log(`Deleting resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
     return new BbPromise((resolve, reject) => {
       resourceClient.resourceGroups.deleteMethod(resourceGroupName, (error, result, deleteRequest, response) => {
