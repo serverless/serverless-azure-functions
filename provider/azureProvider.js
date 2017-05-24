@@ -14,6 +14,8 @@ const jsonpath = require('jsonpath');
 const parseBindings = require('../shared/parseBindings');
 const { login } = require('az-login');
 
+let pkg = require('../package.json');
+
 let resourceGroupName;
 let deploymentName;
 let functionAppName;
@@ -50,7 +52,7 @@ const constants = {
 
 class AzureProvider {
   static getProviderName () {
-return constants.providerName;
+    return constants.providerName;
   }
 
   constructor (serverless) {
@@ -65,12 +67,12 @@ return constants.providerName;
     this.options = options;
 
     return new BbPromise((resolve, reject) => {
-        functionAppName = this.serverless.service.service;
-        resourceGroupName = `${functionAppName}-rg`;
-        deploymentName = `${resourceGroupName}-deployment`;
-        functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
+      functionAppName = this.serverless.service.service;
+      resourceGroupName = `${functionAppName}-rg`;
+      deploymentName = `${resourceGroupName}-deployment`;
+      functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
 
-        resolve();
+      resolve();
     });
   }
 
@@ -79,12 +81,12 @@ return constants.providerName;
       this.parsedBindings = parseBindings.getBindingsMetaData(this.serverless);
     }
 
-return this.parsedBindings;
+    return this.parsedBindings;
   }
 
   Login() {
     return login({ interactiveLoginHandler: (code) => {
-        this.serverless.cli.log(`Paste this code (copied to your clipboard) into the launched browser, and complete the authentication process: ${code}`);
+      this.serverless.cli.log(`Paste this code (copied to your clipboard) into the launched browser, and complete the authentication process: ${code}`);
     }}).then((result) => {
       principalCredentials = result.credentials;
       subscriptionId = result.subscriptionId;
@@ -101,8 +103,9 @@ return this.parsedBindings;
 
     this.serverless.cli.log(`Creating resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.resourceGroups.createOrUpdate(resourceGroupName,
         groupParameters, (error, result, createOrUpdateRequest, response) => {
           if (error) {
@@ -118,6 +121,7 @@ return new BbPromise((resolve, reject) => {
     this.serverless.cli.log(`Creating function app: ${functionAppName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
     let parameters = { 'functionAppName': { 'value': functionAppName } };
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
     const gitUrl = this.serverless.service.provider.gitUrl;
 
@@ -172,7 +176,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.deployments.createOrUpdate(resourceGroupName,
         deploymentName,
         deploymentParameters, (error, result, createOrUpdateRequest, response) => {
@@ -191,8 +195,9 @@ return new BbPromise((resolve, reject) => {
   DeleteDeployment () {
     this.serverless.cli.log(`Deleting deployment: ${deploymentName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.deployments.deleteMethod(resourceGroupName,
         deploymentName, (error, result, deleteRequest, response) => {
           if (error) {
@@ -207,8 +212,9 @@ return new BbPromise((resolve, reject) => {
   DeleteResourceGroup () {
     this.serverless.cli.log(`Deleting resource group: ${resourceGroupName}`);
     const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
+    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       resourceClient.resourceGroups.deleteMethod(resourceGroupName, (error, result, deleteRequest, response) => {
         if (error) {
           reject(error);
@@ -230,7 +236,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       https.get(options, (res) => {
         let body = '';
 
@@ -262,7 +268,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       this.serverless.cli.log('Pinging host status...');
       request(options, (err, res, body) => {
         if (err) {
@@ -277,7 +283,7 @@ return new BbPromise((resolve, reject) => {
   isExistingFunctionApp () {
     const host = functionAppName + constants.scmDomain;
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       dns.resolve4(host, (err, addresses) => {
         if (err) {
           if (err.message.includes('ENOTFOUND')) {
@@ -305,7 +311,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       if (existingFunctionApp) {
         this.serverless.cli.log('Looking for deployed functions that are not part of the current deployment...');
         request(options, (err, res, body) => {
@@ -374,7 +380,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       https.get(options, (res) => {
         let body = '';
 
@@ -406,7 +412,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       https.get(options, (res) => {
         let body = '';
 
@@ -509,7 +515,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) {
           reject(err);
@@ -540,7 +546,7 @@ return new BbPromise((resolve, reject) => {
         'Accept': 'application/json,*/*'
       }
     };
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) {
           reject(err);
@@ -561,7 +567,7 @@ return new BbPromise((resolve, reject) => {
       }
     });
 
-return BbPromise.all(deleteFunctionPromises);
+    return BbPromise.all(deleteFunctionPromises);
   }
 
   deleteFunction(functionName) {
@@ -577,7 +583,7 @@ return BbPromise.all(deleteFunctionPromises);
       }
     };
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) {
           reject(err);
@@ -603,7 +609,7 @@ return new BbPromise((resolve, reject) => {
       }
     };
     
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       if (fs.existsSync(packageJsonFilePath)) {
         fs.createReadStream(packageJsonFilePath)
         .pipe(request.put(options, (err, res, body) => {
@@ -622,7 +628,7 @@ return new BbPromise((resolve, reject) => {
 
   createZipObjectAndUploadFunction (functionName, entryPoint, filePath, params) {
 
-return new BbPromise((resolve, reject) => {
+    return new BbPromise((resolve, reject) => {
       this.serverless.cli.log(`Packaging function: ${functionName}`);
       const folderForJSFunction = path.join(functionsFolder, functionName);
       const handlerPath = path.join(this.serverless.config.servicePath, filePath);
@@ -667,4 +673,5 @@ return new BbPromise((resolve, reject) => {
     });
   }
 }
+
 module.exports = AzureProvider;
