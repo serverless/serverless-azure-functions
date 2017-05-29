@@ -526,7 +526,7 @@ class AzureProvider {
     });
 
   }
-
+  
   runKuduCommand (command) {
     this.serverless.cli.log(`Running Kudu command ${command}...`);
     let options = {};
@@ -557,7 +557,7 @@ class AzureProvider {
 
   }
 
-  cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
+ cleanUpFunctionsBeforeDeploy (serverlessFunctions) {
     const deleteFunctionPromises = [];
 
     deployedFunctionNames.forEach((functionName) => {
@@ -591,6 +591,32 @@ class AzureProvider {
           resolve(res);
         }
       });
+    });
+  }
+
+  uploadPackageJson (functionName) {
+    const requestUrl = `https://${functionAppName}${constants.scmVfsPath}package.json`;
+    const options = {
+      'host': functionAppName + constants.scmDomain,
+      'method': 'put',
+      'url': requestUrl,
+      'headers': {
+        'Authorization': constants.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+        'Accept': '*/*',
+        'Content-Type': constants.jsonContentType
+      }
+    };
+    var packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
+
+return new BbPromise((resolve, reject) => {
+      fs.createReadStream(packageJsonFilePath)
+            .pipe(request.put(options, (err, res, body) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve('Package json file uploaded');
+              }
+            }));
     });
   }
 
