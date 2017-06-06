@@ -1,27 +1,27 @@
 'use strict';
 
 const constants = {
-  'type': 'type',
-  'direction': 'direction',
-  'trigger': 'Trigger',
-  'inDirection': 'in',
-  'outDirection': 'out',
-  'settings': 'settings',
-  'name': 'name',
-  'value': 'value',
-  'resource': 'resource',
-  'required': 'required',
-  'storage': 'storage',
-  'connection': 'connection',
-  'enum': 'enum',
-  'defaultValue': 'defaultValue',
-  'webHookType': 'webHookType',
-  'httpTrigger': 'httpTrigger',
-  'queue': 'queue',
-  'queueName': 'queueName',
-  'displayName': 'displayName',
-  'xAzureSettings': 'x-azure-settings',
-  'entryPoint': 'entryPoint'
+  type: 'type',
+  direction: 'direction',
+  trigger: 'Trigger',
+  inDirection: 'in',
+  outDirection: 'out',
+  settings: 'settings',
+  name: 'name',
+  value: 'value',
+  resource: 'resource',
+  required: 'required',
+  storage: 'storage',
+  connection: 'connection',
+  enum: 'enum',
+  defaultValue: 'defaultValue',
+  webHookType: 'webHookType',
+  httpTrigger: 'httpTrigger',
+  queue: 'queue',
+  queueName: 'queueName',
+  displayName: 'displayName',
+  xAzureSettings: 'x-azure-settings',
+  entryPoint: 'entryPoint'
 };
 
 module.exports = {
@@ -31,7 +31,7 @@ module.exports = {
     let bindingSettings = [];
     let bindingUserSettings = {};
     let bindingType;
-    const functionsJson = {'disabled': false, 'bindings': []};
+    const functionsJson = { disabled: false, bindings: [] };
     const functionObject = serverless.service.getFunction(functionName);
     const handler = functionObject.handler;
     const events = functionObject.events;
@@ -96,12 +96,12 @@ module.exports = {
 
     const entryPointAndHandlerPath = this.getEntryPointAndHandlerPath(handler);
     const metaData = {
-      'entryPoint': entryPointAndHandlerPath[constants.entryPoint],
-      'handlerPath': entryPointAndHandlerPath.handlerPath,
-      'params': params
+      entryPoint: entryPointAndHandlerPath[constants.entryPoint],
+      handlerPath: entryPointAndHandlerPath.handlerPath,
+      params: params
     };
 
-return metaData;
+    return metaData;
   },
 
   'getBindingUserSettingsMetaData': function (azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames) {
@@ -120,11 +120,11 @@ return metaData;
       }
     }
     const bindingUserSettingsMetaData = {
-      'index': bindingDisplayNamesIndex,
-      'userSettings': bindingUserSettings
+      index: bindingDisplayNamesIndex,
+      userSettings: bindingUserSettings
     };
 
-return bindingUserSettingsMetaData;
+    return bindingUserSettingsMetaData;
   },
 
   'getEntryPointAndHandlerPath': function (handler) {
@@ -137,11 +137,11 @@ return bindingUserSettingsMetaData;
       handlerPath = `${handler.substring(0, handler.lastIndexOf('.'))}.js`;
     }
     const metaData = {
-      'entryPoint': entryPoint,
-      'handlerPath': handlerPath
+      entryPoint: entryPoint,
+      handlerPath: handlerPath
     };
 
-return metaData;
+    return metaData;
   },
 
   'getHttpOutBinding': function (bindingUserSettings) {
@@ -154,10 +154,10 @@ return metaData;
       binding[constants.name] = 'res';
     }
 
-return binding;
+    return binding;
   },
 
-  'getBinding': function (bindingType, bindingSettings, bindingUserSettings, serverless) {
+  'getBinding': function (bindingType, bindingSettings, bindingUserSettings) {
     const binding = {};
 
     binding[constants.type] = bindingType;
@@ -199,6 +199,6 @@ return binding;
       }
     }
 
-return binding;
+    return binding;
   }
 };
