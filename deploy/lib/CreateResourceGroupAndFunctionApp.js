@@ -2,9 +2,7 @@
 
 module.exports = {
   CreateResourceGroupAndFunctionApp () {
-
-return this.provider.CreateResourceGroup()
+    return this.provider.CreateResourceGroup()
       .then(() => this.provider.CreateFunctionApp());
   }
 };
-
