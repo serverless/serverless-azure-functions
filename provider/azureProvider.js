@@ -6,6 +6,7 @@ const resourceManagement = require('azure-arm-resource');
 const path = require('path');
 const fs = require('fs');
 const fse = require('fs-extra');
+const jszip = require('jszip');
 const zipFolder = require('zip-folder');
 const request = require('request');
 const dns = require('dns');
@@ -564,6 +565,49 @@ class AzureProvider {
       }
     });
   }
+  
+  uploadFunctions () {
+    //console.log("createFunctions:config:", this.serverless.config);
+    console.log("uploadFunctions:package:",
+      this.serverless.service.package.artifact,
+      this.serverless.service.service);
+
+    const functionAppName = this.serverless.service.service;
+    const requestUrl = `https://${functionAppName}${config.scmZipApiPath}/`;
+    const options = {
+      url: requestUrl,
+      headers: {
+        Authorization: config.bearer + principalCredentials.tokenCache._entries[0].accessToken,
+        Accept: '*/*'
+      }
+    };
+    return new BbPromise((resolve, reject) =>
+      fs.createReadStream(this.serverless.service.package.artifact)
+        .pipe(request.put(options, (uploadZipErr, uploadZipResponse) => {
+          if (uploadZipErr) {
+            reject(uploadZipErr);
+          } else {
+            resolve(uploadZipResponse);
+          }
+        }))
+    );
+  }
+
+  createUploadFunction (zip, functionName, entryPoint, filePath, params) {
+    //return new BbPromise((resolve, reject) => {
+    // console.log("createUploadFunction:", functionName, entryPoint, filePath, params);
+
+    const functionJSON = params.functionsJson;
+    zip.file(path.join(functionName, 'function.json'), JSON.stringify(functionJSON, null, 4));
+    zip.file(path.join(functionName, `index.js`), `
+        exports.${entryPoint} = require('../${filePath}').${entryPoint};
+    `);
+    // zip.file(path.join(functionName, 'index.js'), File.readFileSync()
+    // fs.writeFileSync(path.join(folderForJSFunction, 'function.json'), JSON.stringify(functionJSON, null, 4));
+    // functionJSON.entryPoint = entryPoint;
+    // const folderForJSFunction = path.join(functionsFolder, functionName);
+    //});
+  }
 
   createZipObjectAndUploadFunction (functionName, entryPoint, filePath, params) {
     return new BbPromise((resolve, reject) => {
@@ -584,30 +628,6 @@ class AzureProvider {
       functionJSON.entryPoint = entryPoint;
       fs.writeFileSync(path.join(folderForJSFunction, 'function.json'), JSON.stringify(functionJSON, null, 4));
       const functionZipFile = path.join(functionsFolder, functionName + '.zip');
-      zipFolder(folderForJSFunction, functionZipFile, function (createZipErr) {
-        if (createZipErr) {
-          reject(createZipErr);
-        } else {
-          const requestUrl = `https://${functionAppName}${config.scmZipApiPath}/${functionName}/`;
-          const options = {
-            url: requestUrl,
-            headers: {
-              Authorization: config.bearer + principalCredentials.tokenCache._entries[0].accessToken,
-              Accept: '*/*'
-            }
-          };
-
-          fs.createReadStream(functionZipFile)
-            .pipe(request.put(options, (uploadZipErr, uploadZipResponse) => {
-              if (uploadZipErr) {
-                reject(uploadZipErr);
-              } else {
-                fse.removeSync(functionZipFile);
-                resolve(uploadZipResponse);
-              }
-            }));
-        }
-      });
     });
   }
 }
