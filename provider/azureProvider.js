@@ -62,8 +62,10 @@ class AzureProvider {
   }
 
   Login() {
-    return login({ interactiveLoginHandler: (code) => {
-      this.serverless.cli.log(`Paste this code (copied to your clipboard) into the launched browser, and complete the authentication process: ${code}`);
+    return login({ interactiveLoginHandler: (code, message) => {
+      // Override the interactive login handler, in order to be
+      // able to append the Serverless prefix to the displayed message.
+      this.serverless.cli.log(message);
     }}).then((result) => {
       principalCredentials = result.credentials;
       subscriptionId = result.subscriptionId;
