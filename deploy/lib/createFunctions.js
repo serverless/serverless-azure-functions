@@ -12,7 +12,8 @@ module.exports = {
     this.serverless.service.getAllFunctions().forEach((functionName) => {
       const metaData = utils.getFunctionMetaData(functionName, this.provider.getParsedBindings(), this.serverless);
 
-      createFunctionPromises.push(this.provider.createZipObjectAndUploadFunction(functionName, metaData.entryPoint, metaData.handlerPath, metaData.params));
+      createFunctionPromises.push(this.provider.uploadFunction(functionName)
+        .then(() => this.provider.runKuduCommand('mv '+ path.join(functionName, functionName +'-function.json') +' '+ path.join(functionName, 'function.json'))));
     });
 
     const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
