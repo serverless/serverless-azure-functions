@@ -3,6 +3,7 @@
 const BbPromise = require('bluebird');
 const createFunction = require('./lib/createFunction');
 const loginToAzure = require('../shared/loginToAzure');
+const createEventsBinding = require('./lib/createEventsBinding');
 
 class AzureDeployFunction {
   constructor (serverless, options) {
@@ -13,10 +14,18 @@ class AzureDeployFunction {
     Object.assign(
       this,
       loginToAzure,
+      createEventsBinding,
       createFunction
     );
 
     this.hooks = {
+      'before:deploy:function:packageFunction': () => BbPromise.bind(this)
+        .then(this.provider.initialize(this.serverless,this.options))
+        .then(this.createEventsBinding),
+
+      'deploy:function:packageFunction': () => this.serverless.pluginManager
+          .spawn('package:function'),
+
       'deploy:function:deploy': () => BbPromise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure)

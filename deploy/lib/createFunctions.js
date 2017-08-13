@@ -1,7 +1,6 @@
 'use strict';
 
 const BbPromise = require('bluebird');
-const utils = require('../../shared/utils');
 const fs = require('fs');
 const path = require('path');
 
@@ -10,7 +9,6 @@ module.exports = {
     const createFunctionPromises = [];
 
     this.serverless.service.getAllFunctions().forEach((functionName) => {
-      const metaData = utils.getFunctionMetaData(functionName, this.provider.getParsedBindings(), this.serverless);
 
       createFunctionPromises.push(this.provider.uploadFunction(functionName)
         .then(() => this.provider.runKuduCommand('mv '+ path.join(functionName, functionName +'-function.json') +' '+ path.join(functionName, 'function.json'))));

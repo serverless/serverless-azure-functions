@@ -13,7 +13,7 @@ module.exports = {
       createEventsPromises.push(this.provider.createEventsBindings(functionName, metaData.entryPoint, metaData.handlerPath, metaData.params));
     });
 
-      return BbPromise.all(createEventsPromises);
+    return BbPromise.all(createEventsPromises);
   }
 };
 

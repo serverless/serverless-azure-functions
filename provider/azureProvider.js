@@ -5,7 +5,6 @@ const _ = require('lodash');
 const resourceManagement = require('azure-arm-resource');
 const path = require('path');
 const fs = require('fs');
-const fse = require('fs-extra');
 const request = require('request');
 const dns = require('dns');
 const jsonpath = require('jsonpath');
@@ -22,7 +21,6 @@ let subscriptionId;
 let functionsAdminKey;
 let invocationId;
 let principalCredentials;
-let functionsFolder;
 let existingFunctionApp = false;
 const deployedFunctionNames = [];
 
@@ -46,7 +44,6 @@ class AzureProvider {
       functionAppName = this.serverless.service.service;
       resourceGroupName = `${functionAppName}-rg`;
       deploymentName = `${resourceGroupName}-deployment`;
-      functionsFolder = path.join(this.serverless.config.servicePath, 'functions');
 
       resolve();
     });
@@ -537,6 +534,7 @@ class AzureProvider {
   uploadPackageJson () {
     const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
     this.serverless.cli.log('Uploading pacakge.json...');
+
     const requestUrl = `https://${functionAppName}${config.scmVfsPath}package.json`;
     const options = {
       host: functionAppName + config.scmDomain,
@@ -572,7 +570,7 @@ class AzureProvider {
       functionJSON.entryPoint = entryPoint;
       functionJSON.scriptFile = filePath;
       fs.writeFileSync(path.join(this.serverless.config.servicePath, functionName+'-function.json'), JSON.stringify(functionJSON, null, 4));
-      resolve()
+      resolve();
     });
   }
 
@@ -582,10 +580,12 @@ class AzureProvider {
 
       var functionZipFile = ''; 
 
-      if (this.serverless.service.package.individually) {
-        functionZipFile = this.serverless.service.functions[functionName].package.artifact 
-      } else {
+      if (this.serverless.service.functions[functionName].package.artifact) {
+        functionZipFile = this.serverless.service.functions[functionName].package.artifact; 
+      } else if (this.serverless.service.artifact) {
         functionZipFile = this.serverless.service.artifact; 
+      } else {
+        reject('Could not find zip package');
       }
 
       const requestUrl = `https://${functionAppName}${config.scmZipApiPath}/${functionName}/`;
@@ -605,7 +605,7 @@ class AzureProvider {
             // fse.removeSync(functionZipFile);
             resolve(uploadZipResponse);
           }
-      }));
+        }));
     });
   }
 }
