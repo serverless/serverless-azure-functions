@@ -3,7 +3,7 @@
 const utils = require('../../shared/utils');
 
 module.exports = {
-  createEventsBinding() {
+  compileEventsForFunction() {
     const functionName = this.options.function;
     const metaData = utils.getFunctionMetaData(functionName, this.provider.getParsedBindings(), this.serverless);
 

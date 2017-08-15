@@ -4,7 +4,7 @@ const BbPromise = require('bluebird');
 const path = require('path');
 
 module.exports = {
-  createFunctions () {
+  uploadFunctions () {
     const createFunctionPromises = [];
 
     this.serverless.service.getAllFunctions().forEach((functionName) => {

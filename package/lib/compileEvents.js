@@ -4,7 +4,7 @@ const BbPromise = require('bluebird');
 const utils = require('../../shared/utils');
 
 module.exports = {
-  createEventsBindings() {
+  compileEvents() {
     const createEventsPromises = [];
 
     this.serverless.service.getAllFunctions().forEach((functionName) => {

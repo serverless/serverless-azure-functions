@@ -2,7 +2,7 @@
 const path = require('path');
 
 module.exports = {
-  createFunction () {
+  uploadFunction () {
     const functionName = this.options.function;
 
     return this.provider.uploadFunction(functionName)
