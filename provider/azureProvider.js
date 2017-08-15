@@ -602,7 +602,6 @@ class AzureProvider {
           if (uploadZipErr) {
             reject(uploadZipErr);
           } else {
-            // fse.removeSync(functionZipFile);
             resolve(uploadZipResponse);
           }
         }));
