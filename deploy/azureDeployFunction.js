@@ -1,7 +1,7 @@
 'use strict';
 
 const BbPromise = require('bluebird');
-const createFunction = require('./lib/createFunction');
+const uploadFunction = require('./lib/uploadFunction');
 const loginToAzure = require('../shared/loginToAzure');
 
 class AzureDeployFunction {
@@ -13,14 +13,17 @@ class AzureDeployFunction {
     Object.assign(
       this,
       loginToAzure,
-      createFunction
+      uploadFunction
     );
 
     this.hooks = {
+      'deploy:function:packageFunction': () => this.serverless.pluginManager
+          .spawn('package:function'),
+
       'deploy:function:deploy': () => BbPromise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure)
-        .then(this.createFunction)
+        .then(this.uploadFunction)
         .then(() => this.serverless.cli.log('Successfully uploaded Function'))
     };
   }

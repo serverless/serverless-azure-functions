@@ -26,11 +26,9 @@
     "az-login": "^0.3.0",
     "azure-arm-resource": "^2.0.0-preview",
     "bluebird": "^3.4.6",
-    "fs-extra": "^2.0.0",
     "jsonpath": "^0.2.11",
     "lodash": "^4.16.6",
-    "request": "2.81.0",
-    "zip-folder": "1.0.0"
+    "request": "2.81.0"
   },
   "devDependencies": {
     "eslint": "3.19.0"
