@@ -533,7 +533,7 @@ class AzureProvider {
 
   uploadPackageJson () {
     const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
-    this.serverless.cli.log('Uploading pacakge.json...');
+    this.serverless.cli.log('Uploading package.json...');
 
     const requestUrl = `https://${functionAppName}${config.scmVfsPath}package.json`;
     const options = {
