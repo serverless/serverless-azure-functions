@@ -385,6 +385,9 @@ class AzureProvider {
 
       return new BbPromise((resolve, reject) => {
         const options = {
+          headers: {
+            'x-functions-key': functionsAdminKey
+          },
           url: `http://${functionAppName}${config.functionAppDomain}${config.functionAppApiPath + functionName}?${queryString}`,
           method: 'GET',
           json: true,
