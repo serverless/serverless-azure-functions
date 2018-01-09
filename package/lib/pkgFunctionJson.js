@@ -5,38 +5,39 @@ const BbPromise = require('bluebird');
 
 module.exports = {
   pkgFunctionJson () {
+    const webpackJsonPromises = [];
 
-    return new BbPromise((resolve) => {
-      this.serverless.cli.log('We\'re hooked in!');
-      resolve();
-    })
-    .then(() => {
-      console.log('.webpack files:');
-      const stats = this.compileStats;
-      console.log('stats is', this.serverless.config.servicePath);
-      if (fs.existsSync('.webpack')) {
-        const files = fs.readdirSync('.webpack');
-        files.forEach((file) => {
-          console.log('webpack file: ', file);
-          const dirPath = path.resolve('.webpack', file);
-          const jsonFileName = `${file}-function.json`;
-          const jsonFileSrcPath = path.join(this.serverless.config.servicePath, jsonFileName);
-          const jsonFileDestPath = path.join(dirPath, jsonFileName);
-          if (fs.statSync(dirPath).isDirectory()) {
-            console.log('moving from:', jsonFileSrcPath, 'to:', jsonFileDestPath);
-            fs.renameSync(jsonFileSrcPath, jsonFileDestPath);
-          }
-        });
-      }
-    })
-    .then(() => {
-      console.log('.serverless files:');
-      if (fs.existsSync('.serverless')) {
-        const files = fs.readdirSync('.serverless');
-        files.forEach((file) => {
-          console.log('serverless file: ', file);
-        });
-      }
-    });
+    if (fs.existsSync('.webpack')) {
+      console.log('servicePath is:', this.serverless.config.servicePath);
+
+      this.serverless.service.getAllFunctions().forEach((functionName) => {
+        webpackJsonPromises.push(moveJsonFile.call(this, functionName));
+      });
+    }
+
+    return BbPromise.all(webpackJsonPromises);
   }
 };
+
+function moveJsonFile(functionName) {
+  const dirPath = path.join(this.serverless.config.servicePath, '.webpack', functionName);
+  const jsonFileName = `${functionName}-function.json`;
+  const jsonFileSrcPath = path.join(this.serverless.config.servicePath, jsonFileName);
+  const jsonFileDestPath = path.join(dirPath, jsonFileName);
+
+  const fileMovedPromise = new BbPromise((resolve) => {
+    if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
+      if (fs.existsSync(jsonFileSrcPath)) {
+        this.serverless.cli.log(`Moving ${jsonFileName} to .webpack directory.`);
+        fs.renameSync(jsonFileSrcPath, jsonFileDestPath);
+      }
+      else {
+        this.serverless.cli.log(`Warning: No generated ${functionName}-function.json file was found. It will not be included in the package.`);
+      }
+    }
+
+    resolve();
+  });
+
+  return fileMovedPromise;
+}
