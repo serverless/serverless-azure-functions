@@ -4,7 +4,7 @@ const path = require('path');
 const BbPromise = require('bluebird');
 
 module.exports = {
-  pkgFunctionJson () {
+  webpackFunctionJson () {
     const webpackJsonPromises = [];
 
     if (fs.existsSync('.webpack')) {
