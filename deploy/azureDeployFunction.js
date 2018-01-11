@@ -17,6 +17,10 @@ class AzureDeployFunction {
     );
 
     this.hooks = {
+      // Spawn 'package:function' to create the single-function zip artifact
+      'deploy:function:packageFunction': () => this.serverless.pluginManager
+          .spawn('package:function'),
+
       'deploy:function:deploy': () => BbPromise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure)
