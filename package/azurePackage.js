@@ -23,7 +23,6 @@ class AzurePackage {
         .then(this.compileEvents),
 
       'before:webpack:package:packageModules': () => BbPromise.bind(this)
-        .then(() => console.log('>>> before:webpack:package:packageModules <<<'))
         .then(this.provider.initialize(this.serverless, this.options))
         .then(this.webpackFunctionJson.bind(this))
     };

@@ -8,8 +8,6 @@ module.exports = {
     const webpackJsonPromises = [];
 
     if (fs.existsSync('.webpack')) {
-      console.log('servicePath is:', this.serverless.config.servicePath);
-
       this.serverless.service.getAllFunctions().forEach((functionName) => {
         webpackJsonPromises.push(moveJsonFile.call(this, functionName));
       });
