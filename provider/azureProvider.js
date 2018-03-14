@@ -68,9 +68,9 @@ class AzureProvider {
 
       return principalCredentials;
     }).catch((error) => {
-        error.message = error.message || (error.body ? error.body.message : "Failed logging in to Azure");
-        throw error
-    });;
+      error.message = error.message || (error.body ? error.body.message : 'Failed logging in to Azure');
+      throw error;
+    });
   }
 
   CreateResourceGroup () {
@@ -584,12 +584,12 @@ class AzureProvider {
     return new BbPromise((resolve, reject) => {
       this.serverless.cli.log(`Uploading function: ${functionName}`);
 
-      var functionZipFile = ''; 
+      var functionZipFile = '';
 
       if (this.serverless.service.functions[functionName].package.artifact) {
-        functionZipFile = this.serverless.service.functions[functionName].package.artifact; 
+        functionZipFile = this.serverless.service.functions[functionName].package.artifact;
       } else if (this.serverless.service.artifact) {
-        functionZipFile = this.serverless.service.artifact; 
+        functionZipFile = this.serverless.service.artifact;
       } else {
         reject('Could not find zip package');
       }
