@@ -67,7 +67,10 @@ class AzureProvider {
       subscriptionId = result.subscriptionId;
 
       return principalCredentials;
-    });
+    }).catch((error) => {
+        error.message = error.message || (error.body ? error.body.message : "Failed logging in to Azure");
+        throw error
+    });;
   }
 
   CreateResourceGroup () {
