@@ -17,6 +17,7 @@ class AzureDeployFunction {
     );
 
     this.hooks = {
+      // Spawn 'package:function' to create the single-function zip artifact
       'deploy:function:packageFunction': () => this.serverless.pluginManager
           .spawn('package:function'),
 

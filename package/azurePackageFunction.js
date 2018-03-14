@@ -15,7 +15,7 @@ class AzurePackageFunction {
     );
 
     this.hooks = {
-      'before:package:function:package': () => BbPromise.bind(this)
+      'before:deploy:function:packageFunction': () => BbPromise.bind(this)
         .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
         .then(this.provider.initialize(this.serverless, this.options))
         .then(this.compileEventsForFunction),

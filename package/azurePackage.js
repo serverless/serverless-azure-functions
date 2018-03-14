@@ -2,6 +2,7 @@
 
 const BbPromise = require('bluebird');
 const compileEvents = require('./lib/compileEvents');
+const webpackFunctionJson = require('./lib/webpackFunctionJson');
 
 class AzurePackage {
   constructor (serverless, options) {
@@ -11,7 +12,8 @@ class AzurePackage {
 
     Object.assign(
       this,
-      compileEvents
+      compileEvents,
+      webpackFunctionJson
     );
 
     this.hooks = {
@@ -19,6 +21,10 @@ class AzurePackage {
         .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
         .then(this.provider.initialize(this.serverless, this.options))
         .then(this.compileEvents),
+
+      'before:webpack:package:packageModules': () => BbPromise.bind(this)
+        .then(this.provider.initialize(this.serverless, this.options))
+        .then(this.webpackFunctionJson.bind(this))
     };
   }
 }
