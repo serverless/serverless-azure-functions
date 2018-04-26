@@ -95,6 +95,9 @@ module.exports = {
     params.functionsJson = functionsJson;
 
     const entryPointAndHandlerPath = this.getEntryPointAndHandlerPath(handler);
+    if( functionObject.scriptFile ){
+      entryPointAndHandlerPath.handlerPath = functionObject.scriptFile;
+    }
     const metaData = {
       entryPoint: entryPointAndHandlerPath[constants.entryPoint],
       handlerPath: entryPointAndHandlerPath.handlerPath,
