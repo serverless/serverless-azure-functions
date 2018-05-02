@@ -42,8 +42,8 @@ class AzureProvider {
 
     return new BbPromise((resolve) => {
       functionAppName = this.serverless.service.service;
-      resourceGroupName = `${functionAppName}-rg`;
-      deploymentName = `${resourceGroupName}-deployment`;
+      resourceGroupName = this.serverless.service.provider.resourceGroup || `${functionAppName}-rg`;
+      deploymentName = this.serverless.service.provider.deploymentName || `${resourceGroupName}-deployment`;
 
       resolve();
     });
