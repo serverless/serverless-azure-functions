@@ -2,7 +2,7 @@ module.exports = {
   bearer: 'Bearer ',
   functionAppApiPath: '/api/',
   functionAppDomain: '.azurewebsites.net',
-  functionsAdminApiPath: '.azurewebsites.net/admin/functions/',
+  functionsAdminApiPath: '/admin/functions/',
   functionsApiPath: '/api/functions',
   jsonContentType: 'application/json',
   logInvocationsApiPath: '/azurejobs/api/functions/definitions/',
@@ -12,6 +12,6 @@ module.exports = {
   providerName: 'azure',
   scmCommandApiPath: '/api/command',
   scmDomain: '.scm.azurewebsites.net',
-  scmVfsPath: '.scm.azurewebsites.net/api/vfs/site/wwwroot/',
-  scmZipApiPath: '.scm.azurewebsites.net/api/zip/site/wwwroot/'
+  scmVfsPath: '/api/vfs/site/wwwroot/',
+  scmZipApiPath: '/api/zip/site/wwwroot/'
 };

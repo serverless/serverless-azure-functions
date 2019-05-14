@@ -14,7 +14,8 @@ const AzureLogs = require('./logs/azureLogs');
 const AzureRemove = require('./remove/azureRemove');
 const AzurePackage = require('./package/azurePackage');
 const AzurePackageFunction = require('./package/azurePackageFunction');
-
+const AzureApim = require('./apim/azureApim');
+const AzureApimFunction = require('./apim/azureApimFunction');
 
 class AzureIndex {
   constructor(serverless, options) {
@@ -23,13 +24,15 @@ class AzureIndex {
 
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless));
 
-    this.serverless.pluginManager.addPlugin(AzurePackage);
-    this.serverless.pluginManager.addPlugin(AzurePackageFunction); 
-    this.serverless.pluginManager.addPlugin(AzureDeploy);
-    this.serverless.pluginManager.addPlugin(AzureDeployFunction);
-    this.serverless.pluginManager.addPlugin(AzureInvoke);
-    this.serverless.pluginManager.addPlugin(AzureLogs);
-    this.serverless.pluginManager.addPlugin(AzureRemove);
+    //this.serverless.pluginManager.addPlugin(AzurePackage);
+    //this.serverless.pluginManager.addPlugin(AzurePackageFunction);
+    //this.serverless.pluginManager.addPlugin(AzureDeploy);
+    //this.serverless.pluginManager.addPlugin(AzureDeployFunction);
+    this.serverless.pluginManager.addPlugin(AzureApim);
+    this.serverless.pluginManager.addPlugin(AzureApimFunction);
+    //this.serverless.pluginManager.addPlugin(AzureInvoke);
+    //this.serverless.pluginManager.addPlugin(AzureLogs);
+    //this.serverless.pluginManager.addPlugin(AzureRemove);
   }
 }
 
