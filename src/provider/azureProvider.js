@@ -1,5 +1,3 @@
-'use strict';
-
 const BbPromise = require('bluebird');
 const _ = require('lodash');
 const resourceManagement = require('azure-arm-resource');
@@ -9,10 +7,10 @@ const request = require('request');
 const dns = require('dns');
 const jsonpath = require('jsonpath');
 const parseBindings = require('../shared/parseBindings');
-const { login } = require('az-login');
 const config = require('../config');
+import { interactiveLoginWithAuthResponse } from '@azure/ms-rest-nodeauth';
 
-const pkg = require('../package.json');
+const pkg = require('../../package.json');
 
 let resourceGroupName;
 let deploymentName;
@@ -24,7 +22,7 @@ let principalCredentials;
 let existingFunctionApp = false;
 const deployedFunctionNames = [];
 
-class AzureProvider {
+export default class AzureProvider {
   static getProviderName() {
     return config.providerName;
   }
@@ -63,22 +61,19 @@ class AzureProvider {
     return this.parsedBindings;
   }
 
-  Login() {
-    return login({
-      interactiveLoginHandler: (code, message) => {
-        // Override the interactive login handler, in order to be
-        // able to append the Serverless prefix to the displayed message.
-        this.serverless.cli.log(message);
-      }
-    }).then((result) => {
-      principalCredentials = result.credentials;
-      subscriptionId = result.subscriptionId;
+  async Login() {
+    try {
+      const authResult = await interactiveLoginWithAuthResponse();
 
-      return principalCredentials;
-    }).catch((error) => {
+      return {
+        principalCredentials: authResult.credentials,
+        subscriptionId: authResult.subscriptionId
+      };
+    }
+    catch (error) {
       error.message = error.message || (error.body ? error.body.message : 'Failed logging in to Azure');
       throw error;
-    });
+    }
   }
 
   CreateResourceGroup() {
@@ -636,5 +631,3 @@ class AzureProvider {
     });
   }
 }
-
-module.exports = AzureProvider;

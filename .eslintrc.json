@@ -18,5 +18,16 @@
       "always"
     ],
     "no-console": 0
+  },
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "arrowFunctions": true,
+      "classes": true,
+      "impliedStrict": true,
+      "modules": true,
+      "spread": true
+    }
   }
 }

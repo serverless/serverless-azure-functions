@@ -3,10 +3,11 @@
   "version": "0.7.0",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
-  "main": "index.js",
+  "main": "./lib/index.js",
   "author": "Azure Functions",
   "scripts": {
-    "test": "eslint **/*.js"
+    "test": "eslint src/**/*.js",
+    "build": "cp src/shared/bindings.json lib/shared && babel src --out-dir lib --presets=@babel/env"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -23,14 +24,21 @@
     "serverless.com"
   ],
   "dependencies": {
+    "@azure/arm-apimanagement": "^5.1.0",
+    "@azure/ms-rest-nodeauth": "^1.0.1",
+    "@babel/polyfill": "^7.4.4",
     "az-login": "^0.3.0",
     "azure-arm-resource": "^2.0.0-preview",
     "bluebird": "^3.4.6",
     "jsonpath": "^0.2.11",
     "lodash": "^4.16.6",
+    "open": "^6.3.0",
     "request": "2.81.0"
   },
   "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
     "eslint": "3.19.0"
   },
   "optionalDependencies": {

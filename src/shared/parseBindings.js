@@ -1,8 +1,6 @@
 'use strict';
 
-const path = require('path');
-
-const bindingsJson = require(path.join(__dirname, 'bindings.json'));
+const bindingsJson = require('./bindings.json');
 
 const constants = {
   bindings: 'bindings',
@@ -13,7 +11,8 @@ const constants = {
 };
 
 module.exports = {
-  getBindingsMetaData (serverless) {
+  getBindingsMetaData(serverless) {
+
     const bindingDisplayNames = [];
     const bindingTypes = [];
     const bindingSettings = [];

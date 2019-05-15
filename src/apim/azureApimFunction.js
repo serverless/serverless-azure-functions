@@ -21,7 +21,7 @@ class AzureApimFunction {
     );
 
     this.hooks = {
-      'deploy:functions': () => BbPromise.bind(this)
+      'after:deploy:functions': () => BbPromise.bind(this)
         .then(this.provider.initialize(this.serverless, this.options))
         .then(this.loginToAzure)
         .then(this.deployApi)
