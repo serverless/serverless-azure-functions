@@ -14,7 +14,8 @@ import '@babel/polyfill';
 // import AzurePackageFunction from './package/azurePackageFunction';
 import AzureProvider from './provider/azureProvider';
 import { AzureLoginPlugin } from './login/loginPlugin';
-import { AzureApimPlugin } from './apim/apimPlugin';
+import { AzureApimServicePlugin } from './apim/apimServicePlugin';
+import { AzureApimFunctionPlugin } from './apim/apimFunctionPlugin';
 //import AzureApimFunction from './apim/azureApimFunction';
 
 export class AzureIndex {
@@ -29,7 +30,8 @@ export class AzureIndex {
     //this.serverless.pluginManager.addPlugin(AzureDeploy);
     //this.serverless.pluginManager.addPlugin(AzureDeployFunction);
     this.serverless.pluginManager.addPlugin(AzureLoginPlugin);
-    this.serverless.pluginManager.addPlugin(AzureApimPlugin);
+    this.serverless.pluginManager.addPlugin(AzureApimServicePlugin);
+    this.serverless.pluginManager.addPlugin(AzureApimFunctionPlugin);
     //this.serverless.pluginManager.addPlugin(AzureApimFunction);
     //this.serverless.pluginManager.addPlugin(AzureInvoke);
     //this.serverless.pluginManager.addPlugin(AzureLogs);

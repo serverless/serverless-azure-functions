@@ -1,7 +1,6 @@
-import { deployApi } from './lib/deployApi';
-import { deployFunctions } from './lib/deployFunctions';
+import { ApimService } from './apimService';
 
-export class AzureApimPlugin {
+export class AzureApimServicePlugin {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -9,15 +8,16 @@ export class AzureApimPlugin {
     this.serverless.cli.log('Initializing Azure APIM plugin');
 
     this.hooks = {
-      'after:deploy:initialize': this.deploy.bind(this)
+      'after:deploy:deploy': this.deploy.bind(this)
     };
   }
 
   async deploy() {
     this.serverless.cli.log('Starting APIM deployment');
 
-    await deployApi(this.serverless, this.options);
-    await deployFunctions(this.serverless, this.options);
+    const apimService = new ApimService(this.serverless, this.options);
+    await apimService.deployApi();
+    await apimService.deployFunctions();
 
     this.serverless.cli.log('Successfully deployed API Management API & Operations');
   }
