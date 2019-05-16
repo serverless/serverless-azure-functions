@@ -3,7 +3,6 @@
 const BbPromise = require('bluebird');
 const invokeFunction = require('./lib/invokeFunction');
 const getAdminKey = require('../shared/getAdminKey');
-const loginToAzure = require('../shared/loginToAzure');
 const path = require('path');
 
 class AzureInvoke {
@@ -14,7 +13,6 @@ class AzureInvoke {
 
     Object.assign(
       this,
-      loginToAzure,
       getAdminKey,
       invokeFunction
     );
@@ -35,7 +33,6 @@ class AzureInvoke {
       // TODO: See ./lib/invokeFunction.js:L10
       'before:invoke:invoke': () => BbPromise.bind(this)
          .then(this.provider.initialize(this.serverless,this.options))
-         .then(this.loginToAzure)
          .then(this.getAdminKey),
 
       'invoke:invoke': () => BbPromise.bind(this)

@@ -2,7 +2,6 @@
 
 const BbPromise = require('bluebird');
 const retrieveLogs = require('./lib/retrieveLogs');
-const loginToAzure = require('../shared/loginToAzure');
 
 class AzureLogs {
   constructor (serverless, options) {
@@ -12,14 +11,12 @@ class AzureLogs {
 
     Object.assign(
       this,
-      loginToAzure,
       retrieveLogs
     );
 
     this.hooks = {
       'before:logs:logs': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.loginToAzure),
+        .then(this.provider.initialize(this.serverless,this.options)),
 
       'logs:logs': () => BbPromise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
