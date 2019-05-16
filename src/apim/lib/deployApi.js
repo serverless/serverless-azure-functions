@@ -1,6 +1,5 @@
 import { ApiManagementClient } from '@azure/arm-apimanagement';
 import { ResourceManagementClient } from '@azure/arm-resources';
-import { WebSiteManagementClient } from '@azure/arm-appservice';
 import request from 'request';
 
 export const deployApi = async (serverless) => {
