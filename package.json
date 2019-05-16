@@ -7,7 +7,7 @@
   "author": "Azure Functions",
   "scripts": {
     "test": "eslint src/**/*.js",
-    "build": "cp src/shared/bindings.json lib/shared && babel src --out-dir lib --presets=@babel/env"
+    "build": "babel src --out-dir lib --presets=@babel/env && cp src/shared/bindings.json lib/shared"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -25,8 +25,11 @@
   ],
   "dependencies": {
     "@azure/arm-apimanagement": "^5.1.0",
+    "@azure/arm-appservice": "^5.7.0",
+    "@azure/arm-resources": "^1.0.1",
     "@azure/ms-rest-nodeauth": "^1.0.1",
     "@babel/polyfill": "^7.4.4",
+    "axios": "^0.18.0",
     "az-login": "^0.3.0",
     "azure-arm-resource": "^2.0.0-preview",
     "bluebird": "^3.4.6",
