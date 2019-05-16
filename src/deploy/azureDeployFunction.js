@@ -2,7 +2,6 @@
 
 const BbPromise = require('bluebird');
 const uploadFunction = require('./lib/uploadFunction');
-const loginToAzure = require('../shared/loginToAzure');
 
 class AzureDeployFunction {
   constructor (serverless, options) {
@@ -12,7 +11,6 @@ class AzureDeployFunction {
 
     Object.assign(
       this,
-      loginToAzure,
       uploadFunction
     );
 
@@ -23,7 +21,6 @@ class AzureDeployFunction {
 
       'deploy:function:deploy': () => BbPromise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.loginToAzure)
         .then(this.uploadFunction)
         .then(() => this.serverless.cli.log('Successfully uploaded Function'))
     };
