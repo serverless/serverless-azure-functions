@@ -1,10 +1,15 @@
-'use strict';
+import { Promise } from 'bluebird';
+import deleteResourceGroup from './lib/deleteResourceGroup';
+import loginToAzure from '../shared/loginToAzure';
 
-const BbPromise = require('bluebird');
-const deleteResourceGroup = require('./lib/deleteResourceGroup');
-const loginToAzure = require('../shared/loginToAzure');
+export default class AzureRemove {
+  serverless: any;
+  options: any;
+  provider: any;
+  hooks: any;
+  loginToAzure: any;
+  deleteResourceGroup: any;
 
-class AzureRemove {
   constructor (serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -17,7 +22,7 @@ class AzureRemove {
     );
 
     this.hooks = {
-      'remove:remove': () => BbPromise.bind(this)
+      'remove:remove': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure)
         .then(this.deleteResourceGroup)
@@ -25,5 +30,3 @@ class AzureRemove {
     };
   }
 }
-
-module.exports = AzureRemove;

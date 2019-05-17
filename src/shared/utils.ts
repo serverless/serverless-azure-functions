@@ -1,5 +1,3 @@
-'use strict';
-
 const constants = {
   type: 'type',
   direction: 'direction',
@@ -24,7 +22,7 @@ const constants = {
   entryPoint: 'entryPoint'
 };
 
-module.exports = {
+export const utils = {
   'getFunctionMetaData': function (functionName, parsedBindings, serverless) {
     const bindings = [];
     let bindingSettingsNames = [];
@@ -35,7 +33,7 @@ module.exports = {
     const functionObject = serverless.service.getFunction(functionName);
     const handler = functionObject.handler;
     const events = functionObject.events;
-    const params = {};
+    const params: any = {};
 
     const bindingTypes = parsedBindings.bindingTypes;
     const bindingDisplayNames = parsedBindings.bindingDisplayNames;

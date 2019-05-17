@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "declaration": true,
+      "outDir": "./lib",
+      "strict": false,
+      "resolveJsonModule": true,
+    },
+    "include": ["src", "src/**/*.json", "package.json"],
+    "exclude": ["node_modules", "src/**/*.test.ts"],
+  }

@@ -3,10 +3,11 @@
   "version": "0.7.0",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
-  "main": "index.js",
+  "main": "lib/index.js",
   "author": "Azure Functions",
   "scripts": {
-    "test": "eslint **/*.js"
+    "test": "eslint **/*.js",
+    "build": "tsc"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -23,15 +24,17 @@
     "serverless.com"
   ],
   "dependencies": {
+    "@azure/arm-resources": "^1.0.1",
     "az-login": "^0.3.0",
     "azure-arm-resource": "^2.0.0-preview",
     "bluebird": "^3.4.6",
     "jsonpath": "^0.2.11",
-    "lodash": "^4.16.6",
+    "lodash": "^4.17.11",
     "request": "2.81.0"
   },
   "devDependencies": {
-    "eslint": "3.19.0"
+    "eslint": "3.19.0",
+    "typescript": "^3.4.5"
   },
   "optionalDependencies": {
     "serverless-webpack": "^4.2.0",

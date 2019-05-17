@@ -1,12 +1,19 @@
-'use strict';
+import { Promise } from 'bluebird';
+import CreateResourceGroupAndFunctionApp from './lib/CreateResourceGroupAndFunctionApp';
+import uploadFunctions from './lib/uploadFunctions';
+import cleanUpFunctions from './lib/cleanUpFunctions';
+import loginToAzure from '../shared/loginToAzure';
 
-const BbPromise = require('bluebird');
-const CreateResourceGroupAndFunctionApp = require('./lib/CreateResourceGroupAndFunctionApp');
-const uploadFunctions = require('./lib/uploadFunctions');
-const cleanUpFunctions = require('./lib/cleanUpFunctions');
-const loginToAzure = require('../shared/loginToAzure');
+export default class AzureDeploy {
+  serverless: any;
+  options: any;
+  provider: any;
+  hooks: any;
+  loginToAzure: any;
+  cleanUpFunctions: any;
+  CreateResourceGroupAndFunctionApp: any;
+  uploadFunctions: any;
 
-class AzureDeploy {
   constructor (serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -21,12 +28,12 @@ class AzureDeploy {
     );
 
     this.hooks = {
-      'before:deploy:deploy': () => BbPromise.bind(this)
+      'before:deploy:deploy': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless, this.options))
         .then(this.loginToAzure)
         .then(this.cleanUpFunctions),
 
-      'deploy:deploy': () => BbPromise.bind(this)
+      'deploy:deploy': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.CreateResourceGroupAndFunctionApp)
         .then(this.uploadFunctions)
@@ -34,5 +41,3 @@ class AzureDeploy {
     };
   }
 }
-
-module.exports = AzureDeploy;

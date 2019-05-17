@@ -1,10 +1,19 @@
-'use strict';
+import { Promise } from 'bluebird';
+import uploadFunction from './lib/uploadFunction';
+import loginToAzure from '../shared/loginToAzure';
 
-const BbPromise = require('bluebird');
-const uploadFunction = require('./lib/uploadFunction');
-const loginToAzure = require('../shared/loginToAzure');
+export default class AzureDeployFunction {
+  serverless: any;
+  options: any;
+  provider: any;
+  hooks: any;
 
-class AzureDeployFunction {
+  loginToAzure: any;
+  cleanUpFunctions: any;
+  CreateResourceGroupAndFunctionApp: any;
+  uploadFunction: any;
+  uploadFunctions: any;
+
   constructor (serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -21,7 +30,7 @@ class AzureDeployFunction {
       'deploy:function:packageFunction': () => this.serverless.pluginManager
           .spawn('package:function'),
 
-      'deploy:function:deploy': () => BbPromise.bind(this)
+      'deploy:function:deploy': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure)
         .then(this.uploadFunction)
@@ -29,5 +38,3 @@ class AzureDeployFunction {
     };
   }
 }
-
-module.exports = AzureDeployFunction;

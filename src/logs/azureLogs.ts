@@ -1,10 +1,15 @@
-'use strict';
+import { Promise } from "bluebird";
+import retrieveLogs from './lib/retrieveLogs';
+import loginToAzure from '../shared/loginToAzure';
 
-const BbPromise = require('bluebird');
-const retrieveLogs = require('./lib/retrieveLogs');
-const loginToAzure = require('../shared/loginToAzure');
+export default class AzureLogs {
+  serverless: any;
+  options: any;
+  provider: any;
+  hooks: any;
+  loginToAzure: any;
+  retrieveLogs: any;
 
-class AzureLogs {
   constructor (serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -17,15 +22,13 @@ class AzureLogs {
     );
 
     this.hooks = {
-      'before:logs:logs': () => BbPromise.bind(this)
+      'before:logs:logs': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.loginToAzure),
 
-      'logs:logs': () => BbPromise.bind(this)
+      'logs:logs': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.retrieveLogs)
     };
   }
 }
-
-module.exports = AzureLogs;

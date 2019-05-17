@@ -1,22 +1,23 @@
-'use strict';
-
 /*
 NOTE: this plugin is used to add all the differnet provider related plugins at once.
 This way only one plugin needs to be added to the service in order to get access to the
 whole provider implementation.
 */
 
-const AzureDeploy = require('./deploy/azureDeploy');
-const AzureDeployFunction = require('./deploy/azureDeployFunction');
-const AzureProvider = require('./provider/azureProvider');
-const AzureInvoke = require('./invoke/azureInvoke');
-const AzureLogs = require('./logs/azureLogs');
-const AzureRemove = require('./remove/azureRemove');
-const AzurePackage = require('./package/azurePackage');
-const AzurePackageFunction = require('./package/azurePackageFunction');
+import AzureDeploy from "./deploy/azureDeploy";
+import AzureDeployFunction from './deploy/azureDeployFunction';
+import AzureInvoke from './invoke/azureInvoke';
+import AzureLogs from './logs/azureLogs';
+import AzurePackage from './package/azurePackage';
+import AzurePackageFunction from './package/azurePackageFunction';
+import AzureProvider from './provider/azureProvider';
+import AzureRemove from './remove/azureRemove';
 
 
-class AzureIndex {
+export default class AzureIndex {
+  serverless: any;
+  options: any;
+  
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -32,5 +33,3 @@ class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzureRemove);
   }
 }
-
-module.exports = AzureIndex;

@@ -1,16 +1,15 @@
-'use strict';
-
-const BbPromise = require('bluebird');
-const _ = require('lodash');
-const resourceManagement = require('azure-arm-resource');
-const path = require('path');
-const fs = require('fs');
-const request = require('request');
-const dns = require('dns');
-const jsonpath = require('jsonpath');
-const parseBindings = require('../shared/parseBindings');
-const { login } = require('az-login');
-const config = require('../../config');
+import { ResourceManagementClient } from '@azure/arm-resources';
+import { Deployment } from '@azure/arm-resources/lib/models';
+import { login } from 'az-login';
+import { Promise } from 'bluebird';
+import { resolve4 } from 'dns';
+import { createReadStream, existsSync, readFileSync, writeFileSync } from 'fs';
+import jsonpath from 'jsonpath';
+import _ from 'lodash';
+import { join } from 'path';
+import request from 'request';
+import { config } from '../config';
+import getBindingsMetaData from '../shared/parseBindings';
 
 const pkg = require('../package.json');
 
@@ -24,7 +23,12 @@ let principalCredentials;
 let existingFunctionApp = false;
 const deployedFunctionNames = [];
 
-class AzureProvider {
+export default class AzureProvider {
+  provider: AzureProvider;
+  serverless: any;
+  options: any;
+  parsedBindings: any;
+
   static getProviderName () {
     return config.providerName;
   }
@@ -40,7 +44,7 @@ class AzureProvider {
     this.serverless = serverless;
     this.options = options;
 
-    return new BbPromise((resolve) => {
+    return new Promise((resolve) => {
       functionAppName = this.serverless.service.service;
       resourceGroupName = this.serverless.service.provider.resourceGroup || `${functionAppName}-rg`;
       deploymentName = this.serverless.service.provider.deploymentName || `${resourceGroupName}-deployment`;
@@ -51,7 +55,7 @@ class AzureProvider {
 
   getParsedBindings () {
     if (!this.parsedBindings) {
-      this.parsedBindings = parseBindings.getBindingsMetaData(this.serverless);
+      this.parsedBindings = getBindingsMetaData(this.serverless);
     }
 
     return this.parsedBindings;
@@ -80,10 +84,9 @@ class AzureProvider {
     };
 
     this.serverless.cli.log(`Creating resource group: ${resourceGroupName}`);
-    const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
-
-    return new BbPromise((resolve, reject) => {
+    const resourceClient = new ResourceManagementClient(principalCredentials, subscriptionId);
+    
+    return new Promise((resolve, reject) => {
       resourceClient.resourceGroups.createOrUpdate(resourceGroupName,
         groupParameters, (error, result) => {
           if (error) return reject(error);
@@ -94,26 +97,27 @@ class AzureProvider {
 
   CreateFunctionApp () {
     this.serverless.cli.log(`Creating function app: ${functionAppName}`);
-    const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    let parameters = { functionAppName: { value: functionAppName } };
-    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
+    const resourceClient = new ResourceManagementClient(principalCredentials, subscriptionId);
 
     const gitUrl = this.serverless.service.provider.gitUrl;
+    let parameters: any;
 
     if (gitUrl) {
       parameters = {
         functionAppName: { value: functionAppName },
         gitUrl: { value: gitUrl }
       };
+    } else {
+      parameters = { functionAppName: { value: functionAppName } };
     }
 
-    let templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeploy.json');
+    let templateFilePath = join(__dirname, 'armTemplates', 'azuredeploy.json');
 
     if (gitUrl) {
-      templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
+      templateFilePath = join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
     }
     if (this.serverless.service.provider.armTemplate) {
-      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider.armTemplate.file);
+      templateFilePath = join(this.serverless.config.servicePath, this.serverless.service.provider.armTemplate.file);
       const userParameters = this.serverless.service.provider.armTemplate.parameters;
       const userParametersKeys = Object.keys(userParameters);
 
@@ -125,7 +129,7 @@ class AzureProvider {
       }
     }
 
-    let template = JSON.parse(fs.readFileSync(templateFilePath, 'utf8'));
+    let template = JSON.parse(readFileSync(templateFilePath, 'utf8'));
 
     // Check if there are custom environment variables defined that need to be
     // added to the ARM template used in the deployment.
@@ -145,7 +149,7 @@ class AzureProvider {
       });
     }
 
-    const deploymentParameters = {
+    const deploymentParameters: Deployment = {
       properties: {
         mode: 'Incremental',
         parameters,
@@ -153,10 +157,9 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       resourceClient.deployments.createOrUpdate(resourceGroupName,
-        deploymentName,
-        deploymentParameters, (error, result) => {
+        deploymentName, deploymentParameters, (error, result) => {
           if (error) return reject(error);
 
           this.serverless.cli.log('Waiting for Kudu endpoint...');
@@ -170,10 +173,9 @@ class AzureProvider {
 
   DeleteDeployment () {
     this.serverless.cli.log(`Deleting deployment: ${deploymentName}`);
-    const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
+    const resourceClient = new ResourceManagementClient(principalCredentials, subscriptionId);
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       resourceClient.deployments.deleteMethod(resourceGroupName,
         deploymentName, (error, result) => {
           if (error) return reject(error);
@@ -184,10 +186,9 @@ class AzureProvider {
 
   DeleteResourceGroup () {
     this.serverless.cli.log(`Deleting resource group: ${resourceGroupName}`);
-    const resourceClient = new resourceManagement.ResourceManagementClient(principalCredentials, subscriptionId);
-    resourceClient.addUserAgentInfo(`${pkg.name}/${pkg.version}`);
+    const resourceClient = new ResourceManagementClient(principalCredentials, subscriptionId);
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       resourceClient.resourceGroups.deleteMethod(resourceGroupName, (error, result) => {
         if (error) {
           reject(error);
@@ -207,7 +208,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, response, body) => {
         if (err) return reject(err);
         if (response.statusCode !== 200) return reject(body);
@@ -232,7 +233,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.serverless.cli.log('Pinging host status...');
       request(options, (err, res, body) => {
         if (err) return reject(err);
@@ -250,8 +251,8 @@ class AzureProvider {
   isExistingFunctionApp () {
     const host = functionAppName + config.scmDomain;
 
-    return new BbPromise((resolve, reject) => {
-      dns.resolve4(host, (err) => {
+    return new Promise((resolve, reject) => {
+      resolve4(host, (err) => {
         if (err) {
           if (err.message.includes('ENOTFOUND')) {
             resolve(existingFunctionApp);
@@ -279,7 +280,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if (existingFunctionApp) {
         this.serverless.cli.log('Looking for deployed functions that are not part of the current deployment...');
         request(options, (err, res, body) => {
@@ -333,7 +334,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, response, body) => {
         if (err) return reject(err);
         if (response.statusCode !== 200) return reject(body);
@@ -356,7 +357,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, response, body) => {
         if (err) return reject(err);
         if (response.statusCode !== 200) return reject(body);
@@ -376,7 +377,7 @@ class AzureProvider {
             eventData = JSON.parse(eventData);
           }
           catch (error) {
-            return BbPromise.reject('The specified input data isn\'t a valid JSON string. ' +
+            return Promise.reject('The specified input data isn\'t a valid JSON string. ' +
                                     'Please correct it and try invoking the function again.');
           }
         }
@@ -386,7 +387,7 @@ class AzureProvider {
                             .join('&');
       }
 
-      return new BbPromise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const options = {
           headers: {
             'x-functions-key': functionsAdminKey
@@ -422,7 +423,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, res) => {
         if (err) {
           reject(err);
@@ -451,7 +452,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, res) => {
         if (err) {
           reject(err);
@@ -482,7 +483,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, res, body) => {
         if (err) return reject(err);
 
@@ -510,7 +511,7 @@ class AzureProvider {
       }
     });
 
-    return BbPromise.all(deleteFunctionPromises);
+    return Promise.all(deleteFunctionPromises);
   }
 
   deleteFunction(functionName) {
@@ -526,7 +527,7 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, res) => {
         if (err) {
           reject(err);
@@ -538,7 +539,7 @@ class AzureProvider {
   }
 
   uploadPackageJson () {
-    const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
+    const packageJsonFilePath = join(this.serverless.config.servicePath, 'package.json');
     this.serverless.cli.log('Uploading package.json...');
 
     const requestUrl = `https://${functionAppName}${config.scmVfsPath}package.json`;
@@ -553,9 +554,9 @@ class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
-      if (fs.existsSync(packageJsonFilePath)) {
-        fs.createReadStream(packageJsonFilePath)
+    return new Promise((resolve, reject) => {
+      if (existsSync(packageJsonFilePath)) {
+        createReadStream(packageJsonFilePath)
         .pipe(request.put(options, (err) => {
           if (err) {
             reject(err);
@@ -571,17 +572,17 @@ class AzureProvider {
   }
 
   createEventsBindings(functionName, entryPoint, filePath, params) {
-    return new BbPromise((resolve) => {
+    return new Promise((resolve) => {
       const functionJSON = params.functionsJson;
       functionJSON.entryPoint = entryPoint;
       functionJSON.scriptFile = filePath;
-      fs.writeFileSync(path.join(this.serverless.config.servicePath, functionName+'-function.json'), JSON.stringify(functionJSON, null, 4));
+      writeFileSync(join(this.serverless.config.servicePath, functionName+'-function.json'), JSON.stringify(functionJSON, null, 4));
       resolve();
     });
   }
 
   uploadFunction (functionName) {
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.serverless.cli.log(`Uploading function: ${functionName}`);
 
       var functionZipFile = '';
@@ -603,7 +604,7 @@ class AzureProvider {
         }
       };
 
-      fs.createReadStream(functionZipFile)
+      createReadStream(functionZipFile)
         .pipe(request.put(options, (uploadZipErr, uploadZipResponse) => {
           if (uploadZipErr) {
             reject(uploadZipErr);
@@ -614,5 +615,3 @@ class AzureProvider {
     });
   }
 }
-
-module.exports = AzureProvider;

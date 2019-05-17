@@ -1,9 +1,13 @@
-'use strict';
+import { Promise } from 'bluebird';
+import compileEventsForFunction from './lib/compileEventsForFunction';
 
-const BbPromise = require('bluebird');
-const compileEventsForFunction = require('./lib/compileEventsForFunction');
+export default class AzurePackageFunction {
+  serverless: any;
+  options: any;
+  provider: any;
+  hooks: any;
+  compileEventsForFunction: any;
 
-class AzurePackageFunction {
   constructor (serverless, options) {
     this.serverless = serverless;
     this.options = options;
@@ -15,12 +19,10 @@ class AzurePackageFunction {
     );
 
     this.hooks = {
-      'before:deploy:function:packageFunction': () => BbPromise.bind(this)
+      'before:deploy:function:packageFunction': () => Promise.bind(this)
         .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
         .then(this.provider.initialize(this.serverless, this.options))
         .then(this.compileEventsForFunction),
     };
   }
 }
-
-module.exports = AzurePackageFunction;
