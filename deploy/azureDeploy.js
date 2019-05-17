@@ -20,8 +20,8 @@ class AzureDeploy {
     );
 
     this.hooks = {
-      'before:deploy:deploy': () => this.beforeDeploy.bind(this),
-      'deploy:deploy': () => this.deploy.bind(this)
+      'before:deploy:deploy': async () => await this.beforeDeploy.bind(this),
+      'deploy:deploy': async () => await this.deploy.bind(this)
     };
   }
 

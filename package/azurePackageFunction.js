@@ -14,7 +14,7 @@ class AzurePackageFunction {
     );
 
     this.hooks = {
-      'before:deploy:function:packageFunction': this.packageFunction.bind(this),
+      'before:deploy:function:packageFunction': async () => await this.packageFunction.bind(this),
     };
   }
 

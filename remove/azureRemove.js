@@ -16,7 +16,7 @@ class AzureRemove {
     );
 
     this.hooks = {
-      'remove:remove': this.remove.bind(this),
+      'remove:remove': async () => await this.remove.bind(this),
     };
   }
 

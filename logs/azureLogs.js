@@ -16,9 +16,9 @@ class AzureLogs {
     );
 
     this.hooks = {
-      'before:logs:logs': () => this.beforeLogs.bind(this),
+      'before:logs:logs': async () => await this.beforeLogs.bind(this),
 
-      'logs:logs': () => this.logs.bind(this)
+      'logs:logs': async () => await this.logs.bind(this)
     };
   }
 
