@@ -32,9 +32,9 @@ class AzureInvoke {
     this.hooks = {
 
       // TODO: See ./lib/invokeFunction.js:L10
-      'before:invoke:invoke': async () => await this.beforeInvoke.bind(this),
+      'before:invoke:invoke': this.beforeInvoke.bind(this),
 
-      'invoke:invoke': async  () => await this.invoke.bind(this),
+      'invoke:invoke': this.invoke.bind(this),
     };
   }
 

@@ -20,7 +20,7 @@ class AzureDeployFunction {
       'deploy:function:packageFunction': () => this.serverless.pluginManager
           .spawn('package:function'),
 
-      'deploy:function:deploy': async () => await this.deployFunction.bind(this)
+      'deploy:function:deploy': this.deployFunction.bind(this)
     };
   }
 

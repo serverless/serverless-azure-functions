@@ -16,9 +16,8 @@ class AzurePackage {
     );
 
     this.hooks = {
-      'package:setupProviderConfiguration': async () => await this.setupProviderConfiguration.bind(this),
-
-      'before:webpack:package:packageModules': async () => await this.packageModules.bind(this),
+      'package:setupProviderConfiguration': this.setupProviderConfiguration.bind(this),
+      'before:webpack:package:packageModules': this.packageModules.bind(this),
     };
   }
 
