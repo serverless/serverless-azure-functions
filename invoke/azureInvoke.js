@@ -1,6 +1,5 @@
 'use strict';
 
-const BbPromise = require('bluebird');
 const invokeFunction = require('./lib/invokeFunction');
 const getAdminKey = require('../shared/getAdminKey');
 const loginToAzure = require('../shared/loginToAzure');
@@ -33,15 +32,20 @@ class AzureInvoke {
     this.hooks = {
 
       // TODO: See ./lib/invokeFunction.js:L10
-      'before:invoke:invoke': () => BbPromise.bind(this)
-         .then(this.provider.initialize(this.serverless,this.options))
-         .then(this.loginToAzure)
-         .then(this.getAdminKey),
+      'before:invoke:invoke': () => this.beforeInvoke.bind(this),
 
-      'invoke:invoke': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.invokeFunction)
+      'invoke:invoke': () => this.invoke.bind(this),
     };
+  }
+
+  async beforeInvoke () {
+    await this.provider.initialize(this.serverless, this.options);
+    await this.getAdminKey();
+  }
+
+  async invoke () {
+    await this.provider.initialize(this.serverless, this.options);
+    await this.invokeFunction();
   }
 }
 

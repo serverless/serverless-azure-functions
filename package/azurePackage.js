@@ -1,6 +1,5 @@
 'use strict';
 
-const BbPromise = require('bluebird');
 const compileEvents = require('./lib/compileEvents');
 const webpackFunctionJson = require('./lib/webpackFunctionJson');
 
@@ -17,15 +16,21 @@ class AzurePackage {
     );
 
     this.hooks = {
-      'package:setupProviderConfiguration': () => BbPromise.bind(this)
-        .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.compileEvents),
+      'package:setupProviderConfiguration': this.setupProviderConfiguration.bind(this),
 
-      'before:webpack:package:packageModules': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.webpackFunctionJson.bind(this))
+      'before:webpack:package:packageModules': this.packageModules.bind(this),
     };
+  }
+
+  async setupProviderConfiguration () {
+    this.serverless.cli.log('Building Azure Events Hooks');
+    await this.provider.initialize(this.serverless, this.options);
+    await this.compileEvents();
+  }
+
+  async packageModules () {
+    await this.provider.initialize(this.serverless, this.options);
+    this.webpackFunctionJson.bind(this);
   }
 }
 

@@ -1,6 +1,5 @@
 'use strict';
 
-const BbPromise = require('bluebird');
 const uploadFunction = require('./lib/uploadFunction');
 const loginToAzure = require('../shared/loginToAzure');
 
@@ -21,12 +20,14 @@ class AzureDeployFunction {
       'deploy:function:packageFunction': () => this.serverless.pluginManager
           .spawn('package:function'),
 
-      'deploy:function:deploy': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.loginToAzure)
-        .then(this.uploadFunction)
-        .then(() => this.serverless.cli.log('Successfully uploaded Function'))
+      'deploy:function:deploy': this.deployFunction.bind(this)
     };
+  }
+
+  async deployFunction() {
+    await this.provider.initialize(this.serverless, this.options);
+    await this.uploadFunction();
+    this.serverless.cli.log('Successfully uploaded Function');
   }
 }
 

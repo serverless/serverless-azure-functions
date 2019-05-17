@@ -1,6 +1,5 @@
 'use strict';
 
-const BbPromise = require('bluebird');
 const CreateResourceGroupAndFunctionApp = require('./lib/CreateResourceGroupAndFunctionApp');
 const uploadFunctions = require('./lib/uploadFunctions');
 const cleanUpFunctions = require('./lib/cleanUpFunctions');
@@ -21,17 +20,21 @@ class AzureDeploy {
     );
 
     this.hooks = {
-      'before:deploy:deploy': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.loginToAzure)
-        .then(this.cleanUpFunctions),
-
-      'deploy:deploy': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.CreateResourceGroupAndFunctionApp)
-        .then(this.uploadFunctions)
-        .then(() => this.serverless.cli.log('Successfully created Function App'))
+      'before:deploy:deploy': () => this.beforeDeploy.bind(this),
+      'deploy:deploy': () => this.deploy.bind(this)
     };
+  }
+
+  async beforeDeploy() {
+    await this.provider.initialize(this.serverless, this.options);
+    await this.cleanUpFunctions();
+  }
+
+  async deploy() {
+    await this.provider.initialize(this.serverless, this.options);
+    await this.CreateResourceGroupAndFunctionApp();
+    await this.uploadFunctions();
+    this.serverless.cli.log('Successfully created Function App');
   }
 }
 

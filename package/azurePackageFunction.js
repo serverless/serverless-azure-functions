@@ -1,6 +1,5 @@
 'use strict';
 
-const BbPromise = require('bluebird');
 const compileEventsForFunction = require('./lib/compileEventsForFunction');
 
 class AzurePackageFunction {
@@ -15,11 +14,14 @@ class AzurePackageFunction {
     );
 
     this.hooks = {
-      'before:deploy:function:packageFunction': () => BbPromise.bind(this)
-        .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.compileEventsForFunction),
+      'before:deploy:function:packageFunction': this.packageFunction.bind(this),
     };
+  }
+
+  async packageFunction () {
+    this.serverless.cli.log('Building Azure Events Hooks');
+    await this.provider.initialize(this.serverless, this.options);
+    await this.compileEventsForFunction();
   }
 }
 

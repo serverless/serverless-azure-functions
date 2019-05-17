@@ -1,6 +1,5 @@
 'use strict';
 
-const BbPromise = require('bluebird');
 const retrieveLogs = require('./lib/retrieveLogs');
 const loginToAzure = require('../shared/loginToAzure');
 
@@ -17,14 +16,19 @@ class AzureLogs {
     );
 
     this.hooks = {
-      'before:logs:logs': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.loginToAzure),
+      'before:logs:logs': () => this.beforeLogs.bind(this),
 
-      'logs:logs': () => BbPromise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.retrieveLogs)
+      'logs:logs': () => this.logs.bind(this)
     };
+  }
+
+  async beforeLogs () {
+    await this.provider.initialize(this.serverless, this.options);
+  }
+
+  async logs () {
+    await this.provider.initialize(this.serverless, this.options);
+    await this.retrieveLogs();
   }
 }
 
