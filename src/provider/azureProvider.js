@@ -10,7 +10,7 @@ const dns = require('dns');
 const jsonpath = require('jsonpath');
 const parseBindings = require('../shared/parseBindings');
 const { login } = require('az-login');
-const config = require('../config');
+const config = require('../../config');
 
 const pkg = require('../package.json');
 
