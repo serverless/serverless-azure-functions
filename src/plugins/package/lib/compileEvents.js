@@ -1,7 +1,7 @@
 'use strict';
 
 const BbPromise = require('bluebird');
-const utils = require('../../shared/utils');
+const utils = require('../../../shared/utils');
 
 module.exports = {
   compileEvents() {

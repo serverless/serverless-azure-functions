@@ -1,6 +1,6 @@
 'use strict';
 
-const utils = require('../../shared/utils');
+const utils = require('../../../shared/utils');
 
 module.exports = {
   compileEventsForFunction() {

@@ -2,7 +2,7 @@
 
 const BbPromise = require('bluebird');
 const invokeFunction = require('./lib/invokeFunction');
-const getAdminKey = require('../shared/getAdminKey');
+const getAdminKey = require('../../shared/getAdminKey');
 const path = require('path');
 
 class AzureInvoke {

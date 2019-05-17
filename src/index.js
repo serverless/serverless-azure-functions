@@ -5,18 +5,17 @@ whole provider implementation.
 */
 
 import '@babel/polyfill';
-// import AzureDeploy from './deploy/azureDeploy';
-// import AzureDeployFunction from './deploy/azureDeployFunction';
-// import AzureInvoke from './invoke/azureInvoke';
-// import AzureLogs from './logs/azureLogs';
-// import AzureRemove from './remove/azureRemove';
-// import AzurePackage from './package/azurePackage';
-// import AzurePackageFunction from './package/azurePackageFunction';
+import AzureInvoke from './plugins/invoke/azureInvoke';
+import AzureLogs from './plugins/logs/azureLogs';
+import AzureRemove from './plugins/remove/azureRemove';
+import AzurePackage from './plugins/package/azurePackage';
+import AzurePackageFunction from './plugins/package/azurePackageFunction';
 import AzureProvider from './provider/azureProvider';
-import { AzureLoginPlugin } from './login/loginPlugin';
-import { AzureApimServicePlugin } from './apim/apimServicePlugin';
-import { AzureApimFunctionPlugin } from './apim/apimFunctionPlugin';
-//import AzureApimFunction from './apim/azureApimFunction';
+import { AzureDeployPlugin } from './plugins/deploy/azureDeployPlugin';
+import { AzureDeployFunctionPlugin } from './plugins/deploy/azureDeployFunctionPlugin';
+import { AzureLoginPlugin } from './plugins/login/loginPlugin';
+import { AzureApimServicePlugin } from './plugins/apim/apimServicePlugin';
+import { AzureApimFunctionPlugin } from './plugins/apim/apimFunctionPlugin';
 
 export class AzureIndex {
   constructor(serverless, options) {
@@ -25,17 +24,18 @@ export class AzureIndex {
 
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless));
 
-    //this.serverless.pluginManager.addPlugin(AzurePackage);
-    //this.serverless.pluginManager.addPlugin(AzurePackageFunction);
-    //this.serverless.pluginManager.addPlugin(AzureDeploy);
-    //this.serverless.pluginManager.addPlugin(AzureDeployFunction);
+    // To be refactored
+    this.serverless.pluginManager.addPlugin(AzurePackage);
+    this.serverless.pluginManager.addPlugin(AzurePackageFunction);
+    this.serverless.pluginManager.addPlugin(AzureInvoke);
+    this.serverless.pluginManager.addPlugin(AzureLogs);
+    this.serverless.pluginManager.addPlugin(AzureRemove);
+    // Refactored
     this.serverless.pluginManager.addPlugin(AzureLoginPlugin);
+    this.serverless.pluginManager.addPlugin(AzureDeployPlugin);
+    this.serverless.pluginManager.addPlugin(AzureDeployFunctionPlugin);
     this.serverless.pluginManager.addPlugin(AzureApimServicePlugin);
     this.serverless.pluginManager.addPlugin(AzureApimFunctionPlugin);
-    //this.serverless.pluginManager.addPlugin(AzureApimFunction);
-    //this.serverless.pluginManager.addPlugin(AzureInvoke);
-    //this.serverless.pluginManager.addPlugin(AzureLogs);
-    //this.serverless.pluginManager.addPlugin(AzureRemove);
   }
 }
 

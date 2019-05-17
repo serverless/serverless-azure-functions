@@ -5,8 +5,7 @@ export class AzureLoginPlugin {
   constructor(serverless, options) {
     this.serverless = serverless;
     this.options = options;
-
-    this.serverless.cli.log('Initializing Azure Login plugin');
+    this.provider = this.serverless.getProvider('azure');
 
     this.hooks = {
       'before:deploy:initialize': this.login.bind(this)
@@ -18,19 +17,25 @@ export class AzureLoginPlugin {
 
     let authResult = null;
 
+    const subscriptionId = process.env.azureSubId;
     const clientId = process.env.azureServicePrincipalClientId;
     const secret = process.env.azureServicePrincipalPassword;
     const tenantId = process.env.azureServicePrincipalTenantId;
 
     try {
-      if (clientId && secret && tenantId) {
+      if (subscriptionId && clientId && secret && tenantId) {
         authResult = await loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId);
       } else {
         await open('https://microsoft.com/devicelogin');
         authResult = await interactiveLoginWithAuthResponse();
       }
 
+      this.provider.credentials = authResult.credentials;
+      this.provider.subscriptionId = authResult.subscriptionId || subscriptionId;
+      this.provider.accessToken = authResult.credentials.tokenCache._entries[0].accessToken;
+      this.serverless.variables.azureAccessToken = authResult.credentials.tokenCache._entries[0].accessToken;
       this.serverless.variables.azureCredentials = authResult.credentials;
+      this.serverless.variables.subscriptionId = authResult.subscriptionId || subscriptionId;
     }
     catch (e) {
       this.serverless.cli.log('Error logging into azure');

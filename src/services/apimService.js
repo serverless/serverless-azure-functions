@@ -1,6 +1,6 @@
 import { ApiManagementClient } from '@azure/arm-apimanagement';
 import { ResourceManagementClient } from '@azure/arm-resources';
-import request from 'request';
+import { FunctionAppService } from './functionAppService';
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -13,30 +13,40 @@ export class ApimService {
 
     this.serviceName = serverless.service.service;
     this.credentials = serverless.variables.azureCredentials;
-    this.subscriptionId = serverless.service.provider.subscriptionId;
-    this.resourceGroup = serverless.service.provider.resourceGroup;
+    this.subscriptionId = serverless.variables.subscriptionId;
+    this.resourceGroup = serverless.service.provider.resourceGroup || `${this.serviceName}-rg`;
+    this.deploymentName = serverless.service.provider.deploymentName || `${this.resourceGroup}-deployment`;
 
     this.resourceId = `/subscriptions/${this.subscriptionId}/resourceGroups/${this.resourceGroup}/providers/Microsoft.Web/sites/${this.serviceName}`;
 
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
     this.apimClient = new ApiManagementClient(this.credentials, this.subscriptionId);
+    this.functionAppService = new FunctionAppService(serverless, options);
   }
 
   /**
    * Deploys the APIM top level api
    */
   async deployApi() {
-    const functionApp = await this.resourceClient.resources.getById(this.resourceId, '2018-11-01');
+    if (!this.config) {
+      return;
+    }
+
+    const functionApp = await this.functionAppService.get();
 
     await this.ensureApi();
-    await this.ensureFunctionAppKeys(functionApp.properties.defaultHostName);
-    await this.ensureBackend(functionApp.properties.defaultHostName);
+    await this.ensureFunctionAppKeys(functionApp);
+    await this.ensureBackend(functionApp);
   }
 
   /**
    * Deploys all the functions of the serverless service to APIM
    */
   async deployFunctions() {
+    if (!this.config) {
+      return;
+    }
+
     this.serverless.cli.log('Starting to deploy API Operations');
 
     const deployApiTasks = this.serverless.service
@@ -52,6 +62,10 @@ export class ApimService {
    */
   async deployFunction(options) {
     const functionConfig = this.serverless.service.functions[options.function];
+
+    if (!functionConfig.apim) {
+      return;
+    }
 
     const tasks = functionConfig.apim.operations.map((operation) => {
       return this.deployOperation({
@@ -87,9 +101,9 @@ export class ApimService {
    * Deploys the APIM Backend referenced by the serverless service
    * @param functionAppUrl The host name for the deployed function app
    */
-  async ensureBackend(functionAppUrl) {
+  async ensureBackend(functionApp) {
     try {
-      const functionAppResourceId = `https://management.azure.com${this.resourceId}`;
+      const functionAppResourceId = `https://management.azure.com${functionApp.id}`;
 
       await this.apimClient.backend.createOrUpdate(this.resourceGroup, this.config.resourceId, this.serviceName, {
         credentials: {
@@ -100,7 +114,7 @@ export class ApimService {
         description: this.serviceName,
         protocol: 'http',
         resourceId: functionAppResourceId,
-        url: `https://${functionAppUrl}/api`
+        url: `https://${functionApp.defaultHostName}/api`
       });
     } catch (e) {
       this.serverless.cli.log('Error creating APIM Backend');
@@ -114,7 +128,7 @@ export class ApimService {
    * @param options The plugin options
    */
   async deployOperation(options) {
-    this.serverless.cli.log(`Deploying API operation ${options.function}`);
+    this.serverless.cli.log(`-> Deploying API operation ${options.function}`);
 
     try {
       const client = new ApiManagementClient(this.credentials, this.subscriptionId);
@@ -158,11 +172,9 @@ export class ApimService {
    * Gets the master key for the function app and stores a reference in the APIM instance
    * @param functionAppUrl The host name for the Azure function app
    */
-  async ensureFunctionAppKeys(functionAppUrl) {
+  async ensureFunctionAppKeys(functionApp) {
     try {
-      const adminToken = await this.getAdminToken();
-      const masterKey = await this.getMasterKey(functionAppUrl, adminToken);
-
+      const masterKey = await this.functionAppService.getMasterKey(functionApp);
       const keyName = `${this.serviceName}-key`;
 
       this.apimClient.property.createOrUpdate(this.resourceGroup, this.config.resourceId, keyName, {
@@ -174,51 +186,5 @@ export class ApimService {
       this.serverless.cli.log('Error creating APIM Property');
       this.serverless.cli.log(JSON.stringify(e, null, 4));
     }
-  }
-
-  /**
-   * Gets a short lived admin token used to retrieve function keys
-   */
-  async getAdminToken() {
-    return new Promise((resolve, reject) => {
-      const baseUrl = 'https://management.azure.com';
-      const getTokenUrl = `${baseUrl}${this.resourceId}/functions/admin/token?api-version=2016-08-01`;
-
-      request.get(getTokenUrl, {
-        headers: {
-          'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
-        }
-      }, (err, response) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(response.body.replace(/"/g, ''));
-      });
-    });
-  }
-
-  /**
-   * Gets the master key for the specified function app
-   * @param functionAppUrl The function app url
-   * @param authToken The JWT access token used for authorization
-   */
-  getMasterKey(functionAppUrl, authToken) {
-    return new Promise((resolve, reject) => {
-      const apiUrl = `https://${functionAppUrl}/admin/host/systemkeys/_master`;
-
-      request.get(apiUrl, {
-        json: true,
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      }, (err, response) => {
-        if (err) {
-          return reject(err);
-        }
-
-        resolve(response.body.value);
-      });
-    });
   }
 }

@@ -25,7 +25,7 @@ const constants = {
 };
 
 module.exports = {
-  'getFunctionMetaData': function (functionName, parsedBindings, serverless) {
+  getFunctionMetaData: function (functionName, parsedBindings, serverless) {
     const bindings = [];
     let bindingSettingsNames = [];
     let bindingSettings = [];
@@ -95,7 +95,7 @@ module.exports = {
     params.functionsJson = functionsJson;
 
     const entryPointAndHandlerPath = this.getEntryPointAndHandlerPath(handler);
-    if( functionObject.scriptFile ){
+    if (functionObject.scriptFile) {
       entryPointAndHandlerPath.handlerPath = functionObject.scriptFile;
     }
     const metaData = {
@@ -107,7 +107,7 @@ module.exports = {
     return metaData;
   },
 
-  'getBindingUserSettingsMetaData': function (azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames) {
+  getBindingUserSettingsMetaData: function (azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames) {
     let bindingDisplayNamesIndex = bindingTypeIndex;
     const bindingUserSettings = {};
 
@@ -130,7 +130,7 @@ module.exports = {
     return bindingUserSettingsMetaData;
   },
 
-  'getEntryPointAndHandlerPath': function (handler) {
+  getEntryPointAndHandlerPath: function (handler) {
     let handlerPath = 'handler.js';
     let entryPoint = handler;
     const handlerSplit = handler.split('.');
@@ -147,7 +147,7 @@ module.exports = {
     return metaData;
   },
 
-  'getHttpOutBinding': function (bindingUserSettings) {
+  getHttpOutBinding: function (bindingUserSettings) {
     const binding = {};
 
     binding[constants.type] = 'http';
@@ -160,7 +160,7 @@ module.exports = {
     return binding;
   },
 
-  'getBinding': function (bindingType, bindingSettings, bindingUserSettings) {
+  getBinding: function (bindingType, bindingSettings, bindingUserSettings) {
     const binding = {};
 
     binding[constants.type] = bindingType;
