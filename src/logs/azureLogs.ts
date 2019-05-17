@@ -2,7 +2,7 @@ import { Promise } from "bluebird";
 import retrieveLogs from './lib/retrieveLogs';
 import loginToAzure from '../shared/loginToAzure';
 
-export default class AzureLogs {
+export class AzureLogs {
   serverless: any;
   options: any;
   provider: any;

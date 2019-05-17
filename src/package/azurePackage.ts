@@ -2,7 +2,7 @@ import { Promise } from 'bluebird';
 import compileEvents from './lib/compileEvents';
 import webpackFunctionJson from './lib/webpackFunctionJson';
 
-export default class AzurePackage {
+export class AzurePackage {
   serverless: any;
   options: any;
   provider: any;

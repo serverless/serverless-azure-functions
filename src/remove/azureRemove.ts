@@ -2,7 +2,7 @@ import { Promise } from 'bluebird';
 import deleteResourceGroup from './lib/deleteResourceGroup';
 import loginToAzure from '../shared/loginToAzure';
 
-export default class AzureRemove {
+export class AzureRemove {
   serverless: any;
   options: any;
   provider: any;

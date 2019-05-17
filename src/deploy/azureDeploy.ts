@@ -4,7 +4,7 @@ import uploadFunctions from './lib/uploadFunctions';
 import cleanUpFunctions from './lib/cleanUpFunctions';
 import loginToAzure from '../shared/loginToAzure';
 
-export default class AzureDeploy {
+export class AzureDeploy {
   serverless: any;
   options: any;
   provider: any;

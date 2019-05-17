@@ -23,7 +23,7 @@ let principalCredentials;
 let existingFunctionApp = false;
 const deployedFunctionNames = [];
 
-export default class AzureProvider {
+export class AzureProvider {
   provider: AzureProvider;
   serverless: any;
   options: any;

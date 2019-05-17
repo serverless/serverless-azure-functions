@@ -4,7 +4,7 @@ import loginToAzure from '../shared/loginToAzure';
 import invokeFunction from './lib/invokeFunction';
 import { Promise } from 'bluebird'
 
-export default class AzureInvoke {
+export class AzureInvoke {
   serverless: any;
   options: any;
   provider: any;

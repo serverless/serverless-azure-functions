@@ -1,7 +1,7 @@
 import { Promise } from 'bluebird';
 import compileEventsForFunction from './lib/compileEventsForFunction';
 
-export default class AzurePackageFunction {
+export class AzurePackageFunction {
   serverless: any;
   options: any;
   provider: any;

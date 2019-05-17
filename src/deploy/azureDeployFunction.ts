@@ -2,7 +2,7 @@ import { Promise } from 'bluebird';
 import uploadFunction from './lib/uploadFunction';
 import loginToAzure from '../shared/loginToAzure';
 
-export default class AzureDeployFunction {
+export class AzureDeployFunction {
   serverless: any;
   options: any;
   provider: any;

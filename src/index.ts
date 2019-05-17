@@ -4,17 +4,16 @@ This way only one plugin needs to be added to the service in order to get access
 whole provider implementation.
 */
 
-import AzureDeploy from "./deploy/azureDeploy";
-import AzureDeployFunction from './deploy/azureDeployFunction';
-import AzureInvoke from './invoke/azureInvoke';
-import AzureLogs from './logs/azureLogs';
-import AzurePackage from './package/azurePackage';
-import AzurePackageFunction from './package/azurePackageFunction';
-import AzureProvider from './provider/azureProvider';
-import AzureRemove from './remove/azureRemove';
+import { AzureDeploy } from "./deploy/azureDeploy";
+import { AzureDeployFunction} from './deploy/azureDeployFunction';
+import { AzureInvoke } from './invoke/azureInvoke';
+import { AzureLogs } from './logs/azureLogs';
+import { AzurePackage } from './package/azurePackage';
+import { AzurePackageFunction } from './package/azurePackageFunction';
+import { AzureProvider } from './provider/azureProvider';
+import { AzureRemove } from './remove/azureRemove';
 
-
-export default class AzureIndex {
+class AzureIndex {
   serverless: any;
   options: any;
   
@@ -33,3 +32,5 @@ export default class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzureRemove);
   }
 }
+
+module.exports = AzureIndex;
