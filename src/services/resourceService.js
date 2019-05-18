@@ -1,15 +1,9 @@
 import { ResourceManagementClient } from '@azure/arm-resources';
+import { BaseService } from './baseService';
 
-export class ResourceService {
+export class ResourceService extends BaseService {
   constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
-
-    this.serviceName = serverless.service.service;
-    this.credentials = serverless.variables.azureCredentials;
-    this.subscriptionId = serverless.variables.subscriptionId;
-    this.resourceGroup = serverless.service.provider.resourceGroup || `${this.serviceName}-rg`;
-    this.deploymentName = serverless.service.provider.deploymentName || `${this.resourceGroup}-deployment`;
+    super(serverless, options);
 
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }

@@ -8,7 +8,8 @@ export class AzureDeployPlugin {
 
     this.hooks = {
       'before:deploy:deploy': this.beforeDeploy.bind(this),
-      'deploy:deploy': this.deploy.bind(this)
+      'deploy:deploy': this.deploy.bind(this),
+      'sync:sync': this
     };
   }
 
@@ -19,6 +20,19 @@ export class AzureDeployPlugin {
     if (functionApp) {
       await functionAppService.cleanUp(functionApp);
     }
+  }
+
+  async sync() {
+    const functionAppService = new FunctionAppService(this.serverless, this.options);
+    const functionApp = await functionAppService.get();
+
+    await functionAppService.syncTriggers(functionApp);
+  }
+
+  async upload() {
+    const functionAppService = new FunctionAppService(this.serverless, this.options);
+    const functionApp = await functionAppService.get();
+    await functionAppService.uploadFunctions(functionApp);
   }
 
   async deploy() {

@@ -20,7 +20,7 @@
     "no-console": 0
   },
   "parserOptions": {
-    "ecmaVersion": 8,
+    "ecmaVersion": 2018,
     "sourceType": "module",
     "ecmaFeatures": {
       "arrowFunctions": true,

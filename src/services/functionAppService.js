@@ -1,23 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
 import request from 'request';
 import jsonpath from 'jsonpath';
 import _ from 'lodash';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { WebSiteManagementClient } from '@azure/arm-appservice';
+import { BaseService } from './baseService';
 
-export class FunctionAppService {
+export class FunctionAppService extends BaseService {
   constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
-
-    this.baseUrl = 'https://management.azure.com';
-    this.serviceName = serverless.service.service;
-    this.credentials = serverless.variables.azureCredentials;
-    this.subscriptionId = serverless.variables.subscriptionId;
-    this.resourceGroup = serverless.service.provider.resourceGroup || `${this.serviceName}-rg`;
-    this.deploymentName = serverless.service.provider.deploymentName || `${this.resourceGroup}-deployment`;
+    super(serverless, options);
 
     this.resourceId = `/subscriptions/${this.subscriptionId}/resourceGroups/${this.resourceGroup}/providers/Microsoft.Web/sites/${this.serviceName}`;
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
@@ -49,12 +41,7 @@ export class FunctionAppService {
     this.serverless.cli.log('Syncing function triggers');
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
-
-    await axios.post(syncTriggersUrl, {
-      headers: {
-        'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
-      }
-    });
+    await this.sendApiRequest('POST', syncTriggersUrl);
   }
 
   async cleanUp(functionApp) {
@@ -76,12 +63,7 @@ export class FunctionAppService {
 
   async listFunctions(functionApp) {
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
-
-    const response = await axios.get(getTokenUrl, {
-      headers: {
-        'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
-      }
-    });
+    const response = await this.sendApiRequest('GET', getTokenUrl);
 
     return response.data.value || [];
   }
@@ -255,17 +237,11 @@ export class FunctionAppService {
 
     // TODO: There is a case where the body will contain an error, but it's
     // not actually an error. These are warnings from npm install.
-    const response = await axios.post(requestUrl,
-      {
-        command: command,
-        dir: 'site\\wwwroot'
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-          Accept: 'application/json'
-        }
-      });
+    const data = {
+      command: command,
+      dir: 'site\\wwwroot'
+    };
+    const response = await this.sendApiRequest('POST', requestUrl, data);
 
     if (response.status !== 200) {
       if (response.data && response.data.Error) {
@@ -279,13 +255,8 @@ export class FunctionAppService {
    * Gets a short lived admin token used to retrieve function keys
    */
   async _getAuthKey(functionApp) {
-    const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions/admin/token?api-version=2016-08-01`;
-
-    const response = await axios.get(getTokenUrl, {
-      headers: {
-        'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
-      }
-    });
+    const adminTokenUrl = `${this.baseUrl}${functionApp.id}/functions/admin/token?api-version=2016-08-01`;
+    const response = await this.sendApiRequest('GET', adminTokenUrl);
 
     return response.data.replace(/"/g, '');
   }
@@ -296,9 +267,9 @@ export class FunctionAppService {
    * @param authToken The JWT access token used for authorization
    */
   async _getMasterKey(functionAppUrl, authToken) {
-    const apiUrl = `https://${functionAppUrl}/admin/host/systemkeys/_master`;
+    const keyUrl = `https://${functionAppUrl}/admin/host/systemkeys/_master`;
 
-    const response = await axios.get(apiUrl, {
+    const response = await this.sendApiRequest('GET', keyUrl, {
       json: true,
       headers: {
         'Authorization': `Bearer ${authToken}`

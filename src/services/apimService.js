@@ -1,22 +1,14 @@
 import { ApiManagementClient } from '@azure/arm-apimanagement';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { FunctionAppService } from './functionAppService';
+import { BaseService } from './baseService';
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
  */
-export class ApimService {
+export class ApimService extends BaseService {
   constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
-    this.config = serverless.service.provider.apim;
-
-    this.serviceName = serverless.service.service;
-    this.credentials = serverless.variables.azureCredentials;
-    this.subscriptionId = serverless.variables.subscriptionId;
-    this.resourceGroup = serverless.service.provider.resourceGroup || `${this.serviceName}-rg`;
-    this.deploymentName = serverless.service.provider.deploymentName || `${this.resourceGroup}-deployment`;
-
+    super(serverless, options);
     this.resourceId = `/subscriptions/${this.subscriptionId}/resourceGroups/${this.resourceGroup}/providers/Microsoft.Web/sites/${this.serviceName}`;
 
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);

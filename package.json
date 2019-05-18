@@ -7,7 +7,7 @@
   "author": "Azure Functions",
   "scripts": {
     "test": "eslint src/**/*.js",
-    "prebuild": "npm test",
+    "prebuild": "rm lib/ -rf && npm test",
     "build": "babel src --out-dir lib --presets=@babel/env && cp src/shared/bindings.json lib/shared"
   },
   "repository": {
