@@ -9,14 +9,19 @@ let functionsAdminKey;
 let invocationId;
 
 export default class AzureProvider {
+  private serverless: any;
+  private options: any;
+  private provider: any;
+  private credentials: any;
+  private parsedBindings: any;
+  
   static getProviderName() {
     return config.providerName;
   }
 
   constructor(serverless) {
-    this.provider = this;
     this.serverless = serverless;
-
+    this.provider = this;
     this.serverless.setProvider(config.providerName, this);
   }
 
