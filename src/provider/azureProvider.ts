@@ -11,7 +11,7 @@ import request from 'request';
 import { config } from '../config';
 import getBindingsMetaData from '../shared/parseBindings';
 
-const pkg = require('../package.json');
+const pkg = require('../../package.json');
 
 let resourceGroupName;
 let deploymentName;
