@@ -18,10 +18,7 @@ import { AzureApimServicePlugin } from './plugins/apim/apimServicePlugin';
 import { AzureApimFunctionPlugin } from './plugins/apim/apimFunctionPlugin';
 
 export class AzureIndex {
-  constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
-
+  constructor(private serverless, private options) {
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless));
 
     // To be refactored

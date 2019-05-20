@@ -1,5 +1,3 @@
-'use strict';
-
 const bindingsJson = require('./bindings.json');
 
 const constants = {

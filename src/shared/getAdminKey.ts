@@ -1,7 +1,3 @@
-'use strict';
-
-module.exports = {
-  getAdminKey () {
-    return this.provider.getAdminKey();
-  }
-};
+export const getAdminKey = () => {
+  return this.provider.getAdminKey();
+}
