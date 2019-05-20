@@ -3,7 +3,7 @@ import { Promise } from 'bluebird';
 import AzureProvider from '../../provider/azureProvider';
 const compileEventsForFunction = require('./lib/compileEventsForFunction');
 
-class AzurePackageFunction {
+export class AzurePackageFunction {
   provider: AzureProvider;
   hooks: any;
   compileEventsForFunction: any;
@@ -26,5 +26,3 @@ class AzurePackageFunction {
     };
   }
 }
-
-module.exports = AzurePackageFunction;

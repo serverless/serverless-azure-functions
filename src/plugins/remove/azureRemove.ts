@@ -3,7 +3,7 @@ import { Promise } from 'bluebird';
 import AzureProvider from '../../provider/azureProvider';
 const deleteResourceGroup = require('./lib/deleteResourceGroup');
 
-class AzureRemove {
+export class AzureRemove {
   provider: AzureProvider;
   hooks: any;
   deleteResourceGroup: any;
@@ -26,5 +26,3 @@ class AzureRemove {
     };
   }
 }
-
-module.exports = AzureRemove;

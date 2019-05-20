@@ -4,8 +4,7 @@ const invokeFunction = require('./lib/invokeFunction');
 const getAdminKey = require('../../shared/getAdminKey');
 import { join, isAbsolute } from 'path';
 
-class AzureInvoke {
-
+export class AzureInvoke {
   hooks: any;
   provider: any;
   invokeFunction: any;
@@ -46,5 +45,3 @@ class AzureInvoke {
     };
   }
 }
-
-module.exports = AzureInvoke;

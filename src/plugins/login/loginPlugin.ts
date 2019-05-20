@@ -1,4 +1,4 @@
-import { open } from 'open';
+import * as open from 'open';
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
 import AzureProvider from '../../provider/azureProvider';
 

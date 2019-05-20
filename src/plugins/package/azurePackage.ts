@@ -4,7 +4,7 @@ import AzureProvider from '../../provider/azureProvider';
 const compileEvents = require('./lib/compileEvents');
 const webpackFunctionJson = require('./lib/webpackFunctionJson');
 
-class AzurePackage {
+export class AzurePackage {
   provider: AzureProvider
   hooks: any;
   compileEvents: any;
@@ -33,5 +33,3 @@ class AzurePackage {
     };
   }
 }
-
-module.exports = AzurePackage;

@@ -107,8 +107,8 @@ export class FunctionAppService extends BaseService {
       this.serverless.cli.log(`-> Function package uploaded successfully: ${functionName}`);
 
       // Rename function json
-      const fromPath = join(functionName, `${functionName}-function.json`);
-      const toPath = join(functionName, 'function.json');
+      const fromPath = path.join(functionName, `${functionName}-function.json`);
+      const toPath = path.join(functionName, 'function.json');
       const command = `mv ${fromPath} ${toPath}`;
       await this._runKuduCommand(functionApp, command);
     }
@@ -127,15 +127,15 @@ export class FunctionAppService extends BaseService {
       };
     }
 
-    let templateFilePath = join(__dirname, 'armTemplates', 'azuredeploy.json');
+    let templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeploy.json');
 
     if (gitUrl) {
-      templateFilePath = join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
+      templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
     }
 
     if (this.serverless.service.provider.armTemplate) {
       this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider.armTemplate.file}`);
-      templateFilePath = join(this.serverless.config.servicePath, this.serverless.service.provider.armTemplate.file);
+      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider.armTemplate.file);
       const userParameters = this.serverless.service.provider.armTemplate.parameters;
       const userParametersKeys = Object.keys(userParameters);
 

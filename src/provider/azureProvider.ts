@@ -1,4 +1,4 @@
-import { Promise } from 'bluebird');import { join } from 'path';
+import { join } from 'path';
 const fs = require('fs');
 const request = require('request');
 const parseBindings = require('../shared/parseBindings');
@@ -14,7 +14,7 @@ export default class AzureProvider {
   private provider: any;
   private credentials: any;
   private parsedBindings: any;
-  
+
   static getProviderName() {
     return config.providerName;
   }
@@ -35,7 +35,7 @@ export default class AzureProvider {
     config.functionAppDomain = this.serverless.service.provider.functionAppDomain || config.functionAppDomain;
     config.scmDomain = this.serverless.service.provider.scmDomain || config.scmDomain;
 
-    return new BbPromise((resolve) => {
+    return new Promise((resolve) => {
       functionAppName = this.serverless.service.service;
 
       resolve();
@@ -59,7 +59,7 @@ export default class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, response, body) => {
         if (err) return reject(err);
         if (response.statusCode !== 200) return reject(body);
@@ -84,7 +84,7 @@ export default class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.serverless.cli.log('Pinging host status...');
       request(options, (err, res, body) => {
         if (err) return reject(err);
@@ -127,7 +127,7 @@ export default class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, response, body) => {
         if (err) return reject(err);
         if (response.statusCode !== 200) return reject(body);
@@ -150,7 +150,7 @@ export default class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, response, body) => {
         if (err) return reject(err);
         if (response.statusCode !== 200) return reject(body);
@@ -170,7 +170,7 @@ export default class AzureProvider {
             eventData = JSON.parse(eventData);
           }
           catch (error) {
-            return BbPromise.reject('The specified input data isn\'t a valid JSON string. ' +
+            return Promise.reject('The specified input data isn\'t a valid JSON string. ' +
               'Please correct it and try invoking the function again.');
           }
         }
@@ -180,7 +180,7 @@ export default class AzureProvider {
           .join('&');
       }
 
-      return new BbPromise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const options = {
           headers: {
             'x-functions-key': functionsAdminKey
@@ -216,7 +216,7 @@ export default class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       request(options, (err, res) => {
         if (err) {
           reject(err);
@@ -243,7 +243,7 @@ export default class AzureProvider {
       }
     };
 
-    return new BbPromise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if (fs.existsSync(packageJsonFilePath)) {
         fs.createReadStream(packageJsonFilePath)
           .pipe(request.put(options, (err) => {
@@ -261,7 +261,7 @@ export default class AzureProvider {
   }
 
   createEventsBindings(functionName, entryPoint, filePath, params) {
-    return new BbPromise((resolve) => {
+    return new Promise((resolve) => {
       const functionJSON = params.functionsJson;
       functionJSON.entryPoint = entryPoint;
       functionJSON.scriptFile = filePath;

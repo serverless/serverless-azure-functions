@@ -3,7 +3,7 @@ import { Promise } from 'bluebird';
 import AzureProvider from '../../provider/azureProvider';
 const retrieveLogs = require('./lib/retrieveLogs');
 
-class AzureLogs {
+export class AzureLogs {
   provider: AzureProvider
   hooks: any;
   retrieveLogs: any;
@@ -28,5 +28,3 @@ class AzureLogs {
     };
   }
 }
-
-module.exports = AzureLogs;
