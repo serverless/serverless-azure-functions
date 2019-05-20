@@ -1,4 +1,4 @@
-module.exports = {
+export const constants = {
   bearer: 'Bearer ',
   functionAppApiPath: '/api/',
   functionAppDomain: '.azurewebsites.net',
@@ -15,3 +15,5 @@ module.exports = {
   scmVfsPath: '/api/vfs/site/wwwroot/',
   scmZipApiPath: '/api/zip/site/wwwroot/'
 };
+
+export default constants;

@@ -7,10 +7,16 @@ import { BaseService } from './baseService';
  * APIM Service handles deployment and integration with Azure API Management
  */
 export class ApimService extends BaseService {
+  private resourceId: string;
+  private resourceClient: ResourceManagementClient;
+  private apimClient: ApiManagementClient;
+  private functionAppService: FunctionAppService;
+  private config: any;
+  
   constructor(serverless, options) {
     super(serverless, options);
     this.resourceId = `/subscriptions/${this.subscriptionId}/resourceGroups/${this.resourceGroup}/providers/Microsoft.Web/sites/${this.serviceName}`;
-
+    this.config = this.serverless.service.provider.apim;
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
     this.apimClient = new ApiManagementClient(this.credentials, this.subscriptionId);
     this.functionAppService = new FunctionAppService(serverless, options);

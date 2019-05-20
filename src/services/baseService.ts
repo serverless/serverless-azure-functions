@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-export class BaseService {
-constructor(private serverless, private options) {
+export abstract class BaseService {
+  protected baseUrl: string;
+  protected serviceName: string;
+  protected credentials: any;
+  protected subscriptionId: string;
+  protected resourceGroup: string;
+  protected deploymentName: string;
 
+  constructor(protected serverless, protected options) {
     this.baseUrl = 'https://management.azure.com';
     this.serviceName = serverless.service.service;
     this.credentials = serverless.variables.azureCredentials;
@@ -11,7 +17,7 @@ constructor(private serverless, private options) {
     this.deploymentName = serverless.service.provider.deploymentName || `${this.resourceGroup}-deployment`;
   }
 
-  async sendApiRequest(method, relativeUrl, options = {}) {
+  async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
       'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
     };
@@ -26,11 +32,11 @@ constructor(private serverless, private options) {
     return await axios(relativeUrl, requestOptions);
   }
 
-  _wait(timeout) {
+  protected wait(timeout: number) {
     return new Promise((resolve) => setTimeout(resolve, timeout));
   }
 
-  _waitForCondition(predicate, interval = 2000) {
+  protected waitForCondition(predicate: () => boolean, interval: number = 2000) {
     return new Promise((resolve, reject) => {
       let retries = 0;
       const id = setInterval(async () => {

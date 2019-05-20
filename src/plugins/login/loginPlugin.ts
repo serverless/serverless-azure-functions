@@ -1,10 +1,10 @@
-import open from 'open';
+import { open } from 'open';
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
 import AzureProvider from '../../provider/azureProvider';
 
 export class AzureLoginPlugin {
-  provider: AzureProvider;
-  hooks: any;
+  private provider: AzureProvider;
+  private hooks: any;
 
   constructor(private serverless, private options) {
     this.provider = this.serverless.getProvider('azure');

@@ -1,13 +1,18 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import request from 'request';
 import jsonpath from 'jsonpath';
 import _ from 'lodash';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { WebSiteManagementClient } from '@azure/arm-appservice';
 import { BaseService } from './baseService';
+import { Deployment } from '@azure/arm-resources/esm/models';
 
 export class FunctionAppService extends BaseService {
+  private resourceId: string;
+  private resourceClient: ResourceManagementClient;
+  private webClient: WebSiteManagementClient;
+
   constructor(serverless, options) {
     super(serverless, options);
 
@@ -17,7 +22,7 @@ export class FunctionAppService extends BaseService {
   }
 
   async get() {
-    const response = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
+    const response: any = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
     if (response.error && (response.error.code === 'ResourceNotFound' || response.error.code === 'ResourceGroupNotFound')) {
       return null;
     }
@@ -111,7 +116,7 @@ export class FunctionAppService extends BaseService {
 
   async deploy() {
     this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
-    let parameters = { functionAppName: { value: this.serviceName } };
+    let parameters: any = { functionAppName: { value: this.serviceName } };
 
     const gitUrl = this.serverless.service.provider.gitUrl;
 
@@ -162,7 +167,7 @@ export class FunctionAppService extends BaseService {
       });
     }
 
-    const deploymentParameters = {
+    const deploymentParameters: Deployment = {
       properties: {
         mode: 'Incremental',
         parameters,
