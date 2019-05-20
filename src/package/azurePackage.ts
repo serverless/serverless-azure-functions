@@ -1,6 +1,6 @@
 import { Promise } from 'bluebird';
-import compileEvents from './lib/compileEvents';
-import webpackFunctionJson from './lib/webpackFunctionJson';
+import compileEvents from './compileEvents';
+import webpackFunctionJson from './webpackFunctionJson';
 
 export class AzurePackage {
   serverless: any;

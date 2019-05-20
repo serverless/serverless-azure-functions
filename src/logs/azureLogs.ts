@@ -1,5 +1,5 @@
 import { Promise } from "bluebird";
-import retrieveLogs from './lib/retrieveLogs';
+import retrieveLogs from './retrieveLogs';
 import loginToAzure from '../shared/loginToAzure';
 
 export class AzureLogs {

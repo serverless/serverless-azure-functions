@@ -1,7 +1,7 @@
 import { Promise } from 'bluebird';
-import CreateResourceGroupAndFunctionApp from './lib/CreateResourceGroupAndFunctionApp';
-import uploadFunctions from './lib/uploadFunctions';
-import cleanUpFunctions from './lib/cleanUpFunctions';
+import CreateResourceGroupAndFunctionApp from './CreateResourceGroupAndFunctionApp';
+import uploadFunctions from './uploadFunctions';
+import cleanUpFunctions from './cleanUpFunctions';
 import loginToAzure from '../shared/loginToAzure';
 
 export class AzureDeploy {

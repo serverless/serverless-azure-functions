@@ -1,5 +1,5 @@
 import { Promise } from 'bluebird';
-import deleteResourceGroup from './lib/deleteResourceGroup';
+import deleteResourceGroup from './deleteResourceGroup';
 import loginToAzure from '../shared/loginToAzure';
 
 export class AzureRemove {

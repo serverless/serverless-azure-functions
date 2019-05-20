@@ -5,7 +5,6 @@ whole provider implementation.
 */
 
 import { AzureDeploy } from "./deploy/azureDeploy";
-import { AzureDeployFunction} from './deploy/azureDeployFunction';
 import { AzureInvoke } from './invoke/azureInvoke';
 import { AzureLogs } from './logs/azureLogs';
 import { AzurePackage } from './package/azurePackage';
@@ -26,7 +25,6 @@ class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzurePackage);
     this.serverless.pluginManager.addPlugin(AzurePackageFunction); 
     this.serverless.pluginManager.addPlugin(AzureDeploy);
-    this.serverless.pluginManager.addPlugin(AzureDeployFunction);
     this.serverless.pluginManager.addPlugin(AzureInvoke);
     this.serverless.pluginManager.addPlugin(AzureLogs);
     this.serverless.pluginManager.addPlugin(AzureRemove);

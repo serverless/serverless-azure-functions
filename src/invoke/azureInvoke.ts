@@ -1,7 +1,7 @@
 import { isAbsolute, join } from 'path';
 import getAdminKey from '../shared/getAdminKey';
 import loginToAzure from '../shared/loginToAzure';
-import invokeFunction from './lib/invokeFunction';
+import invokeFunction from './invokeFunction';
 import { Promise } from 'bluebird'
 
 export class AzureInvoke {
