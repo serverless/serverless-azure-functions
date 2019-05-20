@@ -7,7 +7,6 @@ whole provider implementation.
 */
 
 const AzureDeploy = require('./deploy/azureDeploy');
-const AzureDeployFunction = require('./deploy/azureDeployFunction');
 const AzureProvider = require('./provider/azureProvider');
 const AzureInvoke = require('./invoke/azureInvoke');
 const AzureLogs = require('./logs/azureLogs');
@@ -26,7 +25,6 @@ class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzurePackage);
     this.serverless.pluginManager.addPlugin(AzurePackageFunction); 
     this.serverless.pluginManager.addPlugin(AzureDeploy);
-    this.serverless.pluginManager.addPlugin(AzureDeployFunction);
     this.serverless.pluginManager.addPlugin(AzureInvoke);
     this.serverless.pluginManager.addPlugin(AzureLogs);
     this.serverless.pluginManager.addPlugin(AzureRemove);
