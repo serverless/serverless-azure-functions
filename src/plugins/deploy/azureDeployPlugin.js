@@ -8,8 +8,7 @@ export class AzureDeployPlugin {
 
     this.hooks = {
       'before:deploy:deploy': this.beforeDeploy.bind(this),
-      'deploy:deploy': this.deploy.bind(this),
-      'sync:sync': this
+      'deploy:deploy': this.deploy.bind(this)
     };
   }
 

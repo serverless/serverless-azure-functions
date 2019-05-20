@@ -27,4 +27,27 @@ export class BaseService {
 
     return await axios(relativeUrl, requestOptions);
   }
+
+  _wait(timeout) {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+  }
+
+  _waitForCondition(predicate, interval = 2000) {
+    return new Promise((resolve, reject) => {
+      let retries = 0;
+      const id = setInterval(async () => {
+        if (retries >= 20) {
+          clearInterval(id);
+          return reject('Failed conditional check 20 times');
+        }
+
+        retries++;
+        const result = await predicate();
+        if (result) {
+          clearInterval(id);
+          resolve(result);
+        }
+      }, interval);
+    });
+  }
 }

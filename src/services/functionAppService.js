@@ -18,7 +18,7 @@ export class FunctionAppService extends BaseService {
 
   async get() {
     const response = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
-    if (response.error && response.error.code === 'ResourceNotFound') {
+    if (response.error && (response.error.code === 'ResourceNotFound' || response.error.code === 'ResourceGroupNotFound')) {
       return null;
     }
 
@@ -70,21 +70,6 @@ export class FunctionAppService extends BaseService {
 
   async uploadFunctions(functionApp) {
     this.serverless.cli.log('Creating azure functions');
-    this.serverless.cli.log('-> Uploading service package');
-
-    const scmDomain = functionApp.enabledHostNames[0];
-    const serviceZipFile = this.serverless.service.artifact;
-
-    // Upload zip package
-    const requestOptions = {
-      method: 'POST',
-      uri: `https://${scmDomain}/api/zipdeploy`,
-      headers: {
-        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-      }
-    };
-
-    await this._sendFile(requestOptions, serviceZipFile);
 
     // Perform additional operations per function
     const serviceFunctions = this.serverless.service.getAllFunctions();
@@ -99,26 +84,29 @@ export class FunctionAppService extends BaseService {
     const scmDomain = functionApp.enabledHostNames[0];
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service.functions[functionName].package.artifact;
+    const functionZipFile = this.serverless.service.functions[functionName].package.artifact || this.serverless.service.artifact;
     if (functionZipFile) {
       this.serverless.cli.log(`-> Uploading function package: ${functionName}`);
 
       const requestOptions = {
         method: 'PUT',
-        uri: `https://${scmDomain}/api/zip/site/wwwroot/${functionName}`,
+        uri: `https://${scmDomain}/api/zip/site/wwwroot/${functionName}/`,
+        json: true,
         headers: {
           Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+          Accept: '*/*'
         }
       };
 
       await this._sendFile(requestOptions, functionZipFile);
-    }
+      this.serverless.cli.log(`-> Function package uploaded successfully: ${functionName}`);
 
-    // Rename function json
-    const fromPath = `${functionName}-function.json`;
-    const toPath = path.join(functionName, 'function.json');
-    const command = `mv ${fromPath} ${toPath}`;
-    await this._runKuduCommand(functionApp, command);
+      // Rename function json
+      const fromPath = path.join(functionName, `${functionName}-function.json`);
+      const toPath = path.join(functionName, 'function.json');
+      const command = `mv ${fromPath} ${toPath}`;
+      await this._runKuduCommand(functionApp, command);
+    }
   }
 
   async deploy() {
@@ -199,6 +187,7 @@ export class FunctionAppService extends BaseService {
       fs.createReadStream(filePath)
         .pipe(request(requestOptions, (err, response) => {
           if (err) {
+            this.serverless.cli.log(JSON.stringify(err, null, 4));
             return reject(err);
           }
           resolve(response);
@@ -237,11 +226,12 @@ export class FunctionAppService extends BaseService {
 
     // TODO: There is a case where the body will contain an error, but it's
     // not actually an error. These are warnings from npm install.
-    const data = {
-      command: command,
-      dir: 'site\\wwwroot'
-    };
-    const response = await this.sendApiRequest('POST', requestUrl, data);
+    const response = await this.sendApiRequest('POST', requestUrl, {
+      data: {
+        command: command,
+        dir: 'site\\wwwroot'
+      }
+    });
 
     if (response.status !== 200) {
       if (response.data && response.data.Error) {
