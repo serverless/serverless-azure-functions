@@ -2,6 +2,8 @@ import { ResourceManagementClient } from '@azure/arm-resources';
 import { BaseService } from './baseService';
 
 export class ResourceService extends BaseService {
+  private resourceClient: ResourceManagementClient;
+  
   constructor(serverless, options) {
     super(serverless, options);
 

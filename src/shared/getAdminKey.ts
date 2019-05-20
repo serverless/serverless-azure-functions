@@ -1,3 +1,3 @@
-export const getAdminKey = () => {
+export function getAdminKey() {
   return this.provider.getAdminKey();
 }
