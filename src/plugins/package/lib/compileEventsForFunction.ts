@@ -1,4 +1,3 @@
-'use strict';
 
 const utils = require('../../../shared/utils');
 

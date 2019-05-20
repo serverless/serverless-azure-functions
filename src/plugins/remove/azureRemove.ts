@@ -1,10 +1,14 @@
-'use strict';
 
-const BbPromise = require('bluebird');
+import { Promise } from 'bluebird';
+import AzureProvider from '../../provider/azureProvider';
 const deleteResourceGroup = require('./lib/deleteResourceGroup');
 
 class AzureRemove {
-  constructor (serverless, options) {
+  provider: AzureProvider;
+  hooks: any;
+  deleteResourceGroup: any;
+
+  constructor (private serverless, private options) {
     this.serverless = serverless;
     this.options = options;
     this.provider = this.serverless.getProvider('azure');
@@ -15,7 +19,7 @@ class AzureRemove {
     );
 
     this.hooks = {
-      'remove:remove': () => BbPromise.bind(this)
+      'remove:remove': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.deleteResourceGroup)
         .then(() => this.serverless.cli.log('Service successfully removed'))

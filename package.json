@@ -43,6 +43,7 @@
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
+    "@types/serverless": "^1.18.2",
     "eslint": "3.19.0"
   },
   "optionalDependencies": {

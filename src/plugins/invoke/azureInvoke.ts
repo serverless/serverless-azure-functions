@@ -1,12 +1,17 @@
-'use strict';
 
-const BbPromise = require('bluebird');
+import { Promise } from 'bluebird';
 const invokeFunction = require('./lib/invokeFunction');
 const getAdminKey = require('../../shared/getAdminKey');
-const path = require('path');
+import { join, isAbsolute } from 'path';
 
 class AzureInvoke {
-  constructor (serverless, options) {
+
+  hooks: any;
+  provider: any;
+  invokeFunction: any;
+  getAdminKey: any;
+
+  constructor (private serverless, private options) {
     this.serverless = serverless;
     this.options = options;
     this.provider = this.serverless.getProvider('azure');
@@ -18,9 +23,9 @@ class AzureInvoke {
     );
 
     if (this.options.path) {
-      const absolutePath = path.isAbsolute(this.options.path)
+      const absolutePath = isAbsolute(this.options.path)
         ? this.options.path
-        : path.join(this.serverless.config.servicePath, this.options.path);
+        : join(this.serverless.config.servicePath, this.options.path);
 
       if (!this.serverless.utils.fileExistsSync(absolutePath)) {
         throw new this.serverless.classes.Error('The file you provided does not exist.');
@@ -31,11 +36,11 @@ class AzureInvoke {
     this.hooks = {
 
       // TODO: See ./lib/invokeFunction.js:L10
-      'before:invoke:invoke': () => BbPromise.bind(this)
+      'before:invoke:invoke': () => Promise.bind(this)
          .then(this.provider.initialize(this.serverless,this.options))
          .then(this.getAdminKey),
 
-      'invoke:invoke': () => BbPromise.bind(this)
+      'invoke:invoke': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.invokeFunction)
     };
