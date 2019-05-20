@@ -1,5 +1,4 @@
-const BbPromise = require('bluebird');
-const path = require('path');
+import { Promise } from 'bluebird');import { join } from 'path';
 const fs = require('fs');
 const request = require('request');
 const parseBindings = require('../shared/parseBindings');
@@ -224,7 +223,7 @@ export default class AzureProvider {
   }
 
   uploadPackageJson() {
-    const packageJsonFilePath = path.join(this.serverless.config.servicePath, 'package.json');
+    const packageJsonFilePath = join(this.serverless.config.servicePath, 'package.json');
     this.serverless.cli.log('Uploading package.json...');
 
     const requestUrl = `https://${functionAppName}${config.scmDomain}${config.scmVfsPath}package.json`;
@@ -261,7 +260,7 @@ export default class AzureProvider {
       const functionJSON = params.functionsJson;
       functionJSON.entryPoint = entryPoint;
       functionJSON.scriptFile = filePath;
-      fs.writeFileSync(path.join(this.serverless.config.servicePath, functionName + '-function.json'), JSON.stringify(functionJSON, null, 4));
+      fs.writeFileSync(join(this.serverless.config.servicePath, functionName + '-function.json'), JSON.stringify(functionJSON, null, 4));
       resolve();
     });
   }

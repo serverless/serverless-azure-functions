@@ -1,9 +1,9 @@
 import { FunctionAppService } from '../../services/functionAppService';
 
 export class AzureDeployFunctionPlugin {
-  constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
+  hooks: any;
+  
+  constructor(private serverless, private options) {
 
     this.hooks = {
       'deploy:function:packageFunction': this.beforeDeploy.bind(this),

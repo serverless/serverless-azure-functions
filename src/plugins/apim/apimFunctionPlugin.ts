@@ -1,9 +1,9 @@
 import { ApimService } from '../../services/apimService';
 
 export class AzureApimFunctionPlugin {
-  constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
+  hooks: any;
+  
+  constructor(private serverless, private options) {
 
     this.hooks = {
       'after:deploy:function:deploy': this.deploy.bind(this)

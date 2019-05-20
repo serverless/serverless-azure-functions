@@ -1,10 +1,14 @@
-'use strict';
 
-const BbPromise = require('bluebird');
+import { Promise } from 'bluebird';
+import AzureProvider from '../../provider/azureProvider';
 const retrieveLogs = require('./lib/retrieveLogs');
 
 class AzureLogs {
-  constructor (serverless, options) {
+  provider: AzureProvider
+  hooks: any;
+  retrieveLogs: any;
+
+  constructor (private serverless, private options) {
     this.serverless = serverless;
     this.options = options;
     this.provider = this.serverless.getProvider('azure');
@@ -15,10 +19,10 @@ class AzureLogs {
     );
 
     this.hooks = {
-      'before:logs:logs': () => BbPromise.bind(this)
+      'before:logs:logs': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options)),
 
-      'logs:logs': () => BbPromise.bind(this)
+      'logs:logs': () => Promise.bind(this)
         .then(this.provider.initialize(this.serverless,this.options))
         .then(this.retrieveLogs)
     };

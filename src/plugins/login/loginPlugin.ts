@@ -1,10 +1,12 @@
 import open from 'open';
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
+import AzureProvider from '../../provider/azureProvider';
 
 export class AzureLoginPlugin {
-  constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
+  provider: AzureProvider;
+  hooks: any;
+
+  constructor(private serverless, private options) {
     this.provider = this.serverless.getProvider('azure');
 
     this.hooks = {
@@ -29,10 +31,6 @@ export class AzureLoginPlugin {
         await open('https://microsoft.com/devicelogin');
         authResult = await interactiveLoginWithAuthResponse();
       }
-
-      this.provider.credentials = authResult.credentials;
-      this.provider.subscriptionId = authResult.subscriptionId || subscriptionId;
-      this.provider.accessToken = authResult.credentials.tokenCache._entries[0].accessToken;
       this.serverless.variables.azureAccessToken = authResult.credentials.tokenCache._entries[0].accessToken;
       this.serverless.variables.azureCredentials = authResult.credentials;
       this.serverless.variables.subscriptionId = authResult.subscriptionId || subscriptionId;

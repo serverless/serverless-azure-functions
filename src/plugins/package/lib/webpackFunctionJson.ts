@@ -1,8 +1,6 @@
-'use strict';
 const fs = require('fs');
-const path = require('path');
-const BbPromise = require('bluebird');
-
+import { join } from 'path';
+import { Promise } from 'bluebird';
 module.exports = {
   webpackFunctionJson () {
     const webpackJsonPromises = [];
@@ -13,17 +11,17 @@ module.exports = {
       });
     }
 
-    return BbPromise.all(webpackJsonPromises);
+    return Promise.all(webpackJsonPromises);
   }
 };
 
 function moveJsonFile(functionName) {
-  const dirPath = path.join(this.serverless.config.servicePath, '.webpack', functionName);
+  const dirPath = join(this.serverless.config.servicePath, '.webpack', functionName);
   const jsonFileName = `${functionName}-function.json`;
-  const jsonFileSrcPath = path.join(this.serverless.config.servicePath, jsonFileName);
-  const jsonFileDestPath = path.join(dirPath, jsonFileName);
+  const jsonFileSrcPath = join(this.serverless.config.servicePath, jsonFileName);
+  const jsonFileDestPath = join(dirPath, jsonFileName);
 
-  const fileMovedPromise = new BbPromise((resolve) => {
+  const fileMovedPromise = new Promise((resolve) => {
     if (fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
       if (fs.existsSync(jsonFileSrcPath)) {
         this.serverless.cli.log(`Moving ${jsonFileName} to .webpack directory.`);

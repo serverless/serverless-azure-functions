@@ -1,9 +1,7 @@
 import axios from 'axios';
 
 export class BaseService {
-  constructor(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
+constructor(private serverless, private options) {
 
     this.baseUrl = 'https://management.azure.com';
     this.serviceName = serverless.service.service;
