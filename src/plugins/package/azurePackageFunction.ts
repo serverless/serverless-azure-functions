@@ -1,17 +1,13 @@
 
-import { Promise } from 'bluebird';
-import AzureProvider from '../../provider/azureProvider';
-const compileEventsForFunction = require('./lib/compileEventsForFunction');
+import { compileEventsForFunction } from './lib/compileEventsForFunction';
 
 export class AzurePackageFunction {
-  provider: AzureProvider;
-  hooks: any;
-  compileEventsForFunction: any;
+  public hooks: { [eventName: string]: Promise<any> };
+  private compileEventsForFunction: () => Promise<any>;
 
-  constructor (private serverless, private options) {
+  constructor(private serverless, private options) {
     this.serverless = serverless;
     this.options = options;
-    this.provider = this.serverless.getProvider('azure');
 
     Object.assign(
       this,
@@ -19,10 +15,12 @@ export class AzurePackageFunction {
     );
 
     this.hooks = {
-      'before:deploy:function:packageFunction': () => Promise.bind(this)
-        .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.compileEventsForFunction),
+      'before:deploy:function:packageFunction': this.packageFunction.bind(this)
     };
+  }
+
+  private async packageFunction() {
+    this.serverless.cli.log('Building Azure Events Hooks');
+    await this.compileEventsForFunction();
   }
 }

@@ -1,17 +1,13 @@
-
-import { Promise } from 'bluebird';
-import AzureProvider from '../../provider/azureProvider';
-const retrieveLogs = require('./lib/retrieveLogs');
+import * as Serverless from 'serverless';
+import { retrieveLogs } from './lib/retrieveLogs';
 
 export class AzureLogs {
-  provider: AzureProvider
-  hooks: any;
-  retrieveLogs: any;
+  public hooks: { [eventName: string]: Promise<any> };
+  private retrieveLogs: () => Promise<any>;
 
-  constructor (private serverless, private options) {
+  constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.serverless = serverless;
     this.options = options;
-    this.provider = this.serverless.getProvider('azure');
 
     Object.assign(
       this,
@@ -19,12 +15,7 @@ export class AzureLogs {
     );
 
     this.hooks = {
-      'before:logs:logs': () => Promise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options)),
-
-      'logs:logs': () => Promise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.retrieveLogs)
+      'logs:logs': this.retrieveLogs.bind(this)
     };
   }
 }

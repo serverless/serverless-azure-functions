@@ -1,19 +1,19 @@
 
-import { Promise } from 'bluebird';
+import * as Serverless from 'serverless';
 import AzureProvider from '../../provider/azureProvider';
-const compileEvents = require('./lib/compileEvents');
-const webpackFunctionJson = require('./lib/webpackFunctionJson');
+import { compileEvents } from './lib/compileEvents';
+import { webpackFunctionJson } from './lib/webpackFunctionJson';
 
 export class AzurePackage {
   provider: AzureProvider
-  hooks: any;
-  compileEvents: any;
-  webpackFunctionJson: any;
+  public hooks: { [eventName: string]: Promise<any> };
 
-  constructor (private serverless, private options) {
+  private compileEvents: () => Promise<any>;
+  private webpackFunctionJson: () => Promise<any>;
+
+  constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.serverless = serverless;
     this.options = options;
-    this.provider = this.serverless.getProvider('azure');
 
     Object.assign(
       this,
@@ -22,14 +22,13 @@ export class AzurePackage {
     );
 
     this.hooks = {
-      'package:setupProviderConfiguration': () => Promise.bind(this)
-        .then(() => this.serverless.cli.log('Building Azure Events Hooks'))
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.compileEvents),
-
-      'before:webpack:package:packageModules': () => Promise.bind(this)
-        .then(this.provider.initialize(this.serverless, this.options))
-        .then(this.webpackFunctionJson.bind(this))
+      'package:setupProviderConfiguration': this.setupProviderConfiguration.bind(this),
+      'before:webpack:package:packageModules': this.webpackFunctionJson.bind(this)
     };
+  }
+
+  private async setupProviderConfiguration() {
+    this.serverless.cli.log('Building Azure Events Hooks');
+    return await this.compileEvents();
   }
 }

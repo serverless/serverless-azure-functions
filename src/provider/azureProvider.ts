@@ -1,4 +1,5 @@
 import { join } from 'path';
+import * as Serverless from 'serverless';
 const fs = require('fs');
 const request = require('request');
 const parseBindings = require('../shared/parseBindings');
@@ -9,37 +10,21 @@ let functionsAdminKey;
 let invocationId;
 
 export default class AzureProvider {
+  public credentials: any;
+
   private serverless: any;
   private options: any;
   private provider: any;
-  private credentials: any;
   private parsedBindings: any;
 
   static getProviderName() {
     return config.providerName;
   }
 
-  constructor(serverless) {
+  constructor(serverless: Serverless) {
     this.serverless = serverless;
     this.provider = this;
     this.serverless.setProvider(config.providerName, this);
-  }
-
-  initialize(serverless, options) {
-    this.serverless = serverless;
-    this.options = options;
-
-    // Overrides function app domains.
-    // In instances where the function app is deployed in an App Service Environment (ASE)
-    // the domains will be prefixed with a custom sub domain
-    config.functionAppDomain = this.serverless.service.provider.functionAppDomain || config.functionAppDomain;
-    config.scmDomain = this.serverless.service.provider.scmDomain || config.scmDomain;
-
-    return new Promise((resolve) => {
-      functionAppName = this.serverless.service.service;
-
-      resolve();
-    });
   }
 
   getParsedBindings() {
@@ -50,7 +35,7 @@ export default class AzureProvider {
     return this.parsedBindings;
   }
 
-  getAdminKey() {
+  getAdminKey(): Promise<any> {
     const options = {
       url: `https://${functionAppName}${config.scmDomain}${config.masterKeyApiPath}`,
       json: true,
@@ -71,7 +56,7 @@ export default class AzureProvider {
     });
   }
 
-  pingHostStatus(functionName) {
+  pingHostStatus(functionName): Promise<any> {
     const requestUrl = `https://${functionAppName}${config.functionAppDomain}/admin/functions/${functionName}/status`;
     const options = {
       host: functionAppName + config.functionAppDomain,
@@ -117,7 +102,7 @@ export default class AzureProvider {
       .pipe(process.stdout);
   }
 
-  getInvocationId(functionName) {
+  getInvocationId(functionName): Promise<any> {
     const options = {
       url: `https://${functionAppName}${config.scmDomain}${config.logInvocationsApiPath + functionAppName}-${functionName}/invocations?limit=5`,
       method: 'GET',
@@ -139,7 +124,7 @@ export default class AzureProvider {
     });
   }
 
-  getLogsForInvocationId() {
+  getLogsForInvocationId(): Promise<any> {
     this.serverless.cli.log(`Logs for InvocationId: ${invocationId}`);
     const options = {
       url: `https://${functionAppName}${config.scmDomain}${config.logOutputApiPath}${invocationId}`,
@@ -160,7 +145,7 @@ export default class AzureProvider {
     });
   }
 
-  invoke(functionName, eventType, eventData) {
+  invoke(functionName, eventType, eventData): Promise<any> {
     if (eventType === 'http') {
       let queryString = '';
 
@@ -227,7 +212,7 @@ export default class AzureProvider {
     });
   }
 
-  uploadPackageJson() {
+  uploadPackageJson(): Promise<any> {
     const packageJsonFilePath = join(this.serverless.config.servicePath, 'package.json');
     this.serverless.cli.log('Uploading package.json...');
 
@@ -260,7 +245,7 @@ export default class AzureProvider {
     });
   }
 
-  createEventsBindings(functionName, entryPoint, filePath, params) {
+  createEventsBindings(functionName, entryPoint, filePath, params): Promise<any> {
     return new Promise((resolve) => {
       const functionJSON = params.functionsJson;
       functionJSON.entryPoint = entryPoint;

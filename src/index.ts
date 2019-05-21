@@ -4,7 +4,7 @@ This way only one plugin needs to be added to the service in order to get access
 whole provider implementation.
 */
 
-import '@babel/polyfill';
+import * as Serverless from 'serverless';
 import { AzureInvoke } from './plugins/invoke/azureInvoke';
 import { AzureLogs } from './plugins/logs/azureLogs';
 import { AzureRemove } from './plugins/remove/azureRemove';
@@ -18,8 +18,8 @@ import { AzureApimServicePlugin } from './plugins/apim/apimServicePlugin';
 import { AzureApimFunctionPlugin } from './plugins/apim/apimFunctionPlugin';
 
 export class AzureIndex {
-  constructor(private serverless, private options) {
-    this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless));
+  constructor(private serverless: Serverless, private options) {
+    this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless) as any);
 
     // To be refactored
     this.serverless.pluginManager.addPlugin(AzurePackage);

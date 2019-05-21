@@ -1,28 +1,23 @@
-
-import { Promise } from 'bluebird';
-import AzureProvider from '../../provider/azureProvider';
-const deleteResourceGroup = require('./lib/deleteResourceGroup');
+import * as Serverless from 'serverless';
+import { deleteResourceGroup } from './lib/deleteResourceGroup';
 
 export class AzureRemove {
-  provider: AzureProvider;
-  hooks: any;
-  deleteResourceGroup: any;
+  public hooks: { [eventName: string]: Promise<any> };
+  deleteResourceGroup: () => Promise<any>;
 
-  constructor (private serverless, private options) {
-    this.serverless = serverless;
-    this.options = options;
-    this.provider = this.serverless.getProvider('azure');
-
+  constructor(private serverless: Serverless, private options: Serverless.Options) {
     Object.assign(
       this,
       deleteResourceGroup
     );
 
     this.hooks = {
-      'remove:remove': () => Promise.bind(this)
-        .then(this.provider.initialize(this.serverless,this.options))
-        .then(this.deleteResourceGroup)
-        .then(() => this.serverless.cli.log('Service successfully removed'))
+      'remove:remove': this.deleteResourceGroup.bind(this)
     };
+  }
+
+  private async remove() {
+    await this.deleteResourceGroup();
+    this.serverless.cli.log('Service successfully removed');
   }
 }

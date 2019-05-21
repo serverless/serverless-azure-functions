@@ -1,13 +1,14 @@
+import * as Serverless from 'serverless';
 import * as open from 'open';
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
 import AzureProvider from '../../provider/azureProvider';
 
 export class AzureLoginPlugin {
   private provider: AzureProvider;
-  private hooks: any;
+  public hooks: { [eventName: string]: Promise<any> };
 
-  constructor(private serverless, private options) {
-    this.provider = this.serverless.getProvider('azure');
+  constructor(private serverless: Serverless, private options: Serverless.Options) {
+    this.provider = (this.serverless.getProvider('azure') as any) as AzureProvider;
 
     this.hooks = {
       'before:deploy:initialize': this.login.bind(this)
@@ -31,9 +32,13 @@ export class AzureLoginPlugin {
         await open('https://microsoft.com/devicelogin');
         authResult = await interactiveLoginWithAuthResponse();
       }
-      this.serverless.variables.azureAccessToken = authResult.credentials.tokenCache._entries[0].accessToken;
-      this.serverless.variables.azureCredentials = authResult.credentials;
-      this.serverless.variables.subscriptionId = authResult.subscriptionId || subscriptionId;
+
+      // TODO: This is temporary until the azure provider goes away
+      this.provider.credentials = authResult.credentials;
+
+      this.serverless.variables['azureAccessToken'] = authResult.credentials.tokenCache._entries[0].accessToken;
+      this.serverless.variables['azureCredentials'] = authResult.credentials;
+      this.serverless.variables['subscriptionId'] = authResult.subscriptionId || subscriptionId;
     }
     catch (e) {
       this.serverless.cli.log('Error logging into azure');

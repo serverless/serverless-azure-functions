@@ -1,17 +1,18 @@
+import * as Serverless from 'serverless';
 import { ResourceService } from '../../services/resourceService';
 import { FunctionAppService } from '../../services/functionAppService';
 
 export class AzureDeployPlugin {
-  hooks: any;
-  constructor(private serverless, private options) {
+  public hooks: { [eventName: string]: Promise<any> };
 
+  constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.hooks = {
       'before:deploy:deploy': this.beforeDeploy.bind(this),
       'deploy:deploy': this.deploy.bind(this)
     };
   }
 
-  async beforeDeploy() {
+  private async beforeDeploy() {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const functionApp = await functionAppService.get();
 
@@ -20,20 +21,20 @@ export class AzureDeployPlugin {
     }
   }
 
-  async sync() {
+  private async sync() {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const functionApp = await functionAppService.get();
 
     await functionAppService.syncTriggers(functionApp);
   }
 
-  async upload() {
+  private async upload() {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const functionApp = await functionAppService.get();
     await functionAppService.uploadFunctions(functionApp);
   }
 
-  async deploy() {
+  private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
     await resourceService.deployResourceGroup();
 
