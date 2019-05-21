@@ -3,14 +3,9 @@ import { deleteResourceGroup } from './lib/deleteResourceGroup';
 
 export class AzureRemove {
   public hooks: { [eventName: string]: Promise<any> };
-  deleteResourceGroup: () => Promise<any>;
+  deleteResourceGroup = deleteResourceGroup;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      deleteResourceGroup
-    );
-
     this.hooks = {
       'remove:remove': this.remove.bind(this)
     };

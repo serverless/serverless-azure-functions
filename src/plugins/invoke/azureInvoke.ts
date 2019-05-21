@@ -5,16 +5,11 @@ import { join, isAbsolute } from 'path';
 
 export class AzureInvoke {
   public hooks: { [eventName: string]: Promise<any> };
-  private invokeFunction: () => Promise<any>;
-  private getAdminKey: () => Promise<any>;
+  
+  private invokeFunction = invokeFunction;
+  private getAdminKey = getAdminKey;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      getAdminKey,
-      invokeFunction
-    );
-
     const path = this.options['path'];
 
     if (path) {

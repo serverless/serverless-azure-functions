@@ -8,16 +8,10 @@ export class AzurePackage {
   provider: AzureProvider
   public hooks: { [eventName: string]: Promise<any> };
 
-  private compileEvents: () => Promise<any>;
-  private webpackFunctionJson: () => Promise<any>;
+  private compileEvents = compileEvents;
+  private webpackFunctionJson = webpackFunctionJson;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      compileEvents,
-      webpackFunctionJson
-    );
-
     this.hooks = {
       'package:setupProviderConfiguration': this.setupProviderConfiguration.bind(this),
       'before:webpack:package:packageModules': this.webpackFunctionJson.bind(this)

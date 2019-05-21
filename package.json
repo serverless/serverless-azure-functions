@@ -44,7 +44,8 @@
     "@babel/preset-env": "^7.4.4",
     "@types/open": "^6.1.0",
     "@types/serverless": "^1.18.2",
-    "eslint": "3.19.0"
+    "eslint": "3.19.0",
+    "tslint": "^5.16.0"
   },
   "optionalDependencies": {
     "serverless-webpack": "^4.2.0",

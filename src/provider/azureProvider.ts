@@ -1,9 +1,9 @@
 import { join } from 'path';
 import * as Serverless from 'serverless';
-const fs = require('fs');
-const request = require('request');
-const parseBindings = require('../shared/parseBindings');
-const config = require('../config');
+import * as fs from 'fs';
+import request from 'request';
+import config from '../config';
+import { getBindingsMetaData } from '../shared/parseBindings';
 
 let functionAppName;
 let functionsAdminKey;

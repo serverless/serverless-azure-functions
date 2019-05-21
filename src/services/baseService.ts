@@ -23,12 +23,16 @@ export abstract class BaseService {
       'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
     };
 
-    const allHeaders = Object.assign({}, defaultHeaders, options.headers);
+    const allHeaders = {
+      ...defaultHeaders,
+      ...options.headers,
+    };
 
-    const requestOptions = Object.assign({}, options, {
+    const requestOptions = {
+      ...options,
       method: method,
       headers: allHeaders,
-    });
+    };
 
     return await axios(relativeUrl, requestOptions);
   }

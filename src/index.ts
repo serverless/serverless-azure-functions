@@ -22,26 +22,16 @@ export class AzureIndex {
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless) as any);
 
     // To be refactored
-    this.serverless.cli.log('Adding AzurePackage');
     this.serverless.pluginManager.addPlugin(AzurePackage);
-    this.serverless.cli.log('Adding AzurePackageFunction');
     this.serverless.pluginManager.addPlugin(AzurePackageFunction);
-    this.serverless.cli.log('Adding AzureInvoke');
     this.serverless.pluginManager.addPlugin(AzureInvoke);
-    this.serverless.cli.log('Adding AzureLogs');
     this.serverless.pluginManager.addPlugin(AzureLogs);
-    this.serverless.cli.log('Adding AzureRemove');
     this.serverless.pluginManager.addPlugin(AzureRemove);
     // Refactored
-    this.serverless.cli.log('Adding AzureLoginPlugin');
     this.serverless.pluginManager.addPlugin(AzureLoginPlugin);
-    this.serverless.cli.log('Adding AzureDeployPlugin');
     this.serverless.pluginManager.addPlugin(AzureDeployPlugin);
-    this.serverless.cli.log('Adding AzureDeployFunctionPlugin');
     this.serverless.pluginManager.addPlugin(AzureDeployFunctionPlugin);
-    this.serverless.cli.log('Adding AzureApimServicePlugin');
     this.serverless.pluginManager.addPlugin(AzureApimServicePlugin);
-    this.serverless.cli.log('Adding AzureApimFunctionPlugin');
     this.serverless.pluginManager.addPlugin(AzureApimFunctionPlugin);
   }
 }

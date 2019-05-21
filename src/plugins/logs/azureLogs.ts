@@ -3,14 +3,10 @@ import { retrieveLogs } from './lib/retrieveLogs';
 
 export class AzureLogs {
   public hooks: { [eventName: string]: Promise<any> };
-  private retrieveLogs: () => Promise<any>;
+  
+  private retrieveLogs = retrieveLogs;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      retrieveLogs
-    );
-
     this.hooks = {
       'logs:logs': this.retrieveLogs.bind(this)
     };
