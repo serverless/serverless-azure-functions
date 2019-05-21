@@ -6,8 +6,11 @@
   "main": "./lib/index.js",
   "author": "Azure Functions",
   "scripts": {
-    "test": "eslint src/**/*.js",
-    "prebuild": "rm lib/ -rf && npm test",
+    "lint": "eslint src/**/*.ts",
+    "lintfix": "eslint src/**/*.ts --fix",
+    "pretest": "npm run lint",
+    "test": "jest --config jest.config.json",
+    "prebuild": "rm -rf lib/ && npm test",
     "build": "tsc && cp src/shared/bindings.json lib/shared"
   },
   "repository": {
@@ -29,22 +32,23 @@
     "@azure/arm-appservice": "^5.7.0",
     "@azure/arm-resources": "^1.0.1",
     "@azure/ms-rest-nodeauth": "^1.0.1",
-    "@babel/polyfill": "^7.4.4",
     "axios": "^0.18.0",
-    "az-login": "^0.3.0",
-    "azure-arm-resource": "^2.0.0-preview",
-    "jsonpath": "^0.2.11",
+    "jsonpath": "^1.0.1",
     "lodash": "^4.16.6",
     "open": "^6.3.0",
     "request": "^2.81.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
+    "@types/jest": "^24.0.13",
     "@types/open": "^6.1.0",
     "@types/serverless": "^1.18.2",
-    "eslint": "3.19.0"
+    "@typescript-eslint/eslint-plugin": "^1.9.0",
+    "@typescript-eslint/parser": "^1.9.0",
+    "coveralls": "^3.0.3",
+    "eslint": "^5.16.0",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.4.5"
   },
   "optionalDependencies": {
     "serverless-webpack": "^4.2.0",
