@@ -1,5 +1,5 @@
+import * as Serverless from 'serverless';
 import { ApiManagementClient } from '@azure/arm-apimanagement';
-import { ResourceManagementClient } from '@azure/arm-resources';
 import { FunctionAppService } from './functionAppService';
 import { BaseService } from './baseService';
 
@@ -7,17 +7,14 @@ import { BaseService } from './baseService';
  * APIM Service handles deployment and integration with Azure API Management
  */
 export class ApimService extends BaseService {
-  private resourceId: string;
-  private resourceClient: ResourceManagementClient;
   private apimClient: ApiManagementClient;
   private functionAppService: FunctionAppService;
   private config: any;
   
-  constructor(serverless, options) {
+  constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-    this.resourceId = `/subscriptions/${this.subscriptionId}/resourceGroups/${this.resourceGroup}/providers/Microsoft.Web/sites/${this.serviceName}`;
-    this.config = this.serverless.service.provider.apim;
-    this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
+
+    this.config = this.serverless.service.provider['apim'];
     this.apimClient = new ApiManagementClient(this.credentials, this.subscriptionId);
     this.functionAppService = new FunctionAppService(serverless, options);
   }
@@ -59,7 +56,7 @@ export class ApimService extends BaseService {
    * @param options 
    */
   async deployFunction(options) {
-    const functionConfig = this.serverless.service.functions[options.function];
+    const functionConfig = this.serverless.service['functions'][options.function];
 
     if (!functionConfig.apim) {
       return;

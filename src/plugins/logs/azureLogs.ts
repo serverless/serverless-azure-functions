@@ -6,9 +6,6 @@ export class AzureLogs {
   private retrieveLogs: () => Promise<any>;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    this.serverless = serverless;
-    this.options = options;
-
     Object.assign(
       this,
       retrieveLogs

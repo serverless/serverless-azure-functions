@@ -1,3 +1,4 @@
+import * as Serverless from 'serverless';
 import axios from 'axios';
 
 export abstract class BaseService {
@@ -8,13 +9,13 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  constructor(protected serverless, protected options) {
+  constructor(protected serverless: Serverless, protected options: Serverless.Options) {
     this.baseUrl = 'https://management.azure.com';
-    this.serviceName = serverless.service.service;
-    this.credentials = serverless.variables.azureCredentials;
-    this.subscriptionId = serverless.variables.subscriptionId;
-    this.resourceGroup = serverless.service.provider.resourceGroup || `${this.serviceName}-rg`;
-    this.deploymentName = serverless.service.provider.deploymentName || `${this.resourceGroup}-deployment`;
+    this.serviceName = serverless.service['service'];
+    this.credentials = serverless.variables['azureCredentials'];
+    this.subscriptionId = serverless.variables['subscriptionId'];
+    this.resourceGroup = serverless.service.provider['resourceGroup'] || `${this.serviceName}-rg`;
+    this.deploymentName = serverless.service.provider['deploymentName'] || `${this.resourceGroup}-deployment`;
   }
 
   async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {

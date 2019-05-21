@@ -1,10 +1,11 @@
+import * as Serverless from 'serverless';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { BaseService } from './baseService';
 
 export class ResourceService extends BaseService {
   private resourceClient: ResourceManagementClient;
-  
-  constructor(serverless, options) {
+
+  constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
 
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
@@ -14,7 +15,7 @@ export class ResourceService extends BaseService {
     this.serverless.cli.log(`Creating resource group: ${this.resourceGroup}`);
 
     const groupParameters = {
-      location: this.serverless.service.provider.location
+      location: this.serverless.service.provider['location']
     };
 
     return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, groupParameters);

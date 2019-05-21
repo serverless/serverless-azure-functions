@@ -1,3 +1,4 @@
+import * as Serverless from 'serverless';
 import * as fs from 'fs';
 import * as path from 'path';
 import request from 'request';
@@ -9,14 +10,12 @@ import { BaseService } from './baseService';
 import { Deployment } from '@azure/arm-resources/esm/models';
 
 export class FunctionAppService extends BaseService {
-  private resourceId: string;
   private resourceClient: ResourceManagementClient;
   private webClient: WebSiteManagementClient;
 
-  constructor(serverless, options) {
+  constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
 
-    this.resourceId = `/subscriptions/${this.subscriptionId}/resourceGroups/${this.resourceGroup}/providers/Microsoft.Web/sites/${this.serviceName}`;
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
   }
@@ -89,7 +88,7 @@ export class FunctionAppService extends BaseService {
     const scmDomain = functionApp.enabledHostNames[0];
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service.functions[functionName].package.artifact || this.serverless.service.artifact;
+    const functionZipFile = this.serverless.service['functions'][functionName].package.artifact || this.serverless.service['artifact'];
     if (functionZipFile) {
       this.serverless.cli.log(`-> Uploading function package: ${functionName}`);
 
@@ -118,7 +117,7 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
 
-    const gitUrl = this.serverless.service.provider.gitUrl;
+    const gitUrl = this.serverless.service.provider['gitUrl'];
 
     if (gitUrl) {
       parameters = {
@@ -133,10 +132,10 @@ export class FunctionAppService extends BaseService {
       templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
     }
 
-    if (this.serverless.service.provider.armTemplate) {
-      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider.armTemplate.file}`);
-      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider.armTemplate.file);
-      const userParameters = this.serverless.service.provider.armTemplate.parameters;
+    if (this.serverless.service.provider['armTemplate']) {
+      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider['armTemplate'].file}`);
+      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider['armTemplate'].file);
+      const userParameters = this.serverless.service.provider['armTemplate'].parameters;
       const userParametersKeys = Object.keys(userParameters);
 
       for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
@@ -151,7 +150,7 @@ export class FunctionAppService extends BaseService {
 
     // Check if there are custom environment variables defined that need to be
     // added to the ARM template used in the deployment.
-    const environmentVariables = this.serverless.service.provider.environment;
+    const environmentVariables = this.serverless.service.provider['environment'];
     if (environmentVariables) {
       const appSettingsPath = '$.resources[?(@.kind=="functionapp")].properties.siteConfig.appSettings';
 

@@ -12,9 +12,6 @@ export class AzurePackage {
   private webpackFunctionJson: () => Promise<any>;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    this.serverless = serverless;
-    this.options = options;
-
     Object.assign(
       this,
       compileEvents,

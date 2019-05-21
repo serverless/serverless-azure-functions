@@ -13,8 +13,6 @@ export default class AzureProvider {
   public credentials: any;
 
   private serverless: any;
-  private options: any;
-  private provider: any;
   private parsedBindings: any;
 
   static getProviderName() {
@@ -23,7 +21,6 @@ export default class AzureProvider {
 
   constructor(serverless: Serverless) {
     this.serverless = serverless;
-    this.provider = this;
     this.serverless.setProvider(config.providerName, this);
   }
 
