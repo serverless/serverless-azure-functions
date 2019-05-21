@@ -95,7 +95,7 @@ export default class AzureProvider {
       .on('error', () => {
         console.error('Disconnected from log streaming.');
       })
-      .on('end', this.getLogsStream.bind(this))
+      .on('end', () => this.getLogsStream(functionName))
       .pipe(process.stdout);
   }
 

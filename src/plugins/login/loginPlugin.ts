@@ -15,7 +15,7 @@ export class AzureLoginPlugin {
     };
   }
 
-  async login() {
+  private async login() {
     this.serverless.cli.log('Logging into Azure');
 
     let authResult = null;

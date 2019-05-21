@@ -21,19 +21,6 @@ export class AzureDeployPlugin {
     }
   }
 
-  private async sync() {
-    const functionAppService = new FunctionAppService(this.serverless, this.options);
-    const functionApp = await functionAppService.get();
-
-    await functionAppService.syncTriggers(functionApp);
-  }
-
-  private async upload() {
-    const functionAppService = new FunctionAppService(this.serverless, this.options);
-    const functionApp = await functionAppService.get();
-    await functionAppService.uploadFunctions(functionApp);
-  }
-
   private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
     await resourceService.deployResourceGroup();

@@ -12,7 +12,7 @@ export class AzureRemove {
     );
 
     this.hooks = {
-      'remove:remove': this.deleteResourceGroup.bind(this)
+      'remove:remove': this.remove.bind(this)
     };
   }
 
