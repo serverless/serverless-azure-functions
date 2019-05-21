@@ -1,12 +1,7 @@
 language: node_js
 
-os:
-  - mac
-  - linux
-  - windows
-
 matrix:
-  include:
+  include:    
     - node_js: '6'
     - node_js: '8'
     - node_js: '10'
