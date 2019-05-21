@@ -1,9 +1,8 @@
-import { join } from 'path';
-import * as Serverless from 'serverless';
 import * as fs from 'fs';
-import request from 'request';
+import { join } from 'path';
+import * as request from 'request';
+import * as Serverless from 'serverless';
 import config from '../config';
-import { getBindingsMetaData } from '../shared/bindings';
 
 let functionAppName;
 let functionsAdminKey;
