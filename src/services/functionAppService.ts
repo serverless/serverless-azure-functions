@@ -126,7 +126,7 @@ export class FunctionAppService extends BaseService {
       };
     }
 
-    let templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeploy.json');
+    let templateFilePath = path.join(__dirname, '..', 'provider', 'armTemplates', 'azuredeploy.json');
 
     if (gitUrl) {
       templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');

@@ -1,3 +1,5 @@
+import { getBindingsMetaData } from "./bindings";
+
 const constants = {
   type: 'type',
   direction: 'direction',
@@ -22,7 +24,13 @@ const constants = {
   entryPoint: 'entryPoint'
 };
 
-export function getFunctionMetaData(functionName, parsedBindings, serverless) {
+export interface IFunctionMetadata {
+  entryPoint: any;
+  handlerPath: any;
+  params: any;
+}
+
+export function getFunctionMetaData(functionName, serverless): IFunctionMetadata {
   const bindings = [];
   let bindingSettingsNames = [];
   let bindingSettings = [];
@@ -35,6 +43,8 @@ export function getFunctionMetaData(functionName, parsedBindings, serverless) {
   const params: any = {
     functionJson: null
   };
+
+  const parsedBindings = getBindingsMetaData(serverless);
 
   const bindingTypes = parsedBindings.bindingTypes;
   const bindingDisplayNames = parsedBindings.bindingDisplayNames;

@@ -6,8 +6,11 @@
     "outDir": "./lib",
     "strict": false,
     "resolveJsonModule": true,
+    "types": []
   },
   "include": [
-    "src"
+    "src",
+    "src/shared/bindings.json",
+    "src/provider/armTemplates/azuredeploy.json"
   ]
 }

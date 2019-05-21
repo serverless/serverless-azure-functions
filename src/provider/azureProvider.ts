@@ -3,7 +3,7 @@ import * as Serverless from 'serverless';
 import * as fs from 'fs';
 import request from 'request';
 import config from '../config';
-import { getBindingsMetaData } from '../shared/parseBindings';
+import { getBindingsMetaData } from '../shared/bindings';
 
 let functionAppName;
 let functionsAdminKey;
@@ -24,13 +24,7 @@ export default class AzureProvider {
     this.serverless.setProvider(config.providerName, this);
   }
 
-  getParsedBindings() {
-    if (!this.parsedBindings) {
-      this.parsedBindings = parseBindings.getBindingsMetaData(this.serverless);
-    }
-
-    return this.parsedBindings;
-  }
+  
 
   getAdminKey(): Promise<any> {
     const options = {
@@ -242,13 +236,5 @@ export default class AzureProvider {
     });
   }
 
-  createEventsBindings(functionName, entryPoint, filePath, params): Promise<any> {
-    return new Promise((resolve) => {
-      const functionJSON = params.functionsJson;
-      functionJSON.entryPoint = entryPoint;
-      functionJSON.scriptFile = filePath;
-      fs.writeFileSync(join(this.serverless.config.servicePath, functionName + '-function.json'), JSON.stringify(functionJSON, null, 4));
-      resolve();
-    });
-  }
+  
 }
