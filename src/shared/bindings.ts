@@ -45,10 +45,10 @@ export function getBindingsMetaData(serverless) {
   return parsedBindings;
 }
 
-export async function createEventsBindings(serverless: Serverless, functionName, functionMetadata: IFunctionMetadata): Promise<any> {
+export async function createEventsBindings(serverless: Serverless, functionName: string, functionMetadata: IFunctionMetadata): Promise<any> {
   const functionJSON = functionMetadata.params.functionsJson;
   functionJSON.entryPoint = functionMetadata.entryPoint;
   functionJSON.scriptFile = functionMetadata.handlerPath;
-  writeFileSync(join(serverless.config.servicePath, functionName + '-function.json'), JSON.stringify(functionJSON, null, 4));
+  writeFileSync(join(serverless.config.servicePath, functionName, 'function.json'), JSON.stringify(functionJSON, null, 4));
   return Promise.resolve();
 }
