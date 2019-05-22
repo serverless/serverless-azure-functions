@@ -1,5 +1,5 @@
-// import * as open from 'open';
-import { loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
+import * as open from 'open';
+import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
 import * as Serverless from 'serverless';
 import AzureProvider from '../../provider/azureProvider';
 
@@ -11,7 +11,7 @@ export class AzureLoginPlugin {
     this.provider = (this.serverless.getProvider('azure') as any) as AzureProvider;
 
     this.hooks = {
-      'package:initialize': this.login.bind(this)
+      'before:package:initialize': this.login.bind(this)
     };
   }
 
@@ -28,11 +28,11 @@ export class AzureLoginPlugin {
     try {
       if (subscriptionId && clientId && secret && tenantId) {
         authResult = await loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId);
-      } 
-      // else {
-      //   await open('https://microsoft.com/devicelogin');
-      //   authResult = await interactiveLoginWithAuthResponse();
-      // }
+      }
+      else {
+        await open('https://microsoft.com/devicelogin');
+        authResult = await interactiveLoginWithAuthResponse();
+      }
 
       // TODO: This is temporary until the azure provider goes away
       this.provider.credentials = authResult.credentials;

@@ -10,9 +10,7 @@ let invocationId;
 
 export default class AzureProvider {
   public credentials: any;
-
   private serverless: any;
-  private parsedBindings: any;
 
   static getProviderName() {
     return config.providerName;
@@ -22,8 +20,6 @@ export default class AzureProvider {
     this.serverless = serverless;
     this.serverless.setProvider(config.providerName, this);
   }
-
-  
 
   getAdminKey(): Promise<any> {
     const options = {
@@ -234,6 +230,4 @@ export default class AzureProvider {
       }
     });
   }
-
-  
 }

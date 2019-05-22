@@ -35,6 +35,7 @@
     "azure-arm-resource": "^2.0.0-preview",
     "jsonpath": "^0.2.11",
     "lodash": "^4.16.6",
+    "open": "^6.3.0",
     "request": "^2.81.0"
   },
   "devDependencies": {

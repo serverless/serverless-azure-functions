@@ -19,31 +19,26 @@ export class AzurePackage {
 
   private async setupProviderConfiguration() {
     this.serverless.cli.log('Building Azure Events Hooks');
-    return await this.compileEvents();
-  }
 
-  private async compileEvents(): Promise<any> {
-    const createEventsPromises = [];
+    const createEventsPromises = this.serverless.service.getAllFunctions()
+      .map((functionName) => {
+        const metaData = getFunctionMetaData(functionName, this.serverless);
 
-    this.serverless.service.getAllFunctions().forEach((functionName) => {
-      const metaData = getFunctionMetaData(functionName, this.serverless);
-
-      createEventsPromises.push(createEventsBindings(this.serverless, functionName, metaData));
-    });
+        return createEventsBindings(this.serverless.config.servicePath, functionName, metaData);
+      });
 
     return Promise.all(createEventsPromises);
   }
 
   private async webpackFunctionJson(): Promise<any> {
-    const webpackJsonPromises = [];
-
     if (existsSync('.webpack')) {
-      this.serverless.service.getAllFunctions().forEach((functionName) => {
-        webpackJsonPromises.push(this.moveJsonFile.call(this, functionName));
-      });
+      const webpackJsonPromises = this.serverless.service.getAllFunctions()
+        .map((functionName) => this.moveJsonFile(functionName));
+
+      return Promise.all(webpackJsonPromises);
     }
 
-    return Promise.all(webpackJsonPromises);
+    return Promise.resolve();
   }
 
   private async moveJsonFile(functionName): Promise<any> {
@@ -51,7 +46,7 @@ export class AzurePackage {
     const jsonFileName = `${functionName}-function.json`;
     const jsonFileSrcPath = join(this.serverless.config.servicePath, jsonFileName);
     const jsonFileDestPath = join(dirPath, jsonFileName);
-  
+
     return new Promise((resolve) => {
       if (existsSync(dirPath) && statSync(dirPath).isDirectory()) {
         if (existsSync(jsonFileSrcPath)) {
@@ -62,7 +57,7 @@ export class AzurePackage {
           this.serverless.cli.log(`Warning: No generated ${functionName}-function.json file was found. It will not be included in the package.`);
         }
       }
-  
+
       resolve();
     });
   }
