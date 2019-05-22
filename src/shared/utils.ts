@@ -24,13 +24,13 @@ const constants = {
   entryPoint: 'entryPoint'
 };
 
-export interface IFunctionMetadata {
+export interface FunctionMetadata {
   entryPoint: any;
   handlerPath: any;
   params: any;
 }
 
-export function getFunctionMetaData(functionName, serverless): IFunctionMetadata {
+export function getFunctionMetaData(functionName, serverless): FunctionMetadata {
   const bindings = [];
   let bindingSettingsNames = [];
   let bindingSettings = [];
