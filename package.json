@@ -7,8 +7,8 @@
   "author": "Azure Functions",
   "scripts": {
     "test": "eslint src/**/*.js",
-    "prebuild": "rm lib/ -rf && npm test",
-    "build": "tsc && cp src/shared/bindings.json lib/shared"
+    "prebuild": "rm -rf lib/ && npm test",
+    "build": "tsc"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -34,7 +34,7 @@
     "az-login": "^0.3.0",
     "azure-arm-resource": "^2.0.0-preview",
     "jsonpath": "^0.2.11",
-    "lodash": "^4.16.6",
+    "lodash": "^4.17.11",
     "open": "^6.3.0",
     "request": "^2.81.0"
   },
@@ -42,9 +42,12 @@
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.4",
     "@babel/preset-env": "^7.4.4",
+    "@types/lodash": "^4.14.130",
     "@types/open": "^6.1.0",
+    "@types/request": "^2.48.1",
     "@types/serverless": "^1.18.2",
-    "eslint": "3.19.0"
+    "eslint": "3.19.0",
+    "tslint": "^5.16.0"
   },
   "optionalDependencies": {
     "serverless-webpack": "^4.2.0",
