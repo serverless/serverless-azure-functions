@@ -72,8 +72,23 @@ export class FunctionAppService extends BaseService {
     return response.data.value || [];
   }
 
-  async uploadFunctions(functionApp) {
+  async uploadFunctions(functionApp): Promise<any> {
     this.serverless.cli.log('Creating azure functions');
+
+    const scmDomain = functionApp.enabledHostNames[0];
+    const functionZipFile = this.serverless.service['artifact'];
+
+    const requestOptions = {
+      method: 'POST',
+      uri: `https://${scmDomain}/api/zipdeploy/`,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+        Accept: '*/*'
+      }
+    };
+
+    await this._sendFile(requestOptions, functionZipFile);
 
     // Perform additional operations per function
     const serviceFunctions = this.serverless.service.getAllFunctions();
@@ -82,35 +97,9 @@ export class FunctionAppService extends BaseService {
     return await Promise.all(uploadTasks);
   }
 
-  async uploadFunction(functionApp, functionName) {
+  async uploadFunction(functionApp, functionName): Promise<any> {
     this.serverless.cli.log(`-> Creating function: ${functionName}`);
-
-    const scmDomain = functionApp.enabledHostNames[0];
-
-    // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service['functions'][functionName].package.artifact || this.serverless.service['artifact'];
-    if (functionZipFile) {
-      this.serverless.cli.log(`-> Uploading function package: ${functionName}`);
-
-      const requestOptions = {
-        method: 'PUT',
-        uri: `https://${scmDomain}/api/zip/site/wwwroot/${functionName}/`,
-        json: true,
-        headers: {
-          Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-          Accept: '*/*'
-        }
-      };
-
-      await this._sendFile(requestOptions, functionZipFile);
-      this.serverless.cli.log(`-> Function package uploaded successfully: ${functionName}`);
-
-      // Rename function json
-      const fromPath = path.join(functionName, `${functionName}-function.json`);
-      const toPath = path.join(functionName, 'function.json');
-      const command = `mv ${fromPath} ${toPath}`;
-      await this._runKuduCommand(functionApp, command);
-    }
+    return Promise.resolve();
   }
 
   async deploy() {
