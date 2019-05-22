@@ -17,8 +17,8 @@ export abstract class BaseService {
     this.resourceGroup = serverless.service.provider['resourceGroup'] || `${this.serviceName}-rg`;
     this.deploymentName = serverless.service.provider['deploymentName'] || `${this.resourceGroup}-deployment`;
 
-    if(!this.credentials) {
-      throw new Error('Azure Credentials has not been set');
+    if (!this.credentials) {
+      throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
 

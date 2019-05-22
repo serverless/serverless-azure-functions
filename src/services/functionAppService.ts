@@ -3,7 +3,7 @@ import { ResourceManagementClient } from '@azure/arm-resources';
 import { Deployment } from '@azure/arm-resources/esm/models';
 import * as fs from 'fs';
 import jsonpath from 'jsonpath';
-import _ from 'lodash';
+import * as _ from 'lodash';
 import * as path from 'path';
 import * as Serverless from 'serverless';
 import { BaseService } from './baseService';

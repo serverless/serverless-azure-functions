@@ -16,6 +16,11 @@ export class AzureLoginPlugin {
   }
 
   private async login() {
+    // If credentials have already been set then short circuit
+    if (this.serverless.variables['azureCredentials']) {
+      return;
+    }
+
     this.serverless.cli.log('Logging into Azure');
 
     let authResult = null;
