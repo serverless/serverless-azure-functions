@@ -1,9 +1,8 @@
+import * as fs from 'fs';
 import { join } from 'path';
+import * as request from 'request';
 import * as Serverless from 'serverless';
-const fs = require('fs');
-const request = require('request');
-const parseBindings = require('../shared/parseBindings');
-const config = require('../config');
+import config from '../config';
 
 let functionAppName;
 let functionsAdminKey;
@@ -11,9 +10,7 @@ let invocationId;
 
 export default class AzureProvider {
   public credentials: any;
-
   private serverless: any;
-  private parsedBindings: any;
 
   static getProviderName() {
     return config.providerName;
@@ -22,14 +19,6 @@ export default class AzureProvider {
   constructor(serverless: Serverless) {
     this.serverless = serverless;
     this.serverless.setProvider(config.providerName, this);
-  }
-
-  getParsedBindings() {
-    if (!this.parsedBindings) {
-      this.parsedBindings = parseBindings.getBindingsMetaData(this.serverless);
-    }
-
-    return this.parsedBindings;
   }
 
   getAdminKey(): Promise<any> {
@@ -95,7 +84,7 @@ export default class AzureProvider {
       .on('error', () => {
         console.error('Disconnected from log streaming.');
       })
-      .on('end', this.getLogsStream.bind(this))
+      .on('end', () => this.getLogsStream(functionName))
       .pipe(process.stdout);
   }
 
@@ -239,16 +228,6 @@ export default class AzureProvider {
       else {
         resolve('Package.json file does not exist');
       }
-    });
-  }
-
-  createEventsBindings(functionName, entryPoint, filePath, params): Promise<any> {
-    return new Promise((resolve) => {
-      const functionJSON = params.functionsJson;
-      functionJSON.entryPoint = entryPoint;
-      functionJSON.scriptFile = filePath;
-      fs.writeFileSync(join(this.serverless.config.servicePath, functionName + '-function.json'), JSON.stringify(functionJSON, null, 4));
-      resolve();
     });
   }
 }

@@ -5,12 +5,12 @@ whole provider implementation.
 */
 
 import * as Serverless from 'serverless';
+import AzureProvider from './provider/azureProvider';
 import { AzureInvoke } from './plugins/invoke/azureInvoke';
 import { AzureLogs } from './plugins/logs/azureLogs';
 import { AzureRemove } from './plugins/remove/azureRemove';
 import { AzurePackage } from './plugins/package/azurePackage';
 import { AzurePackageFunction } from './plugins/package/azurePackageFunction';
-import AzureProvider from './provider/azureProvider';
 import { AzureDeployPlugin } from './plugins/deploy/azureDeployPlugin';
 import { AzureDeployFunctionPlugin } from './plugins/deploy/azureDeployFunctionPlugin';
 import { AzureLoginPlugin } from './plugins/login/loginPlugin';

@@ -1,20 +1,15 @@
 import * as Serverless from 'serverless';
-import { invokeFunction } from './lib/invokeFunction';
 import { getAdminKey } from '../../shared/getAdminKey';
 import { join, isAbsolute } from 'path';
+import AzureProvider from '../../provider/azureProvider';
 
 export class AzureInvoke {
   public hooks: { [eventName: string]: Promise<any> };
-  private invokeFunction: () => Promise<any>;
-  private getAdminKey: () => Promise<any>;
+  private provider: AzureProvider;
+  private getAdminKey = getAdminKey;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      getAdminKey,
-      invokeFunction
-    );
-
+    this.provider = (this.serverless.getProvider('azure') as any) as AzureProvider;
     const path = this.options['path'];
 
     if (path) {
@@ -30,7 +25,19 @@ export class AzureInvoke {
 
     this.hooks = {
       'before:invoke:invoke': this.getAdminKey.bind(this),
-      'invoke:invoke': this.invokeFunction.bind(this)
+      'invoke:invoke': this.invoke.bind(this)
     };
+  }
+
+  private async invoke() {
+    const func = this.options.function;
+    const functionObject = this.serverless.service.getFunction(func);
+    const eventType = Object.keys(functionObject['events'][0])[0];
+
+    if (!this.options['data']) {
+      this.options['data'] = {};
+    }
+
+    return this.provider.invoke(func, eventType, this.options['data']);
   }
 }

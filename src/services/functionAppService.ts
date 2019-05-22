@@ -1,13 +1,13 @@
-import * as Serverless from 'serverless';
-import * as fs from 'fs';
-import * as path from 'path';
-import request from 'request';
-import jsonpath from 'jsonpath';
-import _ from 'lodash';
-import { ResourceManagementClient } from '@azure/arm-resources';
 import { WebSiteManagementClient } from '@azure/arm-appservice';
-import { BaseService } from './baseService';
+import { ResourceManagementClient } from '@azure/arm-resources';
 import { Deployment } from '@azure/arm-resources/esm/models';
+import * as fs from 'fs';
+import jsonpath from 'jsonpath';
+import * as _ from 'lodash';
+import * as path from 'path';
+import * as Serverless from 'serverless';
+import { BaseService } from './baseService';
+import * as request from 'request';
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -126,7 +126,7 @@ export class FunctionAppService extends BaseService {
       };
     }
 
-    let templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeploy.json');
+    let templateFilePath = path.join(__dirname, '..', 'provider', 'armTemplates', 'azuredeploy.json');
 
     if (gitUrl) {
       templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');

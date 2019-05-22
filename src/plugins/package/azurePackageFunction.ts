@@ -1,17 +1,12 @@
 
 import * as Serverless from 'serverless';
-import { compileEventsForFunction } from './lib/compileEventsForFunction';
+import { createEventsBindings } from '../../shared/bindings';
+import { getFunctionMetaData } from '../../shared/utils';
 
 export class AzurePackageFunction {
   public hooks: { [eventName: string]: Promise<any> };
-  private compileEventsForFunction: () => Promise<any>;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      compileEventsForFunction
-    );
-
     this.hooks = {
       'before:deploy:function:packageFunction': this.packageFunction.bind(this)
     };
@@ -20,5 +15,12 @@ export class AzurePackageFunction {
   private async packageFunction() {
     this.serverless.cli.log('Building Azure Events Hooks');
     await this.compileEventsForFunction();
+  }
+
+  private async compileEventsForFunction(): Promise<any> {
+    const functionName = this.options.function;
+    const metaData = getFunctionMetaData(functionName, this.serverless);
+
+    return createEventsBindings(this.serverless.config.servicePath, functionName, metaData);
   }
 }

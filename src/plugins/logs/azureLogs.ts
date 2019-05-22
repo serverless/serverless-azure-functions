@@ -1,18 +1,21 @@
 import * as Serverless from 'serverless';
-import { retrieveLogs } from './lib/retrieveLogs';
+import AzureProvider from '../../provider/azureProvider';
 
 export class AzureLogs {
   public hooks: { [eventName: string]: Promise<any> };
-  private retrieveLogs: () => Promise<any>;
+
+  private provider: AzureProvider;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      retrieveLogs
-    );
-
+    this.provider = (this.serverless.getProvider('azure') as any) as AzureProvider;
+    
     this.hooks = {
       'logs:logs': this.retrieveLogs.bind(this)
     };
+  }
+
+  private async retrieveLogs() {
+    await this.provider.pingHostStatus(this.options.function);
+    await this.provider.getLogsStream(this.options.function);
   }
 }

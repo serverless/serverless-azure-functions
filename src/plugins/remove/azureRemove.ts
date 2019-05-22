@@ -1,23 +1,20 @@
 import * as Serverless from 'serverless';
-import { deleteResourceGroup } from './lib/deleteResourceGroup';
+import { ResourceService } from '../../services/resourceService';
 
 export class AzureRemove {
   public hooks: { [eventName: string]: Promise<any> };
-  deleteResourceGroup: () => Promise<any>;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
-    Object.assign(
-      this,
-      deleteResourceGroup
-    );
-
     this.hooks = {
-      'remove:remove': this.deleteResourceGroup.bind(this)
+      'remove:remove': this.remove.bind(this)
     };
   }
 
   private async remove() {
-    await this.deleteResourceGroup();
+    const resourceClient = new ResourceService(this.serverless, this.options);
+    await resourceClient.deleteDeployment();
+    await resourceClient.deleteResourceGroup();
+
     this.serverless.cli.log('Service successfully removed');
   }
 }
