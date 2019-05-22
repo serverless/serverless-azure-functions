@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
-import { IFunctionMetadata } from './utils';
+import { FunctionMetadata } from './utils';
 
 const bindingsJson = require('./bindings.json');
 
@@ -44,7 +44,7 @@ export function getBindingsMetaData(serverless) {
   return parsedBindings;
 }
 
-export async function createEventsBindings(servicePath: string, functionName: string, functionMetadata: IFunctionMetadata): Promise<any> {
+export async function createEventsBindings(servicePath: string, functionName: string, functionMetadata: FunctionMetadata): Promise<any> {
   const functionJSON = functionMetadata.params.functionsJson;
   functionJSON.entryPoint = functionMetadata.entryPoint;
   functionJSON.scriptFile = functionMetadata.handlerPath;
