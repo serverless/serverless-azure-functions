@@ -6,7 +6,7 @@
     "outDir": "./lib",
     "strict": false,
     "resolveJsonModule": true,
-    "types": []
+    "types": ["jest", "node"]
   },
   "include": [
     "src",
