@@ -11,7 +11,7 @@
     "pretest": "npm run lint",
     "test": "jest --config jest.config.json",
     "prebuild": "rm -rf lib/ && npm test",
-    "build": "tsc && cp src/shared/bindings.json lib/shared"
+    "build": "tsc"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -41,6 +41,7 @@
   "devDependencies": {
     "@types/jest": "^24.0.13",
     "@types/open": "^6.1.0",
+    "@types/request": "^2.48.1",
     "@types/serverless": "^1.18.2",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",

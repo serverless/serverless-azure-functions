@@ -16,6 +16,10 @@ export abstract class BaseService {
     this.subscriptionId = serverless.variables['subscriptionId'];
     this.resourceGroup = serverless.service.provider['resourceGroup'] || `${this.serviceName}-rg`;
     this.deploymentName = serverless.service.provider['deploymentName'] || `${this.resourceGroup}-deployment`;
+
+    if (!this.credentials) {
+      throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
+    }
   }
 
   async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
@@ -23,12 +27,16 @@ export abstract class BaseService {
       'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
     };
 
-    const allHeaders = Object.assign({}, defaultHeaders, options.headers);
+    const allHeaders = {
+      ...defaultHeaders,
+      ...options.headers,
+    };
 
-    const requestOptions = Object.assign({}, options, {
+    const requestOptions = {
+      ...options,
       method: method,
       headers: allHeaders,
-    });
+    };
 
     return await axios(relativeUrl, requestOptions);
   }

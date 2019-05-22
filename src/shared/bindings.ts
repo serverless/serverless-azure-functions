@@ -1,3 +1,7 @@
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+import { IFunctionMetadata } from './utils';
+
 const bindingsJson = require('./bindings.json');
 
 const constants = {
@@ -38,4 +42,12 @@ export function getBindingsMetaData(serverless) {
   };
 
   return parsedBindings;
+}
+
+export async function createEventsBindings(servicePath: string, functionName: string, functionMetadata: IFunctionMetadata): Promise<any> {
+  const functionJSON = functionMetadata.params.functionsJson;
+  functionJSON.entryPoint = functionMetadata.entryPoint;
+  functionJSON.scriptFile = functionMetadata.handlerPath;
+  writeFileSync(join(servicePath, functionName, 'function.json'), JSON.stringify(functionJSON, null, 4));
+  return Promise.resolve();
 }

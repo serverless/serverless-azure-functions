@@ -7,16 +7,16 @@ export class AzureDeployFunctionPlugin {
   constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.hooks = {
       'deploy:function:packageFunction': this.beforeDeploy.bind(this),
-      'deploy:function:deploy': this.deploy.bind(this, options)
+      'deploy:function:deploy': this.deploy.bind(this)
     };
   }
 
-  async beforeDeploy() {
+  private async beforeDeploy() {
     // Spawn 'package:function' to create the single-function zip artifact
     this.serverless.pluginManager.spawn('package:function');
   }
 
-  async deploy() {
+  private async deploy() {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const functionApp = await functionAppService.get();
 
