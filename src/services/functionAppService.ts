@@ -7,6 +7,7 @@ import jsonpath from 'jsonpath';
 import _ from 'lodash';
 import Serverless from 'serverless';
 import { BaseService } from './baseService';
+import { constants } from '../config';
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -79,27 +80,49 @@ export class FunctionAppService extends BaseService {
     return response.data.value || [];
   }
 
-  public async uploadFunctions(functionApp): Promise<any> {
-    this.serverless.cli.log('Creating azure functions');
+  public async uploadFunctions(functionApp) {
+    await this.zipDeploy(functionApp);
+  }
 
-    const scmDomain = functionApp.enabledHostNames[0];
+  private async zipDeploy(functionApp) {
+    const functionAppName = functionApp.name;
+    this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
+
+    // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
     const functionZipFile = this.serverless.service['artifact'];
+    if (!functionZipFile) {
+      throw new Error('No zip file found for function app');
+    }
 
-    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
+    this.serverless.cli.log(`-> Uploading ${functionZipFile}`);
 
+    const uploadUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmZipDeployApiPath}`;
+    this.serverless.cli.log(`-> Upload url: ${uploadUrl}`);
+
+    // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
       method: 'POST',
-      uri: `https://${scmDomain}/api/zipdeploy/`,
+      uri: uploadUrl,
       json: true,
       headers: {
         Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-        Accept: '*/*'
+        Accept: '*/*',
+        ContentType: 'application/octet-stream',
       }
     };
 
-    await this.sendFile(requestOptions, functionZipFile);
+    try {
+      await this.sendFile(requestOptions, functionZipFile);
+      this.serverless.cli.log('-> Function package uploaded successfully');
+    } catch (e) {
+      throw new Error(`Error uploading zip file:\n  --> ${e}`);
+    }
   }
 
+  /**
+   * create all necessary resources as defined in src/provider/armTemplates
+   *    resource-group, storage account, app service plan, and app service at the minimum
+   */
   public async deploy() {
     this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
