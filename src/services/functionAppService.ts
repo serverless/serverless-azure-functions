@@ -7,7 +7,6 @@ import jsonpath from 'jsonpath';
 import _ from 'lodash';
 import Serverless from 'serverless';
 import { BaseService } from './baseService';
-import * as request from 'request';
 import { constants } from '../config';
 
 export class FunctionAppService extends BaseService {
@@ -45,18 +44,6 @@ export class FunctionAppService extends BaseService {
     return response.data.value;
   }
 
-  public async deleteFunction(functionName) {
-    this.serverless.cli.log(`-> Deleting function: ${functionName}`);
-    return await this.webClient.webApps.deleteFunction(this.resourceGroup, this.serviceName, functionName);
-  }
-
-  public async syncTriggers(functionApp) {
-    this.serverless.cli.log('Syncing function triggers');
-
-    const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
-    await this.sendApiRequest('POST', syncTriggersUrl);
-  }
-
   async zipDeploy(functionApp) {
     const functionAppName = functionApp.name;
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
@@ -77,14 +64,18 @@ export class FunctionAppService extends BaseService {
         headers: {
           Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
           Accept: '*/*',
-          "Content-type": "application/octet-stream"
+          ContentType: 'application/octet-stream',
         }
       };
 
-      await this.sendFile(requestOptions, functionZipFile);
-      this.serverless.cli.log('-> Function package uploaded successfully');
+      try {
+        await this.sendFile(requestOptions, functionZipFile);
+        this.serverless.cli.log('-> Function package uploaded successfully');
+      } catch (e) {
+        throw new Error(`Error uploading zip file:\n  --> ${e}`);
+      }
     } else {
-      throw new Error('-> No zip file found for function app');
+      throw new Error('No zip file found for function app');
     }
   }
 
