@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { getAdminKey } from '../../shared/getAdminKey';
 import { join, isAbsolute } from 'path';
 import AzureProvider from '../../provider/azureProvider';

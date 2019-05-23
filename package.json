@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
+    "@types/lodash": "^4.14.130",
     "@types/open": "^6.1.0",
     "@types/request": "^2.48.1",
     "@types/serverless": "^1.18.2",

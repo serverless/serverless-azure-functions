@@ -1,13 +1,12 @@
+import fs from 'fs';
+import path from 'path';
 import { WebSiteManagementClient } from '@azure/arm-appservice';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { Deployment } from '@azure/arm-resources/esm/models';
-import * as fs from 'fs';
 import jsonpath from 'jsonpath';
-import * as _ from 'lodash';
-import * as path from 'path';
-import * as Serverless from 'serverless';
+import _ from 'lodash';
+import Serverless from 'serverless';
 import { BaseService } from './baseService';
-import * as request from 'request';
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -20,7 +19,7 @@ export class FunctionAppService extends BaseService {
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
   }
 
-  async get() {
+  public async get() {
     const response: any = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
     if (response.error && (response.error.code === 'ResourceNotFound' || response.error.code === 'ResourceGroupNotFound')) {
       return null;
@@ -29,26 +28,34 @@ export class FunctionAppService extends BaseService {
     return response;
   }
 
-  async getMasterKey(functionApp) {
+  public async getMasterKey(functionApp) {
     functionApp = functionApp || await this.get();
-    const adminToken = await this._getAuthKey(functionApp);
+    const adminToken = await this.getAuthKey(functionApp);
+    const keyUrl = `https://${functionApp.defaultHostName}/admin/host/systemkeys/_master`;
 
-    return await this._getMasterKey(functionApp.defaultHostName, adminToken);
+    const response = await this.sendApiRequest('GET', keyUrl, {
+      json: true,
+      headers: {
+        'Authorization': `Bearer ${adminToken}`
+      }
+    });
+
+    return response.data.value;
   }
 
-  async deleteFunction(functionName) {
+  public async deleteFunction(functionName) {
     this.serverless.cli.log(`-> Deleting function: ${functionName}`);
     return await this.webClient.webApps.deleteFunction(this.resourceGroup, this.serviceName, functionName);
   }
 
-  async syncTriggers(functionApp) {
+  public async syncTriggers(functionApp) {
     this.serverless.cli.log('Syncing function triggers');
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
     await this.sendApiRequest('POST', syncTriggersUrl);
   }
 
-  async cleanUp(functionApp) {
+  public async cleanUp(functionApp) {
     this.serverless.cli.log('Cleaning up existing functions');
     const deleteTasks = [];
 
@@ -65,18 +72,20 @@ export class FunctionAppService extends BaseService {
     return await Promise.all(deleteTasks);
   }
 
-  async listFunctions(functionApp) {
+  public async listFunctions(functionApp) {
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
     const response = await this.sendApiRequest('GET', getTokenUrl);
 
     return response.data.value || [];
   }
 
-  async uploadFunctions(functionApp): Promise<any> {
+  public async uploadFunctions(functionApp): Promise<any> {
     this.serverless.cli.log('Creating azure functions');
 
     const scmDomain = functionApp.enabledHostNames[0];
     const functionZipFile = this.serverless.service['artifact'];
+
+    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
 
     const requestOptions = {
       method: 'POST',
@@ -88,21 +97,10 @@ export class FunctionAppService extends BaseService {
       }
     };
 
-    await this._sendFile(requestOptions, functionZipFile);
-
-    // Perform additional operations per function
-    const serviceFunctions = this.serverless.service.getAllFunctions();
-    const uploadTasks = serviceFunctions.map((functionName) => this.uploadFunction(functionApp, functionName));
-
-    return await Promise.all(uploadTasks);
+    await this.sendFile(requestOptions, functionZipFile);
   }
 
-  async uploadFunction(functionApp, functionName): Promise<any> {
-    this.serverless.cli.log(`-> Creating function: ${functionName}`);
-    return Promise.resolve();
-  }
-
-  async deploy() {
+  public async deploy() {
     this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
 
@@ -170,48 +168,7 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  /**
-   * Uploads the specified file via HTTP request
-   * @param requestOptions The HTTP request options
-   * @param filePath The local file path
-   */
-  _sendFile(requestOptions, filePath) {
-    return new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(request(requestOptions, (err, response) => {
-          if (err) {
-            this.serverless.cli.log(JSON.stringify(err, null, 4));
-            return reject(err);
-          }
-          resolve(response);
-        }));
-    });
-  }
-
-  _wait(timeout) {
-    return new Promise((resolve) => setTimeout(resolve, timeout));
-  }
-
-  _waitForCondition(predicate, interval = 2000) {
-    return new Promise((resolve, reject) => {
-      let retries = 0;
-      const id = setInterval(async () => {
-        if (retries >= 20) {
-          clearInterval(id);
-          return reject('Failed conditional check 20 times');
-        }
-
-        retries++;
-        const result = await predicate();
-        if (result) {
-          clearInterval(id);
-          resolve(result);
-        }
-      }, interval);
-    });
-  }
-
-  async _runKuduCommand(functionApp, command) {
+  private async runKuduCommand(functionApp, command) {
     this.serverless.cli.log(`-> Running Kudu command ${command}...`);
 
     const scmDomain = functionApp.enabledHostNames[0];
@@ -237,28 +194,10 @@ export class FunctionAppService extends BaseService {
   /**
    * Gets a short lived admin token used to retrieve function keys
    */
-  async _getAuthKey(functionApp) {
+  private async getAuthKey(functionApp) {
     const adminTokenUrl = `${this.baseUrl}${functionApp.id}/functions/admin/token?api-version=2016-08-01`;
     const response = await this.sendApiRequest('GET', adminTokenUrl);
 
     return response.data.replace(/"/g, '');
-  }
-
-  /**
-   * Gets the master key for the specified function app
-   * @param functionAppUrl The function app url
-   * @param authToken The JWT access token used for authorization
-   */
-  async _getMasterKey(functionAppUrl, authToken) {
-    const keyUrl = `https://${functionAppUrl}/admin/host/systemkeys/_master`;
-
-    const response = await this.sendApiRequest('GET', keyUrl, {
-      json: true,
-      headers: {
-        'Authorization': `Bearer ${authToken}`
-      }
-    });
-
-    return response.data.value;
   }
 }

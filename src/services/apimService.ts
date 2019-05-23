@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { ApiManagementClient } from '@azure/arm-apimanagement';
 import { FunctionAppService } from './functionAppService';
 import { BaseService } from './baseService';
@@ -23,10 +23,6 @@ export class ApimService extends BaseService {
    * Deploys the APIM top level api
    */
   async deployApi() {
-    if (!this.config) {
-      return;
-    }
-
     const functionApp = await this.functionAppService.get();
 
     await this.ensureApi();
@@ -38,11 +34,7 @@ export class ApimService extends BaseService {
    * Deploys all the functions of the serverless service to APIM
    */
   async deployFunctions() {
-    if (!this.config) {
-      return;
-    }
-
-    this.serverless.cli.log('Starting to deploy API Operations');
+    this.serverless.cli.log('-> Deploying API Operations');
 
     const deployApiTasks = this.serverless.service
       .getAllFunctions()
@@ -76,6 +68,8 @@ export class ApimService extends BaseService {
    * Deploys the APIM API referenced by the serverless service
    */
   async ensureApi() {
+    this.serverless.cli.log('-> Deploying API')
+
     try {
       await this.apimClient.api.createOrUpdate(this.resourceGroup, this.config.resourceId, this.config.name, {
         isCurrent: true,
@@ -97,6 +91,7 @@ export class ApimService extends BaseService {
    * @param functionAppUrl The host name for the deployed function app
    */
   async ensureBackend(functionApp) {
+    this.serverless.cli.log('-> Deploying API Backend')
     try {
       const functionAppResourceId = `https://management.azure.com${functionApp.id}`;
 
@@ -123,7 +118,7 @@ export class ApimService extends BaseService {
    * @param options The plugin options
    */
   async deployOperation(options) {
-    this.serverless.cli.log(`-> Deploying API operation ${options.function}`);
+    this.serverless.cli.log(`--> Deploying API operation ${options.function}`);
 
     try {
       const client = new ApiManagementClient(this.credentials, this.subscriptionId);
@@ -168,6 +163,7 @@ export class ApimService extends BaseService {
    * @param functionAppUrl The host name for the Azure function app
    */
   async ensureFunctionAppKeys(functionApp) {
+    this.serverless.cli.log('-> Deploying API keys')
     try {
       const masterKey = await this.functionAppService.getMasterKey(functionApp);
       const keyName = `${this.serviceName}-key`;
