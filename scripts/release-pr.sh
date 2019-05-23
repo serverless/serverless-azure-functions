@@ -41,7 +41,7 @@ then
     echo "basedir=${BASEDIR}"
     echo "version=${NEW_VERSION}"
 
-    # get the latest from v2, create a release branch
+    # get the latest from master, create a release branch
     git checkout master
     git pull
     git checkout -b ${RELEASE_BRANCH}
