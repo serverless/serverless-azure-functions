@@ -1,8 +1,0 @@
-{
-  "transform": {
-      "^.+\\.ts$": "ts-jest"
-  },
-  "testRegex": "((\\.|/)(test|spec))\\.ts$",
-  "testPathIgnorePatterns": ["/lib/", "/node_modules/"],
-  "collectCoverage": true
-}
