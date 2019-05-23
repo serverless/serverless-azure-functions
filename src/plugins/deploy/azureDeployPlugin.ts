@@ -16,9 +16,8 @@ export class AzureDeployPlugin {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const functionApp = await functionAppService.get();
 
-    if (functionApp) {
-      await functionAppService.cleanUp(functionApp);
-    }
+    this.serverless.cli.log("NOTHING to do before deploy")
+    // TODO: maybe this is the place to check if all relevant files exist before uploading
   }
 
   private async deploy() {
@@ -26,9 +25,9 @@ export class AzureDeployPlugin {
     await resourceService.deployResourceGroup();
 
     const functionAppService = new FunctionAppService(this.serverless, this.options);
-    const functionApp = await functionAppService.deploy();
 
-    await functionAppService.uploadFunctions(functionApp);
-    await functionAppService.syncTriggers(functionApp);
+    // create all necessary resources: resource-group, storage account, app service plan, and app service
+    const functionApp = await functionAppService.deploy();
+    await functionAppService.zipDeploy(functionApp);
   }
 }
