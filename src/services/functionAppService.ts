@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { FunctionEnvelope } from '@azure/arm-appservice/lib/models';
+import { FunctionEnvelope, Site } from '@azure/arm-appservice/lib/models';
 import { Deployment } from "@azure/arm-resources/esm/models";
 import jsonpath from "jsonpath";
 import _ from "lodash";
@@ -22,7 +22,7 @@ export class FunctionAppService extends BaseService {
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
   }
 
-  public async get() {
+  public async get(): Promise<Site> {
     const response: any = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       return null;
@@ -46,21 +46,21 @@ export class FunctionAppService extends BaseService {
     return response.data.value;
   }
 
-  public async deleteFunction(functionApp, functionName) {
+  public async deleteFunction(functionApp: Site, functionName: string) {
     this.serverless.cli.log(`-> Deleting function: ${functionName}`);
     const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
 
     return await this.sendApiRequest('DELETE', deleteFunctionUrl);
   }
 
-  public async syncTriggers(functionApp) {
+  public async syncTriggers(functionApp: Site) {
     this.serverless.cli.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
     await this.sendApiRequest("POST", syncTriggersUrl);
   }
 
-  public async cleanUp(functionApp) {
+  public async cleanUp(functionApp: Site) {
     this.serverless.cli.log("Cleaning up existing functions");
     const deleteTasks = [];
 
@@ -76,7 +76,7 @@ export class FunctionAppService extends BaseService {
     return await Promise.all(deleteTasks);
   }
 
-  public async listFunctions(functionApp): Promise<FunctionEnvelope[]> {
+  public async listFunctions(functionApp: Site): Promise<FunctionEnvelope[]> {
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", getTokenUrl);
 
@@ -87,7 +87,7 @@ export class FunctionAppService extends BaseService {
     return response.data.value.map((functionConfig) => functionConfig.properties);
   }
 
-  public async getFunction(functionApp, functionName): Promise<FunctionEnvelope> {
+  public async getFunction(functionApp: Site, functionName: string): Promise<FunctionEnvelope> {
     const getFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
     const response = await this.sendApiRequest('GET', getFunctionUrl);
 
@@ -98,7 +98,7 @@ export class FunctionAppService extends BaseService {
     return response.data.properties;
   }
 
-  public async uploadFunctions(functionApp) {
+  public async uploadFunctions(functionApp: Site): Promise<any> {
     await this.zipDeploy(functionApp);
   }
 
@@ -220,8 +220,8 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  private getFunctionHttpTriggerConfig(functionApp, functionConfig): IFunctionAppHttpTriggerConfig {
-    const httpTrigger = functionConfig.bindings.find((binding) => {
+  private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): IFunctionAppHttpTriggerConfig {
+    const httpTrigger = functionConfig.config.bindings.find((binding) => {
       return binding.type === 'httpTrigger';
     });
 
@@ -230,7 +230,7 @@ export class FunctionAppService extends BaseService {
     }
 
     const route = httpTrigger.route || functionConfig.name;
-    const url = `${functionApp.defaultHostName[0]}/api/${route}`;
+    const url = `${functionApp.defaultHostName}/api/${route}`;
 
     return {
       authLevel: httpTrigger.authLevel,
@@ -241,7 +241,7 @@ export class FunctionAppService extends BaseService {
     };
   }
 
-  private async runKuduCommand(functionApp, command) {
+  private async runKuduCommand(functionApp: Site, command: string) {
     this.serverless.cli.log(`-> Running Kudu command ${command}...`);
 
     const scmDomain = functionApp.enabledHostNames[0];
@@ -267,7 +267,7 @@ export class FunctionAppService extends BaseService {
   /**
    * Gets a short lived admin token used to retrieve function keys
    */
-  private async getAuthKey(functionApp) {
+  private async getAuthKey(functionApp: Site) {
     const adminTokenUrl = `${this.baseUrl}${functionApp.id}/functions/admin/token?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", adminTokenUrl);
 
