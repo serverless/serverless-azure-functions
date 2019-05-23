@@ -2,6 +2,8 @@
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
+[![Coverage Status](https://coveralls.io/repos/github/serverless/serverless-azure-functions/badge.svg)](https://coveralls.io/github/serverless/serverless-azure-functions)
+
 ## Getting started
 
 ### Pre-requisites
