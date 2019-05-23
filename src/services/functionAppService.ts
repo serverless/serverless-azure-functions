@@ -79,6 +79,10 @@ export class FunctionAppService extends BaseService {
     }
   }
 
+  /**
+   * create all necessary resources as defined in src/provider/armTemplates
+   *    resource-group, storage account, app service plan, and app service at the minimum
+   */
   public async deploy() {
     this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
