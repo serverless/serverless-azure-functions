@@ -4,16 +4,16 @@ import Utils = require('serverless/classes/Utils');
 import PluginManager = require('serverless/classes/PluginManager');
 
 export class MockFactory {
-  public static createTestServerless(service?: Service, utils?: Utils, pluginManager?: PluginManager): Serverless {
-    const sls = new Serverless();
-    sls.service = service || MockFactory.createTestService();
-    sls.utils = utils || MockFactory.createTestUtils();
+  public static createTestServerless(config?: any): Serverless {
+    const sls = new Serverless(config);
+    sls.service = MockFactory.createTestService();
+    sls.utils = MockFactory.createTestUtils();
     sls.cli = MockFactory.createTestCli();
-    sls.pluginManager = pluginManager || MockFactory.createTestPluginManager();
+    sls.pluginManager = MockFactory.createTestPluginManager();
     return sls;
   }
 
-  public static createTestService(): Service {
+  private static createTestService(): Service {
     return {
       getAllFunctions: jest.fn(),
       getFunction: jest.fn(),
@@ -31,7 +31,7 @@ export class MockFactory {
     };
   }
 
-  public static createTestUtils(): Utils {
+  private static createTestUtils(): Utils {
     return {
       appendFileSync: jest.fn(),
       copyDirContentsSync: jest.fn(),
@@ -50,13 +50,13 @@ export class MockFactory {
     }
   }
 
-  public static createTestCli(){
+  private static createTestCli(){
     return {
       log: jest.fn()
     }
   }
 
-  public static createTestPluginManager(): PluginManager {
+  private static createTestPluginManager(): PluginManager {
     return  {
       addPlugin: jest.fn(),
       cliCommands: null,
