@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { FunctionMetadata } from './utils';
-import * as bindingsJson from './bindings.json';
+const bindingsJson = require('./bindings.json');
 
 const constants = {
   bindings: 'bindings',
@@ -33,14 +33,12 @@ export function getBindingsMetaData(serverless) {
     bindingSettingsNames[bindingsIndex] = settingsNames;
   }
 
-  const parsedBindings = {
+  return {
     bindingDisplayNames: bindingDisplayNames,
     bindingTypes: bindingTypes,
     bindingSettings: bindingSettings,
     bindingSettingsNames: bindingSettingsNames
   };
-
-  return parsedBindings;
 }
 
 export async function createEventsBindings(servicePath: string, functionName: string, functionMetadata: FunctionMetadata): Promise<any> {
