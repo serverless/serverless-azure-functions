@@ -1,5 +1,6 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
+import Serverless from 'serverless';
 import { FunctionMetadata } from './utils';
 const bindingsJson = require('./bindings.json');
 
@@ -11,7 +12,7 @@ const constants = {
   type: 'type'
 };
 
-export function getBindingsMetaData(serverless) {
+export function getBindingsMetaData(serverless: Serverless) {
   const bindingDisplayNames = [];
   const bindingTypes = [];
   const bindingSettings = [];
