@@ -22,6 +22,7 @@ export class AzureLoginPlugin {
 
     this.serverless.cli.log("Logging into Azure");
 
+    const subscriptionId = process.env.azureSubId || this.serverless.service.provider['subscriptionId'];
     try {
       const authResult = await AzureLoginService.login();
       this.serverless.variables["azureCredentials"] = authResult.credentials;

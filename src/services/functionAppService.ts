@@ -2,12 +2,14 @@ import fs from "fs";
 import path from "path";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { FunctionEnvelope } from '@azure/arm-appservice/lib/models';
 import { Deployment } from "@azure/arm-resources/esm/models";
 import jsonpath from "jsonpath";
 import _ from "lodash";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { constants } from "../config";
+import { IFunctionAppHttpTriggerConfig } from '../models/functionApp';
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -44,9 +46,11 @@ export class FunctionAppService extends BaseService {
     return response.data.value;
   }
 
-  public async deleteFunction(functionName) {
+  public async deleteFunction(functionApp, functionName) {
     this.serverless.cli.log(`-> Deleting function: ${functionName}`);
-    return await this.webClient.webApps.deleteFunction(this.resourceGroup, this.serviceName, functionName);
+    const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
+
+    return await this.sendApiRequest('DELETE', deleteFunctionUrl);
   }
 
   public async syncTriggers(functionApp) {
@@ -65,19 +69,33 @@ export class FunctionAppService extends BaseService {
 
     deployedFunctions.forEach((func) => {
       if (serviceFunctions.includes(func.name)) {
-        this.serverless.cli.log(`-> Deleting function '${func.name}'`);
-        deleteTasks.push(this.deleteFunction(func.name));
+        deleteTasks.push(this.deleteFunction(functionApp, func.name));
       }
     });
 
     return await Promise.all(deleteTasks);
   }
 
-  public async listFunctions(functionApp) {
+  public async listFunctions(functionApp): Promise<FunctionEnvelope[]> {
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", getTokenUrl);
 
-    return response.data.value || [];
+    if (response.status !== 200) {
+      return [];
+    }
+
+    return response.data.value.map((functionConfig) => functionConfig.properties);
+  }
+
+  public async getFunction(functionApp, functionName): Promise<FunctionEnvelope> {
+    const getFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
+    const response = await this.sendApiRequest('GET', getFunctionUrl);
+
+    if (response.status !== 200) {
+      return null;
+    }
+
+    return response.data.properties;
   }
 
   public async uploadFunctions(functionApp) {
@@ -111,12 +129,23 @@ export class FunctionAppService extends BaseService {
       }
     };
 
-    try {
-      await this.sendFile(requestOptions, functionZipFile);
-      this.serverless.cli.log("-> Function package uploaded successfully");
-    } catch (e) {
-      throw new Error(`Error uploading zip file:\n  --> ${e}`);
-    }
+    await this.sendFile(requestOptions, functionZipFile);
+    this.serverless.cli.log('-> Function package uploaded successfully');
+    const serverlessFunctions = this.serverless.service.getAllFunctions();
+    const deployedFunctions = await this.listFunctions(functionApp);
+
+    this.serverless.cli.log('Deployed serverless functions:')
+    deployedFunctions.forEach((functionConfig) => {
+      // List functions that are part of the serverless yaml config
+      if (serverlessFunctions.includes(functionConfig.name)) {
+        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
+
+        if (httpConfig) {
+          const method = httpConfig.methods[0].toUpperCase();
+          this.serverless.cli.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+        }
+      }
+    });
   }
 
   /**
@@ -189,6 +218,27 @@ export class FunctionAppService extends BaseService {
 
     // Return function app 
     return await this.get();
+  }
+
+  private getFunctionHttpTriggerConfig(functionApp, functionConfig): IFunctionAppHttpTriggerConfig {
+    const httpTrigger = functionConfig.bindings.find((binding) => {
+      return binding.type === 'httpTrigger';
+    });
+
+    if (!httpTrigger) {
+      return;
+    }
+
+    const route = httpTrigger.route || functionConfig.name;
+    const url = `${functionApp.defaultHostName[0]}/api/${route}`;
+
+    return {
+      authLevel: httpTrigger.authLevel,
+      methods: httpTrigger.methods || ['*'],
+      url: url,
+      route: httpTrigger.route,
+      name: functionConfig.name,
+    };
   }
 
   private async runKuduCommand(functionApp, command) {
