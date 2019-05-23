@@ -1,7 +1,7 @@
-import * as fs from 'fs';
+import fs from 'fs';
 import { join } from 'path';
-import * as request from 'request';
-import * as Serverless from 'serverless';
+import request from 'request';
+import Serverless from 'serverless';
 import config from '../config';
 
 let functionAppName;

@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import AzureProvider from '../../provider/azureProvider';
 
 export class AzureLogs {

@@ -1,12 +1,10 @@
-import * as Serverless from 'serverless';
-import { getAdminKey } from '../../shared/getAdminKey';
+import Serverless from 'serverless';
 import { join, isAbsolute } from 'path';
 import AzureProvider from '../../provider/azureProvider';
 
 export class AzureInvoke {
   public hooks: { [eventName: string]: Promise<any> };
   private provider: AzureProvider;
-  private getAdminKey = getAdminKey;
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.provider = (this.serverless.getProvider('azure') as any) as AzureProvider;
@@ -24,7 +22,7 @@ export class AzureInvoke {
     }
 
     this.hooks = {
-      'before:invoke:invoke': this.getAdminKey.bind(this),
+      'before:invoke:invoke': this.provider.getAdminKey.bind(this),
       'invoke:invoke': this.invoke.bind(this)
     };
   }

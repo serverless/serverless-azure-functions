@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { ApimService } from '../../services/apimService';
 
 export class AzureApimServicePlugin {
@@ -11,6 +11,11 @@ export class AzureApimServicePlugin {
   }
 
   private async deploy() {
+    const apimConfig = this.serverless.service.provider['apim'];
+    if (!apimConfig) {
+      return Promise.resolve();
+    }
+
     this.serverless.cli.log('Starting APIM service deployment');
 
     const apimService = new ApimService(this.serverless, this.options);

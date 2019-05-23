@@ -6,11 +6,15 @@
     "outDir": "./lib",
     "strict": false,
     "resolveJsonModule": true,
-    "types": ["jest", "node"]
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": [
+      "jest",
+      "node"
+    ]
   },
   "include": [
     "src",
-    "src/shared/bindings.json",
-    "src/provider/armTemplates/azuredeploy.json"
+    "src/**/*.json"
   ]
 }

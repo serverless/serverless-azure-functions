@@ -1,6 +1,6 @@
-import * as open from 'open';
+import open from 'open';
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import AzureProvider from '../../provider/azureProvider';
 
 export class AzureLoginPlugin {

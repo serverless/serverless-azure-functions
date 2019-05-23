@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { ApimService } from '../../services/apimService';
 
 export class AzureApimFunctionPlugin {
