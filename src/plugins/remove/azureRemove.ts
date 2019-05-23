@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { ResourceService } from '../../services/resourceService';
 
 export class AzureRemove {

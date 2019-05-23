@@ -1,5 +1,7 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import axios from 'axios';
+import request from 'request'
+import fs from 'fs';
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -61,6 +63,24 @@ export abstract class BaseService {
           resolve(result);
         }
       }, interval);
+    });
+  }
+
+  /**
+ * Uploads the specified file via HTTP request
+ * @param requestOptions The HTTP request options
+ * @param filePath The local file path
+ */
+  protected sendFile(requestOptions, filePath) {
+    return new Promise((resolve, reject) => {
+      fs.createReadStream(filePath)
+        .pipe(request(requestOptions, (err, response) => {
+          if (err) {
+            this.serverless.cli.log(JSON.stringify(err, null, 4));
+            return reject(err);
+          }
+          resolve(response);
+        }));
     });
   }
 }

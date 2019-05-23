@@ -1,8 +1,7 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { FunctionMetadata } from './utils';
-
-const bindingsJson = require('./bindings.json');
+import * as bindingsJson from './bindings.json';
 
 const constants = {
   bindings: 'bindings',

@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { BaseService } from './baseService';
 
