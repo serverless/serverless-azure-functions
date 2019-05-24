@@ -81,7 +81,7 @@ export class FunctionAppService extends BaseService {
   }
 
   public async uploadFunctions(functionApp) {
-    this.zipDeploy(functionApp);
+    await this.zipDeploy(functionApp);
   }
 
   private async zipDeploy(functionApp) {
