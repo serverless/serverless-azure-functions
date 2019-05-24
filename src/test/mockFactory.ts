@@ -39,7 +39,7 @@ export class MockFactory {
 
   private static createTestService(): Service {
     return {
-      getAllFunctions: jest.fn(),
+      getAllFunctions: jest.fn(() => ['function1']),
       getFunction: jest.fn(),
       getAllEventsInFunction: jest.fn(),
       getAllFunctionsNames: jest.fn(),
@@ -51,7 +51,7 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: null
+      provider: {} as any,
     };
   }
 

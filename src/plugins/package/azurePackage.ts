@@ -1,8 +1,8 @@
 
 import Serverless from 'serverless';
 import AzureProvider from '../../provider/azureProvider';
-import { createEventsBindings } from '../../shared/bindings';
-import { getFunctionMetaData } from '../../shared/utils';
+import { BindingUtils } from '../../shared/bindings';
+import { Utils } from '../../shared/utils';
 
 export class AzurePackage {
   provider: AzureProvider
@@ -19,9 +19,9 @@ export class AzurePackage {
 
     const createEventsPromises = this.serverless.service.getAllFunctions()
       .map((functionName) => {
-        const metaData = getFunctionMetaData(functionName, this.serverless);
+        const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
 
-        return createEventsBindings(this.serverless.config.servicePath, functionName, metaData);
+        return BindingUtils.createEventsBindings(this.serverless.config.servicePath, functionName, metaData);
       });
 
     return Promise.all(createEventsPromises);
