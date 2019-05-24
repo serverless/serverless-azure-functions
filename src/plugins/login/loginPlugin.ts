@@ -1,7 +1,6 @@
-import open from 'open';
 import Serverless from 'serverless';
 import AzureProvider from '../../provider/azureProvider';
-import { AzureLoginService } from '../../services/loginService'
+import { AzureLoginService } from '../../services/loginService';
 
 export class AzureLoginPlugin {
   private provider: AzureProvider;

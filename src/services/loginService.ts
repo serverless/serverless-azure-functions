@@ -1,5 +1,4 @@
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
-import { getEnvVariable } from '../shared/utils';
 
 export class AzureLoginService {
 
