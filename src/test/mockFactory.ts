@@ -1,10 +1,8 @@
+import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 import Serverless from 'serverless';
 import Service from 'serverless/classes/Service';
 import Utils = require('serverless/classes/Utils');
 import PluginManager = require('serverless/classes/PluginManager');
-import { AuthResponse, TokenCredentialsBase, LinkedSubscription } from '@azure/ms-rest-nodeauth';
-import { TokenCredentials } from '@azure/ms-rest-js';
-import { AuthenticationContext } from 'adal-node';
 
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
