@@ -2,9 +2,10 @@ import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzureDeployPlugin } from "./azureDeployPlugin";
 
-jest.mock("../../services/resourceService");
 jest.mock("../../services/functionAppService");
 import { FunctionAppService } from "../../services/functionAppService";
+
+jest.mock("../../services/resourceService");
 import { ResourceService } from "../../services/resourceService";
 
 describe('Deploy plugin', () => {
