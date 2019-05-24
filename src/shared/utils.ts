@@ -1,4 +1,3 @@
-import Serverless from 'serverless';
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 

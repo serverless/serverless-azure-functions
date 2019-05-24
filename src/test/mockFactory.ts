@@ -51,7 +51,7 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: null
+      provider: {} as any,
     };
   }
 
