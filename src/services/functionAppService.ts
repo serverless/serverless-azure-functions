@@ -44,38 +44,78 @@ export class FunctionAppService extends BaseService {
     return response.data.value;
   }
 
-  async zipDeploy(functionApp) {
+  public async deleteFunction(functionName) {
+    this.serverless.cli.log(`-> Deleting function: ${functionName}`);
+    return await this.webClient.webApps.deleteFunction(this.resourceGroup, this.serviceName, functionName);
+  }
+
+  public async syncTriggers(functionApp) {
+    this.serverless.cli.log('Syncing function triggers');
+
+    const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
+    await this.sendApiRequest('POST', syncTriggersUrl);
+  }
+
+  public async cleanUp(functionApp) {
+    this.serverless.cli.log('Cleaning up existing functions');
+    const deleteTasks = [];
+
+    const serviceFunctions = this.serverless.service.getAllFunctions();
+    const deployedFunctions = await this.listFunctions(functionApp);
+
+    deployedFunctions.forEach((func) => {
+      if (serviceFunctions.includes(func.name)) {
+        this.serverless.cli.log(`-> Deleting function '${func.name}'`);
+        deleteTasks.push(this.deleteFunction(func.name));
+      }
+    });
+
+    return await Promise.all(deleteTasks);
+  }
+
+  public async listFunctions(functionApp) {
+    const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
+    const response = await this.sendApiRequest('GET', getTokenUrl);
+
+    return response.data.value || [];
+  }
+
+  public async uploadFunctions(functionApp) {
+    this.zipDeploy(functionApp);
+  }
+
+  private async zipDeploy(functionApp) {
     const functionAppName = functionApp.name;
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
     const functionZipFile = this.serverless.service['artifact'];
-    if (functionZipFile) {
-      this.serverless.cli.log(`-> Uploading ${functionZipFile}`);
-
-      const uploadUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmZipDeployApiPath}`;
-      this.serverless.cli.log(`-> Upload url: ${uploadUrl}`);
-
-      // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
-      const requestOptions = {
-        method: 'POST',
-        uri: uploadUrl,
-        json: true,
-        headers: {
-          Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-          Accept: '*/*',
-          ContentType: 'application/octet-stream',
-        }
-      };
-
-      try {
-        await this.sendFile(requestOptions, functionZipFile);
-        this.serverless.cli.log('-> Function package uploaded successfully');
-      } catch (e) {
-        throw new Error(`Error uploading zip file:\n  --> ${e}`);
-      }
-    } else {
+    if (!functionZipFile) {
       throw new Error('No zip file found for function app');
+    }
+
+    this.serverless.cli.log(`-> Uploading ${functionZipFile}`);
+
+    const uploadUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmZipDeployApiPath}`;
+    this.serverless.cli.log(`-> Upload url: ${uploadUrl}`);
+
+    // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
+    const requestOptions = {
+      method: 'POST',
+      uri: uploadUrl,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+        Accept: '*/*',
+        ContentType: 'application/octet-stream',
+      }
+    };
+
+    try {
+      await this.sendFile(requestOptions, functionZipFile);
+      this.serverless.cli.log('-> Function package uploaded successfully');
+    } catch (e) {
+      throw new Error(`Error uploading zip file:\n  --> ${e}`);
     }
   }
 

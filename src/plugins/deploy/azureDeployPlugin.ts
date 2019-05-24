@@ -7,14 +7,8 @@ export class AzureDeployPlugin {
 
   constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.hooks = {
-      'before:deploy:deploy': this.beforeDeploy.bind(this),
       'deploy:deploy': this.deploy.bind(this)
     };
-  }
-
-  private async beforeDeploy() {
-    // TODO: maybe this is the place to check if all relevant files exist before uploading
-    this.serverless.cli.log("NOTHING ELSE to do before deploy")
   }
 
   private async deploy() {
@@ -24,6 +18,6 @@ export class AzureDeployPlugin {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
 
     const functionApp = await functionAppService.deploy();
-    await functionAppService.zipDeploy(functionApp);
+    await functionAppService.uploadFunctions(functionApp);
   }
 }
