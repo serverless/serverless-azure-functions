@@ -9,7 +9,7 @@
     "lint": "eslint src/**/*.ts",
     "lintfix": "eslint src/**/*.ts --fix",
     "pretest": "npm run lint",
-    "test": "jest --config jest.config.json",
+    "test": "jest --config jest.config.js",
     "prebuild": "rm -rf lib/ && npm test",
     "build": "tsc"
   },
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
+    "@types/lodash": "^4.14.130",
     "@types/open": "^6.1.0",
     "@types/request": "^2.48.1",
     "@types/serverless": "^1.18.2",
@@ -48,6 +49,8 @@
     "coveralls": "^3.0.3",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
+    "jest-cli": "^24.8.0",
+    "serverless": "^1.43.0",
     "ts-jest": "^24.0.2",
     "typescript": "^3.4.5"
   },

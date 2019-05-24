@@ -13,7 +13,7 @@ export const constants = {
   scmCommandApiPath: '/api/command',
   scmDomain: '.scm.azurewebsites.net',
   scmVfsPath: '/api/vfs/site/wwwroot/',
-  scmZipApiPath: '/api/zip/site/wwwroot/'
+  scmZipDeployApiPath: '/api/zipdeploy'
 };
 
 export default constants;

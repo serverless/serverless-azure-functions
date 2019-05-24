@@ -1,4 +1,4 @@
-import * as Serverless from 'serverless';
+import Serverless from 'serverless';
 import { ResourceManagementClient } from '@azure/arm-resources';
 import { BaseService } from './baseService';
 
@@ -11,7 +11,7 @@ export class ResourceService extends BaseService {
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }
 
-  async deployResourceGroup() {
+  public async deployResourceGroup() {
     this.serverless.cli.log(`Creating resource group: ${this.resourceGroup}`);
 
     const groupParameters = {
@@ -21,12 +21,12 @@ export class ResourceService extends BaseService {
     return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, groupParameters);
   }
 
-  async deleteDeployment() {
+  public async deleteDeployment() {
     this.serverless.cli.log(`Deleting deployment: ${this.deploymentName}`);
     return await this.resourceClient.deployments.deleteMethod(this.resourceGroup, this.deploymentName);
   }
 
-  async deleteResourceGroup() {
+  public async deleteResourceGroup() {
     this.serverless.cli.log(`Deleting resource group: ${this.resourceGroup}`);
     return await this.resourceClient.resourceGroups.deleteMethod(this.resourceGroup);
   }
