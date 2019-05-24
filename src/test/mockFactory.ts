@@ -1,3 +1,4 @@
+import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 import Serverless from 'serverless';
 import Service from 'serverless/classes/Service';
 import Utils = require('serverless/classes/Utils');
@@ -10,12 +11,35 @@ export class MockFactory {
     sls.utils = MockFactory.createTestUtils();
     sls.cli = MockFactory.createTestCli();
     sls.pluginManager = MockFactory.createTestPluginManager();
+    sls.variables = {};
     return sls;
+  }
+
+  public static createTestServerlessOptions(): Serverless.Options {
+    return {
+      extraServicePath: null,
+      function: null,
+      noDeploy: null,
+      region: null,
+      stage: null,
+      watch: null
+    }
+  }
+
+  public static createTestAuthResponse(): AuthResponse {
+    return {
+      credentials: 'credentials' as any as TokenCredentialsBase,
+      subscriptions: [
+        {
+          id: 'azureSubId',
+        }
+      ] as any as LinkedSubscription[]
+    }
   }
 
   private static createTestService(): Service {
     return {
-      getAllFunctions: jest.fn(),
+      getAllFunctions: jest.fn(() => ['function1']),
       getFunction: jest.fn(),
       getAllEventsInFunction: jest.fn(),
       getAllFunctionsNames: jest.fn(),
@@ -27,7 +51,7 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: null
+      provider: {} as any,
     };
   }
 
