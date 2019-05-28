@@ -9,12 +9,14 @@ export class FuncPluginUtils {
     return fs.readFileSync('serverless.yml', 'utf-8');
   }
 
-  public static getFunctionsYml(serverlessYml: string) {
+  public static getFunctionsYml(serverlessYml?: string) {
+    serverlessYml = serverlessYml || FuncPluginUtils.getServerlessYml();
     const functionsSection = serverlessYml.match(functionsRegex)[0];
     return yaml.safeLoad(functionsSection);
   }
 
-  public static updateFunctionsYml(serverlessYml: string, functionYml: any) {
+  public static updateFunctionsYml(functionYml: any, serverlessYml: string) {
+    serverlessYml = serverlessYml || FuncPluginUtils.getServerlessYml();
     const newFunctionsYaml = yaml.dump(functionYml);
     const newServerlessYaml = serverlessYml.replace(functionsRegex, `${newFunctionsYaml}\n`);
     fs.writeFileSync('serverless.yml', newServerlessYaml);

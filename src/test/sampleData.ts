@@ -1,39 +1,9 @@
-export const serverlessYmlString = `# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
-service: local-app # NOTE: update this with your service name
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
-
-provider:
-  name: azure
-  location: West US 2
+export const originalSlsYml = `provider:
+name: azure
+location: West US 2
 
 plugins:
   - serverless-azure-functions
-
-# you can add packaging information here
-package:
-#  include:
-#    - include-me.js
-#    - include-me-dir/**
-  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
-    - local.settings.json
-    - .vscode/**
 
 functions:
   hello:
@@ -56,15 +26,79 @@ functions:
         x-azure-settings:
           direction: out
           name: res
+`
 
-# The following are a few examples of other events you can configure:
-#
-# events:
-#   - queue: YourQueueName
-#     x-azure-settings:
-#       connection : StorageAppSettingName
-#   - blob:
-#     x-azure-settings:
-#       name: bindingName
-#       direction: in
+export const additionalFunctionYml = `functions:
+  hello:
+    handler: hello/index.handler
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+  goodbye:
+    handler: goodbye/index.handler
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+  greetings:
+    handler: greetings/index.handler
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+
+
+`
+
+export const additionalFunctionSlsYml = `provider:
+name: azure
+location: West US 2
+
+plugins:
+  - serverless-azure-functions
+
+functions:
+  hello:
+    handler: hello/index.handler
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+  goodbye:
+    handler: goodbye/index.handler
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+  greetings:
+    handler: greetings/index.handler
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel: anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
 `
