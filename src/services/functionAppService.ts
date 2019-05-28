@@ -104,6 +104,8 @@ export class FunctionAppService extends BaseService {
 
   private async zipDeploy(functionApp) {
     const functionAppName = functionApp.name;
+    const scmDomain = functionApp.enabledHostNames[0];
+    
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
@@ -112,15 +114,12 @@ export class FunctionAppService extends BaseService {
       throw new Error("No zip file found for function app");
     }
 
-    this.serverless.cli.log(`-> Uploading ${functionZipFile}`);
-
-    const uploadUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmZipDeployApiPath}`;
-    this.serverless.cli.log(`-> Upload url: ${uploadUrl}`);
+    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
       method: "POST",
-      uri: uploadUrl,
+      uri: `https://${scmDomain}/api/zipdeploy/`,
       json: true,
       headers: {
         Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
