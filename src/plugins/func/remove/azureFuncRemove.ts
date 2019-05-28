@@ -1,7 +1,7 @@
 import fs from 'fs';
-import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import Serverless from 'serverless';
+import { FuncPluginUtils } from '../funcUtils'
 
 export class AzureFuncRemovePlugin {
   public hooks: { [eventName: string]: Promise<any> };
@@ -50,15 +50,8 @@ export class AzureFuncRemovePlugin {
   }
 
   private async removeFromServerlessYml(name: string) {
-    const serverlessYml = fs.readFileSync('serverless.yml', 'utf-8');
-
-    const functionsRegex = /functions:([\s\S]*?)\n\n/g
-    const functionsSection = serverlessYml.match(functionsRegex)[0];
-
-    const parsed = yaml.safeLoad(functionsSection);
-    delete parsed['functions'][name];
-    const newFunctionsYaml = yaml.dump(parsed);
-    const newServerlessYaml = serverlessYml.replace(functionsRegex, `${newFunctionsYaml}\n\n`);
-    fs.writeFileSync('serverless.yml', newServerlessYaml);
+    const functionYml = FuncPluginUtils.getFunctionsYml();
+    delete functionYml.functions[name];
+    FuncPluginUtils.updateFunctionsYml(functionYml)
   }
 }
