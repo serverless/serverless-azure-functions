@@ -33,10 +33,12 @@
     "@azure/arm-resources": "^1.0.1",
     "@azure/ms-rest-nodeauth": "^1.0.1",
     "axios": "^0.18.0",
+    "js-yaml": "^3.13.1",
     "jsonpath": "^1.0.1",
     "lodash": "^4.16.6",
     "open": "^6.3.0",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "rimraf": "^2.6.3"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",

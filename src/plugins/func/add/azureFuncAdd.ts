@@ -26,5 +26,6 @@ export class AzureFuncAddPlugin {
 
   private async add() {
     this.serverless.cli.log('Got to add');
+    this.serverless.cli.log(JSON.stringify(this.options));
   }
 }

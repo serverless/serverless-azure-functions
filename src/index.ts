@@ -16,6 +16,8 @@ import { AzureApimServicePlugin } from './plugins/apim/apimServicePlugin';
 import { AzureApimFunctionPlugin } from './plugins/apim/apimFunctionPlugin';
 import { AzureFuncPlugin } from './plugins/func/azureFunc';
 import { AzureFuncAddPlugin } from './plugins/func/add/azureFuncAdd';
+import { AzureFuncRemovePlugin } from './plugins/func/remove/azureFuncRemove';
+
 
 export class AzureIndex {
   constructor(private serverless: Serverless, private options) {
@@ -33,6 +35,7 @@ export class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzureApimFunctionPlugin);
     this.serverless.pluginManager.addPlugin(AzureFuncPlugin);
     this.serverless.pluginManager.addPlugin(AzureFuncAddPlugin);
+    this.serverless.pluginManager.addPlugin(AzureFuncRemovePlugin);
   }
 }
 
