@@ -5,14 +5,16 @@ const functionsRegex = /functions:([\s\S]*?)\n\n/g
 
 export class FuncPluginUtils {
 
-  public static getFunctionsYml() {
-    const serverlessYml = fs.readFileSync('serverless.yml', 'utf-8');
+  public static getServerlessYml() {
+    return fs.readFileSync('serverless.yml', 'utf-8');
+  }
+
+  public static getFunctionsYml(serverlessYml: string) {
     const functionsSection = serverlessYml.match(functionsRegex)[0];
     return yaml.safeLoad(functionsSection);
   }
 
-  public static updateFunctionsYml(functionYml: any) {
-    const serverlessYml = fs.readFileSync('serverless.yml', 'utf-8');
+  public static updateFunctionsYml(serverlessYml: string, functionYml: any) {
     const newFunctionsYaml = yaml.dump(functionYml);
     const newServerlessYaml = serverlessYml.replace(functionsRegex, `${newFunctionsYaml}\n`);
     fs.writeFileSync('serverless.yml', newServerlessYaml);

@@ -37,6 +37,49 @@ export class MockFactory {
     }
   }
 
+  public static createTestFunctionsMetadata() {
+    return {
+      'functions': {
+        'hello': {
+          'handler': 'hello/index.handler',
+          'events': [
+            {
+              'http': true,
+              'x-azure-settings': {
+                'authLevel': 'anonymous'
+              }
+            },
+            {
+              'http': true,
+              'x-azure-settings': {
+                'direction': 'out',
+                'name': 'res'
+              }
+            }
+          ]
+        },
+        'goodbye': {
+          'handler': 'goodbye/index.handler',
+          'events': [
+            {
+              'http': true,
+              'x-azure-settings': {
+                'authLevel': 'anonymous'
+              }
+            },
+            {
+              'http': true,
+              'x-azure-settings': {
+                'direction': 'out',
+                'name': 'res'
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+
   private static createTestService(): Service {
     return {
       getAllFunctions: jest.fn(() => ['function1']),

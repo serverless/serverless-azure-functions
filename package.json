@@ -52,6 +52,7 @@
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
+    "mock-fs": "^4.10.0",
     "serverless": "^1.43.0",
     "ts-jest": "^24.0.2",
     "typescript": "^3.4.5"
