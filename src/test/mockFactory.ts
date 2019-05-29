@@ -4,14 +4,21 @@ import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
 
+function getAttribute(object: any, prop: string, defaultValue: any): any {
+  if (object && object[prop]) {
+    return object[prop];
+  }
+  return defaultValue;
+}
+
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = config && config.service || MockFactory.createTestService();
-    sls.utils = config && config.utils || MockFactory.createTestUtils();
-    sls.cli = config && config.cli || MockFactory.createTestCli();
-    sls.pluginManager = config && config.pluginManager || MockFactory.createTestPluginManager();
-    sls.variables = config && config.variables || MockFactory.createTestVariables();
+    sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
+    sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
+    sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
+    sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     return sls;
   }
 
@@ -77,6 +84,10 @@ export class MockFactory {
       azureCredentials: "credentials",
       subscriptionId: "subId",
     }
+  }
+
+  private getConfig(config: any, prop: string, defaultValue: any) {
+
   }
 
   private static createTestUtils(): Utils {
