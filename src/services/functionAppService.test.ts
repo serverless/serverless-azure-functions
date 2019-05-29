@@ -14,17 +14,14 @@ import axios from "axios";
 
 describe("Function App Service", () => {
 
-  const defaultFunctionApp = MockFactory.createTestFunctionApp();
-  const subId = "mySubId";
-  const credentials = "myCredentials";
-  const resourceGroup = "myResourceGroup";
-  const serviceName = "myServiceName";
-  const deploymentName = "myDeploymentName";
-  const artifact = "app.zip";
+  const defaultApp = MockFactory.createTestFunctionApp();
+  const slsService = MockFactory.createTestService();
+  const variables = MockFactory.createTestVariables();
+  const provider = MockFactory.createTestAzureServiceProvider();
 
   beforeAll(() => {
     WebSiteManagementClient.prototype.webApps = {
-      get: jest.fn(() => defaultFunctionApp)
+      get: jest.fn(() => defaultApp)
     } as any;
     axios.prototype = jest.fn();
   });
@@ -33,44 +30,25 @@ describe("Function App Service", () => {
 
   });
 
-  
-  function createSls() {
-    const sls = MockFactory.createTestServerless();
-    sls.variables["azureCredentials"] = credentials
-    sls.variables["subscriptionId"] = subId;
-    sls.service["service"] = serviceName;
-    sls.service.provider["resourceGroup"] = resourceGroup;
-    sls.service.provider["deploymentName"] = deploymentName;
-    sls.service["artifact"] = artifact;
-    return sls;
-  }
-
-  function createOptions() {
-    const options = MockFactory.createTestServerlessOptions();
-    return options;
-  }
-
   function createService(sls?: Serverless, options?: Serverless.Options) {
-    
     return new FunctionAppService(
-      sls || createSls(),
-      options || createOptions()
+      sls || MockFactory.createTestServerless({
+        service: slsService,
+        variables: variables,
+      }),
+      options || MockFactory.createTestServerlessOptions()
     )
   } 
   
   it("get returns function app", async () => {
-    const service = createService();
-    const result = await service.get();
+    const functionAppService = createService();
+    const result = await functionAppService.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(resourceGroup, serviceName);
-    expect(result).toEqual(defaultFunctionApp)
+      .toBeCalledWith(provider.resourceGroup, slsService["service"]);
+    expect(result).toEqual(defaultApp)
   });
 
   it("gets master key", () => {
-    const service = createService();
-    const key = service.getMasterKey();
-    const calls = axios.prototype.mock.calls;
-    const a = 4;
-    fail();
+    
   });
 });
