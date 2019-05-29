@@ -55,7 +55,7 @@ export class Utils {
       }
   
       if (bindingTypeIndex < 0) {
-        throw new Error('Binding not supported');
+        throw new Error("Binding not supported");
       }
   
       bindingSettings = parsedBindings.bindingSettings[bindingTypeIndex];
@@ -95,13 +95,13 @@ export class Utils {
   }
 
   public static getEntryPointAndHandlerPath(handler) {
-    let handlerPath = 'handler.js';
+    let handlerPath = "handler.js";
     let entryPoint = handler;
-    const handlerSplit = handler.split('.');
+    const handlerSplit = handler.split(".");
   
     if (handlerSplit.length > 1) {
       entryPoint = handlerSplit[handlerSplit.length - 1];
-      handlerPath = `${handler.substring(0, handler.lastIndexOf('.'))}.js`;
+      handlerPath = `${handler.substring(0, handler.lastIndexOf("."))}.js`;
     }
     const metaData = {
       entryPoint: entryPoint,

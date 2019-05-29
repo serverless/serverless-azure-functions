@@ -20,7 +20,7 @@ import { AzureFuncRemovePlugin } from "./plugins/func/remove/azureFuncRemove";
 
 
 export class AzureIndex {
-  constructor(private serverless: Serverless, private options) {
+  public constructor(private serverless: Serverless, private options) {
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless) as any);
 
     // To be refactored
