@@ -7,11 +7,11 @@ import PluginManager = require("serverless/classes/PluginManager");
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = MockFactory.createTestService();
-    sls.utils = MockFactory.createTestUtils();
-    sls.cli = MockFactory.createTestCli();
-    sls.pluginManager = MockFactory.createTestPluginManager();
-    sls.variables = {};
+    sls.service = config && config.service || MockFactory.createTestService();
+    sls.utils = config && config.utils || MockFactory.createTestUtils();
+    sls.cli = config && config.cli || MockFactory.createTestCli();
+    sls.pluginManager = config && config.pluginManager || MockFactory.createTestPluginManager();
+    sls.variables = config && config.variables || MockFactory.createTestVariables();
     return sls;
   }
 
@@ -37,7 +37,15 @@ export class MockFactory {
     }
   }
 
-  private static createTestService(): Service {
+  public static createTestFunctionApp() {
+    return {
+      id: "App Id",
+      name: "App Name",
+      defaultHostName: "My Host Name"
+    }
+  }
+
+  public static createTestService(): Service {
     return {
       getAllFunctions: jest.fn(() => ["function1"]),
       getFunction: jest.fn(),
@@ -51,8 +59,24 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: {} as any,
-    };
+      provider: MockFactory.createTestAzureServiceProvider(),
+      service: "serviceName",
+      artifact: "app.zip",
+    } as any as Service;
+  }
+
+  public static createTestAzureServiceProvider() {
+    return {
+      resourceGroup: "myResourceGroup",
+      deploymentName: "myDeploymentName",
+    }
+  }
+
+  public static createTestVariables() {
+    return {
+      azureCredentials: "credentials",
+      subscriptionId: "subId",
+    }
   }
 
   private static createTestUtils(): Utils {

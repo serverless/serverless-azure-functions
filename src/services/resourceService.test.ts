@@ -20,13 +20,13 @@ describe('Resource Service', () => {
 
   it('throws error with empty credentials', () => {
     const sls = MockFactory.createTestServerless();
+    delete sls.variables['azureCredentials']
     const options = MockFactory.createTestServerlessOptions();
     expect(() => new ResourceService(sls, options)).toThrowError('Azure Credentials has not been set in ResourceService')
   });
 
   it('initializes a resource service', () => {
     const sls = MockFactory.createTestServerless();
-    sls.variables['azureCredentials'] = 'fake credentials'
     const options = MockFactory.createTestServerlessOptions();
     expect(() => new ResourceService(sls, options)).not.toThrowError();
   });
