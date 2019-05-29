@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { FunctionEnvelope, Site } from '@azure/arm-appservice/lib/models';
 import { Deployment } from "@azure/arm-resources/esm/models";
 import jsonpath from "jsonpath";
 import _ from "lodash";
@@ -10,6 +9,8 @@ import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { constants } from "../config";
 import { IFunctionAppHttpTriggerConfig } from '../models/functionApp';
+import { Deployment } from '@azure/arm-resources/esm/models';
+import { Site, FunctionEnvelope } from '@azure/arm-appservice/esm/models';
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;

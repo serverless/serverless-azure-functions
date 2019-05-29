@@ -3,6 +3,9 @@ import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
+import { HttpHeaders, WebResource, HttpOperationResponse } from '@azure/ms-rest-js';
+import { AxiosResponse, AxiosRequestConfig } from 'axios';
+import { TokenClientCredentials, TokenResponse } from '@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials';
 import PluginManager = require("serverless/classes/PluginManager");
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
@@ -30,8 +33,8 @@ export class MockFactory {
       noDeploy: null,
       region: null,
       stage: null,
-      watch: null
-    }
+      watch: null,
+    };
   }
 
   public static createTestAuthResponse(): AuthResponse {
@@ -40,9 +43,63 @@ export class MockFactory {
       subscriptions: [
         {
           id: "azureSubId",
-        }
-      ] as any as LinkedSubscription[]
+        },
+      ] as any as LinkedSubscription[],
+    };
+  }
+
+  public static createTestAzureCredentials(): TokenClientCredentials {
+    return {
+      getToken: jest.fn(() => {
+        const token: TokenResponse = {
+          tokenType: 'Bearer',
+          accessToken: 'ABC123',
+        };
+
+        return Promise.resolve(token);
+      }),
+      signRequest: jest.fn((resource) => Promise.resolve(resource)),
+    };
+  }
+
+  public static createTestAxiosResponse<T>(
+    config: AxiosRequestConfig,
+    responseJson: T,
+    statusCode: number = 200,
+  ): Promise<AxiosResponse> {
+    let statusText;
+    switch (statusCode) {
+      case 200:
+        statusText = 'OK';
+        break;
+      case 404:
+        statusText = 'NotFound';
+        break;
     }
+
+    const response: AxiosResponse = {
+      config,
+      data: JSON.stringify(responseJson),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      status: statusCode,
+      statusText,
+    };
+
+    return Promise.resolve(response);
+  }
+
+  public static createTestAzureClientResponse<T>(responseJson: T, statusCode: number = 200): Promise<HttpOperationResponse> {
+    const response: HttpOperationResponse = {
+      request: new WebResource(),
+      parsedBody: responseJson,
+      bodyAsText: JSON.stringify(responseJson),
+      headers: new HttpHeaders(),
+      status: statusCode,
+    };
+
+    return Promise.resolve(response);
   }
 
   public static createTestServerlessYml(asYaml = false, functionMetadata?) {
@@ -154,18 +211,18 @@ export class MockFactory {
       walkDirSync: jest.fn(),
       writeFile: jest.fn(),
       writeFileDir: jest.fn(),
-      writeFileSync: jest.fn()
-    }
+      writeFileSync: jest.fn(),
+    };
   }
 
-  private static createTestCli(){
+  private static createTestCli() {
     return {
-      log: jest.fn()
-    }
+      log: jest.fn(),
+    };
   }
 
   private static createTestPluginManager(): PluginManager {
-    return  {
+    return {
       addPlugin: jest.fn(),
       cliCommands: null,
       cliOptions: null,
@@ -182,7 +239,7 @@ export class MockFactory {
       serverless: null,
       setCliCommands: jest.fn(),
       setCliOptions: jest.fn(),
-      spawn: jest.fn()
-    }
+      spawn: jest.fn(),
+    };
   }
 }

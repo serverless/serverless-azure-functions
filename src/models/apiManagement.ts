@@ -3,7 +3,7 @@ import { OperationContract, ApiContract, BackendContract } from "@azure/arm-apim
 export interface ApiManagementConfig {
   name: string;
   api: ApiContract;
-  backend: BackendContract;
+  backend?: BackendContract;
 }
 
 export interface ApiOperationOptions {
