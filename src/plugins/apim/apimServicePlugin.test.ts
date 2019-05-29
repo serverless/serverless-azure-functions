@@ -1,28 +1,28 @@
-import Serverless from 'serverless';
+import Serverless from "serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureApimServicePlugin } from './apimServicePlugin';
+import { AzureApimServicePlugin } from "./apimServicePlugin";
 
-jest.mock('../../services/apimService');
-import { ApimService } from '../../services/apimService';
+jest.mock("../../services/apimService");
+import { ApimService } from "../../services/apimService";
 
-describe('APIM Service Plugin', () => {
-  it('is defined', () => {
+describe("APIM Service Plugin", () => {
+  it("is defined", () => {
     expect(AzureApimServicePlugin).toBeDefined();
   });
 
-  it('can be instantiated', () => {
+  it("can be instantiated", () => {
     const serverless = new Serverless();
     const options: Serverless.Options = {
-      stage: '',
-      region: '',
+      stage: "",
+      region: "",
     }
     const plugin = new AzureApimServicePlugin(serverless, options);
 
     expect(plugin).not.toBeNull();
   });
 
-  it('calls deploy API and deploy functions', async () => {
+  it("calls deploy API and deploy functions", async () => {
     const deployApi = jest.fn();
     const deployFunctions = jest.fn();
 
@@ -30,19 +30,19 @@ describe('APIM Service Plugin', () => {
     ApimService.prototype.deployFunctions = deployFunctions;
 
     const sls = MockFactory.createTestServerless();
-    sls.service.provider['apim'] = 'apim config'
+    sls.service.provider["apim"] = "apim config"
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureApimServicePlugin(sls, options);
 
-    await invokeHook(plugin, 'after:deploy:deploy');
+    await invokeHook(plugin, "after:deploy:deploy");
 
-    expect(sls.cli.log).toBeCalledWith('Starting APIM service deployment')
+    expect(sls.cli.log).toBeCalledWith("Starting APIM service deployment")
     expect(deployApi).toBeCalled();
     expect(deployFunctions).toBeCalled();
-    expect(sls.cli.log).lastCalledWith('Finished APIM service deployment')
+    expect(sls.cli.log).lastCalledWith("Finished APIM service deployment")
   });
 
-  it('does not call deploy API or deploy functions when "apim" not included in config', async () => {
+  it("does not call deploy API or deploy functions when \"apim\" not included in config", async () => {
     const deployApi = jest.fn();
     const deployFunctions = jest.fn();
 
@@ -53,7 +53,7 @@ describe('APIM Service Plugin', () => {
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureApimServicePlugin(sls, options);
 
-    await invokeHook(plugin, 'after:deploy:deploy');
+    await invokeHook(plugin, "after:deploy:deploy");
 
     expect(sls.cli.log).not.toBeCalled()
     expect(deployApi).not.toBeCalled();

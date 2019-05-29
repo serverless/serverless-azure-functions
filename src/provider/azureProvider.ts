@@ -1,8 +1,8 @@
-import fs from 'fs';
-import { join } from 'path';
-import request from 'request';
-import Serverless from 'serverless';
-import config from '../config';
+import fs from "fs";
+import { join } from "path";
+import request from "request";
+import Serverless from "serverless";
+import config from "../config";
 
 let functionAppName;
 let functionsAdminKey;
@@ -12,16 +12,16 @@ export default class AzureProvider {
   public credentials: any;
   private serverless: any;
 
-  static getProviderName() {
+  public static getProviderName() {
     return config.providerName;
   }
 
-  constructor(serverless: Serverless) {
+  public constructor(serverless: Serverless) {
     this.serverless = serverless;
     this.serverless.setProvider(config.providerName, this);
   }
 
-  getAdminKey(): Promise<any> {
+  public getAdminKey(): Promise<any> {
     const options = {
       url: `https://${functionAppName}${config.scmDomain}${config.masterKeyApiPath}`,
       json: true,
@@ -42,21 +42,21 @@ export default class AzureProvider {
     });
   }
 
-  pingHostStatus(functionName): Promise<any> {
+  public pingHostStatus(functionName): Promise<any> {
     const requestUrl = `https://${functionAppName}${config.functionAppDomain}/admin/functions/${functionName}/status`;
     const options = {
       host: functionAppName + config.functionAppDomain,
-      method: 'get',
+      method: "get",
       url: requestUrl,
       json: true,
       headers: {
-        'x-functions-key': functionsAdminKey,
-        Accept: 'application/json,*/*'
+        "x-functions-key": functionsAdminKey,
+        Accept: "application/json,*/*"
       }
     };
 
     return new Promise((resolve, reject) => {
-      this.serverless.cli.log('Pinging host status...');
+      this.serverless.cli.log("Pinging host status...");
       request(options, (err, res, body) => {
         if (err) return reject(err);
         if (body && body.Error) return reject(body.Error);
@@ -70,28 +70,28 @@ export default class AzureProvider {
     });
   }
 
-  getLogsStream(functionName) {
+  public getLogsStream(functionName) {
     const logOptions = {
       url: `https://${functionAppName}${config.scmDomain}${config.logStreamApiPath}${functionName}`,
       headers: {
         Authorization: config.bearer + this.credentials.tokenCache._entries[0].accessToken,
-        Accept: '*/*'
+        Accept: "*/*"
       }
     };
 
     request
       .get(logOptions)
-      .on('error', () => {
-        console.error('Disconnected from log streaming.');
+      .on("error", () => {
+        console.error("Disconnected from log streaming.");
       })
-      .on('end', () => this.getLogsStream(functionName))
+      .on("end", () => this.getLogsStream(functionName))
       .pipe(process.stdout);
   }
 
-  getInvocationId(functionName): Promise<any> {
+  public getInvocationId(functionName): Promise<any> {
     const options = {
       url: `https://${functionAppName}${config.scmDomain}${config.logInvocationsApiPath + functionAppName}-${functionName}/invocations?limit=5`,
-      method: 'GET',
+      method: "GET",
       json: true,
       headers: {
         Authorization: config.bearer + this.credentials.tokenCache._entries[0].accessToken
@@ -110,11 +110,11 @@ export default class AzureProvider {
     });
   }
 
-  getLogsForInvocationId(): Promise<any> {
+  public getLogsForInvocationId(): Promise<any> {
     this.serverless.cli.log(`Logs for InvocationId: ${invocationId}`);
     const options = {
       url: `https://${functionAppName}${config.scmDomain}${config.logOutputApiPath}${invocationId}`,
-      method: 'GET',
+      method: "GET",
       json: true,
       headers: {
         Authorization: config.bearer + this.credentials.tokenCache._entries[0].accessToken
@@ -131,33 +131,33 @@ export default class AzureProvider {
     });
   }
 
-  invoke(functionName, eventType, eventData): Promise<any> {
-    if (eventType === 'http') {
-      let queryString = '';
+  public invoke(functionName, eventType, eventData): Promise<any> {
+    if (eventType === "http") {
+      let queryString = "";
 
       if (eventData) {
-        if (typeof eventData === 'string') {
+        if (typeof eventData === "string") {
           try {
             eventData = JSON.parse(eventData);
           }
           catch (error) {
-            return Promise.reject('The specified input data isn\'t a valid JSON string. ' +
-              'Please correct it and try invoking the function again.');
+            return Promise.reject("The specified input data isn't a valid JSON string. " +
+              "Please correct it and try invoking the function again.");
           }
         }
 
         queryString = Object.keys(eventData)
           .map((key) => `${key}=${eventData[key]}`)
-          .join('&');
+          .join("&");
       }
 
       return new Promise((resolve, reject) => {
         const options = {
           headers: {
-            'x-functions-key': functionsAdminKey
+            "x-functions-key": functionsAdminKey
           },
           url: `http://${functionAppName}${config.functionAppDomain}${config.functionAppApiPath + functionName}?${queryString}`,
-          method: 'GET',
+          method: "GET",
           json: true,
         };
 
@@ -177,13 +177,13 @@ export default class AzureProvider {
 
     const options = {
       host: config.functionAppDomain,
-      method: 'post',
+      method: "post",
       body: eventData,
       url: requestUrl,
       json: true,
       headers: {
-        'x-functions-key': functionsAdminKey,
-        Accept: 'application/json,*/*'
+        "x-functions-key": functionsAdminKey,
+        Accept: "application/json,*/*"
       }
     };
 
@@ -198,19 +198,19 @@ export default class AzureProvider {
     });
   }
 
-  uploadPackageJson(): Promise<any> {
-    const packageJsonFilePath = join(this.serverless.config.servicePath, 'package.json');
-    this.serverless.cli.log('Uploading package.json...');
+  public uploadPackageJson(): Promise<any> {
+    const packageJsonFilePath = join(this.serverless.config.servicePath, "package.json");
+    this.serverless.cli.log("Uploading package.json...");
 
     const requestUrl = `https://${functionAppName}${config.scmDomain}${config.scmVfsPath}package.json`;
     const options = {
       host: functionAppName + config.scmDomain,
-      method: 'put',
+      method: "put",
       url: requestUrl,
       json: true,
       headers: {
         Authorization: config.bearer + this.credentials.tokenCache._entries[0].accessToken,
-        Accept: '*/*'
+        Accept: "*/*"
       }
     };
 
@@ -221,12 +221,12 @@ export default class AzureProvider {
             if (err) {
               reject(err);
             } else {
-              resolve('Package.json file uploaded');
+              resolve("Package.json file uploaded");
             }
           }));
       }
       else {
-        resolve('Package.json file does not exist');
+        resolve("Package.json file does not exist");
       }
     });
   }
