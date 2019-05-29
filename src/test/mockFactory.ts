@@ -1,8 +1,8 @@
-import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
-import Serverless from 'serverless';
-import Service from 'serverless/classes/Service';
-import Utils = require('serverless/classes/Utils');
-import PluginManager = require('serverless/classes/PluginManager');
+import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import Serverless from "serverless";
+import Service from "serverless/classes/Service";
+import Utils = require("serverless/classes/Utils");
+import PluginManager = require("serverless/classes/PluginManager");
 
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
@@ -28,18 +28,26 @@ export class MockFactory {
 
   public static createTestAuthResponse(): AuthResponse {
     return {
-      credentials: 'credentials' as any as TokenCredentialsBase,
+      credentials: "credentials" as any as TokenCredentialsBase,
       subscriptions: [
         {
-          id: 'azureSubId',
+          id: "azureSubId",
         }
       ] as any as LinkedSubscription[]
     }
   }
 
+  public static createTestFunctionApp() {
+    return {
+      id: "App Id",
+      name: "App Name",
+      defaultHostName: "My Host Name"
+    }
+  }
+
   private static createTestService(): Service {
     return {
-      getAllFunctions: jest.fn(() => ['function1']),
+      getAllFunctions: jest.fn(() => ["function1"]),
       getFunction: jest.fn(),
       getAllEventsInFunction: jest.fn(),
       getAllFunctionsNames: jest.fn(),
