@@ -1,8 +1,7 @@
-import Serverless from "serverless";
 import fs from "fs";
-import yaml from "js-yaml";
 import path from "path";
-import { FuncPluginUtils } from "../funcUtils"
+import Serverless from "serverless";
+import { FuncPluginUtils } from "../funcUtils";
 
 
 export class AzureFuncAddPlugin {
