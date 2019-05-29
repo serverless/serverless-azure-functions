@@ -5,11 +5,12 @@ import { FuncPluginUtils } from "./funcUtils";
 
 describe("Func Utils", () => {
 
+  const writeFileSync = jest.spyOn(fs, "writeFileSync");
+
   beforeAll(() => {
     mock({
       "serverless.yml": MockFactory.createTestServerlessYml(true)
     }, {createCwd: true, createTmp: true})
-    fs.writeFileSync = jest.fn();
   });
 
   afterAll(() => {
@@ -19,22 +20,21 @@ describe("Func Utils", () => {
   
   it("gets functions yml", () => {
     const funcYaml = FuncPluginUtils.getFunctionsYml();
-    const expected = {
-      "functions": MockFactory.createTestFunctionsMetadata()
-    }
-    expect(funcYaml).toEqual(expected);
+    expect(funcYaml).toEqual(MockFactory.createTestFunctionsMetadata());
   });
 
   it("updates functions yml", () => {
-    FuncPluginUtils.updateFunctionsYml(
-      MockFactory.createTestFunctionsMetadata(3, true),
-      MockFactory.createTestServerlessYml(true, 2) as string);
-    const call = (fs.writeFileSync as any).mock.calls[0]
+    const updatedFunctions = MockFactory.createTestFunctionsMetadata(3);
+    const originalSls = MockFactory.createTestServerlessYml(false, 2);
+    
+    FuncPluginUtils.updateFunctionsYml(updatedFunctions, originalSls);
+    const call = writeFileSync.mock.calls[0]
     expect(call[0]).toBe("serverless.yml");
-    expect(call[1]).toBe(MockFactory.createTestServerlessYml(
+    const expected = MockFactory.createTestServerlessYml(
       true, 
       MockFactory.createTestFunctionsMetadata(3)
-    ));
+    );
+    expect(call[1]).toBe(expected);
   });
 
   it("adds new function name to function handler", () => {

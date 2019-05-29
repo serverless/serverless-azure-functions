@@ -48,9 +48,9 @@ export class MockFactory {
       "plugins": [
         "serverless-azure-functions"
       ],
-      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(),
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2, false),
     }
-    return (asYaml) ? yaml.dump(data) + "\n" : data;
+    return (asYaml) ? yaml.dump(data) : data;
   }
 
   public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {

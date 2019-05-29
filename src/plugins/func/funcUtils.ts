@@ -1,25 +1,21 @@
 import yaml from "js-yaml";
 import fs from "fs";
 
-const functionsRegex = /functions:([\s\S]*?)\n\n/g
-
 export class FuncPluginUtils {
 
   public static getServerlessYml() {
-    return fs.readFileSync("serverless.yml", "utf-8");
+    return yaml.safeLoad(fs.readFileSync("serverless.yml", "utf-8"));
   }
 
-  public static getFunctionsYml(serverlessYml?: string) {
+  public static getFunctionsYml(serverlessYml?: any) {
     serverlessYml = serverlessYml || FuncPluginUtils.getServerlessYml();
-    const functionsSection = serverlessYml.match(functionsRegex)[0];
-    return yaml.safeLoad(functionsSection);
+    return serverlessYml["functions"];
   }
 
-  public static updateFunctionsYml(functionYml: any, serverlessYml?: string) {
+  public static updateFunctionsYml(functionYml: any, serverlessYml?: any) {
     serverlessYml = serverlessYml || FuncPluginUtils.getServerlessYml();
-    const newFunctionsYaml = yaml.dump(functionYml);
-    const newServerlessYaml = serverlessYml.replace(functionsRegex, `${newFunctionsYaml}\n`);
-    fs.writeFileSync("serverless.yml", newServerlessYaml);
+    serverlessYml["functions"] = functionYml;
+    fs.writeFileSync("serverless.yml", yaml.dump(serverlessYml));
   }
 
   public static getFunctionHandler(name: string) {
