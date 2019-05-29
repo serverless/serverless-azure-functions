@@ -1,16 +1,16 @@
-import Serverless from 'serverless';
-import AzureProvider from '../../provider/azureProvider';
+import Serverless from "serverless";
+import AzureProvider from "../../provider/azureProvider";
 
 export class AzureLogs {
   public hooks: { [eventName: string]: Promise<any> };
 
   private provider: AzureProvider;
 
-  constructor(private serverless: Serverless, private options: Serverless.Options) {
-    this.provider = (this.serverless.getProvider('azure') as any) as AzureProvider;
+  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+    this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
     
     this.hooks = {
-      'logs:logs': this.retrieveLogs.bind(this)
+      "logs:logs": this.retrieveLogs.bind(this)
     };
   }
 

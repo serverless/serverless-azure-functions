@@ -1,4 +1,4 @@
-import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from '@azure/ms-rest-nodeauth';
+import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from "@azure/ms-rest-nodeauth";
 
 export class AzureLoginService {
 
@@ -16,7 +16,7 @@ export class AzureLoginService {
   }
 
   public static async interactiveLogin() {
-    await open('https://microsoft.com/devicelogin');
+    await open("https://microsoft.com/devicelogin");
     return await interactiveLoginWithAuthResponse();
   }
 

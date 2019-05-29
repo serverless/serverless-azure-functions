@@ -1,12 +1,12 @@
-import Serverless from 'serverless';
-import { ResourceService } from '../../services/resourceService';
+import Serverless from "serverless";
+import { ResourceService } from "../../services/resourceService";
 
 export class AzureRemove {
   public hooks: { [eventName: string]: Promise<any> };
 
-  constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.hooks = {
-      'remove:remove': this.remove.bind(this)
+      "remove:remove": this.remove.bind(this)
     };
   }
 
@@ -15,6 +15,6 @@ export class AzureRemove {
     await resourceClient.deleteDeployment();
     await resourceClient.deleteResourceGroup();
 
-    this.serverless.cli.log('Service successfully removed');
+    this.serverless.cli.log("Service successfully removed");
   }
 }
