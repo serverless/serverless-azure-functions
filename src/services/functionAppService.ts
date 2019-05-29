@@ -29,7 +29,7 @@ export class FunctionAppService extends BaseService {
     return response;
   }
 
-  public async getMasterKey(functionApp?) {
+  public async getMasterKey(functionApp) {
     functionApp = functionApp || await this.get();
     const adminToken = await this.getAuthKey(functionApp);
     const keyUrl = `https://${functionApp.defaultHostName}/admin/host/systemkeys/_master`;

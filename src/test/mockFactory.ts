@@ -37,14 +37,6 @@ export class MockFactory {
     }
   }
 
-  public static createTestFunctionApp() {
-    return {
-      id: "App Id",
-      name: "App Name",
-      defaultHostName: "My Host Name"
-    }
-  }
-
   private static createTestService(): Service {
     return {
       getAllFunctions: jest.fn(() => ["function1"]),
