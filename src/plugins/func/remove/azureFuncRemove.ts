@@ -1,7 +1,7 @@
-import fs from 'fs';
-import rimraf from 'rimraf';
-import Serverless from 'serverless';
-import { FuncPluginUtils } from '../funcUtils';
+import fs from "fs";
+import rimraf from "rimraf";
+import Serverless from "serverless";
+import { FuncPluginUtils } from "../funcUtils";
 
 export class AzureFuncRemovePlugin {
   public hooks: { [eventName: string]: Promise<any> };
@@ -13,14 +13,14 @@ export class AzureFuncRemovePlugin {
       func: {
         commands: {
           remove: {
-            usage: 'Remove azure function',
+            usage: "Remove azure function",
             lifecycleEvents: [
-              'remove',
+              "remove",
             ],
             options: {
               name: {
-                usage: 'Name of function to remove',
-                shortcut: 'n',
+                usage: "Name of function to remove",
+                shortcut: "n",
               }
             }
           }
@@ -29,16 +29,16 @@ export class AzureFuncRemovePlugin {
     }
 
     this.hooks = {
-      'func:remove:remove': this.remove.bind(this)
+      "func:remove:remove": this.remove.bind(this)
     };
   }
 
   private async remove() {
-    if (!('name' in this.options)) {
-      this.serverless.cli.log('Need to provide a name of function to remove');
+    if (!("name" in this.options)) {
+      this.serverless.cli.log("Need to provide a name of function to remove");
       return;
     }
-    const funcToRemove = this.options['name'];
+    const funcToRemove = this.options["name"];
     const exists = fs.existsSync(funcToRemove);
     if (!exists) {
       this.serverless.cli.log(`Function ${funcToRemove} does not exist`);

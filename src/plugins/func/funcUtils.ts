@@ -1,12 +1,12 @@
-import yaml from 'js-yaml';
-import fs from 'fs';
+import yaml from "js-yaml";
+import fs from "fs";
 
 const functionsRegex = /functions:([\s\S]*?)\n\n/g
 
 export class FuncPluginUtils {
 
   public static getServerlessYml() {
-    return fs.readFileSync('serverless.yml', 'utf-8');
+    return fs.readFileSync("serverless.yml", "utf-8");
   }
 
   public static getFunctionsYml(serverlessYml?: string) {
@@ -19,14 +19,14 @@ export class FuncPluginUtils {
     serverlessYml = serverlessYml || FuncPluginUtils.getServerlessYml();
     const newFunctionsYaml = yaml.dump(functionYml);
     const newServerlessYaml = serverlessYml.replace(functionsRegex, `${newFunctionsYaml}\n`);
-    fs.writeFileSync('serverless.yml', newServerlessYaml);
+    fs.writeFileSync("serverless.yml", newServerlessYaml);
   }
 
   public static getFunctionHandler(name: string) {
-    return `'use strict';
+    return `"use strict";
 
 module.exports.handler = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+    context.log("JavaScript HTTP trigger function processed a request.");
 
     if (req.query.name || (req.body && req.body.name)) {
         context.res = {
@@ -83,15 +83,15 @@ module.exports.handler = async function (context, req) {
     return [
       {
         http: true,
-        'x-azure-settings': {
-          authLevel: 'anonymous'
+        "x-azure-settings": {
+          authLevel: "anonymous"
         }
       },
       {
         http: true,
-        'x-azure-settings': {
-          direction: 'out',
-          name: 'res'
+        "x-azure-settings": {
+          direction: "out",
+          name: "res"
         }
       },
     ]

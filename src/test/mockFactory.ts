@@ -1,9 +1,9 @@
-import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
-import Serverless from 'serverless';
-import Service from 'serverless/classes/Service';
-import Utils = require('serverless/classes/Utils');
-import PluginManager = require('serverless/classes/PluginManager');
-import yaml from 'js-yaml'
+import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import Serverless from "serverless";
+import Service from "serverless/classes/Service";
+import Utils = require("serverless/classes/Utils");
+import PluginManager = require("serverless/classes/PluginManager");
+import yaml from "js-yaml"
 
 
 export class MockFactory {
@@ -30,10 +30,10 @@ export class MockFactory {
 
   public static createTestAuthResponse(): AuthResponse {
     return {
-      credentials: 'credentials' as any as TokenCredentialsBase,
+      credentials: "credentials" as any as TokenCredentialsBase,
       subscriptions: [
         {
-          id: 'azureSubId',
+          id: "azureSubId",
         }
       ] as any as LinkedSubscription[]
     }
@@ -41,16 +41,16 @@ export class MockFactory {
 
   public static createTestServerlessYml(asYaml = false, functionMetadata?) {
     const data = {
-      'provider': {
-        'name': 'azure',
-        'location': 'West US 2'
+      "provider": {
+        "name": "azure",
+        "location": "West US 2"
       },
-      'plugins': [
-        'serverless-azure-functions'
+      "plugins": [
+        "serverless-azure-functions"
       ],
-      'functions': functionMetadata || MockFactory.createTestFunctionsMetadata(),
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(),
     }
-    return (asYaml) ? yaml.dump(data) + '\n' : data;
+    return (asYaml) ? yaml.dump(data) + "\n" : data;
   }
 
   public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
@@ -59,24 +59,24 @@ export class MockFactory {
       const functionName = `function${i+1}`;
       data[functionName] = MockFactory.createTestFunctionMetadata(functionName)
     }
-    return (wrap) ? {'functions': data } : data;
+    return (wrap) ? {"functions": data } : data;
   }
 
   public static createTestFunctionMetadata(name: string) {
     return {
-      'handler': `${name}/index.handler`,
-      'events': [
+      "handler": `${name}/index.handler`,
+      "events": [
         {
-          'http': true,
-          'x-azure-settings': {
-            'authLevel': 'anonymous'
+          "http": true,
+          "x-azure-settings": {
+            "authLevel": "anonymous"
           }
         },
         {
-          'http': true,
-          'x-azure-settings': {
-            'direction': 'out',
-            'name': 'res'
+          "http": true,
+          "x-azure-settings": {
+            "direction": "out",
+            "name": "res"
           }
         }
       ]
@@ -85,7 +85,7 @@ export class MockFactory {
 
   private static createTestService(): Service {
     return {
-      getAllFunctions: jest.fn(() => ['function1']),
+      getAllFunctions: jest.fn(() => ["function1"]),
       getFunction: jest.fn(),
       getAllEventsInFunction: jest.fn(),
       getAllFunctionsNames: jest.fn(),

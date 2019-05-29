@@ -4,19 +4,19 @@ This way only one plugin needs to be added to the service in order to get access
 whole provider implementation.
 */
 
-import Serverless from 'serverless';
-import AzureProvider from './provider/azureProvider';
-import { AzureInvoke } from './plugins/invoke/azureInvoke';
-import { AzureLogs } from './plugins/logs/azureLogs';
-import { AzureRemove } from './plugins/remove/azureRemove';
-import { AzurePackage } from './plugins/package/azurePackage';
-import { AzureDeployPlugin } from './plugins/deploy/azureDeployPlugin';
-import { AzureLoginPlugin } from './plugins/login/loginPlugin';
-import { AzureApimServicePlugin } from './plugins/apim/apimServicePlugin';
-import { AzureApimFunctionPlugin } from './plugins/apim/apimFunctionPlugin';
-import { AzureFuncPlugin } from './plugins/func/azureFunc';
-import { AzureFuncAddPlugin } from './plugins/func/add/azureFuncAdd';
-import { AzureFuncRemovePlugin } from './plugins/func/remove/azureFuncRemove';
+import Serverless from "serverless";
+import AzureProvider from "./provider/azureProvider";
+import { AzureInvoke } from "./plugins/invoke/azureInvoke";
+import { AzureLogs } from "./plugins/logs/azureLogs";
+import { AzureRemove } from "./plugins/remove/azureRemove";
+import { AzurePackage } from "./plugins/package/azurePackage";
+import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
+import { AzureLoginPlugin } from "./plugins/login/loginPlugin";
+import { AzureApimServicePlugin } from "./plugins/apim/apimServicePlugin";
+import { AzureApimFunctionPlugin } from "./plugins/apim/apimFunctionPlugin";
+import { AzureFuncPlugin } from "./plugins/func/azureFunc";
+import { AzureFuncAddPlugin } from "./plugins/func/add/azureFuncAdd";
+import { AzureFuncRemovePlugin } from "./plugins/func/remove/azureFuncRemove";
 
 
 export class AzureIndex {
