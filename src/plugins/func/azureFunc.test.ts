@@ -22,6 +22,14 @@ describe("Azure Func Plugin", () => {
     mock.restore();
   });
 
+  it("displays a help message", async () => {
+    const sls = MockFactory.createTestServerless();
+    const options = MockFactory.createTestServerlessOptions();
+    const plugin = new AzureFuncPlugin(sls, options);
+    await invokeHook(plugin, "func:func");
+    expect(sls.cli.log).toBeCalledWith("Use the func plugin to add or remove functions within Function App");
+  })
+
   describe("Add command", () => {
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const mkdirSpy = jest.spyOn(fs, "mkdirSync");
@@ -46,9 +54,9 @@ describe("Azure Func Plugin", () => {
     it("creates function directory and updates serverless.yml", async () => {
       const sls = MockFactory.createTestServerless();
       const options = MockFactory.createTestServerlessOptions();
-      const plugin = new AzureFuncPlugin(sls, options);
       const functionName = "myFunction";
       options["name"] = functionName;
+      const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:add:add");
       expect(mkdirSpy).toBeCalledWith(functionName);
       const calls = (writeFileSpy as any).mock.calls;
@@ -78,7 +86,7 @@ describe("Azure Func Plugin", () => {
   
     afterAll(() => {
       mock.restore();
-    })
+    });
   
     it("returns with missing name", async () => {
       const sls = MockFactory.createTestServerless();

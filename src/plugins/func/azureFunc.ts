@@ -81,7 +81,7 @@ export class AzureFuncPlugin {
   private addToServerlessYml(name: string) {
     this.serverless.cli.log("Adding to serverless.yml");
     const functionYml = FuncPluginUtils.getFunctionsYml();
-    functionYml.functions[name] = FuncPluginUtils.getFunctionSlsObject(name, this.options);
+    functionYml[name] = FuncPluginUtils.getFunctionSlsObject(name, this.options);
     FuncPluginUtils.updateFunctionsYml(functionYml);
   } 
 
@@ -103,7 +103,7 @@ export class AzureFuncPlugin {
 
   private async removeFromServerlessYml(name: string) {
     const functionYml = FuncPluginUtils.getFunctionsYml();
-    delete functionYml.functions[name];
+    delete functionYml[name];
     FuncPluginUtils.updateFunctionsYml(functionYml)
   }
 }
