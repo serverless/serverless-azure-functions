@@ -1,7 +1,7 @@
 import fs from 'fs';
 import rimraf from 'rimraf';
 import Serverless from 'serverless';
-import { FuncPluginUtils } from '../funcUtils'
+import { FuncPluginUtils } from '../funcUtils';
 
 export class AzureFuncRemovePlugin {
   public hooks: { [eventName: string]: Promise<any> };

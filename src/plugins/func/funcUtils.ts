@@ -15,7 +15,7 @@ export class FuncPluginUtils {
     return yaml.safeLoad(functionsSection);
   }
 
-  public static updateFunctionsYml(functionYml: any, serverlessYml: string) {
+  public static updateFunctionsYml(functionYml: any, serverlessYml?: string) {
     serverlessYml = serverlessYml || FuncPluginUtils.getServerlessYml();
     const newFunctionsYaml = yaml.dump(functionYml);
     const newServerlessYaml = serverlessYml.replace(functionsRegex, `${newFunctionsYaml}\n`);

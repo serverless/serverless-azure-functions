@@ -3,6 +3,8 @@ import Serverless from 'serverless';
 import Service from 'serverless/classes/Service';
 import Utils = require('serverless/classes/Utils');
 import PluginManager = require('serverless/classes/PluginManager');
+import yaml from 'js-yaml'
+
 
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
@@ -37,46 +39,47 @@ export class MockFactory {
     }
   }
 
-  public static createTestFunctionsMetadata() {
+  public static createTestServerlessYml(asYaml = false, functionMetadata?) {
+    const data = {
+      'provider': {
+        'name': 'azure',
+        'location': 'West US 2'
+      },
+      'plugins': [
+        'serverless-azure-functions'
+      ],
+      'functions': functionMetadata || MockFactory.createTestFunctionsMetadata(),
+    }
+    return (asYaml) ? yaml.dump(data) + '\n' : data;
+  }
+
+  public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
+    const data = {};
+    for (let i = 0; i < functionCount; i++) {
+      const functionName = `function${i+1}`;
+      data[functionName] = MockFactory.createTestFunctionMetadata(functionName)
+    }
+    return (wrap) ? {'functions': data } : data;
+  }
+
+  public static createTestFunctionMetadata(name: string) {
     return {
-      'functions': {
-        'hello': {
-          'handler': 'hello/index.handler',
-          'events': [
-            {
-              'http': true,
-              'x-azure-settings': {
-                'authLevel': 'anonymous'
-              }
-            },
-            {
-              'http': true,
-              'x-azure-settings': {
-                'direction': 'out',
-                'name': 'res'
-              }
-            }
-          ]
+      'handler': `${name}/index.handler`,
+      'events': [
+        {
+          'http': true,
+          'x-azure-settings': {
+            'authLevel': 'anonymous'
+          }
         },
-        'goodbye': {
-          'handler': 'goodbye/index.handler',
-          'events': [
-            {
-              'http': true,
-              'x-azure-settings': {
-                'authLevel': 'anonymous'
-              }
-            },
-            {
-              'http': true,
-              'x-azure-settings': {
-                'direction': 'out',
-                'name': 'res'
-              }
-            }
-          ]
+        {
+          'http': true,
+          'x-azure-settings': {
+            'direction': 'out',
+            'name': 'res'
+          }
         }
-      }
+      ]
     }
   }
 
