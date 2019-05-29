@@ -18,6 +18,26 @@ This plugin enables Azure Functions support within the Serverless Framework.
 2. CD into the generated app directory: `cd <appName>`
 3. Install the app's NPM dependencies, which includes this plugin: `npm install`
 
+### Creating or removing Azure Functions
+
+To create a new Azure Function within your function app, run the following command from within your app's directory:
+
+```bash
+sls func add -n {functionName}
+```
+
+This will create a new `{functionName}` directory at the root of your application with `index.js` and `function.json` inside the directory. It will also update `serverless.yml` to contain the new function.
+
+To remove an existing Azure Function from your function app, run the following command from within your app's directory:
+
+```bash
+sls func remove -n {functionName}
+```
+
+This will remove the `{functionName}` directory and remove the function from `serverless.yml`
+
+*Note: Add & remove currently only support HTTP triggered functions. For other triggers, you will need to update `serverless.yml` manually
+
 ### Deploy, test, and diagnose your Azure service
 
 1. Deploy your new service to Azure! The first time you do this, you will be asked to authenticate with your Azure account, so the `serverless` CLI can manage Functions on your behalf. Simply follow the provided instructions, and the deployment will continue as soon as the authentication process is completed.
