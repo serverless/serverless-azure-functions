@@ -4,15 +4,13 @@ import { ApiManagementConfig } from '../models/apiManagement';
 import { ApimService } from './apimService';
 import { interpolateJson } from '../test/utils';
 import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
+import { ApiManagementClient } from '@azure/arm-apimanagement';
 
-// tslint:disable-next-line:no-var-requires
-const apimGetService404 = require('../test/responses/apim-get-service-404.json');
-// tslint:disable-next-line:no-var-requires
-const apimGetService200 = require('../test/responses/apim-get-service-200.json');
-// tslint:disable-next-line:no-var-requires
-const apimGetApi200 = require('../test/responses/apim-get-api-200.json');
-// tslint:disable-next-line:no-var-requires
-const apimGetApi404 = require('../test/responses/apim-get-api-404.json');
+import apimGetService404 from '../test/responses/apim-get-service-404.json';
+import apimGetService200 from '../test/responses/apim-get-service-200.json';
+import apimGetApi200 from '../test/responses/apim-get-api-200.json';
+import apimGetApi404 from '../test/responses/apim-get-api-404.json';
 
 describe('APIM Service', () => {
   const apimConfig: ApiManagementConfig = {
@@ -132,8 +130,22 @@ describe('APIM Service', () => {
   });
 
   describe('Deploying API', () => {
-    it('ensures API, backend and keys have all been set', () => {
-      fail();
+    it('ensures API, backend and keys have all been set', async () => {
+      //const axiosMock = new MockAdapter(axios);
+      //axiosMock.onPut('https://management.azure.com/subscriptions/(.*?)/resourceGroups/(.*?)/providers/Microsoft.ApiManagement/service/(.*?)/properties/(.*?)', )
+
+      const service = new ApimService(serverless);
+      const api = await service.deployApi();
+
+      const resourceGroup = serverless.service.provider['resourceGroup'];
+      const serviceName = serverless.service['service'];
+      const apimName = apimConfig.name;
+      const apiName = apimConfig.api.name;
+      const propertyName = `${serviceName}-key`;
+
+      expect(ApiManagementClient.prototype.api.createOrUpdate).toBeCalledWith(resourceGroup, apimName, apiName);
+      expect(ApiManagementClient.prototype.backend.createOrUpdate).toBeCalledWith(resourceGroup, apimName, apiName);
+      expect(ApiManagementClient.prototype.property.createOrUpdate).toBeCalledWith(resourceGroup, apimName, apiName, propertyName);
     });
   });
 

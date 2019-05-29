@@ -41,6 +41,7 @@
     "rimraf": "^2.6.3"
   },
   "devDependencies": {
+    "@types/axios-mock-adapter": "^1.10.0",
     "@types/jest": "^24.0.13",
     "@types/lodash": "^4.14.130",
     "@types/open": "^6.1.0",
@@ -48,6 +49,7 @@
     "@types/serverless": "^1.18.2",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
+    "axios-mock-adapter": "^1.16.0",
     "coveralls": "^3.0.3",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
