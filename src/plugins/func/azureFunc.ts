@@ -21,6 +21,6 @@ export class AzureFuncPlugin {
   }
 
   private async func() {
-    this.serverless.cli.log('Got to func');
+    this.serverless.cli.log('Use the func plugin to add or remove functions within Function App');
   }
 }
