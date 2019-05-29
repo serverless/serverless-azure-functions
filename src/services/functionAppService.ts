@@ -1,19 +1,19 @@
-import fs from 'fs';
-import path from 'path';
-import { WebSiteManagementClient } from '@azure/arm-appservice';
-import { ResourceManagementClient } from '@azure/arm-resources';
-import { Deployment } from '@azure/arm-resources/esm/models';
-import jsonpath from 'jsonpath';
-import _ from 'lodash';
-import Serverless from 'serverless';
-import { BaseService } from './baseService';
-import { constants } from '../config';
+import fs from "fs";
+import path from "path";
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { ResourceManagementClient } from "@azure/arm-resources";
+import { Deployment } from "@azure/arm-resources/esm/models";
+import jsonpath from "jsonpath";
+import _ from "lodash";
+import Serverless from "serverless";
+import { BaseService } from "./baseService";
+import { constants } from "../config";
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
   private webClient: WebSiteManagementClient;
 
-  constructor(serverless: Serverless, options: Serverless.Options) {
+  public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
 
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
@@ -22,7 +22,7 @@ export class FunctionAppService extends BaseService {
 
   public async get() {
     const response: any = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
-    if (response.error && (response.error.code === 'ResourceNotFound' || response.error.code === 'ResourceGroupNotFound')) {
+    if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       return null;
     }
 
@@ -34,10 +34,10 @@ export class FunctionAppService extends BaseService {
     const adminToken = await this.getAuthKey(functionApp);
     const keyUrl = `https://${functionApp.defaultHostName}/admin/host/systemkeys/_master`;
 
-    const response = await this.sendApiRequest('GET', keyUrl, {
+    const response = await this.sendApiRequest("GET", keyUrl, {
       json: true,
       headers: {
-        'Authorization': `Bearer ${adminToken}`
+        "Authorization": `Bearer ${adminToken}`
       }
     });
 
@@ -50,14 +50,14 @@ export class FunctionAppService extends BaseService {
   }
 
   public async syncTriggers(functionApp) {
-    this.serverless.cli.log('Syncing function triggers');
+    this.serverless.cli.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
-    await this.sendApiRequest('POST', syncTriggersUrl);
+    await this.sendApiRequest("POST", syncTriggersUrl);
   }
 
   public async cleanUp(functionApp) {
-    this.serverless.cli.log('Cleaning up existing functions');
+    this.serverless.cli.log("Cleaning up existing functions");
     const deleteTasks = [];
 
     const serviceFunctions = this.serverless.service.getAllFunctions();
@@ -75,7 +75,7 @@ export class FunctionAppService extends BaseService {
 
   public async listFunctions(functionApp) {
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
-    const response = await this.sendApiRequest('GET', getTokenUrl);
+    const response = await this.sendApiRequest("GET", getTokenUrl);
 
     return response.data.value || [];
   }
@@ -89,9 +89,9 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service['artifact'];
+    const functionZipFile = this.serverless.service["artifact"];
     if (!functionZipFile) {
-      throw new Error('No zip file found for function app');
+      throw new Error("No zip file found for function app");
     }
 
     this.serverless.cli.log(`-> Uploading ${functionZipFile}`);
@@ -101,19 +101,19 @@ export class FunctionAppService extends BaseService {
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
-      method: 'POST',
+      method: "POST",
       uri: uploadUrl,
       json: true,
       headers: {
         Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-        Accept: '*/*',
-        ContentType: 'application/octet-stream',
+        Accept: "*/*",
+        ContentType: "application/octet-stream",
       }
     };
 
     try {
       await this.sendFile(requestOptions, functionZipFile);
-      this.serverless.cli.log('-> Function package uploaded successfully');
+      this.serverless.cli.log("-> Function package uploaded successfully");
     } catch (e) {
       throw new Error(`Error uploading zip file:\n  --> ${e}`);
     }
@@ -127,7 +127,7 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
 
-    const gitUrl = this.serverless.service.provider['gitUrl'];
+    const gitUrl = this.serverless.service.provider["gitUrl"];
 
     if (gitUrl) {
       parameters = {
@@ -136,33 +136,33 @@ export class FunctionAppService extends BaseService {
       };
     }
 
-    let templateFilePath = path.join(__dirname, '..', 'provider', 'armTemplates', 'azuredeploy.json');
+    let templateFilePath = path.join(__dirname, "..", "provider", "armTemplates", "azuredeploy.json");
 
     if (gitUrl) {
-      templateFilePath = path.join(__dirname, 'armTemplates', 'azuredeployWithGit.json');
+      templateFilePath = path.join(__dirname, "armTemplates", "azuredeployWithGit.json");
     }
 
-    if (this.serverless.service.provider['armTemplate']) {
-      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider['armTemplate'].file}`);
-      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider['armTemplate'].file);
-      const userParameters = this.serverless.service.provider['armTemplate'].parameters;
+    if (this.serverless.service.provider["armTemplate"]) {
+      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
+      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
+      const userParameters = this.serverless.service.provider["armTemplate"].parameters;
       const userParametersKeys = Object.keys(userParameters);
 
       for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
         const item = {};
 
-        item[userParametersKeys[paramIndex]] = { 'value': userParameters[userParametersKeys[paramIndex]] };
+        item[userParametersKeys[paramIndex]] = { "value": userParameters[userParametersKeys[paramIndex]] };
         parameters = _.merge(parameters, item);
       }
     }
 
-    let template = JSON.parse(fs.readFileSync(templateFilePath, 'utf8'));
+    let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
 
     // Check if there are custom environment variables defined that need to be
     // added to the ARM template used in the deployment.
-    const environmentVariables = this.serverless.service.provider['environment'];
+    const environmentVariables = this.serverless.service.provider["environment"];
     if (environmentVariables) {
-      const appSettingsPath = '$.resources[?(@.kind=="functionapp")].properties.siteConfig.appSettings';
+      const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
 
       jsonpath.apply(template, appSettingsPath, function (appSettingsList) {
         Object.keys(environmentVariables).forEach(function (key) {
@@ -178,7 +178,7 @@ export class FunctionAppService extends BaseService {
 
     const deploymentParameters: Deployment = {
       properties: {
-        mode: 'Incremental',
+        mode: "Incremental",
         parameters,
         template
       }
@@ -199,10 +199,10 @@ export class FunctionAppService extends BaseService {
 
     // TODO: There is a case where the body will contain an error, but it's
     // not actually an error. These are warnings from npm install.
-    const response = await this.sendApiRequest('POST', requestUrl, {
+    const response = await this.sendApiRequest("POST", requestUrl, {
       data: {
         command: command,
-        dir: 'site\\wwwroot'
+        dir: "site\\wwwroot"
       }
     });
 
@@ -219,8 +219,8 @@ export class FunctionAppService extends BaseService {
    */
   private async getAuthKey(functionApp) {
     const adminTokenUrl = `${this.baseUrl}${functionApp.id}/functions/admin/token?api-version=2016-08-01`;
-    const response = await this.sendApiRequest('GET', adminTokenUrl);
+    const response = await this.sendApiRequest("GET", adminTokenUrl);
 
-    return response.data.replace(/"/g, '');
+    return response.data.replace(/"/g, "");
   }
 }
