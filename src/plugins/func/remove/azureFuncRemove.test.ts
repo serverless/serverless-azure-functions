@@ -7,6 +7,9 @@ import { AzureFuncRemovePlugin } from './azureFuncRemove';
 
 describe('Azure Func Add', () => {
 
+  const writeFileSpy = jest.spyOn(fs, 'writeFileSync');
+  const rimrafSpy = jest.spyOn(rimraf, 'sync');
+
   beforeAll(() => {
     mock({
       'function1': {
@@ -14,9 +17,7 @@ describe('Azure Func Add', () => {
         'function.json': 'contents',
       },
       'serverless.yml': MockFactory.createTestServerlessYml(true)
-    }, {createCwd: true, createTmp: true})
-    fs.writeFileSync = jest.fn();
-    rimraf.sync = jest.fn();
+    }, {createCwd: true, createTmp: true});    
   });
 
   afterAll(() => {
@@ -47,9 +48,9 @@ describe('Azure Func Add', () => {
     const functionName = 'function1';
     options['name'] = functionName;
     await invokeHook(plugin, 'func:remove:remove');
-    expect(rimraf.sync).toBeCalledWith(functionName);
+    expect(rimrafSpy).toBeCalledWith(functionName);
     const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
     delete expectedFunctionsYml[functionName];
-    expect(fs.writeFileSync).toBeCalledWith('serverless.yml', MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
+    expect(writeFileSpy).toBeCalledWith('serverless.yml', MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
   });
 });

@@ -7,6 +7,9 @@ import { AzureFuncAddPlugin } from './azureFuncAdd';
 
 describe('Azure Func Add', () => {
 
+  const writeFileSpy = jest.spyOn(fs, 'writeFileSync');
+  const mkdirSpy = jest.spyOn(fs, 'mkdirSync');
+
   beforeAll(() => {
     mock({
       'myExistingFunction': {
@@ -15,8 +18,6 @@ describe('Azure Func Add', () => {
       },
       'serverless.yml': MockFactory.createTestServerlessYml(true)
     }, {createCwd: true, createTmp: true})
-    fs.writeFileSync = jest.fn();
-    fs.mkdirSync = jest.fn();
   });
 
   afterAll(() => {
@@ -47,14 +48,14 @@ describe('Azure Func Add', () => {
     const functionName = 'myFunction';
     options['name'] = functionName;
     await invokeHook(plugin, 'func:add:add');
-    expect(fs.mkdirSync).toBeCalledWith(functionName);
-    const calls = (fs.writeFileSync as any).mock.calls;
+    expect(mkdirSpy).toBeCalledWith(functionName);
+    const calls = (writeFileSpy as any).mock.calls;
     expect(calls[0][0]).toBe(path.join(functionName, 'index.js'));
     expect(calls[1][0]).toBe(path.join(functionName, 'function.json'));
 
     const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
     expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName);
     expect(calls[2][0]).toBe('serverless.yml');
-    expect(calls[2][1]).toBe(MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
+    expect(calls[2][1]).toBe(MockFactory.createTestServerlessYml(true, expectedFunctionsYml));
   });
 });
