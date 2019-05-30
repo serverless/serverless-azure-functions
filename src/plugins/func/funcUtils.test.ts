@@ -5,10 +5,13 @@ import { FuncPluginUtils } from "./funcUtils";
 
 describe("Func Utils", () => {
 
+
+
   beforeAll(() => {
     mockFs({
-      "serverless.yml": MockFactory.createTestServerlessYml(true)
-    }, {createCwd: true, createTmp: true})
+      "serverless.yml": MockFactory.createTestServerlessYml(true),
+      "src/plugins/func/funcHandler.txt": MockFactory.createTestHandler(),
+    }, {createCwd: false, createTmp: true})
   });
 
   afterEach(() => {
@@ -42,6 +45,6 @@ describe("Func Utils", () => {
   it("adds new function name to function handler", () => {
     const name = "This is my function name"
     expect(FuncPluginUtils.getFunctionHandler(name))
-      .toContain(`body: "${name} " + (req.query.name || req.body.name)`)
+      .toContain(`body: '${name} ' + (req.query.name || req.body.name)`)
   });
 });

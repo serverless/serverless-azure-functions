@@ -62,6 +62,26 @@ export class MockFactory {
     return (wrap) ? {"functions": data } : data;
   }
 
+  public static createTestHandler() {
+    // The mock-fs module doesn't allow for template/multi-line strings...
+    return "'use strict'\n" + 
+    "module.exports.handler = async function (context, req) {\n" +
+      "\tcontext.log('JavaScript HTTP trigger function processed a request.');\n" +
+      "\tif (req.query.name || (req.body && req.body.name)) {\n" +
+        "\t\tcontext.res = {\n" +
+          "\t\t\t// status: 200, /* Defaults to 200 */\n" +
+          "\t\t\tbody: '${name} ' + (req.query.name || req.body.name)\n" +
+        "\t\t};\n" +
+      "\t}\n" +
+      "\telse {\n" +
+        "\t\tcontext.res = {\n" +
+          "\t\t\tstatus: 400,\n" +
+          "\t\t\tbody: 'Please pass a name on the query string or in the request body'\n" +
+        "\t\t};\n" +
+      "\t}\n" +
+    "};\n"
+  }
+
   public static createTestFunctionMetadata(name: string) {
     return {
       "handler": `${name}/index.handler`,

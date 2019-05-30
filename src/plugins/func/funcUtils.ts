@@ -1,5 +1,7 @@
-import yaml from "js-yaml";
 import fs from "fs";
+import yaml from "js-yaml";
+import path from "path";
+import { Utils } from "../../shared/utils";
 
 export class FuncPluginUtils {
 
@@ -19,24 +21,10 @@ export class FuncPluginUtils {
   }
 
   public static getFunctionHandler(name: string) {
-    return `"use strict";
-
-module.exports.handler = async function (context, req) {
-    context.log("JavaScript HTTP trigger function processed a request.");
-
-    if (req.query.name || (req.body && req.body.name)) {
-        context.res = {
-            // status: 200, /* Defaults to 200 */
-            body: "${name} " + (req.query.name || req.body.name)
-        };
-    }
-    else {
-        context.res = {
-            status: 400,
-            body: "Please pass a name on the query string or in the request body"
-        };
-    }
-};`;
+    const filePath = path.resolve(process.cwd(), "src", "plugins", "func", "funcHandler.txt")
+    return Utils.interpolateFile(filePath, new Map([
+      ["name", name]
+    ]));
   }
 
   public static getFunctionJson(name: string, options: any) {
@@ -64,7 +52,6 @@ module.exports.handler = async function (context, req) {
   }
 
   public static getFunctionSlsObject(name: string, options: any) {
-
     return FuncPluginUtils.defaultFunctionSlsObject(name);
   }
 

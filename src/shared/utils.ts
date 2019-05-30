@@ -1,5 +1,6 @@
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
+import fs from 'fs';
 
 export interface FunctionMetadata {
   entryPoint: any;
@@ -109,5 +110,12 @@ export class Utils {
     };
   
     return metaData;
+  }
+
+  public static interpolateFile(path: string, params: Map<string, string>) {
+    const template = fs.readFileSync(path, "utf8");
+    const names = params.keys();
+    const vals = params.values();
+    return new Function(...names, `return \`${template}\`;`)(...vals);
   }
 }

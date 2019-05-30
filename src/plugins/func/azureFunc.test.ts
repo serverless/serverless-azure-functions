@@ -75,6 +75,7 @@ describe("Azure Func Plugin", () => {
   });
 
   describe("Remove command", () => {  
+    
     beforeAll(() => {
       mockFs({
         "function1": {
@@ -84,13 +85,13 @@ describe("Azure Func Plugin", () => {
         "serverless.yml": MockFactory.createTestServerlessYml(true)
       }, {createCwd: true, createTmp: true});    
     });
-
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
   
     afterAll(() => {
       mockFs.restore();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
     });
   
     it("returns with missing name", async () => {
