@@ -114,7 +114,7 @@ export class MockFactory {
       readFile: jest.fn(),
       readFileSync: jest.fn((filename) => {
         if (filename === "serverless.yml") {
-          return MockFactory.createTestServerlessYml(true);
+          return MockFactory.createTestServerlessYml();
         }
       }),
       walkDirSync: jest.fn(),
