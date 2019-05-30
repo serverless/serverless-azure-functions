@@ -1,21 +1,23 @@
 import fs from "fs";
-import mock from "mock-fs";
+import mockFs from "mock-fs";
 import { MockFactory } from "../../test/mockFactory";
 import { FuncPluginUtils } from "./funcUtils";
 
 describe("Func Utils", () => {
 
-  const writeFileSync = jest.spyOn(fs, "writeFileSync");
-
   beforeAll(() => {
-    mock({
+    mockFs({
       "serverless.yml": MockFactory.createTestServerlessYml(true)
     }, {createCwd: true, createTmp: true})
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   afterAll(() => {
-    mock.restore();
-  })
+    mockFs.restore();
+  });
 
   
   it("gets functions yml", () => {
@@ -26,7 +28,7 @@ describe("Func Utils", () => {
   it("updates functions yml", () => {
     const updatedFunctions = MockFactory.createTestFunctionsMetadata(3);
     const originalSls = MockFactory.createTestServerlessYml(false, 2);
-    
+    const writeFileSync = jest.spyOn(fs, "writeFileSync");
     FuncPluginUtils.updateFunctionsYml(updatedFunctions, originalSls);
     const call = writeFileSync.mock.calls[0]
     expect(call[0]).toBe("serverless.yml");

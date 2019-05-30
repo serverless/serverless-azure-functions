@@ -1,5 +1,5 @@
 import fs from "fs";
-import mock from "mock-fs";
+import mockFs from "mock-fs";
 import path from "path";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
@@ -8,20 +8,6 @@ import rimraf from "rimraf";
 
 describe("Azure Func Plugin", () => {
   
-  beforeAll(() => {
-    mock({
-      "myExistingFunction": {
-        "index.js": "contents",
-        "function.json": "contents",
-      },
-      "serverless.yml": MockFactory.createTestServerlessYml(true)
-    }, {createCwd: true, createTmp: true})
-  });
-
-  afterAll(() => {
-    mock.restore();
-  });
-
   it("displays a help message", async () => {
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
@@ -31,8 +17,24 @@ describe("Azure Func Plugin", () => {
   })
 
   describe("Add command", () => {
-    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
-    const mkdirSpy = jest.spyOn(fs, "mkdirSync");
+
+    beforeAll(() => {
+      mockFs({
+        "myExistingFunction": {
+          "index.js": "contents",
+          "function.json": "contents",
+        },
+        "serverless.yml": MockFactory.createTestServerlessYml(true)
+      }, {createCwd: true, createTmp: true})
+    });
+  
+    afterAll(() => {
+      mockFs.restore();
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
 
     it("returns with missing name", async () => {
       const sls = MockFactory.createTestServerless();
@@ -57,6 +59,8 @@ describe("Azure Func Plugin", () => {
       const functionName = "myFunction";
       options["name"] = functionName;
       const plugin = new AzureFuncPlugin(sls, options);
+      const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+      const mkdirSpy = jest.spyOn(fs, "mkdirSync");
       await invokeHook(plugin, "func:add:add");
       expect(mkdirSpy).toBeCalledWith(functionName);
       const calls = (writeFileSpy as any).mock.calls;
@@ -70,12 +74,9 @@ describe("Azure Func Plugin", () => {
     });
   });
 
-  describe("Remove command", () => {
-    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
-    const rimrafSpy = jest.spyOn(rimraf, "sync");
-  
+  describe("Remove command", () => {  
     beforeAll(() => {
-      mock({
+      mockFs({
         "function1": {
           "index.js": "contents",
           "function.json": "contents",
@@ -83,9 +84,13 @@ describe("Azure Func Plugin", () => {
         "serverless.yml": MockFactory.createTestServerlessYml(true)
       }, {createCwd: true, createTmp: true});    
     });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
   
     afterAll(() => {
-      mock.restore();
+      mockFs.restore();
     });
   
     it("returns with missing name", async () => {
@@ -111,6 +116,8 @@ describe("Azure Func Plugin", () => {
       const plugin = new AzureFuncPlugin(sls, options);
       const functionName = "function1";
       options["name"] = functionName;
+      const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+      const rimrafSpy = jest.spyOn(rimraf, "sync");
       await invokeHook(plugin, "func:remove:remove");
       expect(rimrafSpy).toBeCalledWith(functionName);
       const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
