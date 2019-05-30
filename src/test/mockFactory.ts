@@ -1,9 +1,9 @@
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
-import yaml from "js-yaml"
 
 
 export class MockFactory {
@@ -62,26 +62,6 @@ export class MockFactory {
     return (wrap) ? {"functions": data } : data;
   }
 
-  public static createTestHandler() {
-    // The mock-fs module doesn't allow for template/multi-line strings...
-    return "'use strict'\n" + 
-    "module.exports.handler = async function (context, req) {\n" +
-      "\tcontext.log('JavaScript HTTP trigger function processed a request.');\n" +
-      "\tif (req.query.name || (req.body && req.body.name)) {\n" +
-        "\t\tcontext.res = {\n" +
-          "\t\t\t// status: 200, /* Defaults to 200 */\n" +
-          "\t\t\tbody: '${name} ' + (req.query.name || req.body.name)\n" +
-        "\t\t};\n" +
-      "\t}\n" +
-      "\telse {\n" +
-        "\t\tcontext.res = {\n" +
-          "\t\t\tstatus: 400,\n" +
-          "\t\t\tbody: 'Please pass a name on the query string or in the request body'\n" +
-        "\t\t};\n" +
-      "\t}\n" +
-    "};\n"
-  }
-
   public static createTestFunctionMetadata(name: string) {
     return {
       "handler": `${name}/index.handler`,
@@ -132,7 +112,11 @@ export class MockFactory {
       getVersion: jest.fn(),
       logStat: jest.fn(),
       readFile: jest.fn(),
-      readFileSync: jest.fn(),
+      readFileSync: jest.fn((filename) => {
+        if (filename === "serverless.yml") {
+          return MockFactory.createTestServerlessYml(true);
+        }
+      }),
       walkDirSync: jest.fn(),
       writeFile: jest.fn(),
       writeFileDir: jest.fn(),

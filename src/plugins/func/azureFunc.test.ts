@@ -25,16 +25,11 @@ describe("Azure Func Plugin", () => {
           "function.json": "contents",
         },
         "serverless.yml": MockFactory.createTestServerlessYml(true),
-        "src/plugins/func/funcHandler.txt": MockFactory.createTestHandler(),
       }, {createCwd: true, createTmp: true})
     });
   
     afterAll(() => {
       mockFs.restore();
-    });
-
-    afterEach(() => {
-      jest.clearAllMocks();
     });
 
     it("returns with missing name", async () => {
@@ -60,14 +55,12 @@ describe("Azure Func Plugin", () => {
       const functionName = "myFunction";
       options["name"] = functionName;
       const plugin = new AzureFuncPlugin(sls, options);
-      const writeFileSpy = jest.spyOn(fs, "writeFileSync");
       const mkdirSpy = jest.spyOn(fs, "mkdirSync");
       await invokeHook(plugin, "func:add:add");
       expect(mkdirSpy).toBeCalledWith(functionName);
-      const calls = (writeFileSpy as any).mock.calls;
+      const calls = (sls.utils.writeFileSync as any).mock.calls;
       expect(calls[0][0]).toBe(path.join(functionName, "index.js"));
       expect(calls[1][0]).toBe(path.join(functionName, "function.json"));
-  
       const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
       expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName);
       expect(calls[2][0]).toBe("serverless.yml");
@@ -83,16 +76,11 @@ describe("Azure Func Plugin", () => {
           "index.js": "contents",
           "function.json": "contents",
         },
-        "serverless.yml": MockFactory.createTestServerlessYml(true)
       }, {createCwd: true, createTmp: true});    
     });
   
     afterAll(() => {
       mockFs.restore();
-    });
-
-    afterEach(() => {
-      jest.clearAllMocks();
     });
   
     it("returns with missing name", async () => {
@@ -118,13 +106,12 @@ describe("Azure Func Plugin", () => {
       const plugin = new AzureFuncPlugin(sls, options);
       const functionName = "function1";
       options["name"] = functionName;
-      const writeFileSpy = jest.spyOn(fs, "writeFileSync");
       const rimrafSpy = jest.spyOn(rimraf, "sync");
       await invokeHook(plugin, "func:remove:remove");
       expect(rimrafSpy).toBeCalledWith(functionName);
       const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
       delete expectedFunctionsYml[functionName];
-      expect(writeFileSpy).toBeCalledWith("serverless.yml", MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
+      expect(sls.utils.writeFileSync).toBeCalledWith("serverless.yml", MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
     });
   });
 });

@@ -74,15 +74,15 @@ export class AzureFuncPlugin {
   private createFunctionDir(name: string) {
     this.serverless.cli.log("Creating function dir");
     fs.mkdirSync(name);
-    fs.writeFileSync(path.join(name, "index.js"), FuncPluginUtils.getFunctionHandler(name));
-    fs.writeFileSync(path.join(name, "function.json"), FuncPluginUtils.getFunctionJson(name, this.options))
+    this.serverless.utils.writeFileSync(path.join(name, "index.js"), FuncPluginUtils.getFunctionHandler(name));
+    this.serverless.utils.writeFileSync(path.join(name, "function.json"), FuncPluginUtils.getFunctionJsonString(name, this.options))
   }
 
   private addToServerlessYml(name: string) {
     this.serverless.cli.log("Adding to serverless.yml");
-    const functionYml = FuncPluginUtils.getFunctionsYml();
+    const functionYml = FuncPluginUtils.getFunctionsYml(this.serverless);
     functionYml[name] = FuncPluginUtils.getFunctionSlsObject(name, this.options);
-    FuncPluginUtils.updateFunctionsYml(functionYml);
+    FuncPluginUtils.updateFunctionsYml(this.serverless, functionYml);
   } 
 
   private async remove() {
@@ -102,8 +102,8 @@ export class AzureFuncPlugin {
   }
 
   private async removeFromServerlessYml(name: string) {
-    const functionYml = FuncPluginUtils.getFunctionsYml();
+    const functionYml = FuncPluginUtils.getFunctionsYml(this.serverless);
     delete functionYml[name];
-    FuncPluginUtils.updateFunctionsYml(functionYml)
+    FuncPluginUtils.updateFunctionsYml(this.serverless, functionYml)
   }
 }
