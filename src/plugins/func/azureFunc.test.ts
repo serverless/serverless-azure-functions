@@ -24,7 +24,8 @@ describe("Azure Func Plugin", () => {
           "index.js": "contents",
           "function.json": "contents",
         },
-        "serverless.yml": MockFactory.createTestServerlessYml(true)
+        "serverless.yml": MockFactory.createTestServerlessYml(true),
+        "src/plugins/func/funcHandler.txt": MockFactory.createTestHandler(),
       }, {createCwd: true, createTmp: true})
     });
   
