@@ -57,14 +57,14 @@ export class MockFactory {
     const data = {};
     for (let i = 0; i < functionCount; i++) {
       const functionName = `function${i+1}`;
-      data[functionName] = MockFactory.createTestFunctionMetadata(functionName)
+      data[functionName] = MockFactory.createTestFunctionMetadata()
     }
     return (wrap) ? {"functions": data } : data;
   }
 
-  public static createTestFunctionMetadata(name: string) {
+  public static createTestFunctionMetadata() {
     return {
-      "handler": `${name}/index.handler`,
+      "handler": "index.handler",
       "events": [
         {
           "http": true,

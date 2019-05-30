@@ -43,7 +43,7 @@ module.exports.handler = async function (context, req) {
   public static getFunctionJsonString(name: string, options: any) {
     // TODO: This is where we would just generate function JSON from SLS object
     // using getFunctionSlsObject(name, options). Currently defaulting to http in and out
-    return JSON.stringify(httpBinding);
+    return JSON.stringify(httpBinding, null, 2);
   }
 
   public static getFunctionSlsObject(name: string, options: any) {
@@ -52,7 +52,7 @@ module.exports.handler = async function (context, req) {
 
   private static defaultFunctionSlsObject(name: string) {
     return {
-      handler: `${name}/index.handler`,
+      handler: `index.handler`,
       events: FuncPluginUtils.httpEvents()
     }
   }  

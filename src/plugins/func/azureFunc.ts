@@ -73,7 +73,11 @@ export class AzureFuncPlugin {
 
   private createFunctionDir(name: string) {
     this.serverless.cli.log("Creating function dir");
-    fs.mkdirSync(name);
+    try {
+      fs.mkdirSync(name);
+    } catch (e) {
+      this.serverless.cli.log(`Error making directory ${e}`);
+    }
     this.serverless.utils.writeFileSync(path.join(name, "index.js"), FuncPluginUtils.getFunctionHandler(name));
     this.serverless.utils.writeFileSync(path.join(name, "function.json"), FuncPluginUtils.getFunctionJsonString(name, this.options))
   }
