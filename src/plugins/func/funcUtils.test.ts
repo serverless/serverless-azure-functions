@@ -11,7 +11,7 @@ describe("Func Utils", () => {
     mockFs({
       "serverless.yml": MockFactory.createTestServerlessYml(true),
       "src/plugins/func/funcHandler.txt": MockFactory.createTestHandler(),
-    }, {createCwd: false, createTmp: true})
+    }, {createCwd: true, createTmp: true})
   });
 
   afterEach(() => {
