@@ -33,13 +33,7 @@ describe("Func Utils", () => {
     const originalSls = MockFactory.createTestServerlessYml(false, 2);
     const writeFileSync = jest.spyOn(fs, "writeFileSync");
     FuncPluginUtils.updateFunctionsYml(updatedFunctions, originalSls);
-    const call = writeFileSync.mock.calls[0]
-    expect(call[0]).toBe("serverless.yml");
-    const expected = MockFactory.createTestServerlessYml(
-      true, 
-      MockFactory.createTestFunctionsMetadata(3)
-    );
-    expect(call[1]).toBe(expected);
+    expect(originalSls.functions).toEqual(updatedFunctions);
   });
 
   it("adds new function name to function handler", () => {
