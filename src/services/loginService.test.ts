@@ -1,19 +1,12 @@
 import { AzureLoginService } from "./loginService";
+jest.mock("open");
+import open from "open";
+
+jest.mock("@azure/ms-rest-nodeauth")
+import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from "@azure/ms-rest-nodeauth";
 
 describe('Login Service', () => {
-  beforeAll(() => {
-    // Because the functions we use for authentication are exported
-    // as functions from their respective modules 
-    // (open, interactiveLoginWithAuthResponse and 
-    // loginWithServicePrincipalSecretWithAuthResponse),
-    // it is extremely difficult to mock their functionality.
-    // As a workaround, they have been placed in the thinnest possible
-    // functions within the Azure Login service, which we will
-    // use to make assertions on the functionality of the login service itself
-    AzureLoginService.interactiveLogin = jest.fn();
-    AzureLoginService.servicePrincipalLogin = jest.fn();
-  });
-
+  
   it('logs in interactively', async () => {
     // Ensure env variables are not set
     delete process.env.azureSubId;
@@ -22,7 +15,8 @@ describe('Login Service', () => {
     delete process.env.azureServicePrincipalTenantId;
 
     await AzureLoginService.login();
-    expect(AzureLoginService.interactiveLogin).toBeCalled();
+    expect(open).toBeCalledWith("https://microsoft.com/devicelogin")
+    expect(interactiveLoginWithAuthResponse).toBeCalled();
   });
 
   it('logs in with a service principal', async () => {
@@ -33,7 +27,7 @@ describe('Login Service', () => {
     process.env.azureServicePrincipalTenantId = 'azureServicePrincipalTenantId';
 
     await AzureLoginService.login();
-    expect(AzureLoginService.servicePrincipalLogin).toBeCalledWith(
+    expect(loginWithServicePrincipalSecretWithAuthResponse).toBeCalledWith(
       'azureServicePrincipalClientId',
       'azureServicePrincipalPassword',
       'azureServicePrincipalTenantId'
