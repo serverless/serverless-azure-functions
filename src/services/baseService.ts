@@ -14,12 +14,13 @@ export abstract class BaseService {
 
   protected constructor(protected serverless: Serverless, protected options?: Serverless.Options, authenticate = true) {
     Guard.null(serverless);
+    this.setDefaultRegion();
 
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
     this.subscriptionId = serverless.variables["subscriptionId"];
-    this.resourceGroup = serverless.service.provider["resourceGroup"] || `${this.serviceName}-rg`;
+    this.resourceGroup = this.getResourceGroupName(this.serviceName);
     this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
 
     if (!this.credentials && authenticate) {
@@ -80,5 +81,34 @@ export abstract class BaseService {
 
   protected slsConfigFile(): string {
     return ("config" in this.options) ? this.options["config"] : "serverless.yml";
+  }
+  
+  /**
+   * normallize provider object b/c serverless set an incorrect region default
+   * that use AWS syntax
+   */
+  private setDefaultRegion(): void {
+    const defaultRegion = 'westus2';
+
+    const awsDefault = "us-east-1"
+    const providerRegion = this.serverless.service.provider.region;
+    if (providerRegion === awsDefault) { // no region specified in serverless.yml
+      this.serverless.service.provider.region = defaultRegion;
+    }
+  }
+
+  protected getRegion(): string {
+    return this.options.region || this.serverless.service.provider.region;
+  }
+
+  private getStage(): string {
+    const defaultStage = 'dev';
+    return this.options.stage || this.serverless.service.provider.stage || defaultStage;
+  }
+
+  private getResourceGroupName(serviceName: string): string {
+    const name = `${serviceName}-${this.getStage()}-${this.getRegion()}-rg`;
+    this.serverless.cli.log(`Resource GROUP: ${name}`);
+    return name;
   }
 }

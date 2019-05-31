@@ -113,6 +113,10 @@ export class Utils {
     return metaData;
   }
 
+  public static prettyPrint(json) {
+    return JSON.stringify(json, null, 2);
+  }
+
   public static interpolateFile(sls: Serverless, path: string, params: Map<string, string>) {
     const template = sls.utils.readFileSync(path);
     const names = params.keys();
