@@ -1,4 +1,5 @@
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
@@ -41,6 +42,50 @@ export class MockFactory {
           id: "azureSubId",
         }
       ] as any as LinkedSubscription[]
+    }
+  }
+
+  public static createTestServerlessYml(asYaml = false, functionMetadata?) {
+    const data = {
+      "provider": {
+        "name": "azure",
+        "location": "West US 2"
+      },
+      "plugins": [
+        "serverless-azure-functions"
+      ],
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2, false),
+    }
+    return (asYaml) ? yaml.dump(data) : data;
+  }
+
+  public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
+    const data = {};
+    for (let i = 0; i < functionCount; i++) {
+      const functionName = `function${i+1}`;
+      data[functionName] = MockFactory.createTestFunctionMetadata()
+    }
+    return (wrap) ? {"functions": data } : data;
+  }
+
+  public static createTestFunctionMetadata() {
+    return {
+      "handler": "index.handler",
+      "events": [
+        {
+          "http": true,
+          "x-azure-settings": {
+            "authLevel": "anonymous"
+          }
+        },
+        {
+          "http": true,
+          "x-azure-settings": {
+            "direction": "out",
+            "name": "res"
+          }
+        }
+      ]
     }
   }
 
@@ -101,7 +146,11 @@ export class MockFactory {
       getVersion: jest.fn(),
       logStat: jest.fn(),
       readFile: jest.fn(),
-      readFileSync: jest.fn(),
+      readFileSync: jest.fn((filename) => {
+        if (filename === "serverless.yml") {
+          return MockFactory.createTestServerlessYml();
+        }
+      }),
       walkDirSync: jest.fn(),
       writeFile: jest.fn(),
       writeFileDir: jest.fn(),
