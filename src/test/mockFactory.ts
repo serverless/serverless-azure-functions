@@ -12,6 +12,7 @@ export class MockFactory {
     sls.cli = MockFactory.createTestCli();
     sls.pluginManager = MockFactory.createTestPluginManager();
     sls.variables = {};
+    sls.setProvider = jest.fn();
     return sls;
   }
 

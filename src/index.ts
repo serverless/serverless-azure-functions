@@ -15,7 +15,7 @@ import { AzureLoginPlugin } from "./plugins/login/loginPlugin";
 import { AzureApimServicePlugin } from "./plugins/apim/apimServicePlugin";
 import { AzureApimFunctionPlugin } from "./plugins/apim/apimFunctionPlugin";
 
-export class AzureIndex {
+export default class AzureIndex {
   public constructor(private serverless: Serverless, private options) {
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless) as any);
 
