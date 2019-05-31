@@ -1,9 +1,9 @@
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import yaml from "js-yaml";
 import Serverless from "serverless";
-import Service from "serverless/classes/Service";
-import Utils = require("serverless/classes/Utils");
-import { HttpHeaders, WebResource, HttpOperationResponse } from '@azure/ms-rest-js';
+import Utils from 'serverless/classes/Utils';
+import PluginManager from 'serverless/classes/PluginManager';
+import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from '@azure/ms-rest-js';
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { TokenClientCredentials, TokenResponse } from '@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials';
 import PluginManager = require("serverless/classes/PluginManager");
@@ -35,6 +35,21 @@ export class MockFactory {
       stage: null,
       watch: null,
     };
+  }
+
+  public static createTestArmSdkResponse<T = any, R = T & { _response: HttpResponse }>(model: T, statusCode: number): Promise<R> {
+    const response: HttpResponse = {
+      headers: new HttpHeaders(),
+      request: null,
+      status: statusCode,
+    };
+
+    const result = ({
+      ...model,
+      _response: response,
+    } as any) as R;
+
+    return Promise.resolve(result);
   }
 
   public static createTestAuthResponse(): AuthResponse {

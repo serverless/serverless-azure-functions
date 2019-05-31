@@ -4,13 +4,16 @@
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
   "main": "./lib/index.js",
+  "typings": "./lib/index.d.ts",
   "author": "Azure Functions",
   "scripts": {
     "lint": "eslint src/**/*.ts",
     "lintfix": "eslint src/**/*.ts --fix",
     "pretest": "npm run lint",
-    "test": "jest --config jest.config.js",
-    "prebuild": "rm -rf lib/ && npm test",
+    "test": "jest",
+    "test:ci": "jest",
+    "test:coverage": "jest --coverage",
+    "prebuild": "rm lib/ -rf",
     "build": "tsc"
   },
   "repository": {
@@ -41,6 +44,14 @@
     "rimraf": "^2.6.3"
   },
   "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-class-properties": "^7.4.4",
+    "@babel/plugin-proposal-decorators": "^7.4.4",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/plugin-transform-typescript": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "@babel/preset-typescript": "^7.3.3",
+    "@babel/runtime": "^7.4.5",
     "@types/axios-mock-adapter": "^1.10.0",
     "@types/jest": "^24.0.13",
     "@types/lodash": "^4.14.130",
@@ -50,13 +61,14 @@
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "axios-mock-adapter": "^1.16.0",
+    "babel-jest": "^24.8.0",
+    "babel-preset-react-app": "^9.0.0",
     "coveralls": "^3.0.3",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
     "mock-fs": "^4.10.0",
     "serverless": "^1.43.0",
-    "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "typescript": "^3.4.5"
   },
@@ -66,5 +78,36 @@
   },
   "engines": {
     "node": ">= 6.5.0"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/**/*.d.ts"
+    ],
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
+    },
+    "testPathIgnorePatterns": [
+      "./lib",
+      "./node_modules"
+    ],
+    "transformIgnorePatterns": [
+      "./lib",
+      "./node_modules"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "tsx",
+      "json",
+      "jsx",
+      "node"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "react-app"
+    ]
   }
 }
