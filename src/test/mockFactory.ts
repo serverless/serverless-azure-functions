@@ -18,8 +18,6 @@ function getAttribute(object: any, prop: string, defaultValue: any): any {
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = getAttribute(config, "service", MockFactory.createTestService());
-    sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
@@ -37,17 +35,17 @@ export class MockFactory {
     };
   }
 
-  public static createTestArmSdkResponse<T = any, R = T & { _response: HttpResponse }>(model: T, statusCode: number): Promise<R> {
+  public static createTestArmSdkResponse<R>(model: any, statusCode: number): Promise<R> {
     const response: HttpResponse = {
       headers: new HttpHeaders(),
       request: null,
       status: statusCode,
     };
 
-    const result = ({
+    const result: R = {
       ...model,
       _response: response,
-    } as any) as R;
+    };
 
     return Promise.resolve(result);
   }

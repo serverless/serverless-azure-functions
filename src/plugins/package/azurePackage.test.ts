@@ -1,6 +1,6 @@
-import { MockFactory } from "../../test/mockFactory";
-import { invokeHook } from "../../test/utils";
-import { AzurePackage } from "./azurePackage"
+import { MockFactory } from '../../test/mockFactory';
+import { invokeHook } from '../../test/utils';
+import { AzurePackage } from './azurePackage';
 
 jest.mock("../../shared/bindings");
 import { BindingUtils } from "../../shared/bindings";
@@ -15,10 +15,17 @@ describe("Azure Package Plugin", () => {
     const getFunctionMetaDataFn = jest.fn(() => metadata as any as FunctionMetadata);
     const createEventsBindingsFn = jest.fn();
 
-    Utils.getFunctionMetaData = getFunctionMetaDataFn
-    BindingUtils.createEventsBindings = createEventsBindingsFn
+    Utils.getFunctionMetaData = getFunctionMetaDataFn;
+    BindingUtils.createEventsBindings = createEventsBindingsFn;
+
+    const slsConfig = {
+      functions: {
+        function1: {},
+      },
+    };
 
     const sls = MockFactory.createTestServerless();
+    Object.assign(sls.service, slsConfig);
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzurePackage(sls, options);
 

@@ -1,10 +1,11 @@
 import Serverless from 'serverless';
+import _ from 'lodash';
 import { MockFactory } from '../test/mockFactory';
 import { ApiManagementConfig } from '../models/apiManagement';
 import { ApimService } from './apimService';
 import { interpolateJson } from '../test/utils';
 import axios from 'axios';
-import { Api, Backend, Property } from '@azure/arm-apimanagement';
+import { Api, Backend, Property, ApiOperation, ApiOperationPolicy, ApiManagementService } from '@azure/arm-apimanagement';
 import apimGetService404 from '../test/responses/apim-get-service-404.json';
 import apimGetService200 from '../test/responses/apim-get-service-200.json';
 import apimGetApi200 from '../test/responses/apim-get-api-200.json';
@@ -14,6 +15,8 @@ import { Site } from '@azure/arm-appservice/esm/models';
 import {
   PropertyContract, BackendContract, BackendCreateOrUpdateResponse,
   ApiCreateOrUpdateResponse, PropertyCreateOrUpdateResponse, ApiContract,
+  ApiOperationCreateOrUpdateResponse, ApiManagementServiceResource, ApiGetResponse,
+  ApiManagementServiceGetResponse,
 } from '@azure/arm-apimanagement/esm/models';
 
 describe('APIM Service', () => {
@@ -32,16 +35,44 @@ describe('APIM Service', () => {
   let serverless: Serverless;
 
   beforeEach(() => {
-    serverless = MockFactory.createTestServerless();
-    serverless.service.provider = {
-      ...serverless.service.provider,
-      name: 'azure',
+    const slsConfig: any = {
+      service: 'test-sls',
+      provider: {
+        name: 'azure',
+        resourceGroup: 'test-sls-rg',
+        location: 'West US',
+        apim: apimConfig,
+      },
+      functions: {
+        hello: {
+          handler: 'index.handler',
+          apim: {
+            operations: [
+              {
+                method: 'get',
+                urlTemplate: 'hello',
+                displayName: 'Hello',
+              },
+            ],
+          },
+        },
+        goodbye: {
+          handler: 'index.handler',
+          apim: {
+            operations: [
+              {
+                method: 'get',
+                urlTemplate: 'goodbye',
+                displayName: 'Goodbye',
+              },
+            ],
+          },
+        },
+      },
     };
 
-    serverless.service['service'] = 'test-sls';
-    serverless.service.provider['resourceGroup'] = 'test-sls-rg';
-    serverless.service.provider['location'] = 'West US';
-    serverless.service.provider['apim'] = apimConfig;
+    serverless = MockFactory.createTestServerless();
+    Object.assign(serverless.service, slsConfig);
 
     serverless.variables = {
       ...serverless.variables,
@@ -211,11 +242,11 @@ describe('APIM Service', () => {
     it('ensures API, backend and keys have all been set', async () => {
 
       Api.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiContract, ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
       Backend.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendContract, BackendCreateOrUpdateResponse>(expectedBackend, 201));
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
       Property.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyContract, PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
 
       const apimService = new ApimService(serverless);
       const result = await apimService.deployApi();
@@ -255,7 +286,7 @@ describe('APIM Service', () => {
       const apiError = 'Error creating Backend';
 
       Api.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiContract, ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
       Backend.prototype.createOrUpdate = jest.fn(() => Promise.reject(apiError));
 
       const apimService = new ApimService(serverless);
@@ -266,9 +297,9 @@ describe('APIM Service', () => {
       const apiError = 'Error creating Property';
 
       Api.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiContract, ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
       Backend.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendContract, BackendCreateOrUpdateResponse>(expectedBackend, 201));
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
       Property.prototype.createOrUpdate = jest.fn(() => Promise.reject(apiError));
 
       const apimService = new ApimService(serverless);
@@ -277,8 +308,57 @@ describe('APIM Service', () => {
   });
 
   describe('Deploying Functions', () => {
-    xit('ensures all serverless functions have been deployed into specified API', () => {
-      fail();
+    it('ensures all serverless functions have been deployed into specified API', async () => {
+      const slsFunctions = _.values(serverless.service['functions']);
+
+      const apimResource: ApiManagementServiceResource = {
+        name: apimConfig.name,
+        location: 'West US',
+        publisherEmail: 'someone@example.com',
+        publisherName: 'Someone',
+        sku: {
+          capacity: 1,
+          name: 'Consumption',
+        },
+      };
+
+      const apiContract = apimConfig.api;
+      // tslint:disable-next-line:max-line-length
+      ApiManagementService.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiManagementServiceGetResponse>(apimResource, 200));
+      Api.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiGetResponse>(apiContract, 200));
+
+      ApiOperation.prototype.createOrUpdate =
+        jest.fn((resourceGroup, serviceName, apiName, operationName, operationContract) => {
+          // tslint:disable-next-line:max-line-length
+          const response = MockFactory.createTestArmSdkResponse<ApiOperationCreateOrUpdateResponse>(operationContract, 201);
+          return Promise.resolve(response);
+        });
+
+      ApiOperationPolicy.prototype.createOrUpdate = jest.fn(() => Promise.resolve(null));
+
+      const deployFunctionSpy = jest.spyOn(ApimService.prototype, 'deployFunction');
+
+      const service = new ApimService(serverless);
+      const apimInstance = await service.get();
+      const api = await service.getApi();
+
+      await service.deployFunctions(apimInstance, api);
+
+      expect(deployFunctionSpy).toBeCalledTimes(slsFunctions.length);
+
+      const createOperationCall = ApiOperation.prototype.createOrUpdate as jest.Mock;
+      createOperationCall.mock.calls.forEach((args, index) => {
+        const expected = slsFunctions[index].apim.operations[0];
+        const actual = args[4];
+        expect(actual).toMatchObject({
+          displayName: expected.displayName,
+          description: expected.description || '',
+          method: expected.method,
+          urlTemplate: expected.urlTemplate,
+          templateParameters: expected.templateParameters || [],
+          responses: expected.responses || [],
+        });
+      });
     });
   });
 });
