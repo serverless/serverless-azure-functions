@@ -1,10 +1,10 @@
-import { writeFileSync } from 'fs';
-import { join } from 'path';
-import Serverless from 'serverless';
-import { FunctionMetadata } from './utils';
-import { constants } from './constants';
+import { writeFileSync } from "fs";
+import { join } from "path";
+import Serverless from "serverless";
+import { FunctionMetadata } from "./utils";
+import { constants } from "./constants";
 
-const bindingsJson = require('./bindings.json');
+const bindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 export class BindingUtils {
   public static getBindingsMetaData(serverless: Serverless) {
@@ -13,7 +13,7 @@ export class BindingUtils {
     const bindingSettings = [];
     const bindingSettingsNames = [];
   
-    serverless.cli.log('Parsing Azure Functions Bindings.json...');
+    serverless.cli.log("Parsing Azure Functions Bindings.json...");
   
     for (let bindingsIndex = 0; bindingsIndex < bindingsJson[constants.bindings].length; bindingsIndex++) {
       const settingsNames = [];
@@ -41,7 +41,7 @@ export class BindingUtils {
     const functionJSON = functionMetadata.params.functionsJson;
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
-    writeFileSync(join(servicePath, functionName, 'function.json'), JSON.stringify(functionJSON, null, 4));
+    writeFileSync(join(servicePath, functionName, "function.json"), JSON.stringify(functionJSON, null, 4));
     return Promise.resolve();
   }
 
@@ -71,11 +71,11 @@ export class BindingUtils {
   public static getHttpOutBinding(bindingUserSettings) {
     const binding = {};
   
-    binding[constants.type] = 'http';
+    binding[constants.type] = "http";
     binding[constants.direction] = constants.outDirection;
-    binding[constants.name] = '$return';
+    binding[constants.name] = "$return";
     if (bindingUserSettings[constants.webHookType]) {
-      binding[constants.name] = 'res';
+      binding[constants.name] = "res";
     }
   
     return binding;
@@ -110,7 +110,7 @@ export class BindingUtils {
         if (defaultValue) {
           binding[name] = defaultValue;
         } else if (name === constants.connection && resource.toLowerCase() === constants.storage) {
-          binding[name] = 'AzureWebJobsStorage';
+          binding[name] = "AzureWebJobsStorage";
         } else {
           throw new Error(`Required property ${name} is missing for binding:${bindingType}`);
         }

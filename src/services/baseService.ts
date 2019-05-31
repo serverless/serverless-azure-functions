@@ -1,7 +1,7 @@
-import Serverless from 'serverless';
-import axios from 'axios';
-import request from 'request'
-import fs from 'fs';
+import Serverless from "serverless";
+import axios from "axios";
+import request from "request"
+import fs from "fs";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -11,13 +11,13 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  constructor(protected serverless: Serverless, protected options: Serverless.Options) {
-    this.baseUrl = 'https://management.azure.com';
-    this.serviceName = serverless.service['service'];
-    this.credentials = serverless.variables['azureCredentials'];
-    this.subscriptionId = serverless.variables['subscriptionId'];
-    this.resourceGroup = serverless.service.provider['resourceGroup'] || `${this.serviceName}-rg`;
-    this.deploymentName = serverless.service.provider['deploymentName'] || `${this.resourceGroup}-deployment`;
+  public constructor(protected serverless: Serverless, protected options: Serverless.Options) {
+    this.baseUrl = "https://management.azure.com";
+    this.serviceName = serverless.service["service"];
+    this.credentials = serverless.variables["azureCredentials"];
+    this.subscriptionId = serverless.variables["subscriptionId"];
+    this.resourceGroup = serverless.service.provider["resourceGroup"] || `${this.serviceName}-rg`;
+    this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
 
     if (!this.credentials) {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
@@ -30,7 +30,7 @@ export abstract class BaseService {
 
   protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
-      'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
+      "Authorization": `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
     };
 
     const allHeaders = {
@@ -57,7 +57,7 @@ export abstract class BaseService {
       const id = setInterval(async () => {
         if (retries >= 20) {
           clearInterval(id);
-          return reject('Failed conditional check 20 times');
+          return reject("Failed conditional check 20 times");
         }
 
         retries++;
