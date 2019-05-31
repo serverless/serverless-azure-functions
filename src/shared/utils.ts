@@ -1,3 +1,4 @@
+import Serverless from "serverless";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 
@@ -109,5 +110,12 @@ export class Utils {
     };
   
     return metaData;
+  }
+
+  public static interpolateFile(sls: Serverless, path: string, params: Map<string, string>) {
+    const template = sls.utils.readFileSync(path);
+    const names = params.keys();
+    const vals = params.values();
+    return new Function(...names, `return \`${template}\`;`)(...vals);
   }
 }
