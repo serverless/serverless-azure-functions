@@ -52,7 +52,7 @@ module.exports.handler = async function (context, req) {
 
   private static defaultFunctionSlsObject(name: string) {
     return {
-      handler: `index.handler`,
+      handler: "index.handler",
       events: FuncPluginUtils.httpEvents()
     }
   }  
