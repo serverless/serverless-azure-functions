@@ -24,7 +24,11 @@ export abstract class BaseService {
     }
   }
 
-  async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
+  protected log(message: string) {
+    this.serverless.cli.log(message);
+  }
+
+  protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
       'Authorization': `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
     };

@@ -29,7 +29,7 @@ export class FunctionAppService extends BaseService {
     return response;
   }
 
-  public async getMasterKey(functionApp) {
+  public async getMasterKey(functionApp?) {
     functionApp = functionApp || await this.get();
     const adminToken = await this.getAuthKey(functionApp);
     const keyUrl = `https://${functionApp.defaultHostName}/admin/host/systemkeys/_master`;
@@ -45,19 +45,19 @@ export class FunctionAppService extends BaseService {
   }
 
   public async deleteFunction(functionName) {
-    this.serverless.cli.log(`-> Deleting function: ${functionName}`);
+    this.log(`-> Deleting function: '${functionName}'`);
     return await this.webClient.webApps.deleteFunction(this.resourceGroup, this.serviceName, functionName);
   }
 
   public async syncTriggers(functionApp) {
-    this.serverless.cli.log('Syncing function triggers');
+    this.log('Syncing function triggers');
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
-    await this.sendApiRequest('POST', syncTriggersUrl);
+    return await this.sendApiRequest('POST', syncTriggersUrl);
   }
 
   public async cleanUp(functionApp) {
-    this.serverless.cli.log('Cleaning up existing functions');
+    this.log('Cleaning up existing functions');
     const deleteTasks = [];
 
     const serviceFunctions = this.serverless.service.getAllFunctions();
@@ -65,7 +65,6 @@ export class FunctionAppService extends BaseService {
 
     deployedFunctions.forEach((func) => {
       if (serviceFunctions.includes(func.name)) {
-        this.serverless.cli.log(`-> Deleting function '${func.name}'`);
         deleteTasks.push(this.deleteFunction(func.name));
       }
     });
@@ -86,7 +85,7 @@ export class FunctionAppService extends BaseService {
 
   private async zipDeploy(functionApp) {
     const functionAppName = functionApp.name;
-    this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
+    this.log(`Deploying zip file to function app: ${functionAppName}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
     const functionZipFile = this.serverless.service['artifact'];
@@ -94,10 +93,10 @@ export class FunctionAppService extends BaseService {
       throw new Error('No zip file found for function app');
     }
 
-    this.serverless.cli.log(`-> Uploading ${functionZipFile}`);
+    this.log(`-> Uploading ${functionZipFile}`);
 
     const uploadUrl = `https://${functionAppName}${constants.scmDomain}${constants.scmZipDeployApiPath}`;
-    this.serverless.cli.log(`-> Upload url: ${uploadUrl}`);
+    this.log(`-> Upload url: ${uploadUrl}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
@@ -113,7 +112,7 @@ export class FunctionAppService extends BaseService {
 
     try {
       await this.sendFile(requestOptions, functionZipFile);
-      this.serverless.cli.log('-> Function package uploaded successfully');
+      this.log('-> Function package uploaded successfully');
     } catch (e) {
       throw new Error(`Error uploading zip file:\n  --> ${e}`);
     }
@@ -124,7 +123,7 @@ export class FunctionAppService extends BaseService {
    *    resource-group, storage account, app service plan, and app service at the minimum
    */
   public async deploy() {
-    this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
+    this.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
 
     const gitUrl = this.serverless.service.provider['gitUrl'];
@@ -143,7 +142,7 @@ export class FunctionAppService extends BaseService {
     }
 
     if (this.serverless.service.provider['armTemplate']) {
-      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider['armTemplate'].file}`);
+      this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider['armTemplate'].file}`);
       templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider['armTemplate'].file);
       const userParameters = this.serverless.service.provider['armTemplate'].parameters;
       const userParametersKeys = Object.keys(userParameters);
@@ -192,7 +191,7 @@ export class FunctionAppService extends BaseService {
   }
 
   private async runKuduCommand(functionApp, command) {
-    this.serverless.cli.log(`-> Running Kudu command ${command}...`);
+    this.log(`-> Running Kudu command ${command}...`);
 
     const scmDomain = functionApp.enabledHostNames[0];
     const requestUrl = `https://${scmDomain}/api/command`;

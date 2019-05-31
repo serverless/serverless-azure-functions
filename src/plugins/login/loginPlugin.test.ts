@@ -33,6 +33,7 @@ describe('Login Plugin', () => {
     AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
 
     const sls = MockFactory.createTestServerless();
+    delete sls.variables['azureCredentials']
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureLoginPlugin(sls, options);
 
@@ -56,6 +57,7 @@ describe('Login Plugin', () => {
     AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
     
     const sls = MockFactory.createTestServerless();
+    delete sls.variables['azureCredentials']
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureLoginPlugin(sls, options);
     await invokeHook(plugin, 'before:package:initialize');
@@ -83,6 +85,7 @@ describe('Login Plugin', () => {
     AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
 
     const sls = MockFactory.createTestServerless();
+    delete sls.variables['azureCredentials']
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureLoginPlugin(sls, options);
     await invokeHook(plugin, 'before:package:initialize');
@@ -109,6 +112,7 @@ describe('Login Plugin', () => {
     AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
     
     const sls = MockFactory.createTestServerless();
+    delete sls.variables['azureCredentials']
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureLoginPlugin(sls, options);
     await invokeHook(plugin, 'before:package:initialize');
