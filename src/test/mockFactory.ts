@@ -5,15 +5,21 @@ import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
 
+function getAttribute(object: any, prop: string, defaultValue: any): any {
+  if (object && object[prop]) {
+    return object[prop];
+  }
+  return defaultValue;
+}
 
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = MockFactory.createTestService();
-    sls.utils = MockFactory.createTestUtils();
-    sls.cli = MockFactory.createTestCli();
-    sls.pluginManager = MockFactory.createTestPluginManager();
-    sls.variables = {};
+    sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
+    sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
+    sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
+    sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     return sls;
   }
 
@@ -83,7 +89,15 @@ export class MockFactory {
     }
   }
 
-  private static createTestService(): Service {
+  public static createTestFunctionApp() {
+    return {
+      id: "App Id",
+      name: "App Name",
+      defaultHostName: "My Host Name"
+    }
+  }
+
+  public static createTestService(): Service {
     return {
       getAllFunctions: jest.fn(() => ["function1"]),
       getFunction: jest.fn(),
@@ -97,8 +111,28 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: {} as any,
-    };
+      provider: MockFactory.createTestAzureServiceProvider(),
+      service: "serviceName",
+      artifact: "app.zip",
+    } as any as Service;
+  }
+
+  public static createTestAzureServiceProvider() {
+    return {
+      resourceGroup: "myResourceGroup",
+      deploymentName: "myDeploymentName",
+    }
+  }
+
+  public static createTestVariables() {
+    return {
+      azureCredentials: "credentials",
+      subscriptionId: "subId",
+    }
+  }
+
+  private getConfig(config: any, prop: string, defaultValue: any) {
+
   }
 
   private static createTestUtils(): Utils {
