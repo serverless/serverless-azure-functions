@@ -53,7 +53,7 @@ export class FunctionAppService extends BaseService {
     this.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
-    await this.sendApiRequest("POST", syncTriggersUrl);
+    return await this.sendApiRequest("POST", syncTriggersUrl);
   }
 
   public async cleanUp(functionApp) {

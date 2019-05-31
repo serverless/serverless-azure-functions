@@ -54,11 +54,7 @@ describe("Function App Service", () => {
 
   beforeEach(() => {
     webAppDelete = jest.fn();
-    sendFile = jest.fn((options, zipFile) => {
-      if (options.headers.Authorization === null) {
-        throw new Error();
-      }
-    });
+    sendFile = jest.fn();
 
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => app),
