@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { BaseService } from "./baseService";
+import { Utils } from "../shared/utils";
 
 export class ResourceService extends BaseService {
   private resourceClient: ResourceManagementClient;
