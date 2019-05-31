@@ -1,4 +1,5 @@
 import { interactiveLoginWithAuthResponse, loginWithServicePrincipalSecretWithAuthResponse } from "@azure/ms-rest-nodeauth";
+import open from "open";
 
 export class AzureLoginService {
 
