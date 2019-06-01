@@ -17,6 +17,7 @@ import {
   ApiCreateOrUpdateResponse, PropertyCreateOrUpdateResponse, ApiContract,
   ApiOperationCreateOrUpdateResponse, ApiManagementServiceResource, ApiGetResponse,
   ApiManagementServiceGetResponse,
+  OperationContract,
 } from '@azure/arm-apimanagement/esm/models';
 
 describe('APIM Service', () => {
@@ -348,8 +349,9 @@ describe('APIM Service', () => {
 
       const createOperationCall = ApiOperation.prototype.createOrUpdate as jest.Mock;
       createOperationCall.mock.calls.forEach((args, index) => {
-        const expected = slsFunctions[index].apim.operations[0];
-        const actual = args[4];
+        const expected = slsFunctions[index].apim.operations[0] as OperationContract;
+        const actual = args[4] as OperationContract;
+
         expect(actual).toMatchObject({
           displayName: expected.displayName,
           description: expected.description || '',

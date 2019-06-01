@@ -10,7 +10,7 @@
     "lint": "eslint src/**/*.ts",
     "lintfix": "eslint src/**/*.ts --fix",
     "pretest": "npm run lint",
-    "test": "jest",
+    "test": "jest --watch",
     "test:ci": "jest",
     "test:coverage": "jest --coverage",
     "prebuild": "rm lib/ -rf",
