@@ -1,3 +1,4 @@
+import open from 'open';
 import {
   interactiveLoginWithAuthResponse,
   loginWithServicePrincipalSecretWithAuthResponse,
