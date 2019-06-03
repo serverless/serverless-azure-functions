@@ -4,6 +4,9 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
+import { ServerlessYml, FunctionMetadata, FunctionEvent, ServicePrincipalEnvVariables,
+  FunctionApp, AzureServiceProvider, Logger } from "../models";
+import { stringify } from "querystring";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -46,7 +49,7 @@ export class MockFactory {
     }
   }
 
-  public static createTestServerlessYml(asYaml = false, functionMetadata?) {
+  public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessYml {
     const data = {
       "provider": {
         "name": "azure",
@@ -55,21 +58,21 @@ export class MockFactory {
       "plugins": [
         "serverless-azure-functions"
       ],
-      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2, false),
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2),
     }
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
-    const data = {};
+  public static createTestFunctionsMetadata(functionCount = 2): any {
+    const data = {}
     for (let i = 0; i < functionCount; i++) {
       const functionName = `function${i+1}`;
       data[functionName] = MockFactory.createTestFunctionMetadata()
     }
-    return (wrap) ? {"functions": data } : data;
+    return data;
   }
 
-  public static createTestFunctionMetadata() {
+  public static createTestFunctionMetadata(): FunctionMetadata {
     return {
       "handler": "index.handler",
       "events": [
@@ -90,10 +93,10 @@ export class MockFactory {
     }
   }
 
-  public static createTestFunctionApp() {
+  public static createTestFunctionApp(name?: string): FunctionApp {
     return {
       id: "App Id",
-      name: "App Name",
+      name: name || "App Name",
       defaultHostName: "My Host Name"
     }
   }
@@ -118,26 +121,22 @@ export class MockFactory {
     } as any as Service;
   }
 
-  public static createTestFunctions(functionCount = 3) {
+  public static createTestFunctions(functionCount = 3): FunctionApp[] {
     const functions = []
     for (let i = 0; i < functionCount; i++) {
-      functions.push({
-        name: `function${i + 1}`
-      })
+      functions.push(MockFactory.createTestFunctionApp(`function${i + 1}`));
     }
     return functions;
   }
 
-  public static createTestAzureServiceProvider() {
+  public static createTestAzureServiceProvider(): AzureServiceProvider {
     return {
       resourceGroup: "myResourceGroup",
       deploymentName: "myDeploymentName",
     }
   }
 
-  
-
-  public static createTestServicePrincipalEnvVariables() {
+  public static createTestServicePrincipalEnvVariables(): ServicePrincipalEnvVariables {
     return {
       azureSubId: "azureSubId",
       azureServicePrincipalClientId: "azureServicePrincipalClientId",
@@ -184,7 +183,7 @@ export class MockFactory {
     }
   }
 
-  private static createTestCli(){
+  private static createTestCli(): Logger {
     return {
       log: jest.fn()
     }
