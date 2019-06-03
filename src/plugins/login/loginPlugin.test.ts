@@ -1,127 +1,95 @@
-import { MockFactory } from "../../test/mockFactory";
-import { invokeHook } from "../../test/utils";
-import { AzureLoginPlugin } from "./loginPlugin";
+import Serverless from "serverless";
 import { AzureLoginService } from "../../services/loginService";
+import { MockFactory } from "../../test/mockFactory";
+import { invokeHook, setEnvVariables, unsetEnvVariables } from "../../test/utils";
+import { AzureLoginPlugin } from "./loginPlugin";
 
 describe("Login Plugin", () => {
 
   const authResponse = MockFactory.createTestAuthResponse();
+  const envVariables = MockFactory.createTestServicePrincipalEnvVariables()
+  const credentials = MockFactory.createTestVariables().azureCredentials;
+
+  function createPlugin(hasCreds: boolean = false, serverless?: Serverless): AzureLoginPlugin {
+    const sls = serverless || MockFactory.createTestServerless();
+    if (!hasCreds) {
+      delete sls.variables['azureCredentials'];
+    }
+    const options = MockFactory.createTestServerlessOptions();
+    return new AzureLoginPlugin(sls, options);
+  }
+
+  function createMockLoginFunction() {
+    return jest.fn(() => Promise.resolve(authResponse));
+  }
+
+  function setServicePrincipalEnvVariables() {
+    setEnvVariables(envVariables);
+  }
+
+  function unsetServicePrincipalEnvVariables() {
+    unsetEnvVariables(envVariables);
+  }
+
+  async function invokeLoginHook(plugin: AzureLoginPlugin) {
+    await invokeHook(plugin, "before:package:initialize");
+  }
+
+  beforeEach(() => {
+    AzureLoginService.interactiveLogin = createMockLoginFunction();
+    AzureLoginService.servicePrincipalLogin = createMockLoginFunction();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   it("returns if azure credentials are set", async () => {
-    const interactiveLogin = jest.fn(() => Promise.resolve(authResponse));
-    const servicePrincipalLogin = jest.fn(() => Promise.resolve(authResponse));
-
-    AzureLoginService.interactiveLogin = interactiveLogin;
-    AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
-
-    const sls = MockFactory.createTestServerless();
-    sls.variables["azureCredentials"] = "credentials";
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureLoginPlugin(sls, options);
-
-    await invokeHook(plugin, "before:package:initialize");
-
-    expect(interactiveLogin).not.toBeCalled();
-    expect(servicePrincipalLogin).not.toBeCalled();
+    await invokeLoginHook(createPlugin(true));
+    expect(AzureLoginService.interactiveLogin).not.toBeCalled();
+    expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
   });
 
   it("calls login if azure credentials are not set", async () => {
-    const interactiveLogin = jest.fn(() => Promise.resolve(authResponse));
-    const servicePrincipalLogin = jest.fn(() => Promise.resolve(authResponse));
-
-    AzureLoginService.interactiveLogin = interactiveLogin;
-    AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
-
-    const sls = MockFactory.createTestServerless();
-    delete sls.variables['azureCredentials']
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureLoginPlugin(sls, options);
-
-    await invokeHook(plugin, "before:package:initialize");
-
-    expect(interactiveLogin).toBeCalled();
-    expect(servicePrincipalLogin).not.toBeCalled();
+    await invokeLoginHook(createPlugin());
+    expect(AzureLoginService.interactiveLogin).toBeCalled();
+    expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
   });
 
   it("calls service principal login if environment variables are set", async () => {
-
-    process.env.azureSubId = "azureSubId";
-    process.env.azureServicePrincipalClientId = "azureServicePrincipalClientId";
-    process.env.azureServicePrincipalPassword = "azureServicePrincipalPassword";
-    process.env.azureServicePrincipalTenantId = "azureServicePrincipalTenantId";
-
-    const interactiveLogin = jest.fn(() => Promise.resolve(authResponse));
-    const servicePrincipalLogin = jest.fn(() => Promise.resolve(authResponse));
-
-    AzureLoginService.interactiveLogin = interactiveLogin;
-    AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
-    
+    setServicePrincipalEnvVariables();    
     const sls = MockFactory.createTestServerless();
-    delete sls.variables['azureCredentials']
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureLoginPlugin(sls, options);
-    await invokeHook(plugin, "before:package:initialize");
-    expect(servicePrincipalLogin).toBeCalledWith(
+    await invokeLoginHook(createPlugin(false, sls));
+    expect(AzureLoginService.servicePrincipalLogin).toBeCalledWith(
       "azureServicePrincipalClientId",
       "azureServicePrincipalPassword",
       "azureServicePrincipalTenantId"
     )
-    expect(interactiveLogin).not.toBeCalled();
-
-    expect(sls.variables["azureCredentials"]).toEqual(authResponse.credentials);
+    expect(AzureLoginService.interactiveLogin).not.toBeCalled();
+    expect(sls.variables["azureCredentials"]).toEqual(credentials);
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
   });
 
   it("calls interactive login if environment variables are not set", async () => {
-    delete process.env.azureSubId;
-    delete process.env.azureServicePrincipalClientId;
-    delete process.env.azureServicePrincipalPassword;
-    delete process.env.azureServicePrincipalTenantId;
-
-    const interactiveLogin = jest.fn(() => Promise.resolve(authResponse));
-    const servicePrincipalLogin = jest.fn(() => Promise.resolve(authResponse));
-
-    AzureLoginService.interactiveLogin = interactiveLogin;
-    AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
-
+    unsetServicePrincipalEnvVariables();
     const sls = MockFactory.createTestServerless();
-    delete sls.variables['azureCredentials']
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureLoginPlugin(sls, options);
-    await invokeHook(plugin, "before:package:initialize");
-    expect(servicePrincipalLogin).not.toBeCalled();
-    expect(interactiveLogin).toBeCalled();
-
-    expect(sls.variables["azureCredentials"]).toEqual(authResponse.credentials);
+    await invokeLoginHook(createPlugin(false, sls));
+    expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
+    expect(AzureLoginService.interactiveLogin).toBeCalled();
+    expect(sls.variables["azureCredentials"]).toEqual(credentials);
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
   });
 
   it("logs an error from authentication", async () => {
-    process.env.azureSubId = "azureSubId";
-    process.env.azureServicePrincipalClientId = "azureServicePrincipalClientId";
-    process.env.azureServicePrincipalPassword = "azureServicePrincipalPassword";
-    process.env.azureServicePrincipalTenantId = "azureServicePrincipalTenantId";
-
-    const interactiveLogin = jest.fn(() => Promise.resolve(authResponse));
+    unsetServicePrincipalEnvVariables();
     const errorMessage = "This is my error message";
-    const servicePrincipalLogin = jest.fn(() => {
+    AzureLoginService.interactiveLogin = jest.fn(() => {
       throw new Error(errorMessage);
-    });
-
-    AzureLoginService.interactiveLogin = interactiveLogin;
-    AzureLoginService.servicePrincipalLogin = servicePrincipalLogin;
-    
+    });    
     const sls = MockFactory.createTestServerless();
-    delete sls.variables['azureCredentials']
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureLoginPlugin(sls, options);
-    await invokeHook(plugin, "before:package:initialize");
-    expect(servicePrincipalLogin).toBeCalledWith(
-      "azureServicePrincipalClientId",
-      "azureServicePrincipalPassword",
-      "azureServicePrincipalTenantId"
-    )
-    expect(interactiveLogin).not.toBeCalled();
+    await invokeLoginHook(createPlugin(false, sls));
+    expect(AzureLoginService.interactiveLogin).toBeCalled()
+    expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
     expect(sls.cli.log).lastCalledWith(`Error: ${errorMessage}`)
   });
 })

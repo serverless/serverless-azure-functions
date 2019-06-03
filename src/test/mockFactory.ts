@@ -1,17 +1,25 @@
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
 
+function getAttribute(object: any, prop: string, defaultValue: any): any {
+  if (object && object[prop]) {
+    return object[prop];
+  }
+  return defaultValue;
+}
+
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = config && config.service || MockFactory.createTestService();
-    sls.utils = config && config.utils || MockFactory.createTestUtils();
-    sls.cli = config && config.cli || MockFactory.createTestCli();
-    sls.pluginManager = config && config.pluginManager || MockFactory.createTestPluginManager();
-    sls.variables = config && config.variables || MockFactory.createTestVariables();
+    sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
+    sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
+    sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
+    sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     return sls;
   }
 
@@ -28,7 +36,8 @@ export class MockFactory {
 
   public static createTestAuthResponse(): AuthResponse {
     return {
-      credentials: "credentials" as any as TokenCredentialsBase,
+      credentials: MockFactory.createTestVariables()
+        .azureCredentials as any as TokenCredentialsBase,
       subscriptions: [
         {
           id: "azureSubId",
@@ -37,11 +46,55 @@ export class MockFactory {
     }
   }
 
+  public static createTestServerlessYml(asYaml = false, functionMetadata?) {
+    const data = {
+      "provider": {
+        "name": "azure",
+        "location": "West US 2"
+      },
+      "plugins": [
+        "serverless-azure-functions"
+      ],
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2, false),
+    }
+    return (asYaml) ? yaml.dump(data) : data;
+  }
+
+  public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
+    const data = {};
+    for (let i = 0; i < functionCount; i++) {
+      const functionName = `function${i+1}`;
+      data[functionName] = MockFactory.createTestFunctionMetadata()
+    }
+    return (wrap) ? {"functions": data } : data;
+  }
+
+  public static createTestFunctionMetadata() {
+    return {
+      "handler": "index.handler",
+      "events": [
+        {
+          "http": true,
+          "x-azure-settings": {
+            "authLevel": "anonymous"
+          }
+        },
+        {
+          "http": true,
+          "x-azure-settings": {
+            "direction": "out",
+            "name": "res"
+          }
+        }
+      ]
+    }
+  }
+
   public static createTestFunctionApp() {
     return {
-      id: "/APP_ID",
-      name: "APP_NAME",
-      defaultHostName: "HOST_NAME"
+      id: "App Id",
+      name: "App Name",
+      defaultHostName: "My Host Name"
     }
   }
 
@@ -82,6 +135,17 @@ export class MockFactory {
     }
   }
 
+  
+
+  public static createTestServicePrincipalEnvVariables() {
+    return {
+      azureSubId: "azureSubId",
+      azureServicePrincipalClientId: "azureServicePrincipalClientId",
+      azureServicePrincipalPassword: "azureServicePrincipalPassword",
+      azureServicePrincipalTenantId: "azureServicePrincipalTenantId",
+    }
+  }
+
   public static createTestVariables() {
     return {
       azureCredentials: {
@@ -93,7 +157,7 @@ export class MockFactory {
           ]
         }
       },
-      subscriptionId: "subId",
+      subscriptionId: "azureSubId",
     }
   }
 
@@ -108,7 +172,11 @@ export class MockFactory {
       getVersion: jest.fn(),
       logStat: jest.fn(),
       readFile: jest.fn(),
-      readFileSync: jest.fn(),
+      readFileSync: jest.fn((filename) => {
+        if (filename === "serverless.yml") {
+          return MockFactory.createTestServerlessYml();
+        }
+      }),
       walkDirSync: jest.fn(),
       writeFile: jest.fn(),
       writeFileDir: jest.fn(),
