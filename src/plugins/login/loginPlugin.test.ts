@@ -10,7 +10,7 @@ describe("Login Plugin", () => {
   const envVariables = MockFactory.createTestServicePrincipalEnvVariables()
   const credentials = MockFactory.createTestVariables().azureCredentials;
 
-  function createPlugin(hasCreds: boolean = false, serverless?: Serverless): AzureLoginPlugin {
+  function createPlugin(hasCreds = false, serverless?: Serverless): AzureLoginPlugin {
     const sls = serverless || MockFactory.createTestServerless();
     if (!hasCreds) {
       delete sls.variables['azureCredentials'];
@@ -31,7 +31,8 @@ describe("Login Plugin", () => {
     unsetEnvVariables(envVariables);
   }
 
-  async function invokeLoginHook(plugin: AzureLoginPlugin) {
+  async function invokeLoginHook(hasCreds = false, serverless?: Serverless) {
+    const plugin = createPlugin(hasCreds, serverless);
     await invokeHook(plugin, "before:package:initialize");
   }
 
@@ -40,18 +41,14 @@ describe("Login Plugin", () => {
     AzureLoginService.servicePrincipalLogin = createMockLoginFunction();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
   it("returns if azure credentials are set", async () => {
-    await invokeLoginHook(createPlugin(true));
+    await invokeLoginHook(true);
     expect(AzureLoginService.interactiveLogin).not.toBeCalled();
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
   });
 
   it("calls login if azure credentials are not set", async () => {
-    await invokeLoginHook(createPlugin());
+    await invokeLoginHook();
     expect(AzureLoginService.interactiveLogin).toBeCalled();
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
   });
@@ -59,7 +56,7 @@ describe("Login Plugin", () => {
   it("calls service principal login if environment variables are set", async () => {
     setServicePrincipalEnvVariables();    
     const sls = MockFactory.createTestServerless();
-    await invokeLoginHook(createPlugin(false, sls));
+    await invokeLoginHook(false, sls);
     expect(AzureLoginService.servicePrincipalLogin).toBeCalledWith(
       "azureServicePrincipalClientId",
       "azureServicePrincipalPassword",
@@ -73,7 +70,7 @@ describe("Login Plugin", () => {
   it("calls interactive login if environment variables are not set", async () => {
     unsetServicePrincipalEnvVariables();
     const sls = MockFactory.createTestServerless();
-    await invokeLoginHook(createPlugin(false, sls));
+    await invokeLoginHook(false, sls);
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
     expect(AzureLoginService.interactiveLogin).toBeCalled();
     expect(sls.variables["azureCredentials"]).toEqual(credentials);
@@ -87,7 +84,7 @@ describe("Login Plugin", () => {
       throw new Error(errorMessage);
     });    
     const sls = MockFactory.createTestServerless();
-    await invokeLoginHook(createPlugin(false, sls));
+    await invokeLoginHook(false, sls);
     expect(AzureLoginService.interactiveLogin).toBeCalled()
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
     expect(sls.cli.log).lastCalledWith(`Error: ${errorMessage}`)
