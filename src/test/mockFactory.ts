@@ -1,18 +1,25 @@
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
 
+function getAttribute(object: any, prop: string, defaultValue: any): any {
+  if (object && object[prop]) {
+    return object[prop];
+  }
+  return defaultValue;
+}
+
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = MockFactory.createTestService();
-    sls.utils = MockFactory.createTestUtils();
-    sls.cli = MockFactory.createTestCli();
-    sls.pluginManager = MockFactory.createTestPluginManager();
-    sls.variables = {};
-    sls.setProvider = jest.fn();
+    sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
+    sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
+    sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
+    sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     return sls;
   }
 
@@ -38,7 +45,59 @@ export class MockFactory {
     }
   }
 
-  private static createTestService(): Service {
+  public static createTestServerlessYml(asYaml = false, functionMetadata?) {
+    const data = {
+      "provider": {
+        "name": "azure",
+        "location": "West US 2"
+      },
+      "plugins": [
+        "serverless-azure-functions"
+      ],
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2, false),
+    }
+    return (asYaml) ? yaml.dump(data) : data;
+  }
+
+  public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
+    const data = {};
+    for (let i = 0; i < functionCount; i++) {
+      const functionName = `function${i+1}`;
+      data[functionName] = MockFactory.createTestFunctionMetadata()
+    }
+    return (wrap) ? {"functions": data } : data;
+  }
+
+  public static createTestFunctionMetadata() {
+    return {
+      "handler": "index.handler",
+      "events": [
+        {
+          "http": true,
+          "x-azure-settings": {
+            "authLevel": "anonymous"
+          }
+        },
+        {
+          "http": true,
+          "x-azure-settings": {
+            "direction": "out",
+            "name": "res"
+          }
+        }
+      ]
+    }
+  }
+
+  public static createTestFunctionApp() {
+    return {
+      id: "App Id",
+      name: "App Name",
+      defaultHostName: "My Host Name"
+    }
+  }
+
+  public static createTestService(): Service {
     return {
       getAllFunctions: jest.fn(() => ["function1"]),
       getFunction: jest.fn(),
@@ -52,8 +111,28 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: {} as any,
-    };
+      provider: MockFactory.createTestAzureServiceProvider(),
+      service: "serviceName",
+      artifact: "app.zip",
+    } as any as Service;
+  }
+
+  public static createTestAzureServiceProvider() {
+    return {
+      resourceGroup: "myResourceGroup",
+      deploymentName: "myDeploymentName",
+    }
+  }
+
+  public static createTestVariables() {
+    return {
+      azureCredentials: "credentials",
+      subscriptionId: "subId",
+    }
+  }
+
+  private getConfig(config: any, prop: string, defaultValue: any) {
+
   }
 
   private static createTestUtils(): Utils {
@@ -67,7 +146,11 @@ export class MockFactory {
       getVersion: jest.fn(),
       logStat: jest.fn(),
       readFile: jest.fn(),
-      readFileSync: jest.fn(),
+      readFileSync: jest.fn((filename) => {
+        if (filename === "serverless.yml") {
+          return MockFactory.createTestServerlessYml();
+        }
+      }),
       walkDirSync: jest.fn(),
       writeFile: jest.fn(),
       writeFileDir: jest.fn(),

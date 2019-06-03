@@ -14,6 +14,8 @@ import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
 import { AzureLoginPlugin } from "./plugins/login/loginPlugin";
 import { AzureApimServicePlugin } from "./plugins/apim/apimServicePlugin";
 import { AzureApimFunctionPlugin } from "./plugins/apim/apimFunctionPlugin";
+import { AzureFuncPlugin } from "./plugins/func/azureFunc";
+
 
 export default class AzureIndex {
   public constructor(private serverless: Serverless, private options) {
@@ -29,6 +31,7 @@ export default class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzureDeployPlugin);
     this.serverless.pluginManager.addPlugin(AzureApimServicePlugin);
     this.serverless.pluginManager.addPlugin(AzureApimFunctionPlugin);
+    this.serverless.pluginManager.addPlugin(AzureFuncPlugin);
   }
 }
 
