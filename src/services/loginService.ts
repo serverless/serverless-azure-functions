@@ -1,9 +1,9 @@
-import open from 'open';
+import open from "open";
 import {
   interactiveLoginWithAuthResponse,
   loginWithServicePrincipalSecretWithAuthResponse,
   AuthResponse,
-} from '@azure/ms-rest-nodeauth';
+} from "@azure/ms-rest-nodeauth";
 
 export class AzureLoginService {
   public static async login(): Promise<AuthResponse> {

@@ -1,11 +1,11 @@
-import { MockFactory } from '../test/mockFactory';
-import { ResourceService } from './resourceService';
+import { MockFactory } from "../test/mockFactory";
+import { ResourceService } from "./resourceService";
 
 
-jest.mock('@azure/arm-resources')
-import { ResourceManagementClient } from '@azure/arm-resources';
+jest.mock("@azure/arm-resources")
+import { ResourceManagementClient } from "@azure/arm-resources";
 
-describe('Resource Service', () => {
+describe("Resource Service", () => {
 
   beforeAll(() => {
     ResourceManagementClient.prototype.resourceGroups = {
@@ -18,26 +18,26 @@ describe('Resource Service', () => {
     } as any;
   });
 
-  it('throws error with empty credentials', () => {
+  it("throws error with empty credentials", () => {
     const sls = MockFactory.createTestServerless();
-    delete sls.variables['azureCredentials']
+    delete sls.variables["azureCredentials"]
     const options = MockFactory.createTestServerlessOptions();
-    expect(() => new ResourceService(sls, options)).toThrowError('Azure Credentials has not been set in ResourceService')
+    expect(() => new ResourceService(sls, options)).toThrowError("Azure Credentials has not been set in ResourceService")
   });
 
-  it('initializes a resource service', () => {
+  it("initializes a resource service", () => {
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
     expect(() => new ResourceService(sls, options)).not.toThrowError();
   });
 
-  it('deploys a resource group', () => {
+  it("deploys a resource group", () => {
     const sls = MockFactory.createTestServerless();
-    const resourceGroup = 'myResourceGroup'
-    const location = 'West Us';
-    sls.service.provider['resourceGroup'] = resourceGroup
-    sls.service.provider['location'] = location;
-    sls.variables['azureCredentials'] = 'fake credentials'
+    const resourceGroup = "myResourceGroup"
+    const location = "West Us";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.service.provider["location"] = location;
+    sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
     service.deployResourceGroup();
@@ -45,13 +45,13 @@ describe('Resource Service', () => {
       .toBeCalledWith(resourceGroup, { location });
   });
 
-  it('deletes a deployment', () => {
+  it("deletes a deployment", () => {
     const sls = MockFactory.createTestServerless();
-    const resourceGroup = 'myResourceGroup';
-    const deploymentName = 'myDeployment';
-    sls.service.provider['resourceGroup'] = resourceGroup
-    sls.service.provider['deploymentName'] = deploymentName;
-    sls.variables['azureCredentials'] = 'fake credentials'
+    const resourceGroup = "myResourceGroup";
+    const deploymentName = "myDeployment";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.service.provider["deploymentName"] = deploymentName;
+    sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
     service.deleteDeployment();
@@ -59,11 +59,11 @@ describe('Resource Service', () => {
       .toBeCalledWith(resourceGroup, deploymentName);
   });
 
-  it('deletes a resource group', () => {
+  it("deletes a resource group", () => {
     const sls = MockFactory.createTestServerless();
-    const resourceGroup = 'myResourceGroup';
-    sls.service.provider['resourceGroup'] = resourceGroup
-    sls.variables['azureCredentials'] = 'fake credentials'
+    const resourceGroup = "myResourceGroup";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
     service.deleteResourceGroup();

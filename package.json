@@ -60,7 +60,6 @@
     "jest-cli": "^24.8.0",
     "mock-fs": "^4.10.0",
     "serverless": "^1.44.1",
-    "tslint": "^5.16.0",
     "typescript": "^3.4.5"
   },
   "optionalDependencies": {

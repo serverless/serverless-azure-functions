@@ -1,13 +1,13 @@
-import Serverless from 'serverless';
-import { ApiManagementClient } from '@azure/arm-apimanagement';
-import { FunctionAppService } from './functionAppService';
-import { BaseService } from './baseService';
-import { ApiManagementConfig, ApiOperationOptions } from '../models/apiManagement';
+import Serverless from "serverless";
+import { ApiManagementClient } from "@azure/arm-apimanagement";
+import { FunctionAppService } from "./functionAppService";
+import { BaseService } from "./baseService";
+import { ApiManagementConfig, ApiOperationOptions } from "../models/apiManagement";
 import {
   ApiContract, BackendContract, OperationContract,
   PropertyContract, ApiManagementServiceResource,
-} from '@azure/arm-apimanagement/esm/models';
-import { Site } from '@azure/arm-appservice/esm/models';
+} from "@azure/arm-apimanagement/esm/models";
+import { Site } from "@azure/arm-appservice/esm/models";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -20,7 +20,7 @@ export class ApimService extends BaseService {
   public constructor(serverless: Serverless, options?: Serverless.Options) {
     super(serverless, options);
 
-    this.config = this.serverless.service.provider['apim'];
+    this.config = this.serverless.service.provider["apim"];
     if (!this.config.backend) {
       this.config.backend = {} as any;
     }
@@ -73,7 +73,7 @@ export class ApimService extends BaseService {
    * Deploys all the functions of the serverless service to APIM
    */
   public async deployFunctions(service: ApiManagementServiceResource, api: ApiContract) {
-    this.serverless.cli.log('-> Deploying API Operations');
+    this.serverless.cli.log("-> Deploying API Operations");
 
     const deployApiTasks = this.serverless.service
       .getAllFunctions()
@@ -87,7 +87,7 @@ export class ApimService extends BaseService {
    * @param options
    */
   public async deployFunction(service: ApiManagementServiceResource, api: ApiContract, options) {
-    const functionConfig = this.serverless.service['functions'][options.function];
+    const functionConfig = this.serverless.service["functions"][options.function];
 
     if (!functionConfig.apim) {
       return;
@@ -107,7 +107,7 @@ export class ApimService extends BaseService {
    * Deploys the APIM API referenced by the serverless service
    */
   private async ensureApi(): Promise<ApiContract> {
-    this.serverless.cli.log('-> Deploying API');
+    this.serverless.cli.log("-> Deploying API");
 
     try {
       return await this.apimClient.api.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
@@ -119,7 +119,7 @@ export class ApimService extends BaseService {
         protocols: this.config.api.protocols,
       });
     } catch (e) {
-      this.serverless.cli.log('Error creating APIM API');
+      this.serverless.cli.log("Error creating APIM API");
       throw e;
     }
   }
@@ -138,19 +138,19 @@ export class ApimService extends BaseService {
       return await this.apimClient.backend.createOrUpdate(this.resourceGroup, this.config.name, this.serviceName, {
         credentials: {
           header: {
-            'x-functions-key': [`{{${this.serviceName}-key}}`],
+            "x-functions-key": [`{{${this.serviceName}-key}}`],
           },
         },
         title: this.config.backend.title || functionApp.name,
         tls: this.config.backend.tls,
         proxy: this.config.backend.proxy,
         description: this.config.backend.description,
-        protocol: this.config.backend.protocol || 'http',
+        protocol: this.config.backend.protocol || "http",
         resourceId: functionAppResourceId,
         url: backendUrl,
       });
     } catch (e) {
-      this.serverless.cli.log('Error creating APIM Backend');
+      this.serverless.cli.log("Error creating APIM Backend");
       throw e;
     }
   }
@@ -170,7 +170,7 @@ export class ApimService extends BaseService {
 
       const operationConfig: OperationContract = {
         displayName: options.operation.displayName || options.function,
-        description: options.operation.description || '',
+        description: options.operation.description || "",
         method: options.operation.method,
         urlTemplate: options.operation.urlTemplate,
         templateParameters: options.operation.templateParameters || [],
@@ -189,7 +189,7 @@ export class ApimService extends BaseService {
       );
 
       await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, options.function, {
-        format: 'rawxml',
+        format: "rawxml",
         value: `
         <policies>
           <inbound>
@@ -220,7 +220,7 @@ export class ApimService extends BaseService {
    * @param functionAppUrl The host name for the Azure function app
    */
   private async ensureFunctionAppKeys(functionApp): Promise<PropertyContract> {
-    this.serverless.cli.log('-> Deploying API keys');
+    this.serverless.cli.log("-> Deploying API keys");
     try {
       const masterKey = await this.functionAppService.getMasterKey(functionApp);
       const keyName = `${this.serviceName}-key`;
@@ -231,7 +231,7 @@ export class ApimService extends BaseService {
         value: masterKey,
       });
     } catch (e) {
-      this.serverless.cli.log('Error creating APIM Property');
+      this.serverless.cli.log("Error creating APIM Property");
       throw e;
     }
   }

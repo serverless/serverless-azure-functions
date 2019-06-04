@@ -1,12 +1,12 @@
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import yaml from "js-yaml";
 import Serverless from "serverless";
-import Utils from 'serverless/classes/Utils';
-import Service from 'serverless/lib/classes/Service';
-import PluginManager from 'serverless/lib/classes/PluginManager';
-import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from '@azure/ms-rest-js';
-import { AxiosResponse, AxiosRequestConfig } from 'axios';
-import { TokenClientCredentials, TokenResponse } from '@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials';
+import Utils from "serverless/classes/Utils";
+import Service from "serverless/lib/classes/Service";
+import PluginManager from "serverless/lib/classes/PluginManager";
+import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from "@azure/ms-rest-js";
+import { AxiosResponse, AxiosRequestConfig } from "axios";
+import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -66,8 +66,8 @@ export class MockFactory {
     return {
       getToken: jest.fn(() => {
         const token: TokenResponse = {
-          tokenType: 'Bearer',
-          accessToken: 'ABC123',
+          tokenType: "Bearer",
+          accessToken: "ABC123",
         };
 
         return Promise.resolve(token);
@@ -84,10 +84,10 @@ export class MockFactory {
     let statusText;
     switch (statusCode) {
       case 200:
-        statusText = 'OK';
+        statusText = "OK";
         break;
       case 404:
-        statusText = 'NotFound';
+        statusText = "NotFound";
         break;
     }
 
@@ -95,7 +95,7 @@ export class MockFactory {
       config,
       data: JSON.stringify(responseJson),
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
       },
       status: statusCode,
       statusText,

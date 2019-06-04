@@ -1,6 +1,6 @@
 import Serverless from "serverless";
 import axios from "axios";
-import request from 'request';
+import request from "request";
 import fs from "fs";
 
 export abstract class BaseService {

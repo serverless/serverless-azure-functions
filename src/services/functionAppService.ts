@@ -7,8 +7,8 @@ import jsonpath from "jsonpath";
 import _ from "lodash";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
-import { FunctionAppHttpTriggerConfig } from '../models/functionApp';
-import { Site, FunctionEnvelope } from '@azure/arm-appservice/esm/models';
+import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
+import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -49,7 +49,7 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log(`-> Deleting function: ${functionName}`);
     const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
 
-    return await this.sendApiRequest('DELETE', deleteFunctionUrl);
+    return await this.sendApiRequest("DELETE", deleteFunctionUrl);
   }
 
   public async syncTriggers(functionApp: Site) {
@@ -88,7 +88,7 @@ export class FunctionAppService extends BaseService {
 
   public async getFunction(functionApp: Site, functionName: string): Promise<FunctionEnvelope> {
     const getFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
-    const response = await this.sendApiRequest('GET', getFunctionUrl);
+    const response = await this.sendApiRequest("GET", getFunctionUrl);
 
     if (response.status !== 200) {
       return null;
@@ -200,11 +200,11 @@ export class FunctionAppService extends BaseService {
     };
 
     await this.sendFile(requestOptions, functionZipFile);
-    this.serverless.cli.log('-> Function package uploaded successfully');
+    this.serverless.cli.log("-> Function package uploaded successfully");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
     const deployedFunctions = await this.listFunctions(functionApp);
 
-    this.serverless.cli.log('Deployed serverless functions:')
+    this.serverless.cli.log("Deployed serverless functions:")
     deployedFunctions.forEach((functionConfig) => {
       // List functions that are part of the serverless yaml config
       if (serverlessFunctions.includes(functionConfig.name)) {
@@ -220,7 +220,7 @@ export class FunctionAppService extends BaseService {
 
   private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
     const httpTrigger = functionConfig.config.bindings.find((binding) => {
-      return binding.type === 'httpTrigger';
+      return binding.type === "httpTrigger";
     });
 
     if (!httpTrigger) {
@@ -232,7 +232,7 @@ export class FunctionAppService extends BaseService {
 
     return {
       authLevel: httpTrigger.authLevel,
-      methods: httpTrigger.methods || ['*'],
+      methods: httpTrigger.methods || ["*"],
       url: url,
       route: httpTrigger.route,
       name: functionConfig.name,

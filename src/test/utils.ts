@@ -20,6 +20,6 @@ export function interpolateJson(json: any, params: any) {
  */
 export function interpolate(template: string, params: any) {
   const names = Object.keys(params);
-  const vals = Object['values'](params);
+  const vals = Object["values"](params);
   return new Function(...names, `return \`${template}\`;`)(...vals);
 }

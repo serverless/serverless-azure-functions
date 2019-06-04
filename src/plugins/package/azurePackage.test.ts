@@ -1,6 +1,6 @@
-import { MockFactory } from '../../test/mockFactory';
-import { invokeHook } from '../../test/utils';
-import { AzurePackage } from './azurePackage';
+import { MockFactory } from "../../test/mockFactory";
+import { invokeHook } from "../../test/utils";
+import { AzurePackage } from "./azurePackage";
 
 jest.mock("../../shared/bindings");
 import { BindingUtils } from "../../shared/bindings";

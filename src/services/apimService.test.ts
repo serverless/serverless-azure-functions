@@ -1,35 +1,35 @@
-import Serverless from 'serverless';
-import _ from 'lodash';
-import { MockFactory } from '../test/mockFactory';
-import { ApiManagementConfig } from '../models/apiManagement';
-import { ApimService } from './apimService';
-import { interpolateJson } from '../test/utils';
-import axios from 'axios';
-import { Api, Backend, Property, ApiOperation, ApiOperationPolicy, ApiManagementService } from '@azure/arm-apimanagement';
-import apimGetService404 from '../test/responses/apim-get-service-404.json';
-import apimGetService200 from '../test/responses/apim-get-service-200.json';
-import apimGetApi200 from '../test/responses/apim-get-api-200.json';
-import apimGetApi404 from '../test/responses/apim-get-api-404.json';
-import { FunctionAppService } from './functionAppService';
-import { Site } from '@azure/arm-appservice/esm/models';
+import Serverless from "serverless";
+import _ from "lodash";
+import { MockFactory } from "../test/mockFactory";
+import { ApiManagementConfig } from "../models/apiManagement";
+import { ApimService } from "./apimService";
+import { interpolateJson } from "../test/utils";
+import axios from "axios";
+import { Api, Backend, Property, ApiOperation, ApiOperationPolicy, ApiManagementService } from "@azure/arm-apimanagement";
+import apimGetService404 from "../test/responses/apim-get-service-404.json";
+import apimGetService200 from "../test/responses/apim-get-service-200.json";
+import apimGetApi200 from "../test/responses/apim-get-api-200.json";
+import apimGetApi404 from "../test/responses/apim-get-api-404.json";
+import { FunctionAppService } from "./functionAppService";
+import { Site } from "@azure/arm-appservice/esm/models";
 import {
   PropertyContract, BackendContract, BackendCreateOrUpdateResponse,
   ApiCreateOrUpdateResponse, PropertyCreateOrUpdateResponse, ApiContract,
   ApiOperationCreateOrUpdateResponse, ApiManagementServiceResource, ApiGetResponse,
   ApiManagementServiceGetResponse,
   OperationContract,
-} from '@azure/arm-apimanagement/esm/models';
+} from "@azure/arm-apimanagement/esm/models";
 
-describe('APIM Service', () => {
+describe("APIM Service", () => {
   const apimConfig: ApiManagementConfig = {
-    name: 'test-apim-resource',
+    name: "test-apim-resource",
     api: {
-      name: 'test-apim-api1',
+      name: "test-apim-api1",
       subscriptionRequired: false,
-      displayName: 'API 1',
-      description: 'description of api 1',
-      protocols: ['https'],
-      path: 'test-api1',
+      displayName: "API 1",
+      description: "description of api 1",
+      protocols: ["https"],
+      path: "test-api1",
     },
   };
 
@@ -37,34 +37,34 @@ describe('APIM Service', () => {
 
   beforeEach(() => {
     const slsConfig: any = {
-      service: 'test-sls',
+      service: "test-sls",
       provider: {
-        name: 'azure',
-        resourceGroup: 'test-sls-rg',
-        location: 'West US',
+        name: "azure",
+        resourceGroup: "test-sls-rg",
+        location: "West US",
         apim: apimConfig,
       },
       functions: {
         hello: {
-          handler: 'index.handler',
+          handler: "index.handler",
           apim: {
             operations: [
               {
-                method: 'get',
-                urlTemplate: 'hello',
-                displayName: 'Hello',
+                method: "get",
+                urlTemplate: "hello",
+                displayName: "Hello",
               },
             ],
           },
         },
         goodbye: {
-          handler: 'index.handler',
+          handler: "index.handler",
           apim: {
             operations: [
               {
-                method: 'get',
-                urlTemplate: 'goodbye',
-                displayName: 'Goodbye',
+                method: "get",
+                urlTemplate: "goodbye",
+                displayName: "Goodbye",
               },
             ],
           },
@@ -78,21 +78,21 @@ describe('APIM Service', () => {
     serverless.variables = {
       ...serverless.variables,
       azureCredentials: MockFactory.createTestAzureCredentials(),
-      subscriptionId: 'ABC123',
+      subscriptionId: "ABC123",
     };
   });
 
-  it('is defined', () => {
+  it("is defined", () => {
     expect(ApimService).toBeDefined();
   });
 
-  it('can be instantiated', () => {
+  it("can be instantiated", () => {
     const service = new ApimService(serverless);
     expect(service).not.toBeNull();
   });
 
-  describe('Get service reference', () => {
-    it('returns null when service doesn\'t exist', async () => {
+  describe("Get service reference", () => {
+    it("returns null when service doesn't exist", async () => {
       axios.request = jest.fn((requestConfig) => MockFactory.createTestAxiosResponse(requestConfig, apimGetService404, 404));
 
       const service = new ApimService(serverless);
@@ -101,11 +101,11 @@ describe('APIM Service', () => {
       expect(resource).toBeNull();
     });
 
-    it('returns instance of service resource', async () => {
+    it("returns instance of service resource", async () => {
       const expectedResponse = interpolateJson(apimGetService200, {
         resourceGroup: {
-          name: serverless.service.provider['resourceGroup'],
-          location: serverless.service.provider['location'],
+          name: serverless.service.provider["resourceGroup"],
+          location: serverless.service.provider["location"],
         },
         resource: {
           name: apimConfig.name,
@@ -120,13 +120,13 @@ describe('APIM Service', () => {
       expect(resource).not.toBeNull();
       expect(resource).toMatchObject({
         name: apimConfig.name,
-        location: serverless.service.provider['location'],
+        location: serverless.service.provider["location"],
       });
     });
   });
 
-  describe('Get API reference', () => {
-    it('returns null when API doesn\'t exist', async () => {
+  describe("Get API reference", () => {
+    it("returns null when API doesn't exist", async () => {
       axios.request = jest.fn((requestConfig) => MockFactory.createTestAxiosResponse(requestConfig, apimGetApi404, 404));
 
       const service = new ApimService(serverless);
@@ -134,11 +134,11 @@ describe('APIM Service', () => {
       expect(api).toBeNull();
     });
 
-    it('returns the API reference', async () => {
+    it("returns the API reference", async () => {
       const expectedResponse = interpolateJson(apimGetApi200, {
         resourceGroup: {
-          name: serverless.service.provider['resourceGroup'],
-          location: serverless.service.provider['location'],
+          name: serverless.service.provider["resourceGroup"],
+          location: serverless.service.provider["location"],
         },
         service: {
           name: apimConfig.name,
@@ -165,7 +165,7 @@ describe('APIM Service', () => {
     });
   });
 
-  describe('Deploying API', () => {
+  describe("Deploying API", () => {
     let backendConfig: BackendContract;
     let resourceGroupName: string;
     let appName: string;
@@ -181,19 +181,19 @@ describe('APIM Service', () => {
 
     beforeEach(() => {
       backendConfig = apimConfig.backend || {} as BackendContract;
-      resourceGroupName = serverless.service.provider['resourceGroup'];
-      appName = serverless.service['service'];
+      resourceGroupName = serverless.service.provider["resourceGroup"];
+      appName = serverless.service["service"];
       serviceName = apimConfig.name;
       apiName = apimConfig.api.name;
       backendName = backendConfig.name || appName;
 
       functionApp = {
-        id: '/testapp1',
-        name: 'Test Site',
-        location: 'West US',
-        defaultHostName: 'testsite.azurewebsites.net',
+        id: "/testapp1",
+        name: "Test Site",
+        location: "West US",
+        defaultHostName: "testsite.azurewebsites.net",
       };
-      masterKey = 'ABC123';
+      masterKey = "ABC123";
 
       FunctionAppService.prototype.get = jest.fn(() => Promise.resolve(functionApp));
       FunctionAppService.prototype.getMasterKey = jest.fn(() => Promise.resolve(masterKey));
@@ -221,26 +221,26 @@ describe('APIM Service', () => {
       expectedBackend = {
         credentials: {
           header: {
-            'x-functions-key': [`{{${serverless.service['service']}-key}}`],
+            "x-functions-key": [`{{${serverless.service["service"]}-key}}`],
           },
         },
         title: backendConfig.title || functionApp.name,
         tls: backendConfig.tls,
         proxy: backendConfig.proxy,
         description: backendConfig.description,
-        protocol: backendConfig.protocol || 'http',
+        protocol: backendConfig.protocol || "http",
         resourceId: `https://management.azure.com${functionApp.id}`,
         url: `https://${functionApp.defaultHostName}/api`,
       };
 
       expectedProperty = {
-        displayName: `${serverless.service['service']}-key`,
+        displayName: `${serverless.service["service"]}-key`,
         secret: true,
         value: masterKey,
       };
     });
 
-    it('ensures API, backend and keys have all been set', async () => {
+    it("ensures API, backend and keys have all been set", async () => {
 
       Api.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
@@ -275,16 +275,16 @@ describe('APIM Service', () => {
       );
     });
 
-    it('fails when API deployment fails', async () => {
-      const apiError = 'Error creating API';
+    it("fails when API deployment fails", async () => {
+      const apiError = "Error creating API";
       Api.prototype.createOrUpdate = jest.fn(() => Promise.reject(apiError));
 
       const apimService = new ApimService(serverless);
       await expect(apimService.deployApi()).rejects.toEqual(apiError);
     });
 
-    it('fails when Backend deployment fails', async () => {
-      const apiError = 'Error creating Backend';
+    it("fails when Backend deployment fails", async () => {
+      const apiError = "Error creating Backend";
 
       Api.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
@@ -294,8 +294,8 @@ describe('APIM Service', () => {
       await expect(apimService.deployApi()).rejects.toEqual(apiError);
     });
 
-    it('fails when Property deployment fails', async () => {
-      const apiError = 'Error creating Property';
+    it("fails when Property deployment fails", async () => {
+      const apiError = "Error creating Property";
 
       Api.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
@@ -308,18 +308,18 @@ describe('APIM Service', () => {
     });
   });
 
-  describe('Deploying Functions', () => {
-    it('ensures all serverless functions have been deployed into specified API', async () => {
-      const slsFunctions = _.values(serverless.service['functions']);
+  describe("Deploying Functions", () => {
+    it("ensures all serverless functions have been deployed into specified API", async () => {
+      const slsFunctions = _.values(serverless.service["functions"]);
 
       const apimResource: ApiManagementServiceResource = {
         name: apimConfig.name,
-        location: 'West US',
-        publisherEmail: 'someone@example.com',
-        publisherName: 'Someone',
+        location: "West US",
+        publisherEmail: "someone@example.com",
+        publisherName: "Someone",
         sku: {
           capacity: 1,
-          name: 'Consumption',
+          name: "Consumption",
         },
       };
 
@@ -337,7 +337,7 @@ describe('APIM Service', () => {
 
       ApiOperationPolicy.prototype.createOrUpdate = jest.fn(() => Promise.resolve(null));
 
-      const deployFunctionSpy = jest.spyOn(ApimService.prototype, 'deployFunction');
+      const deployFunctionSpy = jest.spyOn(ApimService.prototype, "deployFunction");
 
       const service = new ApimService(serverless);
       const apimInstance = await service.get();
@@ -354,7 +354,7 @@ describe('APIM Service', () => {
 
         expect(actual).toMatchObject({
           displayName: expected.displayName,
-          description: expected.description || '',
+          description: expected.description || "",
           method: expected.method,
           urlTemplate: expected.urlTemplate,
           templateParameters: expected.templateParameters || [],
