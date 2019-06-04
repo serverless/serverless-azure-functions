@@ -2,11 +2,10 @@ import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/m
 import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
+import { AzureServiceProvider, FunctionApp, FunctionMetadata, Logger, 
+  ServerlessYml, ServicePrincipalEnvVariables } from "../models";
 import Utils = require("serverless/classes/Utils");
 import PluginManager = require("serverless/classes/PluginManager");
-import { ServerlessYml, FunctionMetadata, FunctionEvent, ServicePrincipalEnvVariables,
-  FunctionApp, AzureServiceProvider, Logger } from "../models";
-import { stringify } from "querystring";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {

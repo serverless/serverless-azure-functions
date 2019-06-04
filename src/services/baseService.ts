@@ -80,7 +80,7 @@ export abstract class BaseService {
       fs.createReadStream(filePath)
         .pipe(request(requestOptions, (err, response) => {
           if (err) {
-            this.serverless.cli.log(JSON.stringify(err, null, 4));
+            this.log(JSON.stringify(err, null, 4));
             return reject(err);
           }
           resolve(response);

@@ -19,9 +19,6 @@ describe("Function App Service", () => {
   const variables = MockFactory.createTestVariables();
   const provider = MockFactory.createTestAzureServiceProvider();
 
-  let sendFile;
-  let webAppDelete;
-
   const masterKey = "masterKey";
   const authKey = "authKey";
   const syncTriggersMessage = "sync triggers success";
@@ -53,14 +50,12 @@ describe("Function App Service", () => {
   });
 
   beforeEach(() => {
-    webAppDelete = jest.fn();
-    sendFile = jest.fn();
 
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => app),
-      deleteFunction: webAppDelete,
+      deleteFunction: jest.fn(),
     } as any;
-    (FunctionAppService.prototype as any).sendFile = sendFile;
+    (FunctionAppService.prototype as any).sendFile = jest.fn();
   });
 
   afterEach(() => {
@@ -93,7 +88,7 @@ describe("Function App Service", () => {
     const service = createService();
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => { return { error: { code: "ResourceNotFound"}}}),
-      deleteFunction: webAppDelete,
+      deleteFunction: jest.fn(),
     } as any;
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
@@ -144,7 +139,7 @@ describe("Function App Service", () => {
   it("uploads functions", async () => {
     const service = createService();
     await service.uploadFunctions(app);
-    expect(sendFile).toBeCalledWith({
+    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
       method: "POST",
       uri: uploadUrl,
       json: true,

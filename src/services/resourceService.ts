@@ -12,7 +12,7 @@ export class ResourceService extends BaseService {
   }
 
   public async deployResourceGroup() {
-    this.serverless.cli.log(`Creating resource group: ${this.resourceGroup}`);
+    this.log(`Creating resource group: ${this.resourceGroup}`);
 
     const groupParameters = {
       location: this.serverless.service.provider["location"]
@@ -22,12 +22,12 @@ export class ResourceService extends BaseService {
   }
 
   public async deleteDeployment() {
-    this.serverless.cli.log(`Deleting deployment: ${this.deploymentName}`);
+    this.log(`Deleting deployment: ${this.deploymentName}`);
     return await this.resourceClient.deployments.deleteMethod(this.resourceGroup, this.deploymentName);
   }
 
   public async deleteResourceGroup() {
-    this.serverless.cli.log(`Deleting resource group: ${this.resourceGroup}`);
+    this.log(`Deleting resource group: ${this.resourceGroup}`);
     return await this.resourceClient.resourceGroups.deleteMethod(this.resourceGroup);
   }
 }

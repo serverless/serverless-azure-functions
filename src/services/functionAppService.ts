@@ -142,7 +142,7 @@ export class FunctionAppService extends BaseService {
     }
 
     if (this.serverless.service.provider["armTemplate"]) {
-      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
+      this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
       templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
       const userParameters = this.serverless.service.provider["armTemplate"].parameters;
       const userParametersKeys = Object.keys(userParameters);
