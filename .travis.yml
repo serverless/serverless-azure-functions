@@ -13,7 +13,7 @@ install:
   - npm install
 
 script:
-  - npm test
+  - npm run test:ci
 
 after_success:
   - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
