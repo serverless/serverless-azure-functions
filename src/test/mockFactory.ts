@@ -2,11 +2,11 @@ import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/m
 import yaml from "js-yaml";
 import Serverless from "serverless";
 import Utils from 'serverless/classes/Utils';
-import PluginManager from 'serverless/classes/PluginManager';
+import Service from 'serverless/lib/classes/Service';
+import PluginManager from 'serverless/lib/classes/PluginManager';
 import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from '@azure/ms-rest-js';
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { TokenClientCredentials, TokenResponse } from '@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials';
-import PluginManager = require("serverless/classes/PluginManager");
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -18,6 +18,7 @@ function getAttribute(object: any, prop: string, defaultValue: any): any {
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
+    sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
@@ -199,10 +200,6 @@ export class MockFactory {
       azureCredentials: "credentials",
       subscriptionId: "subId",
     }
-  }
-
-  private getConfig(config: any, prop: string, defaultValue: any) {
-
   }
 
   private static createTestUtils(): Utils {

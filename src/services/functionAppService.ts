@@ -7,9 +7,7 @@ import jsonpath from "jsonpath";
 import _ from "lodash";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
-import { constants } from "../config";
-import { IFunctionAppHttpTriggerConfig } from '../models/functionApp';
-import { Deployment } from '@azure/arm-resources/esm/models';
+import { FunctionAppHttpTriggerConfig } from '../models/functionApp';
 import { Site, FunctionEnvelope } from '@azure/arm-appservice/esm/models';
 
 export class FunctionAppService extends BaseService {
@@ -103,51 +101,6 @@ export class FunctionAppService extends BaseService {
     await this.zipDeploy(functionApp);
   }
 
-  private async zipDeploy(functionApp) {
-    const functionAppName = functionApp.name;
-    const scmDomain = functionApp.enabledHostNames[0];
-    
-    this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
-
-    // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service["artifact"];
-    if (!functionZipFile) {
-      throw new Error("No zip file found for function app");
-    }
-
-    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
-
-    // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
-    const requestOptions = {
-      method: "POST",
-      uri: `https://${scmDomain}/api/zipdeploy/`,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
-        Accept: "*/*",
-        ContentType: "application/octet-stream",
-      }
-    };
-
-    await this.sendFile(requestOptions, functionZipFile);
-    this.serverless.cli.log('-> Function package uploaded successfully');
-    const serverlessFunctions = this.serverless.service.getAllFunctions();
-    const deployedFunctions = await this.listFunctions(functionApp);
-
-    this.serverless.cli.log('Deployed serverless functions:')
-    deployedFunctions.forEach((functionConfig) => {
-      // List functions that are part of the serverless yaml config
-      if (serverlessFunctions.includes(functionConfig.name)) {
-        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
-
-        if (httpConfig) {
-          const method = httpConfig.methods[0].toUpperCase();
-          this.serverless.cli.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
-        }
-      }
-    });
-  }
-
   /**
    * create all necessary resources as defined in src/provider/armTemplates
    *    resource-group, storage account, app service plan, and app service at the minimum
@@ -220,7 +173,52 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): IFunctionAppHttpTriggerConfig {
+  private async zipDeploy(functionApp) {
+    const functionAppName = functionApp.name;
+    const scmDomain = functionApp.enabledHostNames[0];
+
+    this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
+
+    // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
+    const functionZipFile = this.serverless.service["artifact"];
+    if (!functionZipFile) {
+      throw new Error("No zip file found for function app");
+    }
+
+    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
+
+    // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
+    const requestOptions = {
+      method: "POST",
+      uri: `https://${scmDomain}/api/zipdeploy/`,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+        Accept: "*/*",
+        ContentType: "application/octet-stream",
+      }
+    };
+
+    await this.sendFile(requestOptions, functionZipFile);
+    this.serverless.cli.log('-> Function package uploaded successfully');
+    const serverlessFunctions = this.serverless.service.getAllFunctions();
+    const deployedFunctions = await this.listFunctions(functionApp);
+
+    this.serverless.cli.log('Deployed serverless functions:')
+    deployedFunctions.forEach((functionConfig) => {
+      // List functions that are part of the serverless yaml config
+      if (serverlessFunctions.includes(functionConfig.name)) {
+        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
+
+        if (httpConfig) {
+          const method = httpConfig.methods[0].toUpperCase();
+          this.serverless.cli.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+        }
+      }
+    });
+  }
+
+  private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
     const httpTrigger = functionConfig.config.bindings.find((binding) => {
       return binding.type === 'httpTrigger';
     });

@@ -17,7 +17,7 @@ export class ApimService extends BaseService {
   private functionAppService: FunctionAppService;
   private config: ApiManagementConfig;
 
-  constructor(serverless: Serverless, options?: Serverless.Options) {
+  public constructor(serverless: Serverless, options?: Serverless.Options) {
     super(serverless, options);
 
     this.config = this.serverless.service.provider['apim'];

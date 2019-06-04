@@ -2,7 +2,6 @@ import Serverless from "serverless";
 import axios from "axios";
 import request from 'request';
 import fs from "fs";
-//import { TokenClientCredentials } from '@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials';
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -12,7 +11,7 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  constructor(protected serverless: Serverless, protected options?: Serverless.Options) {
+  protected constructor(protected serverless: Serverless, protected options?: Serverless.Options) {
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
