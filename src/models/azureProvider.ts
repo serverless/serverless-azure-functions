@@ -23,5 +23,3 @@ export interface AzureServiceProvider {
   resourceGroup: string;
   deploymentName: string;
 }
-
-
