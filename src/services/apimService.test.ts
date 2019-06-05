@@ -76,6 +76,15 @@ describe("APIM Service", () => {
       expect(resource).toBeNull();
     });
 
+    it("returns null when APIM is not configured", async () => {
+      serverless.service.provider["apim"] = null;
+
+      const service = new ApimService(serverless);
+      const resource = await service.get();
+
+      expect(resource).toBeNull();
+    });
+
     it("returns instance of service resource", async () => {
       const expectedResponse = interpolateJson(apimGetService200, {
         resourceGroup: {
@@ -106,6 +115,15 @@ describe("APIM Service", () => {
 
       const service = new ApimService(serverless);
       const api = await service.getApi();
+      expect(api).toBeNull();
+    });
+
+    it("returns null when APIM config does not exist", async () => {
+      serverless.service.provider["apim"] = null;
+
+      const service = new ApimService(serverless);
+      const api = await service.getApi();
+
       expect(api).toBeNull();
     });
 
@@ -250,6 +268,15 @@ describe("APIM Service", () => {
       );
     });
 
+    it("returns null when APIM is not configured", async () => {
+      serverless.service.provider["apim"] = null;
+
+      const service = new ApimService(serverless);
+      const api = await service.deployApi();
+
+      expect(api).toBeNull();
+    });
+
     it("fails when API deployment fails", async () => {
       const apiError = "Error creating API";
       Api.prototype.createOrUpdate = jest.fn(() => Promise.reject(apiError));
@@ -284,6 +311,20 @@ describe("APIM Service", () => {
   });
 
   describe("Deploying Functions", () => {
+    it("performs a noop when APIM config has not been configured", async () => {
+      serverless.service.provider["apim"] = null;
+
+      const apimService = new ApimService(serverless);
+      const deploySpy = jest.spyOn(apimService, "deployFunction");
+
+      const serviceResource: ApiManagementServiceResource = MockFactory.createTestApimService();
+      const api: ApiContract = MockFactory.createTestApimApi();
+
+      await apimService.deployFunctions(serviceResource, api);
+
+      expect(deploySpy).not.toBeCalled();
+    });
+
     it("ensures all serverless functions have been deployed into specified API", async () => {
       const slsFunctions = _.values(serverless.service["functions"]);
 

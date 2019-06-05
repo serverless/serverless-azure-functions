@@ -7,6 +7,7 @@ import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from "@
 import { AxiosResponse, AxiosRequestConfig } from "axios";
 import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
 import { Site } from "@azure/arm-appservice/esm/models";
+import { ApiManagementServiceResource, ApiContract } from "@azure/arm-apimanagement/esm/models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -70,7 +71,7 @@ export class MockFactory {
   }
 
   public static createTestAzureCredentials(): TokenClientCredentials {
-    return {
+    const credentials = {
       getToken: jest.fn(() => {
         const token: TokenResponse = {
           tokenType: "Bearer",
@@ -81,6 +82,13 @@ export class MockFactory {
       }),
       signRequest: jest.fn((resource) => Promise.resolve(resource)),
     };
+
+    // TODO: Reduce usage on tokenCache._entries[0]
+    credentials["tokenCache"] = {
+      _entries: [{ accessToken: "ABC123" }]
+    };
+
+    return credentials;
   }
 
   public static createTestAxiosResponse<T>(
@@ -222,6 +230,26 @@ export class MockFactory {
           ],
         },
       },
+    };
+  }
+
+  public static createTestApimService(): ApiManagementServiceResource {
+    return {
+      name: "APIM Service Instance",
+      location: "West US",
+      publisherName: "Somebody",
+      publisherEmail: "somebody@example.com",
+      sku: {
+        capacity: 0,
+        name: "Consumption",
+      }
+    };
+  }
+
+  public static createTestApimApi(): ApiContract {
+    return {
+      name: "Api1",
+      path: "/api1",
     };
   }
 

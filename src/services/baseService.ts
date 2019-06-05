@@ -2,6 +2,7 @@ import Serverless from "serverless";
 import axios from "axios";
 import request from "request";
 import fs from "fs";
+import { Guard } from "../shared/guard";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -12,6 +13,8 @@ export abstract class BaseService {
   protected deploymentName: string;
 
   protected constructor(protected serverless: Serverless, protected options?: Serverless.Options) {
+    Guard.null(serverless);
+
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];

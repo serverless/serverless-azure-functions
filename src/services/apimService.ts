@@ -8,6 +8,7 @@ import {
   PropertyContract, ApiManagementServiceResource,
 } from "@azure/arm-apimanagement/esm/models";
 import { Site } from "@azure/arm-appservice/esm/models";
+import { Guard } from "../shared/guard";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -21,6 +22,10 @@ export class ApimService extends BaseService {
     super(serverless, options);
 
     this.config = this.serverless.service.provider["apim"];
+    if (!this.config) {
+      return;
+    }
+
     if (!this.config.backend) {
       this.config.backend = {} as any;
     }
@@ -60,6 +65,10 @@ export class ApimService extends BaseService {
    * Deploys the APIM top level api
    */
   public async deployApi() {
+    if (!(this.config && this.config.name)) {
+      return null;
+    }
+
     const functionApp = await this.functionAppService.get();
 
     const api = await this.ensureApi();
@@ -73,6 +82,13 @@ export class ApimService extends BaseService {
    * Deploys all the functions of the serverless service to APIM
    */
   public async deployFunctions(service: ApiManagementServiceResource, api: ApiContract) {
+    Guard.null(service);
+    Guard.null(api);
+
+    if (!(this.config && this.config.name)) {
+      return null;
+    }
+
     this.serverless.cli.log("-> Deploying API Operations");
 
     const deployApiTasks = this.serverless.service
@@ -87,9 +103,13 @@ export class ApimService extends BaseService {
    * @param options
    */
   public async deployFunction(service: ApiManagementServiceResource, api: ApiContract, options) {
+    Guard.null(service);
+    Guard.null(api);
+    Guard.null(options);
+
     const functionConfig = this.serverless.service["functions"][options.function];
 
-    if (!functionConfig.apim) {
+    if (!(functionConfig && functionConfig.apim)) {
       return;
     }
 
