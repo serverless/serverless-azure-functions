@@ -5,34 +5,33 @@ import { AzurePackage } from "./azurePackage";
 jest.mock("../../shared/bindings");
 import { BindingUtils } from "../../shared/bindings";
 jest.mock("../../shared/utils");
-import { Utils, FunctionMetadata } from "../../shared/utils";
+import { Utils } from "../../shared/utils";
 
 describe("Azure Package Plugin", () => {
   it("sets up provider configuration", async () => {
-    const metadata = "metadata";
-    const functionName = "function1";
-
-    const getFunctionMetaDataFn = jest.fn(() => metadata as any as FunctionMetadata);
-    const createEventsBindingsFn = jest.fn();
-
-    Utils.getFunctionMetaData = getFunctionMetaDataFn;
-    BindingUtils.createEventsBindings = createEventsBindingsFn;
-
-    const slsConfig = {
-      functions: {
-        function1: {},
-      },
-    };
-
+    const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
     const sls = MockFactory.createTestServerless();
-    Object.assign(sls.service, slsConfig);
+    Object.assign(sls.service, {
+      functions: slsFunctionConfig
+    });
+
+    const functionConfig = Object.keys(slsFunctionConfig).map((funcName) => {
+      return {
+        name: funcName,
+        config: slsFunctionConfig[funcName],
+      };
+    });
+
+    Utils.getFunctionMetaData = jest.fn((funcName) => slsFunctionConfig[funcName]);
+    BindingUtils.createEventsBindings = jest.fn();
+
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzurePackage(sls, options);
 
     await invokeHook(plugin, "package:setupProviderConfiguration");
 
     expect(sls.cli.log).toBeCalledWith("Building Azure Events Hooks");
-    expect(getFunctionMetaDataFn).toBeCalledWith(functionName, sls);
-    expect(createEventsBindingsFn).toBeCalledWith(sls.config.servicePath, functionName, metadata);
+    expect(Utils.getFunctionMetaData).toBeCalledWith(functionConfig[0].name, sls);
+    expect(BindingUtils.createEventsBindings).toBeCalledWith(sls.config.servicePath, functionConfig[0].name, functionConfig[0].config);
   });
 });

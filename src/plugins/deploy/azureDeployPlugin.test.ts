@@ -12,10 +12,7 @@ import { Site } from "@azure/arm-appservice/esm/models";
 describe("Deploy plugin", () => {
   it("calls deploy hook", async () => {
     const deployResourceGroup = jest.fn();
-    const functionAppStub: Site = {
-      name: "Test",
-      location: "West US",
-    };
+    const functionAppStub: Site = MockFactory.createTestSite();
     const deploy = jest.fn(() => Promise.resolve(functionAppStub));
     const uploadFunctions = jest.fn();
 

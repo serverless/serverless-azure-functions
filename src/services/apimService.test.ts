@@ -44,32 +44,7 @@ describe("APIM Service", () => {
         location: "West US",
         apim: apimConfig,
       },
-      functions: {
-        hello: {
-          handler: "index.handler",
-          apim: {
-            operations: [
-              {
-                method: "get",
-                urlTemplate: "hello",
-                displayName: "Hello",
-              },
-            ],
-          },
-        },
-        goodbye: {
-          handler: "index.handler",
-          apim: {
-            operations: [
-              {
-                method: "get",
-                urlTemplate: "goodbye",
-                displayName: "Goodbye",
-              },
-            ],
-          },
-        },
-      },
+      functions: MockFactory.createTestSlsFunctionConfig(),
     };
 
     serverless = MockFactory.createTestServerless();
@@ -324,13 +299,11 @@ describe("APIM Service", () => {
       };
 
       const apiContract = apimConfig.api;
-      // tslint:disable-next-line:max-line-length
       ApiManagementService.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiManagementServiceGetResponse>(apimResource, 200));
       Api.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiGetResponse>(apiContract, 200));
 
       ApiOperation.prototype.createOrUpdate =
         jest.fn((resourceGroup, serviceName, apiName, operationName, operationContract) => {
-          // tslint:disable-next-line:max-line-length
           const response = MockFactory.createTestArmSdkResponse<ApiOperationCreateOrUpdateResponse>(operationContract, 201);
           return Promise.resolve(response);
         });

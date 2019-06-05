@@ -2,11 +2,11 @@ import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/m
 import yaml from "js-yaml";
 import Serverless from "serverless";
 import Utils from "serverless/classes/Utils";
-import Service from "serverless/lib/classes/Service";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from "@azure/ms-rest-js";
 import { AxiosResponse, AxiosRequestConfig } from "axios";
 import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
+import { Site } from "@azure/arm-appservice/esm/models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -22,6 +22,13 @@ export class MockFactory {
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
+
+    sls.service.getAllFunctions = jest.fn(() => {
+      return Object.keys(sls.service["functions"]);
+    })
+    sls.service.getAllFunctionsNames = sls.service.getAllFunctions;
+    sls.service.getServiceName = jest.fn(() => sls.service["service"]);
+
     return sls;
   }
 
@@ -133,10 +140,10 @@ export class MockFactory {
   public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
     const data = {};
     for (let i = 0; i < functionCount; i++) {
-      const functionName = `function${i+1}`;
+      const functionName = `function${i + 1}`;
       data[functionName] = MockFactory.createTestFunctionMetadata()
     }
-    return (wrap) ? {"functions": data } : data;
+    return (wrap) ? { "functions": data } : data;
   }
 
   public static createTestFunctionMetadata() {
@@ -168,26 +175,6 @@ export class MockFactory {
     }
   }
 
-  public static createTestService(): Service {
-    return {
-      getAllFunctions: jest.fn(() => ["function1"]),
-      getFunction: jest.fn(),
-      getAllEventsInFunction: jest.fn(),
-      getAllFunctionsNames: jest.fn(),
-      getEventInFunction: jest.fn(),
-      getServiceName: jest.fn(),
-      load: jest.fn(),
-      mergeResourceArrays: jest.fn(),
-      setFunctionNames: jest.fn(),
-      update: jest.fn(),
-      validate: jest.fn(),
-      custom: null,
-      provider: MockFactory.createTestAzureServiceProvider(),
-      service: "serviceName",
-      artifact: "app.zip",
-    } as any as Service;
-  }
-
   public static createTestAzureServiceProvider() {
     return {
       resourceGroup: "myResourceGroup",
@@ -200,6 +187,42 @@ export class MockFactory {
       azureCredentials: "credentials",
       subscriptionId: "subId",
     }
+  }
+
+  public static createTestSite(name: string = "Test"): Site {
+    return {
+      name: name,
+      location: "West US",
+    };
+  }
+
+  public static createTestSlsFunctionConfig() {
+    return {
+      hello: {
+        handler: "index.handler",
+        apim: {
+          operations: [
+            {
+              method: "get",
+              urlTemplate: "hello",
+              displayName: "Hello",
+            },
+          ],
+        },
+      },
+      goodbye: {
+        handler: "index.handler",
+        apim: {
+          operations: [
+            {
+              method: "get",
+              urlTemplate: "goodbye",
+              displayName: "Goodbye",
+            },
+          ],
+        },
+      },
+    };
   }
 
   private static createTestUtils(): Utils {
