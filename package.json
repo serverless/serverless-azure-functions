@@ -7,12 +7,13 @@
   "typings": "./lib/index.d.ts",
   "author": "Azure Functions",
   "scripts": {
+    "start": "npm run test -- --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "pretest": "npm run lint",
-    "test": "jest --watch",
-    "test:ci": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "jest",
+    "test:ci": "npm run test -- --ci",
+    "test:coverage": "npm run test -- --coverage",
     "prebuild": "rm lib/ -rf",
     "build": "tsc"
   },
