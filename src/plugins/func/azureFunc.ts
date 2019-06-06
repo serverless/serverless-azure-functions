@@ -7,7 +7,7 @@ import { FuncPluginUtils } from "./funcUtils";
 export class AzureFuncPlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
-  
+
 
   public constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.hooks = {
@@ -79,7 +79,7 @@ export class AzureFuncPlugin {
       this.serverless.cli.log(`Error making directory ${e}`);
     }
     this.serverless.utils.writeFileSync(path.join(name, "index.js"), FuncPluginUtils.getFunctionHandler(name));
-    this.serverless.utils.writeFileSync(path.join(name, "function.json"), FuncPluginUtils.getFunctionJsonString(name, this.options))
+    this.serverless.utils.writeFileSync(path.join(name, "function.json"), FuncPluginUtils.getFunctionJsonString(name, this.options));
   }
 
   private addToServerlessYml(name: string) {
@@ -87,7 +87,7 @@ export class AzureFuncPlugin {
     const functionYml = FuncPluginUtils.getFunctionsYml(this.serverless);
     functionYml[name] = FuncPluginUtils.getFunctionSlsObject(name, this.options);
     FuncPluginUtils.updateFunctionsYml(this.serverless, functionYml);
-  } 
+  }
 
   private async remove() {
     if (!("name" in this.options)) {

@@ -4,8 +4,13 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import { AzureServiceProvider, FunctionApp, FunctionMetadata, Logger, 
   ServerlessYml, ServicePrincipalEnvVariables } from "../models";
-import Utils = require("serverless/classes/Utils");
-import PluginManager = require("serverless/classes/PluginManager");
+import Utils from "serverless/classes/Utils";
+import PluginManager from "serverless/lib/classes/PluginManager";
+import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from "@azure/ms-rest-js";
+import { AxiosResponse, AxiosRequestConfig } from "axios";
+import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
+import { Site } from "@azure/arm-appservice/esm/models";
+import { ApiManagementServiceResource, ApiContract } from "@azure/arm-apimanagement/esm/models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -17,11 +22,17 @@ function getAttribute(object: any, prop: string, defaultValue: any): any {
 export class MockFactory {
   public static createTestServerless(config?: any): Serverless {
     const sls = new Serverless(config);
-    sls.service = getAttribute(config, "service", MockFactory.createTestService());
     sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
+
+    sls.service.getAllFunctions = jest.fn(() => {
+      return Object.keys(sls.service["functions"]);
+    })
+    sls.service.getAllFunctionsNames = sls.service.getAllFunctions;
+    sls.service.getServiceName = jest.fn(() => sls.service["service"]);
+
     return sls;
   }
 
@@ -32,8 +43,23 @@ export class MockFactory {
       noDeploy: null,
       region: null,
       stage: null,
-      watch: null
-    }
+      watch: null,
+    };
+  }
+
+  public static createTestArmSdkResponse<R>(model: any, statusCode: number): Promise<R> {
+    const response: HttpResponse = {
+      headers: new HttpHeaders(),
+      request: null,
+      status: statusCode,
+    };
+
+    const result: R = {
+      ...model,
+      _response: response,
+    };
+
+    return Promise.resolve(result);
   }
 
   public static createTestAuthResponse(): AuthResponse {
@@ -43,9 +69,70 @@ export class MockFactory {
       subscriptions: [
         {
           id: "azureSubId",
-        }
-      ] as any as LinkedSubscription[]
+        },
+      ] as any as LinkedSubscription[],
+    };
+  }
+
+  public static createTestAzureCredentials(): TokenClientCredentials {
+    const credentials = {
+      getToken: jest.fn(() => {
+        const token: TokenResponse = {
+          tokenType: "Bearer",
+          accessToken: "ABC123",
+        };
+
+        return Promise.resolve(token);
+      }),
+      signRequest: jest.fn((resource) => Promise.resolve(resource)),
+    };
+
+    // TODO: Reduce usage on tokenCache._entries[0]
+    credentials["tokenCache"] = {
+      _entries: [{ accessToken: "ABC123" }]
+    };
+
+    return credentials;
+  }
+
+  public static createTestAxiosResponse<T>(
+    config: AxiosRequestConfig,
+    responseJson: T,
+    statusCode: number = 200,
+  ): Promise<AxiosResponse> {
+    let statusText;
+    switch (statusCode) {
+      case 200:
+        statusText = "OK";
+        break;
+      case 404:
+        statusText = "NotFound";
+        break;
     }
+
+    const response: AxiosResponse = {
+      config,
+      data: JSON.stringify(responseJson),
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      status: statusCode,
+      statusText,
+    };
+
+    return Promise.resolve(response);
+  }
+
+  public static createTestAzureClientResponse<T>(responseJson: T, statusCode: number = 200): Promise<HttpOperationResponse> {
+    const response: HttpOperationResponse = {
+      request: new WebResource(),
+      parsedBody: responseJson,
+      bodyAsText: JSON.stringify(responseJson),
+      headers: new HttpHeaders(),
+      status: statusCode,
+    };
+
+    return Promise.resolve(response);
   }
 
   public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessYml {
@@ -65,7 +152,7 @@ export class MockFactory {
   public static createTestFunctionsMetadata(functionCount = 2): any {
     const data = {}
     for (let i = 0; i < functionCount; i++) {
-      const functionName = `function${i+1}`;
+      const functionName = `function${i + 1}`;
       data[functionName] = MockFactory.createTestFunctionMetadata()
     }
     return data;
@@ -158,6 +245,62 @@ export class MockFactory {
       subscriptionId: "azureSubId",
     }
   }
+  
+  public static createTestSite(name: string = "Test"): Site {
+    return {
+      name: name,
+      location: "West US",
+    };
+  }
+
+  public static createTestSlsFunctionConfig() {
+    return {
+      hello: {
+        handler: "index.handler",
+        apim: {
+          operations: [
+            {
+              method: "get",
+              urlTemplate: "hello",
+              displayName: "Hello",
+            },
+          ],
+        },
+      },
+      goodbye: {
+        handler: "index.handler",
+        apim: {
+          operations: [
+            {
+              method: "get",
+              urlTemplate: "goodbye",
+              displayName: "Goodbye",
+            },
+          ],
+        },
+      },
+    };
+  }
+
+  public static createTestApimService(): ApiManagementServiceResource {
+    return {
+      name: "APIM Service Instance",
+      location: "West US",
+      publisherName: "Somebody",
+      publisherEmail: "somebody@example.com",
+      sku: {
+        capacity: 0,
+        name: "Consumption",
+      }
+    };
+  }
+
+  public static createTestApimApi(): ApiContract {
+    return {
+      name: "Api1",
+      path: "/api1",
+    };
+  }
 
   private static createTestUtils(): Utils {
     return {
@@ -178,18 +321,18 @@ export class MockFactory {
       walkDirSync: jest.fn(),
       writeFile: jest.fn(),
       writeFileDir: jest.fn(),
-      writeFileSync: jest.fn()
-    }
+      writeFileSync: jest.fn(),
+    };
   }
 
   private static createTestCli(): Logger {
     return {
-      log: jest.fn()
-    }
+      log: jest.fn(),
+    };
   }
 
   private static createTestPluginManager(): PluginManager {
-    return  {
+    return {
       addPlugin: jest.fn(),
       cliCommands: null,
       cliOptions: null,
@@ -206,7 +349,7 @@ export class MockFactory {
       serverless: null,
       setCliCommands: jest.fn(),
       setCliOptions: jest.fn(),
-      spawn: jest.fn()
-    }
+      spawn: jest.fn(),
+    };
   }
 }

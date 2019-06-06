@@ -46,7 +46,7 @@ describe("Azure Func Plugin", () => {
       options["name"] = "myExistingFunction";
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:add:add");
-      expect(sls.cli.log).toBeCalledWith(`Function myExistingFunction already exists`);
+      expect(sls.cli.log).toBeCalledWith("Function myExistingFunction already exists");
     });
   
     it("creates function directory and updates serverless.yml", async () => {
@@ -97,7 +97,7 @@ describe("Azure Func Plugin", () => {
       options["name"] = "myNonExistingFunction";
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:remove:remove");
-      expect(sls.cli.log).toBeCalledWith(`Function myNonExistingFunction does not exist`);
+      expect(sls.cli.log).toBeCalledWith("Function myNonExistingFunction does not exist");
     });
   
     it("deletes directory and updates serverless.yml", async () => {

@@ -1,0 +1,53 @@
+{
+  "id": "/subscriptions/d36d0808-a967-4f73-9fdc-32ea232fc81d/resourceGroups/${resourceGroup.name}/providers/Microsoft.ApiManagement/service/${resource.name}",
+  "name": "${resource.name}",
+  "type": "Microsoft.ApiManagement/service",
+  "tags": {},
+  "location": "${resourceGroup.location}",
+  "etag": "AAAAAAAAcns=",
+  "properties": {
+    "publisherEmail": "wabrez@microsoft.com",
+    "publisherName": "Microsoft",
+    "notificationSenderEmail": "apimgmt-noreply@mail.windowsazure.com",
+    "provisioningState": "Succeeded",
+    "targetProvisioningState": "",
+    "createdAtUtc": "2019-05-22T15:27:07.8117982Z",
+    "gatewayUrl": "https://${resource.name}.azure-api.net",
+    "gatewayRegionalUrl": null,
+    "portalUrl": null,
+    "managementApiUrl": null,
+    "scmUrl": null,
+    "hostnameConfigurations": [
+      {
+        "type": "Proxy",
+        "hostName": "${resource.name}.azure-api.net",
+        "encodedCertificate": null,
+        "keyVaultId": null,
+        "certificatePassword": null,
+        "negotiateClientCertificate": false,
+        "certificate": null,
+        "defaultSslBinding": true
+      }
+    ],
+    "publicIPAddresses": null,
+    "privateIPAddresses": null,
+    "additionalLocations": null,
+    "virtualNetworkConfiguration": null,
+    "customProperties": {
+      "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10": "False",
+      "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11": "False",
+      "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10": "False",
+      "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11": "False",
+      "Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30": "False",
+      "Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2": "False"
+    },
+    "virtualNetworkType": "None",
+    "certificates": null,
+    "enableClientCertificate": false
+  },
+  "sku": {
+    "name": "Consumption",
+    "capacity": 0
+  },
+  "identity": null
+}

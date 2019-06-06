@@ -1,0 +1,7 @@
+{
+  "error": {
+      "code": "ResourceNotFound",
+      "message": "Api not found.",
+      "details": null
+  }
+}

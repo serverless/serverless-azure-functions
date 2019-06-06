@@ -1,0 +1,11 @@
+{
+  "id": "/subscriptions/d36d0808-a967-4f73-9fdc-32ea232fc81d/resourceGroups/${resourceGroup.name}/providers/Microsoft.ApiManagement/service/wabrez-711-westus-apim/backends/sls-api34",
+  "type": "Microsoft.ApiManagement/service/backends",
+  "name": "${resource.name}",
+  "properties": {
+    "title": "${resource.title}",
+    "description": "${resource.description}",
+    "url": "${resource.url}",
+    "protocol": "${resource.protocol}"
+  }
+}

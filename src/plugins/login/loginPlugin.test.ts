@@ -13,7 +13,7 @@ describe("Login Plugin", () => {
   function createPlugin(hasCreds = false, serverless?: Serverless): AzureLoginPlugin {
     const sls = serverless || MockFactory.createTestServerless();
     if (!hasCreds) {
-      delete sls.variables['azureCredentials'];
+      delete sls.variables["azureCredentials"];
     }
     const options = MockFactory.createTestServerlessOptions();
     return new AzureLoginPlugin(sls, options);

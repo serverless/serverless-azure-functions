@@ -76,7 +76,7 @@ describe("Function App Service", () => {
     )
   } 
   
-  it("get returns function app", async () => {
+  fit("get returns function app", async () => {
     const service = createService();
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
