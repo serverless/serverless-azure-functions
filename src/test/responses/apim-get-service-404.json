@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "ResourceNotFound",
+    "message": "The Resource 'Microsoft.ApiManagement/service/foobar' under resource group 'wabrez-711-westus-rg' was not found."
+  }
+}

@@ -14,7 +14,10 @@ export class AzureApimFunctionPlugin {
     this.serverless.cli.log("Starting APIM function deployment");
 
     const apimService = new ApimService(this.serverless, this.options);
-    await apimService.deployFunction(this.options);
+    const service = await apimService.get();
+    const api = await apimService.getApi();
+
+    await apimService.deployFunction(service, api, this.options);
 
     this.serverless.cli.log("Finished APIM function deployment");
   }

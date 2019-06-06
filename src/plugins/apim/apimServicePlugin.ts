@@ -19,8 +19,9 @@ export class AzureApimServicePlugin {
     this.serverless.cli.log("Starting APIM service deployment");
 
     const apimService = new ApimService(this.serverless, this.options);
-    await apimService.deployApi();
-    await apimService.deployFunctions();
+    const service = await apimService.get();
+    const api = await apimService.deployApi();
+    await apimService.deployFunctions(service, api);
 
     this.serverless.cli.log("Finished APIM service deployment");
   }

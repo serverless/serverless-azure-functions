@@ -1,7 +1,8 @@
 import Serverless from "serverless";
 import axios from "axios";
-import request from "request"
+import request from "request";
 import fs from "fs";
+import { Guard } from "../shared/guard";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -11,7 +12,9 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  public constructor(protected serverless: Serverless, protected options: Serverless.Options) {
+  protected constructor(protected serverless: Serverless, protected options?: Serverless.Options) {
+    Guard.null(serverless);
+
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
@@ -26,7 +29,7 @@ export abstract class BaseService {
 
   protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
-      "Authorization": `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`
+      Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
     };
 
     const allHeaders = {
@@ -36,7 +39,7 @@ export abstract class BaseService {
 
     const requestOptions = {
       ...options,
-      method: method,
+      method,
       headers: allHeaders,
     };
 
@@ -67,10 +70,10 @@ export abstract class BaseService {
   }
 
   /**
- * Uploads the specified file via HTTP request
- * @param requestOptions The HTTP request options
- * @param filePath The local file path
- */
+   * Uploads the specified file via HTTP request
+   * @param requestOptions The HTTP request options
+   * @param filePath The local file path
+   */
   protected sendFile(requestOptions, filePath) {
     return new Promise((resolve, reject) => {
       fs.createReadStream(filePath)
