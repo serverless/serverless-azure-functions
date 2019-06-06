@@ -14,7 +14,7 @@ describe("Azure Index", () => {
   it("contains all registered plugins", () => {
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
-    const index = new AzureIndex(sls, options);
+    new AzureIndex(sls, options);
     sls.setProvider = jest.fn();
 
     expect(sls.setProvider).toBeCalledWith("azure", new AzureProvider(sls));

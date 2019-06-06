@@ -1,0 +1,25 @@
+{
+  "id": "/subscriptions/d36d0808-a967-4f73-9fdc-32ea232fc81d/resourceGroups/${resourceGroup.name}/providers/Microsoft.ApiManagement/service/wabrez-711-westus-apim/apis/${resource.name}",
+  "type": "Microsoft.ApiManagement/service/apis",
+  "name": "${resource.name}",
+  "properties": {
+    "displayName": "${resource.displayName}",
+    "apiRevision": "1",
+    "description": null,
+    "subscriptionRequired": false,
+    "serviceUrl": null,
+    "path": "${resource.name}",
+    "protocols": [
+      "https"
+    ],
+    "authenticationSettings": {
+      "oAuth2": null,
+      "openid": null
+    },
+    "subscriptionKeyParameterNames": {
+      "header": "Ocp-Apim-Subscription-Key",
+      "query": "subscription-key"
+    },
+    "isCurrent": true
+  }
+}
