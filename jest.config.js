@@ -1,13 +1,26 @@
 module.exports = {
-  preset: 'ts-jest',
-  transform: {
-    ".(ts|tsx)": "ts-jest"
-  },
-  testRegex: "((\\.|/)(test|spec))\\.ts$",
-  moduleFileExtensions:  ["ts", "tsx", "js"],
-  testPathIgnorePatterns: [
-    "/lib/",
-    "/node_modules/"
+  "collectCoverageFrom": [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!src/**/*.d.ts"
   ],
-  collectCoverage: true
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.(js|jsx|ts|tsx)$": "babel-jest"
+  },
+  "testPathIgnorePatterns": [
+    "./lib",
+    "./node_modules"
+  ],
+  "transformIgnorePatterns": [
+    "./lib",
+    "./node_modules"
+  ],
+  "moduleFileExtensions": [
+    "js",
+    "ts",
+    "tsx",
+    "json",
+    "jsx",
+    "node"
+  ]
 };
