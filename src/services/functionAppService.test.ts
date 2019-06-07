@@ -14,21 +14,24 @@ import MockAdapter from "axios-mock-adapter";
 
 describe("Function App Service", () => {
   
-  const app = MockFactory.createTestFunctionApp();
+  const app = MockFactory.createTestSite();
   const slsService = MockFactory.createTestService();
   const variables = MockFactory.createTestVariables();
   const provider = MockFactory.createTestAzureServiceProvider();
+  const functionName = "function1";
 
   const masterKey = "masterKey";
   const authKey = "authKey";
   const syncTriggersMessage = "sync triggers success";
+  const deleteFunctionMessage = "delete function success";
   const functions = MockFactory.createTestFunctions();
 
+  const baseUrl = "https://management.azure.com"
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
-  const authKeyUrl = `https://management.azure.com${app.id}/functions/admin/token?api-version=2016-08-01`;
-  const syncTriggersUrl = `https://management.azure.com${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
-  const listFunctionsUrl = `https://management.azure.com${app.id}/functions?api-version=2016-08-01`;
-  const uploadUrl = `https://${app.name}${constants.scmDomain}${constants.scmZipDeployApiPath}`
+  const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
+  const syncTriggersUrl = `${baseUrl}${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
+  const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
+  const uploadUrl = `https://${app.enabledHostNames[0]}${constants.scmZipDeployApiPath}/`
 
   beforeAll(() => {   
 
@@ -43,6 +46,12 @@ describe("Function App Service", () => {
     axiosMock.onPost(syncTriggersUrl).reply(200, syncTriggersMessage);
     // List Functions
     axiosMock.onGet(listFunctionsUrl).reply(200, { value: functions });
+    // Delete Function
+    for (const funcName of Object.keys(functions)) {
+      const func = functions[funcName];
+      axiosMock.onDelete(`${baseUrl}${app.id}/functions/${func.properties.name}?api-version=2016-08-01`)
+        .reply(200, deleteFunctionMessage);
+    }
 
     mockFs({
       "app.zip": "contents",
@@ -76,7 +85,7 @@ describe("Function App Service", () => {
     )
   } 
   
-  fit("get returns function app", async () => {
+  it("get returns function app", async () => {
     const service = createService();
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
@@ -105,12 +114,9 @@ describe("Function App Service", () => {
 
   it("deletes function", async () => {
     const service = createService();
-    await service.deleteFunction(app.name);
-    expect(WebSiteManagementClient.prototype.webApps.deleteFunction).toBeCalledWith(
-      provider.resourceGroup,
-      slsService["service"],
-      app.name
-    );
+    const response = await service.deleteFunction(app, functionName);
+    expect(response.data).toEqual(deleteFunctionMessage);
+    
   });
 
   it("syncs triggers", async () => {
@@ -120,20 +126,24 @@ describe("Function App Service", () => {
   });
 
   it("cleans up", async () => {
-    const sls = MockFactory.createTestServerless();
+    const sls = MockFactory.createTestServerless({
+      service: slsService,
+      variables: variables,
+    });
     const service = createService(sls);
     const result = await service.cleanUp(app);
-    expect(result).toHaveLength(functions.length);
+    const functionNames = Object.keys(functions);
+    expect(result).toHaveLength(functionNames.length);
     const logCalls = (sls.cli.log as any).mock.calls as any[];
-    for (let i = 0; i < functions.length; i++) {
+    for (let i = 0; i < functionNames.length; i++) {
       const functionName = `function${i+1}`
-      expect(logCalls[i + 1][0]).toEqual(`-> Deleting function: '${functionName}'`);
+      expect(logCalls[i + 1][0]).toEqual(`-> Deleting function: ${functionName}`);
     }
   });
 
   it("lists functions", async () => {
     const service = createService();
-    expect(await service.listFunctions(app)).toEqual(functions);
+    expect(await service.listFunctions(app)).toEqual(functions.map((f) => f.properties));
   });
 
   it("uploads functions", async () => {

@@ -26,13 +26,7 @@ export class MockFactory {
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
-
-    sls.service.getAllFunctions = jest.fn(() => {
-      return Object.keys(sls.service["functions"]);
-    })
-    sls.service.getAllFunctionsNames = sls.service.getAllFunctions;
-    sls.service.getServiceName = jest.fn(() => sls.service["service"]);
-
+    sls.service = getAttribute(config, "service", MockFactory.createTestService());
     return sls;
   }
 
@@ -179,22 +173,21 @@ export class MockFactory {
     }
   }
 
-  public static createTestFunctionApp(name?: string): FunctionApp {
-    return {
-      id: "App Id",
-      name: name || "App Name",
-      defaultHostName: "My Host Name"
+  public static createTestService(functions?): Service {
+    if (!functions) {
+      functions = {};
+      for (const func of MockFactory.createTestFunctions()) {
+        functions[func.properties.name] = func
+      }
     }
-  }
-
-  public static createTestService(): Service {
+    const serviceName = "serviceName";
     return {
-      getAllFunctions: jest.fn(() => MockFactory.createTestFunctions().map((f) => f.name)),
+      getAllFunctions: jest.fn(() => Object.keys(functions)),
       getFunction: jest.fn(),
       getAllEventsInFunction: jest.fn(),
-      getAllFunctionsNames: jest.fn(),
+      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
       getEventInFunction: jest.fn(),
-      getServiceName: jest.fn(),
+      getServiceName: jest.fn(() => serviceName),
       load: jest.fn(),
       mergeResourceArrays: jest.fn(),
       setFunctionNames: jest.fn(),
@@ -202,15 +195,16 @@ export class MockFactory {
       validate: jest.fn(),
       custom: null,
       provider: MockFactory.createTestAzureServiceProvider(),
-      service: "serviceName",
+      service: serviceName,
       artifact: "app.zip",
+      functions
     } as any as Service;
   }
 
-  public static createTestFunctions(functionCount = 3): FunctionApp[] {
+  public static createTestFunctions(functionCount = 3) {
     const functions = []
     for (let i = 0; i < functionCount; i++) {
-      functions.push(MockFactory.createTestFunctionApp(`function${i + 1}`));
+      functions.push(MockFactory.createTestFunction(`function${i + 1}`));
     }
     return functions;
   }
@@ -248,9 +242,50 @@ export class MockFactory {
   
   public static createTestSite(name: string = "Test"): Site {
     return {
+      id: "appId",
       name: name,
       location: "West US",
+      defaultHostName: "myHostName",
+      enabledHostNames: [
+        "myHostName"
+      ]
     };
+  }
+
+  public static createTestFunction(name: string = "TestFunction") {
+    return {
+      properties: {
+        name,
+        config: {
+          bindings: MockFactory.createTestBindings()
+        }
+      }
+    }
+  }
+
+  public static createTestBindings(bindingCount = 3) {
+    const bindings = [];
+    for (let i = 0; i < bindingCount; i++) {
+      bindings.push(MockFactory.createTestBinding());
+    }
+    return bindings;
+  }
+
+  public static createTestBinding() {
+    // Only supporting HTTP for now, could support others
+    return MockFactory.createTestHttpBinding();
+  }
+
+  public static createTestHttpBinding() {
+    return {
+      type: "httpTrigger",
+      authLevel: "anonymous",
+      direction: "in",
+      methods: [
+        "get",
+        "post"
+      ]
+    }
   }
 
   public static createTestSlsFunctionConfig() {

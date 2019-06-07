@@ -26,6 +26,10 @@ export abstract class BaseService {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
+
+  protected log(message: string) {
+    this.serverless.cli.log(message);
+  }
   
   protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
