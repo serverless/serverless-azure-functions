@@ -1,16 +1,15 @@
+import { ApiContract, ApiManagementServiceResource } from "@azure/arm-apimanagement/esm/models";
+import { Site } from "@azure/arm-appservice/esm/models";
+import { HttpHeaders, HttpOperationResponse, HttpResponse, WebResource } from "@azure/ms-rest-js";
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
-import { AzureServiceProvider, FunctionApp, FunctionMetadata, Logger, 
-  ServerlessYml, ServicePrincipalEnvVariables } from "../models";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from "@azure/ms-rest-js";
-import { AxiosResponse, AxiosRequestConfig } from "axios";
-import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
-import { Site } from "@azure/arm-appservice/esm/models";
-import { ApiManagementServiceResource, ApiContract } from "@azure/arm-apimanagement/esm/models";
+import { AzureServiceProvider, FunctionMetadata, Logger, ServerlessYml, ServicePrincipalEnvVariables } from "../models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {

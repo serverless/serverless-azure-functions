@@ -1,16 +1,14 @@
-import mockFs from "mock-fs"
-import { MockFactory } from "../test/mockFactory";
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
+import mockFs from "mock-fs";
 import Serverless from "serverless";
+import { constants } from "../config";
+import { MockFactory } from "../test/mockFactory";
 import { FunctionAppService } from "./functionAppService";
-import { constants } from "../config"
-
-jest.mock("@azure/arm-resources")
 
 jest.mock("@azure/arm-appservice")
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-
-import axios from "axios";
-import MockAdapter from "axios-mock-adapter";
+jest.mock("@azure/arm-resources")
 
 describe("Function App Service", () => {
   
