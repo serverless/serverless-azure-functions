@@ -1,4 +1,4 @@
-import { writeFileSync, existsSync, mkdirSync, mkdir } from "fs";
+import { writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import Serverless from "serverless";
 import { FunctionMetadata } from "./utils";
