@@ -11,7 +11,6 @@ describe("Azure Package Plugin", () => {
   it("sets up provider configuration", async () => {
     const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
     const sls = MockFactory.createTestServerless();
-    Object.assign(sls.service, MockFactory.createTestService(slsFunctionConfig));
 
     const functionConfig = Object.keys(slsFunctionConfig).map((funcName) => {
       return {
