@@ -14,7 +14,7 @@
     "test": "jest",
     "test:ci": "npm run test -- --ci",
     "test:coverage": "npm run test -- --coverage",
-    "prebuild": "shx rm lib/ -rf",
+    "prebuild": "shx rm -rf lib/ ",
     "build": "tsc"
   },
   "repository": {
