@@ -28,6 +28,7 @@ export class MockFactory {
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.service.getFunction = jest.fn((functionName) => sls.service["functions"][functionName]);
     return sls;
   }
 
@@ -144,34 +145,43 @@ export class MockFactory {
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestFunctionsMetadata(functionCount = 2): any {
+  public static createTestFunctionsMetadata(functionCount = 2) {
     const data = {}
     for (let i = 0; i < functionCount; i++) {
       const functionName = `function${i + 1}`;
-      data[functionName] = MockFactory.createTestFunctionMetadata()
+      data[functionName] = MockFactory.createTestFunctionMetadata(functionName, `src/handlers/${functionName}.handler`);
     }
     return data;
   }
 
-  public static createTestFunctionMetadata(): FunctionMetadata {
+  public static createTestFunctionMetadata(name: string, handler: string) {
     return {
-      "handler": "index.handler",
-      "events": [
+      handler,
+      apim: {
+        operations: [
+          {
+            method: "get",
+            urlTemplate: name,
+            displayName: name,
+          },
+        ],
+      },
+      events: [
         {
-          "http": true,
+          http: true,
           "x-azure-settings": {
-            "authLevel": "anonymous"
+            authLevel: "anonymous"
           }
         },
         {
-          "http": true,
+          http: true,
           "x-azure-settings": {
-            "direction": "out",
-            "name": "res"
-          }
+            direction: "out",
+            name: "res"
+          },
         }
       ]
-    }
+    };
   }
 
   public static createTestService(functions?): Service {
@@ -287,30 +297,8 @@ export class MockFactory {
 
   public static createTestSlsFunctionConfig() {
     return {
-      hello: {
-        handler: "index.handler",
-        apim: {
-          operations: [
-            {
-              method: "get",
-              urlTemplate: "hello",
-              displayName: "Hello",
-            },
-          ],
-        },
-      },
-      goodbye: {
-        handler: "index.handler",
-        apim: {
-          operations: [
-            {
-              method: "get",
-              urlTemplate: "goodbye",
-              displayName: "Goodbye",
-            },
-          ],
-        },
-      },
+      hello: MockFactory.createTestFunctionMetadata("hello", "src/handlers/hello.handler"),
+      goodbye: MockFactory.createTestFunctionMetadata("goodbye", "src/handlers/goodbye.handler"),
     };
   }
 
