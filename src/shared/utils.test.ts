@@ -1,4 +1,5 @@
 import Serverless from "serverless";
+import path from "path";
 import { MockFactory } from "../test/mockFactory";
 import { Utils, FunctionMetadata } from "./utils";
 
@@ -24,7 +25,7 @@ describe("utils", () => {
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "..\\src\\handlers\\hello.js",
+      handlerPath: path.normalize("../src/handlers/hello.js"),
       params: expect.anything(),
     };
 
@@ -39,7 +40,7 @@ describe("utils", () => {
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "index.js",
+      handlerPath: path.normalize("index.js"),
       params: expect.anything(),
     };
 
@@ -54,7 +55,7 @@ describe("utils", () => {
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "..\\hello.js",
+      handlerPath: path.normalize("../hello.js"),
       params: expect.anything(),
     };
 

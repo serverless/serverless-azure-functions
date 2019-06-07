@@ -1,5 +1,5 @@
 import Serverless from "serverless";
-import { relative } from "path";
+import { relative, normalize } from "path";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 
