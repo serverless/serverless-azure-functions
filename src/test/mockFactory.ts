@@ -1,5 +1,5 @@
 import { ApiContract, ApiManagementServiceResource } from "@azure/arm-apimanagement/esm/models";
-import { Site } from "@azure/arm-appservice/esm/models";
+import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { HttpHeaders, HttpOperationResponse, HttpResponse, WebResource } from "@azure/ms-rest-js";
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
@@ -174,10 +174,7 @@ export class MockFactory {
 
   public static createTestService(functions?): Service {
     if (!functions) {
-      functions = {};
-      for (const func of MockFactory.createTestFunctions()) {
-        functions[func.properties.name] = func
-      }
+      functions = MockFactory.createTestSlsFunctionConfig()
     }
     const serviceName = "serviceName";
     return {
@@ -200,12 +197,13 @@ export class MockFactory {
     } as any as Service;
   }
 
-  public static createTestFunctions(functionCount = 3) {
-    const functions = []
-    for (let i = 0; i < functionCount; i++) {
-      functions.push(MockFactory.createTestFunction(`function${i + 1}`));
+  public static createTestFunctionsResponse(functions?) {
+    const result = []
+    functions = functions || MockFactory.createTestSlsFunctionConfig();
+    for (const name of Object.keys(functions)) {
+      result.push({ properties: MockFactory.createTestFunctionEnvelope(name)});
     }
-    return functions;
+    return result;
   }
 
   public static createTestAzureServiceProvider(): AzureServiceProvider {
@@ -251,13 +249,11 @@ export class MockFactory {
     };
   }
 
-  public static createTestFunction(name: string = "TestFunction") {
+  public static createTestFunctionEnvelope(name: string = "TestFunction"): FunctionEnvelope {
     return {
-      properties: {
-        name,
-        config: {
-          bindings: MockFactory.createTestBindings()
-        }
+      name,
+      config: {
+        bindings: MockFactory.createTestBindings()
       }
     }
   }

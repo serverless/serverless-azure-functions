@@ -22,7 +22,8 @@ describe("Function App Service", () => {
   const authKey = "authKey";
   const syncTriggersMessage = "sync triggers success";
   const deleteFunctionMessage = "delete function success";
-  const functions = MockFactory.createTestFunctions();
+  const functions = MockFactory.createTestSlsFunctionConfig();
+  const functionsResponse = MockFactory.createTestFunctionsResponse(functions);
 
   const baseUrl = "https://management.azure.com"
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
@@ -43,11 +44,10 @@ describe("Function App Service", () => {
     // Sync Triggers
     axiosMock.onPost(syncTriggersUrl).reply(200, syncTriggersMessage);
     // List Functions
-    axiosMock.onGet(listFunctionsUrl).reply(200, { value: functions });
+    axiosMock.onGet(listFunctionsUrl).reply(200, { value: functionsResponse });
     // Delete Function
     for (const funcName of Object.keys(functions)) {
-      const func = functions[funcName];
-      axiosMock.onDelete(`${baseUrl}${app.id}/functions/${func.properties.name}?api-version=2016-08-01`)
+      axiosMock.onDelete(`${baseUrl}${app.id}/functions/${funcName}?api-version=2016-08-01`)
         .reply(200, deleteFunctionMessage);
     }
 
@@ -112,7 +112,7 @@ describe("Function App Service", () => {
 
   it("deletes function", async () => {
     const service = createService();
-    const response = await service.deleteFunction(app, functionName);
+    const response = await service.deleteFunction(app, Object.keys(functions)[0]);
     expect(response.data).toEqual(deleteFunctionMessage);
     
   });
@@ -124,24 +124,21 @@ describe("Function App Service", () => {
   });
 
   it("cleans up", async () => {
-    const sls = MockFactory.createTestServerless({
-      service: slsService,
-      variables: variables,
-    });
+    const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     const result = await service.cleanUp(app);
     const functionNames = Object.keys(functions);
     expect(result).toHaveLength(functionNames.length);
     const logCalls = (sls.cli.log as any).mock.calls as any[];
     for (let i = 0; i < functionNames.length; i++) {
-      const functionName = `function${i+1}`
+      const functionName = functionNames[i];
       expect(logCalls[i + 1][0]).toEqual(`-> Deleting function: ${functionName}`);
     }
   });
 
   it("lists functions", async () => {
     const service = createService();
-    expect(await service.listFunctions(app)).toEqual(functions.map((f) => f.properties));
+    expect(await service.listFunctions(app)).toEqual(functionsResponse.map((f) => f.properties));
   });
 
   it("uploads functions", async () => {
