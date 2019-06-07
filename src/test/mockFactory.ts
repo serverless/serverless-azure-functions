@@ -9,7 +9,9 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { AzureServiceProvider, FunctionMetadata, Logger, ServerlessYml, ServicePrincipalEnvVariables } from "../models";
+import { ServerlessAzureConfig } from "../models/serverless";
+import { FunctionMetadata, AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
+import { Logger } from "../models/generic";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -128,7 +130,7 @@ export class MockFactory {
     return Promise.resolve(response);
   }
 
-  public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessYml {
+  public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessAzureConfig {
     const data = {
       "provider": {
         "name": "azure",

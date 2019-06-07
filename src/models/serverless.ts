@@ -1,4 +1,4 @@
-export interface ServerlessYml {
+export interface ServerlessAzureConfig {
   provider: {
     name: string;
     location: string;
