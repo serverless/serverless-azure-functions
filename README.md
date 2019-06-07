@@ -96,6 +96,15 @@ Please create issues in this repo for any problems or questions you find. Before
 
 We're still in the process of getting everying running 100%, but please refer to the [Serverless contributing guidlines](https://github.com/serverless/serverless/blob/master/CONTRIBUTING.md) for information on how to contribute and code of conduct.
 
+#### Local dev
+
+1. Clone this repository to your local machine
+2. Navigate to the cloned folder
+3. Run `npm install`
+4. Run `npm run-script build`
+5. Navigate to a folder where you created a new Serverless project, and run `npm link {path to serverless-azure-functions folder}`
+6. The npm modules should now contain your local version of this plugin.
+
 ## License
 
 [MIT](LICENSE)
