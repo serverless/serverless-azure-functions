@@ -10,8 +10,9 @@ jest.mock("../../shared/utils");
 import { Utils } from "../../shared/utils";
 
 describe("Azure Package Plugin", () => {
-  afterAll(() => {
+  afterEach(() => {
     mockFs.restore();
+    jest.resetAllMocks();
   });
 
   it("sets up provider configuration", async () => {
@@ -66,5 +67,36 @@ describe("Azure Package Plugin", () => {
 
     expect(unlinkSpy).toBeCalledTimes(functionNames.length);
     expect(rmdirSpy).toBeCalledTimes(functionNames.length);
+  });
+
+  it("cleans up function.json but does not delete function folder", async () => {
+    const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
+    const sls = MockFactory.createTestServerless();
+    Object.assign(sls.service, {
+      functions: slsFunctionConfig
+    });
+
+    const fsConfig = {};
+
+    const functionNames = sls.service.getAllFunctions();
+    functionNames.forEach((functionName) => {
+      fsConfig[functionName] = {
+        "function.json": "contents",
+        "index.js": "contents",
+      };
+    });
+
+    mockFs(fsConfig, { createCwd: true });
+
+    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
+
+    const options = MockFactory.createTestServerlessOptions();
+    const plugin = new AzurePackage(sls, options);
+
+    await invokeHook(plugin, "package:finalize");
+
+    expect(unlinkSpy).toBeCalledTimes(functionNames.length);
+    expect(rmdirSpy).not.toBeCalled();
   });
 });

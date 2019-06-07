@@ -133,14 +133,14 @@ export class MockFactory {
 
   public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessAzureConfig {
     const data = {
-      "provider": {
-        "name": "azure",
-        "location": "West US 2"
+      provider: {
+        name: "azure",
+        location: "West US 2"
       },
-      "plugins": [
+      plugins: [
         "serverless-azure-functions"
       ],
-      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2),
+      functions: functionMetadata || MockFactory.createTestFunctionsMetadata(2),
     }
     return (asYaml) ? yaml.dump(data) : data;
   }
@@ -149,14 +149,13 @@ export class MockFactory {
     const data = {}
     for (let i = 0; i < functionCount; i++) {
       const functionName = `function${i + 1}`;
-      data[functionName] = MockFactory.createTestFunctionMetadata(functionName, `src/handlers/${functionName}.handler`);
+      data[functionName] = MockFactory.createTestFunctionMetadata(functionName);
     }
     return data;
   }
 
-  public static createTestFunctionMetadata(name: string, handler: string) {
+  public static createTestFunctionApimConfig(name: string) {
     return {
-      handler,
       apim: {
         operations: [
           {
@@ -166,6 +165,12 @@ export class MockFactory {
           },
         ],
       },
+    };
+  }
+
+  public static createTestFunctionMetadata(name: string) {
+    return {
+      handler: `src/handlers/${name}.handler`,
       events: [
         {
           http: true,
@@ -297,8 +302,14 @@ export class MockFactory {
 
   public static createTestSlsFunctionConfig() {
     return {
-      hello: MockFactory.createTestFunctionMetadata("hello", "src/handlers/hello.handler"),
-      goodbye: MockFactory.createTestFunctionMetadata("goodbye", "src/handlers/goodbye.handler"),
+      hello: {
+        ...MockFactory.createTestFunctionMetadata("hello"),
+        ...MockFactory.createTestFunctionApimConfig("hello"),
+      },
+      goodbye: {
+        ...MockFactory.createTestFunctionMetadata("goodbye"),
+        ...MockFactory.createTestFunctionApimConfig("goodbye"),
+      },
     };
   }
 
@@ -343,6 +354,25 @@ export class MockFactory {
       writeFileDir: jest.fn(),
       writeFileSync: jest.fn(),
     };
+  }
+
+  /**
+   * Create a mock "request" module factory used to mock request objects that support piping
+   * @param response The expected HTTP response
+   */
+  public static createTestMockRequestFactory(response: any = {}) {
+    return jest.fn((options, callback) => {
+      setImmediate(() => callback(null, response));
+
+      // Required interface for .pipe()
+      return {
+        on: jest.fn(),
+        once: jest.fn(),
+        emit: jest.fn(),
+        write: jest.fn(),
+        end: jest.fn(),
+      };
+    });
   }
 
   private static createTestCli(): Logger {
