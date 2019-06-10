@@ -73,7 +73,7 @@ describe("Bindings", () => {
 
     await BindingUtils.createEventsBindings(sls.config.servicePath, functionName, functionMetadata);
 
-    expect(mkdirSpy).not.toBeCalled();
+    expect(mkdirSpy).not.toBeCalledWith(expectedFolderPath);
     expect(writeFileSpy).toBeCalledWith(expectedFilePath, expect.any(String));
   });
 });
