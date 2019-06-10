@@ -27,7 +27,7 @@ describe("Azure Func Plugin", () => {
           "function.json": "contents",
         },
         "serverless.yml": MockFactory.createTestServerlessYml(true),
-      }, { createCwd: true, createTmp: true })
+      });
     });
 
     afterAll(() => {
@@ -87,7 +87,7 @@ describe("Azure Func Plugin", () => {
           "index.js": "contents",
           "function.json": "contents",
         },
-      }, { createCwd: true, createTmp: true });
+      });
     });
 
     afterAll(() => {

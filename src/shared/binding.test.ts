@@ -38,7 +38,7 @@ describe("Bindings", () => {
     const expectedFolderPath = path.join(sls.config.servicePath, functionName);
     const expectedFilePath = path.join(expectedFolderPath, "function.json");
 
-    mockFs({}, { createCwd: true });
+    mockFs({});
 
     const mkdirSpy = jest.spyOn(fs, "mkdirSync");
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
@@ -66,7 +66,11 @@ describe("Bindings", () => {
       "helloWorld": {
         "index.js": "contents",
       },
-    }, { createCwd: true });
+    });
+
+    fs.existsSync = jest.fn((folderPath: string) => {
+      return folderPath.indexOf(expectedFolderPath) > -1 ? true : false;
+    });
 
     const mkdirSpy = jest.spyOn(fs, "mkdirSync");
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");

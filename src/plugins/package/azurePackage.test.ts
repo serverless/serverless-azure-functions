@@ -58,7 +58,7 @@ describe("Azure Package Plugin", () => {
       };
     });
 
-    mockFs(fsConfig, { createCwd: true });
+    mockFs(fsConfig);
 
     const unlinkSpy = jest.spyOn(fs, "unlinkSync");
     const rmdirSpy = jest.spyOn(fs, "rmdirSync");
@@ -89,7 +89,7 @@ describe("Azure Package Plugin", () => {
       };
     });
 
-    mockFs(fsConfig, { createCwd: true });
+    mockFs(fsConfig);
 
     const unlinkSpy = jest.spyOn(fs, "unlinkSync");
     const rmdirSpy = jest.spyOn(fs, "rmdirSync");

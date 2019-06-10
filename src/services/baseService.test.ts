@@ -99,7 +99,7 @@ describe("Base Service", () => {
       ".serverless": {
         "project.zip": "contents",
       },
-    }, { createCwd: true });
+    });
 
     const readStreamSpy = jest.spyOn(fs, "createReadStream");
 
