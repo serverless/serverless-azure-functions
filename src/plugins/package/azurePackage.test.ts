@@ -10,9 +10,12 @@ jest.mock("../../shared/utils");
 import { Utils } from "../../shared/utils";
 
 describe("Azure Package Plugin", () => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+  });
+
   afterEach(() => {
     mockFs.restore();
-    jest.resetAllMocks();
   });
 
   it("sets up provider configuration", async () => {

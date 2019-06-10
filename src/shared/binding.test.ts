@@ -11,10 +11,10 @@ describe("Bindings", () => {
 
   afterEach(() => {
     mockFs.restore();
-    jest.resetAllMocks();
   });
 
   beforeEach(() => {
+    jest.resetAllMocks();
     sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
   });
