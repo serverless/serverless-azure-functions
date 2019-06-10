@@ -55,7 +55,7 @@ module.exports.handler = async function (context, req) {
       handler: "index.handler",
       events: FuncPluginUtils.httpEvents()
     }
-  }  
+  }
 
   private static httpEvents() {
     return [
@@ -73,5 +73,5 @@ module.exports.handler = async function (context, req) {
         }
       },
     ]
-  } 
+  }
 }

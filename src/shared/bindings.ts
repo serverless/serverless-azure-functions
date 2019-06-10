@@ -1,8 +1,7 @@
-import { writeFileSync } from "fs";
 import { join } from "path";
 import Serverless from "serverless";
-import { FunctionMetadata } from "./utils";
 import { constants } from "./constants";
+import { FunctionMetadata } from "./utils";
 
 const bindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -37,11 +36,14 @@ export class BindingUtils {
     };
   }
 
-  public static createEventsBindings(servicePath: string, functionName: string, functionMetadata: FunctionMetadata): Promise<any> {
+  public static createEventsBindings(serverless: Serverless, functionName: string, functionMetadata: FunctionMetadata): Promise<any> {
     const functionJSON = functionMetadata.params.functionsJson;
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
-    writeFileSync(join(servicePath, functionName, "function.json"), JSON.stringify(functionJSON, null, 4));
+    serverless.utils.writeFileSync(
+      join(serverless.config.servicePath, functionName, "function.json"),
+      JSON.stringify(functionJSON, null, 4)
+    );
     return Promise.resolve();
   }
 

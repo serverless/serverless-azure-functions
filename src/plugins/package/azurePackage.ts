@@ -21,7 +21,7 @@ export class AzurePackage {
       .map((functionName) => {
         const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
 
-        return BindingUtils.createEventsBindings(this.serverless.config.servicePath, functionName, metaData);
+        return BindingUtils.createEventsBindings(this.serverless, functionName, metaData);
       });
 
     return Promise.all(createEventsPromises);

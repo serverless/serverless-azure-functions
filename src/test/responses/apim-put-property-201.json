@@ -1,0 +1,11 @@
+{
+  "id": "/subscriptions/d36d0808-a967-4f73-9fdc-32ea232fc81d/resourceGroups/${resourceGroup.name}/providers/Microsoft.ApiManagement/service/wabrez-711-westus-apim/properties/prop1",
+  "type": "Microsoft.ApiManagement/service/properties",
+  "name": "${resource.name}",
+  "properties": {
+    "displayName": "${resource.displayName}",
+    "value": "${resource.value}",
+    "tags": null,
+    "secret": "${resource.secret}"
+  }
+}
