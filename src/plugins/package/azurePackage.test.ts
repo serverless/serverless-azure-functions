@@ -31,7 +31,7 @@ describe("Azure Package Plugin", () => {
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzurePackage(sls, options);
 
-    await invokeHook(plugin, "package:setupProviderConfiguration");
+    await invokeHook(plugin, "before:package:setupProviderConfiguration");
 
     expect(sls.cli.log).toBeCalledWith("Building Azure Events Hooks");
     expect(Utils.getFunctionMetaData).toBeCalledWith(functionConfig[0].name, sls);
@@ -62,7 +62,7 @@ describe("Azure Package Plugin", () => {
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzurePackage(sls, options);
 
-    await invokeHook(plugin, "package:finalize");
+    await invokeHook(plugin, "after:package:finalize");
 
     expect(unlinkSpy).toBeCalledTimes(functionNames.length);
     expect(rmdirSpy).toBeCalledTimes(functionNames.length);
@@ -96,7 +96,7 @@ describe("Azure Package Plugin", () => {
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzurePackage(sls, options);
 
-    await invokeHook(plugin, "package:finalize");
+    await invokeHook(plugin, "after:package:finalize");
 
     expect(unlinkSpy).toBeCalledTimes(functionNames.length);
     expect(rmdirSpy).not.toBeCalled();
