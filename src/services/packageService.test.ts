@@ -12,7 +12,7 @@ describe("Package Service", () => {
 
   beforeEach(() => {
     const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
-    const sls = MockFactory.createTestServerless();
+    sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
 
     Object.assign(sls.service, {
