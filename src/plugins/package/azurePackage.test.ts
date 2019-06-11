@@ -10,10 +10,6 @@ jest.mock("../../shared/utils");
 import { Utils } from "../../shared/utils";
 
 describe("Azure Package Plugin", () => {
-  beforeEach(() => {
-    jest.resetAllMocks();
-  });
-
   afterEach(() => {
     mockFs.restore();
   });
@@ -70,6 +66,9 @@ describe("Azure Package Plugin", () => {
 
     expect(unlinkSpy).toBeCalledTimes(functionNames.length);
     expect(rmdirSpy).toBeCalledTimes(functionNames.length);
+
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
   });
 
   it("cleans up function.json but does not delete function folder", async () => {
@@ -101,5 +100,8 @@ describe("Azure Package Plugin", () => {
 
     expect(unlinkSpy).toBeCalledTimes(functionNames.length);
     expect(rmdirSpy).not.toBeCalled();
+
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
   });
 });

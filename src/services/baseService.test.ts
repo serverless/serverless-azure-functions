@@ -119,5 +119,7 @@ describe("Base Service", () => {
 
     expect(readStreamSpy).toBeCalledWith(filePath);
     expect(request).toBeCalledWith(requestOptions, expect.anything());
+
+    readStreamSpy.mockRestore();
   });
 });

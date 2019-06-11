@@ -14,7 +14,6 @@ describe("Bindings", () => {
   });
 
   beforeEach(() => {
-    jest.resetAllMocks();
     sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
   });
@@ -47,6 +46,9 @@ describe("Bindings", () => {
 
     expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
     expect(writeFileSpy).toBeCalledWith(expectedFilePath, expect.any(String));
+
+    mkdirSpy.mockRestore();
+    writeFileSpy.mockRestore();
   });
 
   it("does not need to create directory if function folder already exists", async () => {
@@ -68,10 +70,7 @@ describe("Bindings", () => {
       },
     });
 
-    fs.existsSync = jest.fn((folderPath: string) => {
-      return folderPath.indexOf(expectedFolderPath) > -1 ? true : false;
-    });
-
+    sls.utils.dirExistsSync = jest.fn(() => true);
     const mkdirSpy = jest.spyOn(fs, "mkdirSync");
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
 
@@ -79,5 +78,8 @@ describe("Bindings", () => {
 
     expect(mkdirSpy).not.toBeCalledWith(expectedFolderPath);
     expect(writeFileSpy).toBeCalledWith(expectedFilePath, expect.any(String));
+
+    mkdirSpy.mockRestore();
+    writeFileSpy.mockRestore();
   });
 });

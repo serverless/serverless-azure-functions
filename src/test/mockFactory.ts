@@ -337,8 +337,8 @@ export class MockFactory {
     return {
       appendFileSync: jest.fn(),
       copyDirContentsSync: jest.fn(),
-      dirExistsSync: jest.fn(),
-      fileExistsSync: jest.fn(),
+      dirExistsSync: jest.fn(() => false),
+      fileExistsSync: jest.fn(() => false),
       findServicePath: jest.fn(),
       generateShortId: jest.fn(),
       getVersion: jest.fn(),

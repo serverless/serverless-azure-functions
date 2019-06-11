@@ -76,6 +76,8 @@ describe("Azure Func Plugin", () => {
 
       expect(writeFileCalls[2][0]).toBe("serverless.yml");
       expect(writeFileCalls[2][1]).toBe(MockFactory.createTestServerlessYml(true, expectedFunctionsYml));
+
+      mkdirSpy.mockRestore();
     });
   });
 

@@ -1,4 +1,4 @@
-import { writeFileSync, existsSync, mkdirSync } from "fs";
+import fs from "fs";
 import { join } from "path";
 import Serverless from "serverless";
 import { FunctionMetadata } from "./utils";
@@ -42,12 +42,12 @@ export class BindingUtils {
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
 
-    const functionDirPath = join(servicePath, functionName);
-    if (!existsSync(functionDirPath)) {
-      mkdirSync(functionDirPath);
+    const functionDirPath = join(servicePath, functionName);    
+    if (!fs.existsSync(functionDirPath)) {
+      fs.mkdirSync(functionDirPath);
     }
 
-    writeFileSync(join(functionDirPath, "function.json"), JSON.stringify(functionJSON, null, 2));
+    fs.writeFileSync(join(functionDirPath, "function.json"), JSON.stringify(functionJSON, null, 2));
 
     return Promise.resolve();
   }
