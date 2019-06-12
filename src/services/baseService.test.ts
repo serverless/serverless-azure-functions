@@ -1,8 +1,12 @@
 import Serverless from "serverless";
-import { BaseService } from "./baseService";
-import { MockFactory } from "../test/mockFactory";
 jest.mock("axios", () => jest.fn());
 import axios from "axios";
+import mockFs from "mock-fs";
+import { MockFactory } from "../test/mockFactory";
+jest.mock("request", () => MockFactory.createTestMockRequestFactory());
+import request from "request";
+import fs from "fs";
+import { BaseService } from "./baseService";
 
 class TestService extends BaseService {
   public constructor(serverless: Serverless, options?: Serverless.Options) {
@@ -40,6 +44,10 @@ describe("Base Service", () => {
       deploymentName: "My-Deployment",
     },
   };
+
+  afterAll(() => {
+    mockFs.restore();
+  });
 
   beforeEach(() => {
     sls = MockFactory.createTestServerless();
@@ -84,5 +92,34 @@ describe("Base Service", () => {
       method,
       headers: expectedHeaders,
     });
-  })
+  });
+
+  it("POST a file to a HTTP endpoint", async () => {
+    mockFs({
+      ".serverless": {
+        "project.zip": "contents",
+      },
+    });
+
+    const readStreamSpy = jest.spyOn(fs, "createReadStream");
+
+    const filePath = ".serverless/project.zip";
+    const requestOptions = {
+      method: "POST",
+      uri: "https://myCustomSite.scm.azurewebsites.net/api/zipdeploy/",
+      json: true,
+      headers: {
+        Authorization: "Bearer ABC123",
+        Accept: "*/*",
+        ContentType: "application/octet-stream",
+      }
+    };
+
+    await service.postFile(requestOptions, filePath);
+
+    expect(readStreamSpy).toBeCalledWith(filePath);
+    expect(request).toBeCalledWith(requestOptions, expect.anything());
+
+    readStreamSpy.mockRestore();
+  });
 });

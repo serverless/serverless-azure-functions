@@ -10,7 +10,7 @@ import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { ServerlessAzureConfig } from "../models/serverless";
-import { FunctionMetadata, AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
+import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
@@ -28,6 +28,7 @@ export class MockFactory {
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.service.getFunction = jest.fn((functionName) => sls.service["functions"][functionName]);
     return sls;
   }
 
@@ -132,46 +133,60 @@ export class MockFactory {
 
   public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessAzureConfig {
     const data = {
-      "provider": {
-        "name": "azure",
-        "location": "West US 2"
+      provider: {
+        name: "azure",
+        location: "West US 2"
       },
-      "plugins": [
+      plugins: [
         "serverless-azure-functions"
       ],
-      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2),
+      functions: functionMetadata || MockFactory.createTestFunctionsMetadata(2),
     }
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestFunctionsMetadata(functionCount = 2): any {
+  public static createTestFunctionsMetadata(functionCount = 2) {
     const data = {}
     for (let i = 0; i < functionCount; i++) {
       const functionName = `function${i + 1}`;
-      data[functionName] = MockFactory.createTestFunctionMetadata()
+      data[functionName] = MockFactory.createTestFunctionMetadata(functionName);
     }
     return data;
   }
 
-  public static createTestFunctionMetadata(): FunctionMetadata {
+  public static createTestFunctionApimConfig(name: string) {
     return {
-      "handler": "index.handler",
-      "events": [
+      apim: {
+        operations: [
+          {
+            method: "get",
+            urlTemplate: name,
+            displayName: name,
+          },
+        ],
+      },
+    };
+  }
+
+  public static createTestFunctionMetadata(name: string) {
+    return {
+      handler: `src/handlers/${name}.handler`,
+      events: [
         {
-          "http": true,
+          http: true,
           "x-azure-settings": {
-            "authLevel": "anonymous"
+            authLevel: "anonymous"
           }
         },
         {
-          "http": true,
+          http: true,
           "x-azure-settings": {
-            "direction": "out",
-            "name": "res"
-          }
+            direction: "out",
+            name: "res"
+          },
         }
       ]
-    }
+    };
   }
 
   public static createTestService(functions?): Service {
@@ -288,28 +303,12 @@ export class MockFactory {
   public static createTestSlsFunctionConfig() {
     return {
       hello: {
-        handler: "index.handler",
-        apim: {
-          operations: [
-            {
-              method: "get",
-              urlTemplate: "hello",
-              displayName: "Hello",
-            },
-          ],
-        },
+        ...MockFactory.createTestFunctionMetadata("hello"),
+        ...MockFactory.createTestFunctionApimConfig("hello"),
       },
       goodbye: {
-        handler: "index.handler",
-        apim: {
-          operations: [
-            {
-              method: "get",
-              urlTemplate: "goodbye",
-              displayName: "Goodbye",
-            },
-          ],
-        },
+        ...MockFactory.createTestFunctionMetadata("goodbye"),
+        ...MockFactory.createTestFunctionApimConfig("goodbye"),
       },
     };
   }
@@ -338,8 +337,8 @@ export class MockFactory {
     return {
       appendFileSync: jest.fn(),
       copyDirContentsSync: jest.fn(),
-      dirExistsSync: jest.fn(),
-      fileExistsSync: jest.fn(),
+      dirExistsSync: jest.fn(() => false),
+      fileExistsSync: jest.fn(() => false),
       findServicePath: jest.fn(),
       generateShortId: jest.fn(),
       getVersion: jest.fn(),
@@ -355,6 +354,25 @@ export class MockFactory {
       writeFileDir: jest.fn(),
       writeFileSync: jest.fn(),
     };
+  }
+
+  /**
+   * Create a mock "request" module factory used to mock request objects that support piping
+   * @param response The expected HTTP response
+   */
+  public static createTestMockRequestFactory(response: any = {}) {
+    return jest.fn((options, callback) => {
+      setImmediate(() => callback(null, response));
+
+      // Required interface for .pipe()
+      return {
+        on: jest.fn(),
+        once: jest.fn(),
+        emit: jest.fn(),
+        write: jest.fn(),
+        end: jest.fn(),
+      };
+    });
   }
 
   private static createTestCli(): Logger {
