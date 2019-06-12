@@ -1,7 +1,6 @@
 import Serverless from "serverless";
 import _ from "lodash";
 import { MockFactory } from "../test/mockFactory";
-import Service from "serverless/classes/Service";
 import { ApiManagementConfig } from "../models/apiManagement";
 import { ApimService } from "./apimService";
 import { interpolateJson } from "../test/utils";

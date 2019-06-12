@@ -10,7 +10,7 @@ import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { ServerlessAzureConfig } from "../models/serverless";
-import { FunctionMetadata, AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
+import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {

@@ -16,7 +16,6 @@ describe("Function App Service", () => {
   const slsService = MockFactory.createTestService();
   const variables = MockFactory.createTestVariables();
   const provider = MockFactory.createTestAzureServiceProvider();
-  const functionName = "function1";
 
   const masterKey = "masterKey";
   const authKey = "authKey";
