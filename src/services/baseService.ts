@@ -27,6 +27,10 @@ export abstract class BaseService {
     }
   }
 
+  protected log(message: string) {
+    this.serverless.cli.log(message);
+  }
+  
   protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
       Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
@@ -79,7 +83,7 @@ export abstract class BaseService {
       fs.createReadStream(filePath)
         .pipe(request(requestOptions, (err, response) => {
           if (err) {
-            this.serverless.cli.log(JSON.stringify(err, null, 4));
+            this.log(JSON.stringify(err, null, 4));
             return reject(err);
           }
           resolve(response);
