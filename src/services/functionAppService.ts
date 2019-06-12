@@ -180,10 +180,12 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service["artifact"];
-    this.log(JSON.stringify(this.serverless.service["package"], null, 4));
-    this.log(JSON.stringify(this.serverless.service["functions"], null, 4));
+    let functionZipFile = this.serverless.service["artifact"];
     if (!functionZipFile) {
+      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
+    }
+
+    if (!(functionZipFile && fs.existsSync(functionZipFile))) {
       throw new Error("No zip file found for function app");
     }
 
