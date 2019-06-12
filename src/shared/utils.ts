@@ -1,4 +1,5 @@
 import Serverless from "serverless";
+import { relative } from "path";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 
@@ -9,7 +10,7 @@ export interface FunctionMetadata {
 }
 
 export class Utils {
-  public static getFunctionMetaData(functionName: string, serverless): FunctionMetadata {
+  public static getFunctionMetaData(functionName: string, serverless: Serverless): FunctionMetadata {
     const bindings = [];
     let bindingSettingsNames = [];
     let bindingSettings = [];
@@ -18,7 +19,7 @@ export class Utils {
     const functionsJson = { disabled: false, bindings: [] };
     const functionObject = serverless.service.getFunction(functionName);
     const handler = functionObject.handler;
-    const events = functionObject.events;
+    const events = functionObject["events"];
     const params: any = {
       functionJson: null
     };
@@ -29,7 +30,7 @@ export class Utils {
     const bindingDisplayNames = parsedBindings.bindingDisplayNames;
 
     for (let eventsIndex = 0; eventsIndex < events.length; eventsIndex++) {
-      bindingType = Object.keys(functionObject.events[eventsIndex])[0];
+      bindingType = Object.keys(functionObject["events"][eventsIndex])[0];
 
       if (eventsIndex === 0) {
         bindingType += constants.trigger;
@@ -51,8 +52,8 @@ export class Utils {
       bindingTypeIndex = bindingUserSettingsMetaData.index;
       bindingUserSettings = bindingUserSettingsMetaData.userSettings;
 
-      if (bindingType.includes(constants.queue) && functionObject.events[eventsIndex].queue) {
-        bindingUserSettings[constants.queueName] = functionObject.events[eventsIndex].queue;
+      if (bindingType.includes(constants.queue) && functionObject["events"][eventsIndex].queue) {
+        bindingUserSettings[constants.queueName] = functionObject["events"][eventsIndex].queue;
       }
 
       if (bindingTypeIndex < 0) {
@@ -83,16 +84,15 @@ export class Utils {
     params.functionsJson = functionsJson;
 
     const entryPointAndHandlerPath = Utils.getEntryPointAndHandlerPath(handler);
-    if (functionObject.scriptFile) {
-      entryPointAndHandlerPath.handlerPath = functionObject.scriptFile;
+    if (functionObject["scriptFile"]) {
+      entryPointAndHandlerPath.handlerPath = functionObject["scriptFile"];
     }
-    const metaData = {
-      entryPoint: entryPointAndHandlerPath[constants.entryPoint],
-      handlerPath: entryPointAndHandlerPath.handlerPath,
+
+    return {
+      entryPoint: entryPointAndHandlerPath.entryPoint,
+      handlerPath: relative(functionName, entryPointAndHandlerPath.handlerPath),
       params: params
     };
-
-    return metaData;
   }
 
   public static getEntryPointAndHandlerPath(handler) {
