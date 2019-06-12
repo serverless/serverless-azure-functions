@@ -115,16 +115,6 @@ If any of your commits are not signed, your pull request will not be able to be 
 
 When using Windows you may also encounter an error when trying to sign a commit, stating that a security key could not be found. Ensure that you have set the path the gpg in the git config: `git config --global gpg.program "C:\Program Files (x86)\GnuPG\bin\gpg.exe"`
 
-#### Signing commits
-
-All commits in your Pull Request will need to be signed. When looking at the commits in the pull request, you will see a green 'verified' icon next to your commit. Commit signature verification is discussed [here](https://help.github.com/en/articles/about-commit-signature-verification)
-
-Follow the directions [here](https://help.github.com/en/articles/signing-commits) to configure commit signing.
-
-If any of your commits are not signed, your pull request will not be able to be merged into the base branch. You can fix this by squashing any unsigned commits into signed commits using an interactive rebase, and force pushing your new commit history. More detail [here](https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History)
-
-When using Windows you may also encounter an error when trying to sign a commit, stating that a security key could not be found. Ensure that you have set the path the gpg in the git config: `git config --global gpg.program "C:\Program Files (x86)\GnuPG\bin\gpg.exe"`
-
 ## License
 
 [MIT](LICENSE)
