@@ -1,13 +1,17 @@
+import { ApiContract, ApiManagementServiceResource } from "@azure/arm-apimanagement/esm/models";
+import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
+import { HttpHeaders, HttpOperationResponse, HttpResponse, WebResource } from "@azure/ms-rest-js";
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import yaml from "js-yaml";
 import Serverless from "serverless";
+import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { HttpHeaders, WebResource, HttpOperationResponse, HttpResponse } from "@azure/ms-rest-js";
-import { AxiosResponse, AxiosRequestConfig } from "axios";
-import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
-import { Site } from "@azure/arm-appservice/esm/models";
-import { ApiManagementServiceResource, ApiContract } from "@azure/arm-apimanagement/esm/models";
+import { ServerlessAzureConfig } from "../models/serverless";
+import { FunctionMetadata, AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
+import { Logger } from "../models/generic";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -23,13 +27,7 @@ export class MockFactory {
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
-
-    sls.service.getAllFunctions = jest.fn(() => {
-      return Object.keys(sls.service["functions"]);
-    })
-    sls.service.getAllFunctionsNames = sls.service.getAllFunctions;
-    sls.service.getServiceName = jest.fn(() => sls.service["service"]);
-
+    sls.service = getAttribute(config, "service", MockFactory.createTestService());
     return sls;
   }
 
@@ -61,7 +59,8 @@ export class MockFactory {
 
   public static createTestAuthResponse(): AuthResponse {
     return {
-      credentials: "credentials" as any as TokenCredentialsBase,
+      credentials: MockFactory.createTestVariables()
+        .azureCredentials as any as TokenCredentialsBase,
       subscriptions: [
         {
           id: "azureSubId",
@@ -131,7 +130,7 @@ export class MockFactory {
     return Promise.resolve(response);
   }
 
-  public static createTestServerlessYml(asYaml = false, functionMetadata?) {
+  public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessAzureConfig {
     const data = {
       "provider": {
         "name": "azure",
@@ -140,21 +139,21 @@ export class MockFactory {
       "plugins": [
         "serverless-azure-functions"
       ],
-      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2, false),
+      "functions": functionMetadata || MockFactory.createTestFunctionsMetadata(2),
     }
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestFunctionsMetadata(functionCount = 2, wrap = false) {
-    const data = {};
+  public static createTestFunctionsMetadata(functionCount = 2): any {
+    const data = {}
     for (let i = 0; i < functionCount; i++) {
       const functionName = `function${i + 1}`;
       data[functionName] = MockFactory.createTestFunctionMetadata()
     }
-    return (wrap) ? { "functions": data } : data;
+    return data;
   }
 
-  public static createTestFunctionMetadata() {
+  public static createTestFunctionMetadata(): FunctionMetadata {
     return {
       "handler": "index.handler",
       "events": [
@@ -175,33 +174,115 @@ export class MockFactory {
     }
   }
 
-  public static createTestFunctionApp() {
-    return {
-      id: "App Id",
-      name: "App Name",
-      defaultHostName: "My Host Name"
+  public static createTestService(functions?): Service {
+    if (!functions) {
+      functions = MockFactory.createTestSlsFunctionConfig()
     }
+    const serviceName = "serviceName";
+    return {
+      getAllFunctions: jest.fn(() => Object.keys(functions)),
+      getFunction: jest.fn(),
+      getAllEventsInFunction: jest.fn(),
+      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
+      getEventInFunction: jest.fn(),
+      getServiceName: jest.fn(() => serviceName),
+      load: jest.fn(),
+      mergeResourceArrays: jest.fn(),
+      setFunctionNames: jest.fn(),
+      update: jest.fn(),
+      validate: jest.fn(),
+      custom: null,
+      provider: MockFactory.createTestAzureServiceProvider(),
+      service: serviceName,
+      artifact: "app.zip",
+      functions
+    } as any as Service;
   }
 
-  public static createTestAzureServiceProvider() {
+  public static createTestFunctionsResponse(functions?) {
+    const result = []
+    functions = functions || MockFactory.createTestSlsFunctionConfig();
+    for (const name of Object.keys(functions)) {
+      result.push({ properties: MockFactory.createTestFunctionEnvelope(name)});
+    }
+    return result;
+  }
+
+  public static createTestAzureServiceProvider(): AzureServiceProvider {
     return {
       resourceGroup: "myResourceGroup",
       deploymentName: "myDeploymentName",
     }
   }
 
-  public static createTestVariables() {
+  public static createTestServicePrincipalEnvVariables(): ServicePrincipalEnvVariables {
     return {
-      azureCredentials: "credentials",
-      subscriptionId: "subId",
+      azureSubId: "azureSubId",
+      azureServicePrincipalClientId: "azureServicePrincipalClientId",
+      azureServicePrincipalPassword: "azureServicePrincipalPassword",
+      azureServicePrincipalTenantId: "azureServicePrincipalTenantId",
     }
   }
 
+  public static createTestVariables() {
+    return {
+      azureCredentials: {
+        tokenCache: {
+          _entries: [
+            {
+              accessToken: "token"
+            }
+          ]
+        }
+      },
+      subscriptionId: "azureSubId",
+    }
+  }
+  
   public static createTestSite(name: string = "Test"): Site {
     return {
+      id: "appId",
       name: name,
       location: "West US",
+      defaultHostName: "myHostName",
+      enabledHostNames: [
+        "myHostName"
+      ]
     };
+  }
+
+  public static createTestFunctionEnvelope(name: string = "TestFunction"): FunctionEnvelope {
+    return {
+      name,
+      config: {
+        bindings: MockFactory.createTestBindings()
+      }
+    }
+  }
+
+  public static createTestBindings(bindingCount = 3) {
+    const bindings = [];
+    for (let i = 0; i < bindingCount; i++) {
+      bindings.push(MockFactory.createTestBinding());
+    }
+    return bindings;
+  }
+
+  public static createTestBinding() {
+    // Only supporting HTTP for now, could support others
+    return MockFactory.createTestHttpBinding();
+  }
+
+  public static createTestHttpBinding() {
+    return {
+      type: "httpTrigger",
+      authLevel: "anonymous",
+      direction: "in",
+      methods: [
+        "get",
+        "post"
+      ]
+    }
   }
 
   public static createTestSlsFunctionConfig() {
@@ -276,7 +357,7 @@ export class MockFactory {
     };
   }
 
-  private static createTestCli() {
+  private static createTestCli(): Logger {
     return {
       log: jest.fn(),
     };

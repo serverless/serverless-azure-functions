@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import _ from "lodash";
 import { MockFactory } from "../test/mockFactory";
+import Service from "serverless/classes/Service";
 import { ApiManagementConfig } from "../models/apiManagement";
 import { ApimService } from "./apimService";
 import { interpolateJson } from "../test/utils";
@@ -37,6 +38,7 @@ describe("APIM Service", () => {
 
   beforeEach(() => {
     const slsConfig: any = {
+      ...MockFactory.createTestService(MockFactory.createTestSlsFunctionConfig()),
       service: "test-sls",
       provider: {
         name: "azure",
@@ -44,11 +46,11 @@ describe("APIM Service", () => {
         location: "West US",
         apim: apimConfig,
       },
-      functions: MockFactory.createTestSlsFunctionConfig(),
     };
 
-    serverless = MockFactory.createTestServerless();
-    Object.assign(serverless.service, slsConfig);
+    serverless = MockFactory.createTestServerless({
+      service: slsConfig
+    });
 
     serverless.variables = {
       ...serverless.variables,
