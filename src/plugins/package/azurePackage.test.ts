@@ -11,7 +11,6 @@ describe("Azure Package Plugin", () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
-    const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
     sls = MockFactory.createTestServerless();
 
     plugin = new AzurePackage(sls);
