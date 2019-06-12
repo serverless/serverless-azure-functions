@@ -14,7 +14,7 @@
     "test": "jest",
     "test:ci": "npm run test -- --ci",
     "test:coverage": "npm run test -- --coverage",
-    "prebuild": "rm lib/ -rf",
+    "prebuild": "shx rm -rf lib/ ",
     "build": "tsc"
   },
   "repository": {
@@ -61,6 +61,7 @@
     "jest-cli": "^24.8.0",
     "mock-fs": "^4.10.0",
     "serverless": "^1.44.1",
+    "shx": "^0.3.2",
     "typescript": "^3.4.5"
   },
   "optionalDependencies": {
