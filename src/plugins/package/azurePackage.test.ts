@@ -1,107 +1,42 @@
+import Serverless from "serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzurePackage } from "./azurePackage";
-import fs from "fs";
-import mockFs from "mock-fs";
-
-jest.mock("../../shared/bindings");
-import { BindingUtils } from "../../shared/bindings";
-jest.mock("../../shared/utils");
-import { Utils } from "../../shared/utils";
+jest.mock("../../services/packageService");
+import { PackageService } from "../../services/packageService";
 
 describe("Azure Package Plugin", () => {
-  afterEach(() => {
-    mockFs.restore();
+  let sls: Serverless;
+  let plugin: AzurePackage;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    sls = MockFactory.createTestServerless();
+
+    plugin = new AzurePackage(sls);
   });
 
-  it("sets up provider configuration", async () => {
-    const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
-    const sls = MockFactory.createTestServerless();
-
-    const functionConfig = Object.keys(slsFunctionConfig).map((funcName) => {
-      return {
-        name: funcName,
-        config: slsFunctionConfig[funcName],
-      };
-    });
-
-    Utils.getFunctionMetaData = jest.fn((funcName) => slsFunctionConfig[funcName]);
-    BindingUtils.createEventsBindings = jest.fn();
-
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzurePackage(sls, options);
-
-    await invokeHook(plugin, "package:setupProviderConfiguration");
-
-    expect(sls.cli.log).toBeCalledWith("Building Azure Events Hooks");
-    expect(Utils.getFunctionMetaData).toBeCalledWith(functionConfig[0].name, sls);
-    expect(BindingUtils.createEventsBindings).toBeCalledWith(sls.config.servicePath, functionConfig[0].name, functionConfig[0].config);
+  it("sets creates function bindings before package:setupProviderConfiguration life cycle event", async () => {
+    await invokeHook(plugin, "before:package:setupProviderConfiguration");
+    expect(PackageService.prototype.createBindings).toBeCalled();
   });
 
-  it("cleans up function.json and function folders", async () => {
-    const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
-    const sls = MockFactory.createTestServerless();
-    Object.assign(sls.service, {
-      functions: slsFunctionConfig
-    });
-
-    const fsConfig = {};
-
-    const functionNames = sls.service.getAllFunctions();
-    functionNames.forEach((functionName) => {
-      fsConfig[functionName] = {
-        "function.json": "contents",
-      };
-    });
-
-    mockFs(fsConfig);
-
-    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
-    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
-
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzurePackage(sls, options);
-
-    await invokeHook(plugin, "package:finalize");
-
-    expect(unlinkSpy).toBeCalledTimes(functionNames.length);
-    expect(rmdirSpy).toBeCalledTimes(functionNames.length);
-
-    unlinkSpy.mockRestore();
-    rmdirSpy.mockRestore();
+  it("prepares the package for webpack before webpack:package:packageModules life cycle event", async () => {
+    await invokeHook(plugin, "before:webpack:package:packageModules");
+    expect(PackageService.prototype.createBindings).toBeCalled();
+    expect(PackageService.prototype.prepareWebpack).toBeCalled();
   });
 
-  it("cleans up function.json but does not delete function folder", async () => {
-    const slsFunctionConfig = MockFactory.createTestSlsFunctionConfig();
-    const sls = MockFactory.createTestServerless();
-    Object.assign(sls.service, {
-      functions: slsFunctionConfig
-    });
+  it("only calls create bindings 1 time throughout full package life cycle", async () => {
+    await invokeHook(plugin, "before:package:setupProviderConfiguration");
+    await invokeHook(plugin, "before:webpack:package:packageModules");
 
-    const fsConfig = {};
-
-    const functionNames = sls.service.getAllFunctions();
-    functionNames.forEach((functionName) => {
-      fsConfig[functionName] = {
-        "function.json": "contents",
-        "index.js": "contents",
-      };
-    });
-
-    mockFs(fsConfig);
-
-    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
-    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
-
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzurePackage(sls, options);
-
-    await invokeHook(plugin, "package:finalize");
-
-    expect(unlinkSpy).toBeCalledTimes(functionNames.length);
-    expect(rmdirSpy).not.toBeCalled();
-
-    unlinkSpy.mockRestore();
-    rmdirSpy.mockRestore();
+    expect(PackageService.prototype.createBindings).toBeCalledTimes(1);
+    expect(PackageService.prototype.prepareWebpack).toBeCalledTimes(1);
   });
+
+  it("cleans up package after package:finalize", async () => {
+    await invokeHook(plugin, "after:package:finalize");
+    expect(PackageService.prototype.cleanUp).toBeCalled();
+  })
 });

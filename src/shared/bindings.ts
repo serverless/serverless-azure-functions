@@ -1,7 +1,4 @@
-import fs from "fs";
-import { join } from "path";
 import Serverless from "serverless";
-import { FunctionMetadata } from "./utils";
 import { constants } from "./constants";
 
 const bindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -35,21 +32,6 @@ export class BindingUtils {
       bindingSettings: bindingSettings,
       bindingSettingsNames: bindingSettingsNames
     };
-  }
-
-  public static createEventsBindings(servicePath: string, functionName: string, functionMetadata: FunctionMetadata): Promise<any> {
-    const functionJSON = functionMetadata.params.functionsJson;
-    functionJSON.entryPoint = functionMetadata.entryPoint;
-    functionJSON.scriptFile = functionMetadata.handlerPath;
-
-    const functionDirPath = join(servicePath, functionName);    
-    if (!fs.existsSync(functionDirPath)) {
-      fs.mkdirSync(functionDirPath);
-    }
-
-    fs.writeFileSync(join(functionDirPath, "function.json"), JSON.stringify(functionJSON, null, 2));
-
-    return Promise.resolve();
   }
 
   public static getBindingUserSettingsMetaData(azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames) {
@@ -132,5 +114,4 @@ export class BindingUtils {
 
     return binding;
   }
-
 }
