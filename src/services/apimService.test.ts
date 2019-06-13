@@ -5,7 +5,7 @@ import { ApiManagementConfig } from "../models/apiManagement";
 import { ApimService } from "./apimService";
 import { interpolateJson } from "../test/utils";
 import axios from "axios";
-import { Api, Backend, Property, ApiOperation, ApiOperationPolicy, ApiManagementService } from "@azure/arm-apimanagement";
+import { Api, Backend, Property, ApiOperation, ApiOperationPolicy, ApiManagementService, ApiPolicy } from "@azure/arm-apimanagement";
 import apimGetService404 from "../test/responses/apim-get-service-404.json";
 import apimGetService200 from "../test/responses/apim-get-service-200.json";
 import apimGetApi200 from "../test/responses/apim-get-api-200.json";
@@ -18,6 +18,7 @@ import {
   ApiOperationCreateOrUpdateResponse, ApiManagementServiceResource, ApiGetResponse,
   ApiManagementServiceGetResponse,
   OperationContract,
+  ApiPolicyCreateOrUpdateResponse,
 } from "@azure/arm-apimanagement/esm/models";
 
 describe("APIM Service", () => {
@@ -235,13 +236,13 @@ describe("APIM Service", () => {
     });
 
     it("ensures API, backend and keys have all been set", async () => {
-
       Api.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
       Backend.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
       Property.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate = jest.fn(() => Promise.resolve(null));
 
       const apimService = new ApimService(serverless);
       const result = await apimService.deployApi();
@@ -253,6 +254,9 @@ describe("APIM Service", () => {
         apiName,
         expectedApi,
       );
+
+      // No CORS policy by default
+      expect(ApiPolicy.prototype.createOrUpdate).not.toBeCalled();
 
       expect(Backend.prototype.createOrUpdate).toBeCalledWith(
         resourceGroupName,
@@ -266,6 +270,34 @@ describe("APIM Service", () => {
         serviceName,
         expectedProperty.displayName,
         expectedProperty,
+      );
+    });
+
+    it("deploys API CORS policy when defined within configuration", async () => {
+      Api.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+      Backend.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+      Property.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+
+      const corsPolicy = MockFactory.createTestMockApiCorsPolicy();
+      serverless.service.provider["apim"]["cors"] = corsPolicy;
+
+      const apimService = new ApimService(serverless);
+      const result = await apimService.deployApi();
+
+      expect(result).not.toBeNull();
+      expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+        resourceGroupName,
+        serviceName,
+        apiName,
+        {
+          format: "rawxml",
+          value: expect.stringContaining("cors"),
+        }
       );
     });
 
