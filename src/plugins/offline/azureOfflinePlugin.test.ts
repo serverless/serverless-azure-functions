@@ -63,5 +63,7 @@ describe("Azure Offline Plugin", () => {
     const rmdirCalls = rmdirSpy.mock.calls;
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
   });
 });

@@ -127,6 +127,8 @@ describe("Azure Func Plugin", () => {
       await invokeHook(plugin, "func:remove:remove");
       expect(unlinkSpy).toBeCalledWith(`${functionName}.js`)
       expect(rimrafSpy).toBeCalledWith(functionName);
+      unlinkSpy.mockRestore();
+      rimrafSpy.mockRestore();
       const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig();
       delete expectedFunctionsYml[functionName];
       expect(sls.utils.writeFileSync).toBeCalledWith("serverless.yml", MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
