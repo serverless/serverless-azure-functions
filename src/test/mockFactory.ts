@@ -381,7 +381,7 @@ export class MockFactory {
       allowCredentials: false,
       allowedOrigins: ["*"],
       allowedHeaders: ["*"],
-      exposedHeaders: ["*"],
+      exposeHeaders: ["*"],
       allowedMethods: ["GET","POST"],
     };
   }

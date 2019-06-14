@@ -17,5 +17,5 @@ export interface ApiCorsPolicy {
   allowedOrigins: string[];
   allowedMethods: string[];
   allowedHeaders: string[];
-  exposedHeaders: string[];
+  exposeHeaders: string[];
 }

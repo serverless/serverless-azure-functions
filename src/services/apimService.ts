@@ -141,16 +141,18 @@ export class ApimService extends BaseService {
       });
 
       if (this.config.cors) {
-        const corsPolicy = this.createCorsXmlPoligy(this.config.cors);
+        this.log("-> Deploying CORS policy");
+
         await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
           format: "rawxml",
-          value: corsPolicy
+          value: this.createCorsXmlPolicy(this.config.cors)
         });
       }
 
       return api;
     } catch (e) {
       this.log("Error creating APIM API");
+      this.log(JSON.stringify(e.body, null, 4));
       throw e;
     }
   }
@@ -182,6 +184,7 @@ export class ApimService extends BaseService {
       });
     } catch (e) {
       this.log("Error creating APIM Backend");
+      this.log(JSON.stringify(e.body, null, 4));
       throw e;
     }
   }
@@ -219,38 +222,16 @@ export class ApimService extends BaseService {
         operationConfig,
       );
 
-      const operationPolicy = [{
-        policies: [
-          {
-            inbound: [
-              { base: null },
-              {
-                "set-backend-service": [
-                  {
-                    "_atter": {
-                      "id": "apim-generated-policy",
-                      "backend-id": this.serviceName,
-                    }
-                  },
-                ],
-              },
-            ],
-          },
-          { backend: [{ base: null }] },
-          { outbound: [{ base: null }] },
-          { "on-error": [{ base: null }] },
-        ]
-      }];
-
       await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, options.function, {
         format: "rawxml",
-        value: xml(operationPolicy),
+        value: this.createApiOperationXmlPolicy(),
       });
 
       return operation;
     } catch (e) {
       this.log(`Error deploying API operation ${options.function}`);
       this.log(JSON.stringify(e.body, null, 4));
+      throw e;
     }
   }
 
@@ -258,7 +239,7 @@ export class ApimService extends BaseService {
    * Gets the master key for the function app and stores a reference in the APIM instance
    * @param functionAppUrl The host name for the Azure function app
    */
-  private async ensureFunctionAppKeys(functionApp): Promise<PropertyContract> {
+  private async ensureFunctionAppKeys(functionApp: Site): Promise<PropertyContract> {
     this.log("-> Deploying API keys");
     try {
       const masterKey = await this.functionAppService.getMasterKey(functionApp);
@@ -271,15 +252,50 @@ export class ApimService extends BaseService {
       });
     } catch (e) {
       this.log("Error creating APIM Property");
+      this.log(JSON.stringify(e.body, null, 4));
       throw e;
     }
   }
 
-  private createCorsXmlPoligy(corsPolicy: ApiCorsPolicy): string {
+  /**
+   * Creates the XML payload that defines the API operation policy to link to the configured backend
+   */
+  private createApiOperationXmlPolicy(): string {
+    const operationPolicy = [{
+      policies: [
+        {
+          inbound: [
+            { base: null },
+            {
+              "set-backend-service": [
+                {
+                  "_attr": {
+                    "id": "apim-generated-policy",
+                    "backend-id": this.serviceName,
+                  }
+                },
+              ],
+            },
+          ],
+        },
+        { backend: [{ base: null }] },
+        { outbound: [{ base: null }] },
+        { "on-error": [{ base: null }] },
+      ]
+    }];
+
+    return xml(operationPolicy);
+  }
+
+  /**
+   * Creates the XML payload that defines the specified CORS policy
+   * @param corsPolicy The CORS policy
+   */
+  private createCorsXmlPolicy(corsPolicy: ApiCorsPolicy): string {
     const origins = corsPolicy.allowedOrigins ? corsPolicy.allowedOrigins.map((origin) => ({ origin })) : null;
     const methods = corsPolicy.allowedMethods ? corsPolicy.allowedMethods.map((method) => ({ method })) : null;
     const allowedHeaders = corsPolicy.allowedHeaders ? corsPolicy.allowedHeaders.map((header) => ({ header })) : null;
-    const exposeHeaders = corsPolicy.exposedHeaders ? corsPolicy.exposedHeaders.map((header) => ({ header })) : null;
+    const exposeHeaders = corsPolicy.exposeHeaders ? corsPolicy.exposeHeaders.map((header) => ({ header })) : null;
 
     const policy = [{
       policies: [
