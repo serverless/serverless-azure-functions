@@ -1,29 +1,44 @@
 
 import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
-import { BindingUtils } from "../../shared/bindings";
-import { Utils } from "../../shared/utils";
+import { PackageService } from "../../services/packageService";
 
 export class AzurePackage {
-  public provider: AzureProvider
+  private bindingsCreated: boolean = false;
+  private packageService: PackageService;
+  public provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(private serverless: Serverless) {
     this.hooks = {
-      "package:setupProviderConfiguration": this.setupProviderConfiguration.bind(this),
+      "before:package:setupProviderConfiguration": this.setupProviderConfiguration.bind(this),
+      "before:webpack:package:packageModules": this.webpack.bind(this),
+      "after:package:finalize": this.finalize.bind(this),
     };
+
+    this.packageService = new PackageService(this.serverless);
   }
 
-  private async setupProviderConfiguration() {
-    this.serverless.cli.log("Building Azure Events Hooks");
+  private async setupProviderConfiguration(): Promise<void> {
+    await this.packageService.createBindings();
+    this.bindingsCreated = true;
 
-    const createEventsPromises = this.serverless.service.getAllFunctions()
-      .map((functionName) => {
-        const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
+    return Promise.resolve();
+  }
 
-        return BindingUtils.createEventsBindings(this.serverless, functionName, metaData);
-      });
+  private async webpack(): Promise<void> {
+    if (!this.bindingsCreated) {
+      await this.setupProviderConfiguration();
+    }
 
-    return Promise.all(createEventsPromises);
+    await this.packageService.prepareWebpack();
+  }
+
+  /**
+   * Cleans up generated folders & files after packaging is complete
+   */
+  private async finalize(): Promise<void> {
+    await this.packageService.cleanUp();
   }
 }
+

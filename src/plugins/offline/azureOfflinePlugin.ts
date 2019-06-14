@@ -13,6 +13,7 @@ export class AzureOfflinePlugin {
       "before:offline:offline": this.azureOfflineBuild.bind(this),
       "offline:build:build": this.azureOfflineBuild.bind(this),
       "offline:offline": this.azureOfflineStart.bind(this),
+      "offline:cleanup:cleanup": this.azureOfflineCleanup.bind(this),
     };
 
     this.commands = {
@@ -27,6 +28,12 @@ export class AzureOfflinePlugin {
             lifecycleEvents: [
               "build",
             ]
+          },
+          cleanup: {
+            usage: "Clean up files from offline development",
+            lifecycleEvents: [
+              "cleanup"
+            ]
           }
         }
       }
@@ -39,5 +46,9 @@ export class AzureOfflinePlugin {
 
   private async azureOfflineStart(){
     this.offlineService.start();
+  }
+
+  private async azureOfflineCleanup(){
+    this.offlineService.cleanup();
   }
 }

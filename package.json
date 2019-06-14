@@ -14,7 +14,7 @@
     "test": "jest",
     "test:ci": "npm run test -- --ci",
     "test:coverage": "npm run test -- --coverage",
-    "prebuild": "rm lib/ -rf",
+    "prebuild": "shx rm -rf lib/ && npm run test",
     "build": "tsc"
   },
   "repository": {
@@ -48,11 +48,13 @@
     "@babel/runtime": "^7.4.5",
     "@types/jest": "^24.0.13",
     "@types/lodash": "^4.14.130",
+    "@types/mock-fs": "^3.6.30",
     "@types/open": "^6.1.0",
     "@types/request": "^2.48.1",
     "@types/serverless": "^1.18.2",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
+    "axios-mock-adapter": "^1.16.0",
     "babel-jest": "^24.8.0",
     "babel-preset-react-app": "^9.0.0",
     "coveralls": "^3.0.3",
@@ -61,6 +63,7 @@
     "jest-cli": "^24.8.0",
     "mock-fs": "^4.10.0",
     "serverless": "^1.44.1",
+    "shx": "^0.3.2",
     "typescript": "^3.4.5"
   },
   "optionalDependencies": {

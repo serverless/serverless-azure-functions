@@ -26,7 +26,13 @@ export abstract class BaseService {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
-
+  
+  /**
+   * Sends an API request using axios HTTP library
+   * @param method The HTTP method
+   * @param relativeUrl The relative url
+   * @param options Additional HTTP options including headers, etc
+   */
   protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
       Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
@@ -46,29 +52,6 @@ export abstract class BaseService {
     return await axios(relativeUrl, requestOptions);
   }
 
-  protected wait(timeout: number) {
-    return new Promise((resolve) => setTimeout(resolve, timeout));
-  }
-
-  protected waitForCondition(predicate: () => boolean, interval: number = 2000) {
-    return new Promise((resolve, reject) => {
-      let retries = 0;
-      const id = setInterval(async () => {
-        if (retries >= 20) {
-          clearInterval(id);
-          return reject("Failed conditional check 20 times");
-        }
-
-        retries++;
-        const result = await predicate();
-        if (result) {
-          clearInterval(id);
-          resolve(result);
-        }
-      }, interval);
-    });
-  }
-
   /**
    * Uploads the specified file via HTTP request
    * @param requestOptions The HTTP request options
@@ -79,7 +62,7 @@ export abstract class BaseService {
       fs.createReadStream(filePath)
         .pipe(request(requestOptions, (err, response) => {
           if (err) {
-            this.serverless.cli.log(JSON.stringify(err, null, 4));
+            this.log(JSON.stringify(err, null, 4));
             return reject(err);
           }
           resolve(response);

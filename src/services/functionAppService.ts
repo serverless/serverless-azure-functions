@@ -30,7 +30,7 @@ export class FunctionAppService extends BaseService {
     return response;
   }
 
-  public async getMasterKey(functionApp) {
+  public async getMasterKey(functionApp?: Site) {
     functionApp = functionApp || await this.get();
     const adminToken = await this.getAuthKey(functionApp);
     const keyUrl = `https://${functionApp.defaultHostName}/admin/host/systemkeys/_master`;
@@ -56,7 +56,7 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
-    await this.sendApiRequest("POST", syncTriggersUrl);
+    return await this.sendApiRequest("POST", syncTriggersUrl);
   }
 
   public async cleanUp(functionApp: Site) {
@@ -106,7 +106,7 @@ export class FunctionAppService extends BaseService {
    *    resource-group, storage account, app service plan, and app service at the minimum
    */
   public async deploy() {
-    this.serverless.cli.log(`Creating function app: ${this.serviceName}`);
+    this.log(`Creating function app: ${this.serviceName}`);
     let parameters: any = { functionAppName: { value: this.serviceName } };
 
     const gitUrl = this.serverless.service.provider["gitUrl"];
@@ -125,7 +125,7 @@ export class FunctionAppService extends BaseService {
     }
 
     if (this.serverless.service.provider["armTemplate"]) {
-      this.serverless.cli.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
+      this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
       templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
       const userParameters = this.serverless.service.provider["armTemplate"].parameters;
       const userParametersKeys = Object.keys(userParameters);
@@ -180,8 +180,12 @@ export class FunctionAppService extends BaseService {
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    const functionZipFile = this.serverless.service["artifact"];
+    let functionZipFile = this.serverless.service["artifact"];
     if (!functionZipFile) {
+      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
+    }
+
+    if (!(functionZipFile && fs.existsSync(functionZipFile))) {
       throw new Error("No zip file found for function app");
     }
 

@@ -37,6 +37,7 @@ describe("APIM Service", () => {
 
   beforeEach(() => {
     const slsConfig: any = {
+      ...MockFactory.createTestService(MockFactory.createTestSlsFunctionConfig()),
       service: "test-sls",
       provider: {
         name: "azure",
@@ -44,11 +45,11 @@ describe("APIM Service", () => {
         location: "West US",
         apim: apimConfig,
       },
-      functions: MockFactory.createTestSlsFunctionConfig(),
     };
 
-    serverless = MockFactory.createTestServerless();
-    Object.assign(serverless.service, slsConfig);
+    serverless = MockFactory.createTestServerless({
+      service: slsConfig
+    });
 
     serverless.variables = {
       ...serverless.variables,

@@ -1,4 +1,5 @@
 import Serverless from "serverless";
+import { relative } from "path";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 
@@ -86,24 +87,23 @@ export class Utils {
     if (functionObject["scriptFile"]) {
       entryPointAndHandlerPath.handlerPath = functionObject["scriptFile"];
     }
-    const metaData = {
-      entryPoint: entryPointAndHandlerPath[constants.entryPoint],
-      handlerPath: entryPointAndHandlerPath.handlerPath,
+    let { handlerPath, entryPoint } = entryPointAndHandlerPath;
+
+    return {
+      entryPoint,
+      handlerPath: relative(functionName, handlerPath),
       params: params
     };
-
-    return metaData;
   }
 
   public static getEntryPointAndHandlerPath(handler: string) {
     let handlerPath = "handler.js";
     let entryPoint = handler;
     const handlerSplit = handler.split(".");
-    const slashIndex = handler.lastIndexOf("/");
 
     if (handlerSplit.length > 1) {
       entryPoint = handlerSplit[handlerSplit.length - 1];
-      handlerPath = `${handler.substring(slashIndex + 1, handler.lastIndexOf("."))}.js`;
+      handlerPath = `${handler.substring(0, handler.lastIndexOf("."))}.js`;
     }
     
     const metaData = {

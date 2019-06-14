@@ -1,12 +1,10 @@
-import fs from "fs";
-import path from "path";
-import rimraf from "rimraf";
 import Serverless from "serverless";
-import { FuncPluginUtils } from "./funcUtils";
+import { FuncService } from "../../services/funcService";
 
 export class AzureFuncPlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
+  private service: FuncService;
 
 
   public constructor(private serverless: Serverless, private options: Serverless.Options) {
@@ -50,6 +48,8 @@ export class AzureFuncPlugin {
         }
       }
     }
+
+    this.service = new FuncService(serverless, options);
   }
 
   private async func() {
@@ -57,57 +57,10 @@ export class AzureFuncPlugin {
   }
 
   private async add() {
-    if (!("name" in this.options)) {
-      this.serverless.cli.log("Need to provide a name of function to add");
-      return;
-    }
-    const funcToAdd = this.options["name"]
-    const exists = fs.existsSync(funcToAdd);
-    if (exists) {
-      this.serverless.cli.log(`Function ${funcToAdd} already exists`);
-      return;
-    }
-    this.createFunctionDir(funcToAdd);
-    this.addToServerlessYml(funcToAdd);
-  }
-
-  private createFunctionDir(name: string) {
-    this.serverless.cli.log("Creating function dir");
-    try {
-      fs.mkdirSync(name);
-    } catch (e) {
-      this.serverless.cli.log(`Error making directory ${e}`);
-    }
-    this.serverless.utils.writeFileSync(path.join(name, "index.js"), FuncPluginUtils.getFunctionHandler(name));
-    this.serverless.utils.writeFileSync(path.join(name, "function.json"), FuncPluginUtils.getFunctionJsonString(name, this.options));
-  }
-
-  private addToServerlessYml(name: string) {
-    this.serverless.cli.log("Adding to serverless.yml");
-    const functionYml = FuncPluginUtils.getFunctionsYml(this.serverless);
-    functionYml[name] = FuncPluginUtils.getFunctionSlsObject(name, this.options);
-    FuncPluginUtils.updateFunctionsYml(this.serverless, functionYml);
+    this.service.add();
   }
 
   private async remove() {
-    if (!("name" in this.options)) {
-      this.serverless.cli.log("Need to provide a name of function to remove");
-      return;
-    }
-    const funcToRemove = this.options["name"];
-    const exists = fs.existsSync(funcToRemove);
-    if (!exists) {
-      this.serverless.cli.log(`Function ${funcToRemove} does not exist`);
-      return;
-    }
-    this.serverless.cli.log(`Removing ${funcToRemove}`);
-    rimraf.sync(funcToRemove);
-    await this.removeFromServerlessYml(funcToRemove);
-  }
-
-  private async removeFromServerlessYml(name: string) {
-    const functionYml = FuncPluginUtils.getFunctionsYml(this.serverless);
-    delete functionYml[name];
-    FuncPluginUtils.updateFunctionsYml(this.serverless, functionYml)
+    this.service.remove();
   }
 }

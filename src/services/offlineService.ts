@@ -1,24 +1,24 @@
 import Serverless from "serverless";
-import { BindingUtils } from "../shared/bindings";
-import { Utils } from "../shared/utils";
 import { BaseService } from "./baseService";
+import { PackageService } from "./packageService";
 
 export class OfflineService extends BaseService {
+
+  private packageService: PackageService;
   
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options, false);
+    this.packageService = new PackageService(serverless);
   }
 
   public async build() {
     this.log("Building offline service");
-    const createEventsPromises = this.serverless.service.getAllFunctions()
-      .map((functionName) => {
-        this.log(`Building function ${functionName}`);
-        const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
-        return BindingUtils.createEventsBindings(this.serverless, functionName, metaData);
-      });
-    await Promise.all(createEventsPromises);
+    await this.packageService.createBindings();
     this.log("Finished building offline service");
+  }
+
+  public async cleanup() {
+    await this.packageService.cleanUp();
   }
 
   public start() {
