@@ -12,7 +12,7 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  protected constructor(protected serverless: Serverless, protected options?: Serverless.Options, authenticate = true) {
+  protected constructor(protected serverless: Serverless, protected options: Serverless.Options = { stage: null, region: null }, authenticate: boolean = true) {
     Guard.null(serverless);
     this.setDefaultRegion();
 
@@ -84,14 +84,14 @@ export abstract class BaseService {
   }
   
   /**
-   * normallize provider object b/c serverless set an incorrect region default
+   * Normalize provider object b/c serverless set an incorrect region default
    * that use AWS syntax
    */
   private setDefaultRegion(): void {
-    const defaultRegion = 'westus2';
-
+    const defaultRegion = "westus2";
     const awsDefault = "us-east-1"
     const providerRegion = this.serverless.service.provider.region;
+
     if (providerRegion === awsDefault) { // no region specified in serverless.yml
       this.serverless.service.provider.region = defaultRegion;
     }
@@ -102,13 +102,13 @@ export abstract class BaseService {
   }
 
   private getStage(): string {
-    const defaultStage = 'dev';
+    const defaultStage = "dev";
     return this.options.stage || this.serverless.service.provider.stage || defaultStage;
   }
 
   private getResourceGroupName(serviceName: string): string {
-    const name = `${serviceName}-${this.getStage()}-${this.getRegion()}-rg`;
-    this.serverless.cli.log(`Resource GROUP: ${name}`);
-    return name;
+    return this.options["resourceGroup"]
+      || this.serverless.service.provider["resourceGroup"]
+      || `${serviceName}-rg`;
   }
 }
