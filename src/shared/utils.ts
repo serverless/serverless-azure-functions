@@ -83,11 +83,10 @@ export class Utils {
     functionsJson.bindings = bindings;
     params.functionsJson = functionsJson;
 
-    const entryPointAndHandlerPath = Utils.getEntryPointAndHandlerPath(handler);
+    let { handlerPath, entryPoint } = Utils.getEntryPointAndHandlerPath(handler);
     if (functionObject["scriptFile"]) {
-      entryPointAndHandlerPath.handlerPath = functionObject["scriptFile"];
+      handlerPath = functionObject["scriptFile"];
     }
-    let { handlerPath, entryPoint } = entryPointAndHandlerPath;
 
     return {
       entryPoint,

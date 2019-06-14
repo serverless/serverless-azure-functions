@@ -19,7 +19,6 @@ describe("Package Service", () => {
 
   afterEach(() => {
     mockFs.restore();
-    jest.clearAllMocks();
   });
 
   it("cleans up function.json and function folders", async () => {

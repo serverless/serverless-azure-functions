@@ -1,7 +1,7 @@
+import path from "path";
 import Serverless from "serverless";
-import path, { relative } from "path";
 import { MockFactory } from "../test/mockFactory";
-import { Utils, FunctionMetadata } from "./utils";
+import { FunctionMetadata, Utils } from "./utils";
 
 describe("utils", () => {
   let sls: Serverless;
