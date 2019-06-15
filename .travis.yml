@@ -7,6 +7,9 @@ matrix:
   - node_js: '8'
   - node_js: '10'
 
+git:
+  depth: 3
+  
 sudo: false
 
 install:
@@ -16,6 +19,13 @@ script:
 
 after_success:
 - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+
+branches:
+  only:
+    - master
+    - dev
+    - myho/betaRelease
+    - /^v1.*$/
 
 before_deploy: 
   - npm run build
