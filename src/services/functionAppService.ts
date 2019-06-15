@@ -9,6 +9,7 @@ import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
+import { Guard } from "../shared/guard";
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -46,6 +47,9 @@ export class FunctionAppService extends BaseService {
   }
 
   public async deleteFunction(functionApp: Site, functionName: string) {
+    Guard.null(functionApp);
+    Guard.empty(functionName);
+
     this.serverless.cli.log(`-> Deleting function: ${functionName}`);
     const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
 
@@ -53,6 +57,8 @@ export class FunctionAppService extends BaseService {
   }
 
   public async syncTriggers(functionApp: Site) {
+    Guard.null(functionApp);
+
     this.serverless.cli.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
@@ -60,6 +66,8 @@ export class FunctionAppService extends BaseService {
   }
 
   public async cleanUp(functionApp: Site) {
+    Guard.null(functionApp);
+
     this.serverless.cli.log("Cleaning up existing functions");
     const deleteTasks = [];
 
@@ -76,6 +84,8 @@ export class FunctionAppService extends BaseService {
   }
 
   public async listFunctions(functionApp: Site): Promise<FunctionEnvelope[]> {
+    Guard.null(functionApp);
+
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", getTokenUrl);
 
@@ -87,6 +97,9 @@ export class FunctionAppService extends BaseService {
   }
 
   public async getFunction(functionApp: Site, functionName: string): Promise<FunctionEnvelope> {
+    Guard.null(functionApp);
+    Guard.empty(functionName);
+
     const getFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", getFunctionUrl);
 
@@ -98,6 +111,9 @@ export class FunctionAppService extends BaseService {
   }
 
   public async uploadFunctions(functionApp: Site): Promise<any> {
+    Guard.null(functionApp);
+
+    this.log("Deploying serverless functions...");
     await this.zipDeploy(functionApp);
   }
 

@@ -1,7 +1,6 @@
 import Serverless from "serverless";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { BaseService } from "./baseService";
-import { Utils } from "../shared/utils";
 
 export class ResourceService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -15,13 +14,9 @@ export class ResourceService extends BaseService {
   public async deployResourceGroup() {
     this.log(`Creating resource group: ${this.resourceGroup}`);
 
-    this.serverless.cli.log(Utils.prettyPrint(this.serverless.service.provider));
-
-    const groupParameters = {
-      location: this.getRegion()
-    };
-
-    return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, groupParameters);
+    return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, {
+      location: this.getRegion(),
+    });
   }
 
   public async deleteDeployment() {
