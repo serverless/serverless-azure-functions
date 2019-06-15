@@ -21,21 +21,27 @@ describe("Offline Service", () => {
 
   afterEach(() => {
     mockFs.restore();
-    jest.clearAllMocks();
   })
 
   it("builds required files for offline execution", async () => {
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     await service.build();
-    const calls = (sls.utils.writeFileSync as any).mock.calls;
+    const calls = writeFileSpy.mock.calls;
     const functionNames = sls.service.getAllFunctions();
-    const expectedFunctionJson = MockFactory.createTestBindingsObject();
-    for (let i = 0; i < calls.length; i++) {
+    expect(calls).toHaveLength(functionNames.length + 1);
+    for (let i = 0; i < functionNames.length; i++) {
       const name = functionNames[i];
       expect(calls[i][0]).toEqual(`${name}${path.sep}function.json`)
-      expect(JSON.parse(calls[i][1])).toEqual(expectedFunctionJson);
+      expect(
+        JSON.parse(calls[i][1])
+      ).toEqual(
+        MockFactory.createTestBindingsObject(`..${path.sep}${name}.js`)
+      );
     }
+    expect(calls[calls.length - 1][0]).toEqual("local.settings.json");
+    writeFileSpy.mockRestore();
   });
 
   it("cleans up functions files", async () => {
@@ -45,7 +51,8 @@ describe("Offline Service", () => {
       },
       goodbye: {
         "function.json": "contents"
-      }
+      },
+      "local.settings.json": "contents",
     })
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
@@ -55,6 +62,7 @@ describe("Offline Service", () => {
     const unlinkCalls = unlinkSpy.mock.calls;
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
+    expect(unlinkCalls[2][0]).toBe("local.settings.json");
     const rmdirCalls = rmdirSpy.mock.calls;
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");

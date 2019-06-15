@@ -323,9 +323,9 @@ export class MockFactory {
     }
   }
 
-  public static createTestBindingsObject() {
+  public static createTestBindingsObject(name: string = "index.js") {
     return {
-      scriptFile: "index.js",
+      scriptFile: name,
       entryPoint: "handler",
       disabled: false,
       bindings: [
