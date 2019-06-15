@@ -10,6 +10,8 @@ import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
+import { stringLiteral } from "@babel/types";
+import { hostname } from "os";
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -191,7 +193,7 @@ export class FunctionAppService extends BaseService {
 
   private async zipDeploy(functionApp) {
     const functionAppName = functionApp.name;
-    const scmDomain = functionApp.enabledHostNames[0];
+    const scmDomain = this.getScmDomain(functionApp);
 
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
@@ -262,7 +264,7 @@ export class FunctionAppService extends BaseService {
   private async runKuduCommand(functionApp: Site, command: string) {
     this.serverless.cli.log(`-> Running Kudu command ${command}...`);
 
-    const scmDomain = functionApp.enabledHostNames[0];
+    const scmDomain = this.getScmDomain(functionApp);
     const requestUrl = `https://${scmDomain}/api/command`;
 
     // TODO: There is a case where the body will contain an error, but it's
@@ -290,5 +292,11 @@ export class FunctionAppService extends BaseService {
     const response = await this.sendApiRequest("GET", adminTokenUrl);
 
     return response.data.replace(/"/g, "");
+  }
+
+  private getScmDomain(functionApp: Site) {
+    return functionApp.enabledHostNames.find((hostName: string) => {
+      return hostName.endsWith("scm.azurewebsites.net");
+    });
   }
 }

@@ -2,7 +2,6 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { constants } from "../config";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionAppService } from "./functionAppService";
 
@@ -29,7 +28,7 @@ describe("Function App Service", () => {
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const syncTriggersUrl = `${baseUrl}${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
-  const uploadUrl = `https://${app.enabledHostNames[0]}${constants.scmZipDeployApiPath}/`
+  const uploadUrl = `https://${app.enabledHostNames[1]}/api/zipdeploy/`;
 
   beforeAll(() => {   
 

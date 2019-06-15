@@ -278,9 +278,10 @@ export class MockFactory {
       id: "appId",
       name: name,
       location: "West US",
-      defaultHostName: "myHostName",
+      defaultHostName: "myHostName.azurewebsites.net",
       enabledHostNames: [
-        "myHostName"
+        "myHostName.azurewebsites.net",
+        "myHostName.scm.azurewebsites.net",
       ]
     };
   }
