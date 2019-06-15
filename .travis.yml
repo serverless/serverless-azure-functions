@@ -29,7 +29,7 @@ branches:
 
 before_deploy: 
   - npm run build
-  - cd lib/
+
 deploy:
   - provider: npm
     email: $NPM_EMAIL_ACCOUNT

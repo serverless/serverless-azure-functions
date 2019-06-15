@@ -31,6 +31,9 @@
     "internet of things",
     "serverless.com"
   ],
+  "files": [
+    "lib/"
+  ],
   "dependencies": {
     "@azure/arm-apimanagement": "^5.1.0",
     "@azure/arm-appservice": "^5.7.0",
