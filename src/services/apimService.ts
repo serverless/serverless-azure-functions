@@ -1,8 +1,9 @@
 import Serverless from "serverless";
+import xml from "xml";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
-import { ApiManagementConfig, ApiOperationOptions } from "../models/apiManagement";
+import { ApiManagementConfig, ApiOperationOptions, ApiCorsPolicy } from "../models/apiManagement";
 import {
   ApiContract, BackendContract, OperationContract,
   PropertyContract, ApiManagementServiceResource,
@@ -130,7 +131,7 @@ export class ApimService extends BaseService {
     this.log("-> Deploying API");
 
     try {
-      return await this.apimClient.api.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
+      const api = await this.apimClient.api.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
         isCurrent: true,
         subscriptionRequired: this.config.api.subscriptionRequired,
         displayName: this.config.api.displayName,
@@ -138,8 +139,20 @@ export class ApimService extends BaseService {
         path: this.config.api.path,
         protocols: this.config.api.protocols,
       });
+
+      if (this.config.cors) {
+        this.log("-> Deploying CORS policy");
+
+        await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
+          format: "rawxml",
+          value: this.createCorsXmlPolicy(this.config.cors)
+        });
+      }
+
+      return api;
     } catch (e) {
       this.log("Error creating APIM API");
+      this.log(JSON.stringify(e.body, null, 4));
       throw e;
     }
   }
@@ -171,6 +184,7 @@ export class ApimService extends BaseService {
       });
     } catch (e) {
       this.log("Error creating APIM Backend");
+      this.log(JSON.stringify(e.body, null, 4));
       throw e;
     }
   }
@@ -210,28 +224,14 @@ export class ApimService extends BaseService {
 
       await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, options.function, {
         format: "rawxml",
-        value: `
-        <policies>
-          <inbound>
-            <base />
-            <set-backend-service id="apim-generated-policy" backend-id="${this.serviceName}" />
-          </inbound>
-          <backend>
-            <base />
-          </backend>
-          <outbound>
-            <base />
-          </outbound>
-          <on-error>
-            <base />
-          </on-error>
-        </policies>`,
+        value: this.createApiOperationXmlPolicy(),
       });
 
       return operation;
     } catch (e) {
       this.log(`Error deploying API operation ${options.function}`);
       this.log(JSON.stringify(e.body, null, 4));
+      throw e;
     }
   }
 
@@ -239,7 +239,7 @@ export class ApimService extends BaseService {
    * Gets the master key for the function app and stores a reference in the APIM instance
    * @param functionAppUrl The host name for the Azure function app
    */
-  private async ensureFunctionAppKeys(functionApp): Promise<PropertyContract> {
+  private async ensureFunctionAppKeys(functionApp: Site): Promise<PropertyContract> {
     this.log("-> Deploying API keys");
     try {
       const masterKey = await this.functionAppService.getMasterKey(functionApp);
@@ -252,7 +252,73 @@ export class ApimService extends BaseService {
       });
     } catch (e) {
       this.log("Error creating APIM Property");
+      this.log(JSON.stringify(e.body, null, 4));
       throw e;
     }
+  }
+
+  /**
+   * Creates the XML payload that defines the API operation policy to link to the configured backend
+   */
+  private createApiOperationXmlPolicy(): string {
+    const operationPolicy = [{
+      policies: [
+        {
+          inbound: [
+            { base: null },
+            {
+              "set-backend-service": [
+                {
+                  "_attr": {
+                    "id": "apim-generated-policy",
+                    "backend-id": this.serviceName,
+                  }
+                },
+              ],
+            },
+          ],
+        },
+        { backend: [{ base: null }] },
+        { outbound: [{ base: null }] },
+        { "on-error": [{ base: null }] },
+      ]
+    }];
+
+    return xml(operationPolicy);
+  }
+
+  /**
+   * Creates the XML payload that defines the specified CORS policy
+   * @param corsPolicy The CORS policy
+   */
+  private createCorsXmlPolicy(corsPolicy: ApiCorsPolicy): string {
+    const origins = corsPolicy.allowedOrigins ? corsPolicy.allowedOrigins.map((origin) => ({ origin })) : null;
+    const methods = corsPolicy.allowedMethods ? corsPolicy.allowedMethods.map((method) => ({ method })) : null;
+    const allowedHeaders = corsPolicy.allowedHeaders ? corsPolicy.allowedHeaders.map((header) => ({ header })) : null;
+    const exposeHeaders = corsPolicy.exposeHeaders ? corsPolicy.exposeHeaders.map((header) => ({ header })) : null;
+
+    const policy = [{
+      policies: [
+        {
+          inbound: [
+            { base: null },
+            {
+              cors: [
+                { "_attr": { "allow-credentials": corsPolicy.allowCredentials } },
+                { "allowed-origins": origins },
+                { "allowed-methods": methods },
+                { "allowed-headers": allowedHeaders },
+                { "expose-headers": exposeHeaders },
+              ]
+            }
+          ],
+        },
+        { backend: [{ base: null }] },
+        { outbound: [{ base: null }] },
+        { "on-error": [{ base: null }] },
+      ]
+    }];
+
+    return xml(policy, { indent: "\t" });
   }
 }
