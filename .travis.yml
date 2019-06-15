@@ -1,52 +1,64 @@
 language: node_js
-
 os: linux
+
+git:
+  depth: 1
+
+branches:
+  only:
+    - master # Do not build PR branches
+    - dev
+    - /^v\d+\.\d+\.\d*$/ # Ensure to build release tags
 
 matrix:
   include:
   - node_js: '8'
   - node_js: '10'
-
-git:
-  depth: 3
   
 sudo: false
 
+stages:
+  - test
+  - publish
+    if: tag =~ ^v\d+\.\d+\.\d*$
+
 install:
-- npm install
-script:
-  - npm run test:ci
+  - npm install
 
-after_success:
-- cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
-
-branches:
-  only:
-    - /^v1.*$/
-
-before_deploy: 
-  - npm run build
-
-deploy:
-  - provider: npm
-    email: $NPM_EMAIL_ACCOUNT
-    api_key:
-      secure: Iu5Q2uuiF+jRWkNRtX77YElMwyEopzKD+iHQQkT7HheH12AwDAW/PZiwLRhBTif8kvHmIIwPhjey6i7QwmJFUmpb433299WF+tinRhy5mBFntdaNmgS2Wvv/hOFJza2XdOeIsKA+s+zPAGArfLonmvQX5QKVmJI7/W+hyqJT0FjtTMqxPyJ00ENuDeZdUEcsaoDAwu1XTA6bj5ILnguR+smeGoZscpp8nwTv27fA+GWLFGf08pPAyuHSwc1/lRxSbLlw/f0ZqnCclGU+SF2EV4/9+xxcPWqtJdJfURR/LaOkg3Q5o4aILRjNJNCbpRkrc5lEcPEvBPLrI6e7F9ssg08aHniaMvdD5B9TsgGqV6sxZX/KvMIHWfzBRLuCzY2bPE8Wbw+ZI/yi9+89NZdRikAMyWocvg4tx1OsQRcrRltsXqQrZyw45IR5oSv0kLx54xrslXu8jjP08jQEpnBncJp883DX6DmO42TRP4QYHsQ8BB5hHQ2qmVoKMydkLy0Kdvq7e+9v/pZHEMsR/HOwz1S5xYsSeqwqoq4u/H+hPFWu3GVJXbsVLHZuaDU3fBRMtJOcjujPszrvN/cNt2JryTT1EYPJotmpURqu/n9vPLMzoi1wIKPrZiAcEzh8MLlM93MyG/yuPeHZOvMuwCVtOXd3KKH8sEJvbTVUtKIvQXw=
-    skip_cleanup: true
-    on:
-      tags: true
-      repo: serverless/serverless-azure-functions
-      branch: 
-        - master
-  - provider: npm
-    email: $NPM_EMAIL_ACCOUNT
-    api_key:
-      secure: Iu5Q2uuiF+jRWkNRtX77YElMwyEopzKD+iHQQkT7HheH12AwDAW/PZiwLRhBTif8kvHmIIwPhjey6i7QwmJFUmpb433299WF+tinRhy5mBFntdaNmgS2Wvv/hOFJza2XdOeIsKA+s+zPAGArfLonmvQX5QKVmJI7/W+hyqJT0FjtTMqxPyJ00ENuDeZdUEcsaoDAwu1XTA6bj5ILnguR+smeGoZscpp8nwTv27fA+GWLFGf08pPAyuHSwc1/lRxSbLlw/f0ZqnCclGU+SF2EV4/9+xxcPWqtJdJfURR/LaOkg3Q5o4aILRjNJNCbpRkrc5lEcPEvBPLrI6e7F9ssg08aHniaMvdD5B9TsgGqV6sxZX/KvMIHWfzBRLuCzY2bPE8Wbw+ZI/yi9+89NZdRikAMyWocvg4tx1OsQRcrRltsXqQrZyw45IR5oSv0kLx54xrslXu8jjP08jQEpnBncJp883DX6DmO42TRP4QYHsQ8BB5hHQ2qmVoKMydkLy0Kdvq7e+9v/pZHEMsR/HOwz1S5xYsSeqwqoq4u/H+hPFWu3GVJXbsVLHZuaDU3fBRMtJOcjujPszrvN/cNt2JryTT1EYPJotmpURqu/n9vPLMzoi1wIKPrZiAcEzh8MLlM93MyG/yuPeHZOvMuwCVtOXd3KKH8sEJvbTVUtKIvQXw=
-    skip_cleanup: true
-    tag: beta   # tag all npm publish from dev branch with "beta"
-    on:
-      tags: true
-      repo: serverless/serverless-azure-functions
-      branch: 
-        - dev
-        - myho/betaRelease
+jobs:
+  include:
+    - stage: test
+      name: "Unit Tests"
+      script:
+        - npm run test:ci
+      after_success:
+        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+    
+    - stage: deploy
+      name: ""
+      node_js: 10
+      before_deploy: 
+        - npm run build
+      deploy:
+        - provider: npm
+          email: $NPM_EMAIL_ACCOUNT
+          api_key:
+            secure: Iu5Q2uuiF+jRWkNRtX77YElMwyEopzKD+iHQQkT7HheH12AwDAW/PZiwLRhBTif8kvHmIIwPhjey6i7QwmJFUmpb433299WF+tinRhy5mBFntdaNmgS2Wvv/hOFJza2XdOeIsKA+s+zPAGArfLonmvQX5QKVmJI7/W+hyqJT0FjtTMqxPyJ00ENuDeZdUEcsaoDAwu1XTA6bj5ILnguR+smeGoZscpp8nwTv27fA+GWLFGf08pPAyuHSwc1/lRxSbLlw/f0ZqnCclGU+SF2EV4/9+xxcPWqtJdJfURR/LaOkg3Q5o4aILRjNJNCbpRkrc5lEcPEvBPLrI6e7F9ssg08aHniaMvdD5B9TsgGqV6sxZX/KvMIHWfzBRLuCzY2bPE8Wbw+ZI/yi9+89NZdRikAMyWocvg4tx1OsQRcrRltsXqQrZyw45IR5oSv0kLx54xrslXu8jjP08jQEpnBncJp883DX6DmO42TRP4QYHsQ8BB5hHQ2qmVoKMydkLy0Kdvq7e+9v/pZHEMsR/HOwz1S5xYsSeqwqoq4u/H+hPFWu3GVJXbsVLHZuaDU3fBRMtJOcjujPszrvN/cNt2JryTT1EYPJotmpURqu/n9vPLMzoi1wIKPrZiAcEzh8MLlM93MyG/yuPeHZOvMuwCVtOXd3KKH8sEJvbTVUtKIvQXw=
+          skip_cleanup: true
+          on:
+            tags: true
+            repo: serverless/serverless-azure-functions
+            branch: 
+              - master
+        - provider: npm
+          email: $NPM_EMAIL_ACCOUNT
+          api_key:
+            secure: Iu5Q2uuiF+jRWkNRtX77YElMwyEopzKD+iHQQkT7HheH12AwDAW/PZiwLRhBTif8kvHmIIwPhjey6i7QwmJFUmpb433299WF+tinRhy5mBFntdaNmgS2Wvv/hOFJza2XdOeIsKA+s+zPAGArfLonmvQX5QKVmJI7/W+hyqJT0FjtTMqxPyJ00ENuDeZdUEcsaoDAwu1XTA6bj5ILnguR+smeGoZscpp8nwTv27fA+GWLFGf08pPAyuHSwc1/lRxSbLlw/f0ZqnCclGU+SF2EV4/9+xxcPWqtJdJfURR/LaOkg3Q5o4aILRjNJNCbpRkrc5lEcPEvBPLrI6e7F9ssg08aHniaMvdD5B9TsgGqV6sxZX/KvMIHWfzBRLuCzY2bPE8Wbw+ZI/yi9+89NZdRikAMyWocvg4tx1OsQRcrRltsXqQrZyw45IR5oSv0kLx54xrslXu8jjP08jQEpnBncJp883DX6DmO42TRP4QYHsQ8BB5hHQ2qmVoKMydkLy0Kdvq7e+9v/pZHEMsR/HOwz1S5xYsSeqwqoq4u/H+hPFWu3GVJXbsVLHZuaDU3fBRMtJOcjujPszrvN/cNt2JryTT1EYPJotmpURqu/n9vPLMzoi1wIKPrZiAcEzh8MLlM93MyG/yuPeHZOvMuwCVtOXd3KKH8sEJvbTVUtKIvQXw=
+          skip_cleanup: true
+          tag: beta   # tag all npm publish from dev branch with "beta"
+          on:
+            tags: true
+            repo: serverless/serverless-azure-functions
+            branch: 
+              - dev
+              - myho/betaRelease
