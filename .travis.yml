@@ -17,7 +17,7 @@ branches:
   only:
     - master
     - dev
-    - ^v\d+\.\d+\.\d+(-\d+)?$ # Ensure to build release tags of format v1.0.0-1
+    - /^v1.*$/ # Ensure to build release tags of format v1.0.0-1
 
 script:
   - npm run test:ci
