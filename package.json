@@ -1,6 +1,6 @@
 {
   "name": "serverless-azure-functions",
-  "version": "1.0.0-8",
+  "version": "1.0.0-9",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
   "main": "./lib/index.js",
