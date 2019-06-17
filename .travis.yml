@@ -16,6 +16,7 @@ branches:
     - /^v1.*$/ # Ensure to build release tags of format v1.0.0-1
 
 script:
+  - printenv | sort
   - npm run test:ci
 
 after_success:
