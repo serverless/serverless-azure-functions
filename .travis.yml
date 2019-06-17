@@ -7,14 +7,13 @@ git:
 branches:
   only:
     - master # Do not build PR branches
-    - dev
+    - dev 
     - /^v\d+\.\d+\.\d*$/ # Ensure to build release tags
 
-matrix:
-  include:
-  - node_js: '8'
-  - node_js: '10'
-  
+node_js:
+  - '8'
+  - '10'
+
 sudo: false
 
 stages:
@@ -34,7 +33,7 @@ jobs:
       after_success:
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
     
-    - stage: deploy
+    - stage: publish
       name: ""
       node_js: 10
       before_deploy: 
