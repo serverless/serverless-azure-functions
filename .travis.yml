@@ -26,8 +26,8 @@ after_success:
 
 stages:
   - test
-  - publish
-    # if: tag IS present # https://docs.travis-ci.com/user/conditions-v1
+  - name: publish
+    if: tag IS present # https://docs.travis-ci.com/user/conditions-v1
 
 install:
   - npm install
