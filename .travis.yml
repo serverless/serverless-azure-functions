@@ -33,7 +33,9 @@ jobs:
   include:
     - stage: test
       name: "Unit Tests on Node 8"
+      node_js: "8"
     - name: "Unit Tests on Node 10"
+      node_js: "10"
       after_success: skip
 
     - stage: publish
