@@ -35,8 +35,8 @@ install:
 jobs:
   include:
     - stage: publish
+      script: skip
       name: "NPM release"
-      node_js: "10"
       before_deploy: 
         - npm run build
       deploy:
