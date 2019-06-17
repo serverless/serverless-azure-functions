@@ -1,4 +1,4 @@
-# Azure Functions Serverless Plugin 
+# Azure Functions Serverless Plugin
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
