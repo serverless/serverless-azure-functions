@@ -1,9 +1,17 @@
-language: node_js
-os: linux
+# since we don't need sudo, travis recommend xenial
+dist: xenial
 
+language: node_js
+node_js:
+  - "8"
+  - "10"
+
+# we don't need previous commits, so don't need default depth of 50
 git:
   depth: 1
 
+# have to enable branch build to trigger on git tag but
+# we don't want the same job to run twice on pull request
 branches:
   only:
     - master # Do not build PR branches
@@ -11,15 +19,9 @@ branches:
     - myho/betaRelease
     - /^v\d+\.\d+\.\d*$/ # Ensure to build release tags
 
-node_js:
-  - '8'
-  - '10'
-
-sudo: false
-
 stages:
   - test
-  - publish
+  - name: publish
     if: tag =~ ^v\d+\.\d+\.\d*$
 
 install:
@@ -35,7 +37,7 @@ jobs:
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
     
     - stage: publish
-      name: ""
+      name: "NPM release"
       node_js: 10
       before_deploy: 
         - npm run build
