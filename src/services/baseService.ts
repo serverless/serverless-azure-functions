@@ -77,4 +77,8 @@ export abstract class BaseService {
   protected slsFunctions() {
     return this.serverless.service["functions"];
   }
+
+  protected slsConfigFile(): string {
+    return ("config" in this.options) ? this.options["config"] : "serverless.yml";
+  }
 }

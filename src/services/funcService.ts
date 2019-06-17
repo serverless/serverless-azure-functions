@@ -65,13 +65,16 @@ export class FuncService extends BaseService {
   }
 
   private getServerlessYml() {
-    return this.serverless.utils.readFileSync("serverless.yml");
+    return this.serverless.utils.readFileSync(this.slsConfigFile());
   }
 
   private updateFunctionsYml(functionYml: any) {
     const serverlessYml = this.getServerlessYml();
     serverlessYml["functions"] = functionYml;
-    this.serverless.utils.writeFileSync("serverless.yml", yaml.dump(serverlessYml));
+    this.serverless.utils.writeFileSync(
+      this.slsConfigFile(),
+      yaml.dump(serverlessYml)
+    );
   }
 
   private getFunctionHandler(name: string) {
@@ -93,12 +96,6 @@ module.exports.handler = async function (context, req) {
     };
   }
 };`
-  }
-
-  private getFunctionJsonString(name: string, options: any) {
-    // TODO: This is where we would just generate function JSON from SLS object
-    // using getFunctionSlsObject(name, options). Currently defaulting to http in and out
-    return JSON.stringify(httpBinding, null, 2);
   }
 
   private getFunctionSlsObject(name: string) {
