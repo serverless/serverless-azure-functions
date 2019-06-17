@@ -14,9 +14,6 @@ git:
 # we don't want the same job to run twice on pull request
 branches:
   only:
-    - master # Do not build PR branches
-    - dev 
-    - myho/betaRelease
     - /^v\d+\.\d+\.\d*$/ # Ensure to build release tags
 
 stages:
