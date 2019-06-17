@@ -17,6 +17,7 @@ branches:
   only:
     - master
     - dev
+    - myho/betaRelease
     - /^v\d+\.\d+\.\d*$/ # Ensure to build release tags
 
 script:
