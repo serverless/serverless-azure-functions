@@ -17,7 +17,7 @@ branches:
   only:
     - master
     - dev
-    - /^v\d+\.\d+\.\d+.*$ # Ensure to build release tags of format v1.0.0-1
+    - /^v\d+\.\d+\.\d+(-\d+)?$ # Ensure to build release tags of format v1.0.0-1
 
 script:
   - npm run test:ci
@@ -27,7 +27,7 @@ after_success:
 stages:
   - test
   - name: publish
-    if: tag =~ ^v\d+\.\d+\.\d+.*$
+    if: tag IS present # https://docs.travis-ci.com/user/conditions-v1
 
 install:
   - npm install
