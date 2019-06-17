@@ -3,6 +3,10 @@ dist: xenial
 
 language: node_js
 
+node_js:
+  - "8"
+  - "10"
+
 # we don't need previous commits, so don't need default depth of 50
 git:
   depth: 1
@@ -15,6 +19,11 @@ branches:
     - dev
     - /^v\d+\.\d+\.\d*$/ # Ensure to build release tags
 
+script:
+  - npm run test:ci
+after_success:
+  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+
 stages:
   - test
   - name: publish
@@ -25,16 +34,6 @@ install:
 
 jobs:
   include:
-    - stage: test
-      name: "Unit Tests"
-      node_js: 
-        - "8"
-        - "10"
-      script:
-        - npm run test:ci
-      after_success:
-        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
-    
     - stage: publish
       name: "NPM release"
       node_js: "10"
