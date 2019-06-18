@@ -46,7 +46,7 @@ jobs:
         - npm run build
       deploy:
         - provider: npm
-          email: $NPM_EMAIL_ACCOUNT
+          email: sls-az-func@microsoft.com
           api_key:
             secure: Iu5Q2uuiF+jRWkNRtX77YElMwyEopzKD+iHQQkT7HheH12AwDAW/PZiwLRhBTif8kvHmIIwPhjey6i7QwmJFUmpb433299WF+tinRhy5mBFntdaNmgS2Wvv/hOFJza2XdOeIsKA+s+zPAGArfLonmvQX5QKVmJI7/W+hyqJT0FjtTMqxPyJ00ENuDeZdUEcsaoDAwu1XTA6bj5ILnguR+smeGoZscpp8nwTv27fA+GWLFGf08pPAyuHSwc1/lRxSbLlw/f0ZqnCclGU+SF2EV4/9+xxcPWqtJdJfURR/LaOkg3Q5o4aILRjNJNCbpRkrc5lEcPEvBPLrI6e7F9ssg08aHniaMvdD5B9TsgGqV6sxZX/KvMIHWfzBRLuCzY2bPE8Wbw+ZI/yi9+89NZdRikAMyWocvg4tx1OsQRcrRltsXqQrZyw45IR5oSv0kLx54xrslXu8jjP08jQEpnBncJp883DX6DmO42TRP4QYHsQ8BB5hHQ2qmVoKMydkLy0Kdvq7e+9v/pZHEMsR/HOwz1S5xYsSeqwqoq4u/H+hPFWu3GVJXbsVLHZuaDU3fBRMtJOcjujPszrvN/cNt2JryTT1EYPJotmpURqu/n9vPLMzoi1wIKPrZiAcEzh8MLlM93MyG/yuPeHZOvMuwCVtOXd3KKH8sEJvbTVUtKIvQXw=
           skip_cleanup: true
