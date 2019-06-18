@@ -34,8 +34,7 @@ jobs:
       script:
         - npm run test:ci
       after_success:
-        - pwd
-        - ls -lt coverage/
+        - npm run test:coverage
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
     - name: "Unit Tests on Node 10"
       node_js: "10"
@@ -48,7 +47,8 @@ jobs:
       deploy:
         - provider: npm
           email: "sls-az@microsoft.com"
-          api_key: $NPM_TOKEN
+          api_key:
+            secure: hFgX3Ru3/CnT90d5WYXZ6Yr91zsHw+D+ZxaDdimtjMSjhZjKgA6HJ82A9SlpVRIm0WcwVYyBX8nd2j4d+Gkcefd8B4tt/UHOxuzFmt9Q5GvyjdKgA0jzY4XqjUogh142IUJUABRodmh8Wr7mHWCXhNNJu17UUyEf+KRliz72Orp36JEmozdgf+CpzVyzGUL2OLBZSmkjpFTUS4clOVhzwj0G2IHNB7qcupAVQ+r3DOjiU1N4+KkT+yrWH1esqOZYWVcqyVTUgkrfLU1eyaP8IemS+nT3Y9l0VxXY6nnZ4fkENbrivaN5cgp/GPSFb6QSiMbwImaPgxhyj2sIb1ydnoza5lR83b5Tsaa5E90gUbU23kms9J0Qi+6WLaI63kdfvQidl2A5UVpDr+lVusg0gfibkMUo4Jbof67o9coAu+WO80qS0jdn9cAg3gX6Xx9c7fUdHrFfxw4TBxjfI0SO7gJwbZvLZsZ9WsTT/SflIUQL72MhiYTQNIk7ewIVQXjb6eDuZS0tgSu3Gb0W7CIsVW7fwMmMvlEfzkzH119YYVUwwBCACfCgyXaFaamJ1tLHRlp1yjDjkBMZLlbOh18cSrTBu86+RBSX+I1jRvNoUxSTtzZjCI9i7sv9lEP2zq5EEMbA8qjCguu48knqQIrzsPNVCysKrNI964aVb8k4MyY=
           skip_cleanup: true
           tag: beta   # tag all npm publish from dev branch with "beta" TODO: remove before merge to master
           on: # https://docs.travis-ci.com/user/deployment/#conditional-releases-with-on
