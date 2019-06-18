@@ -41,6 +41,7 @@ jobs:
     - stage: publish
       name: "NPM release for dev" # rename before merge to master
       node_js: "8"
+      script: skip
       before_deploy: 
         - npm run build
       deploy:
