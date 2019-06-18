@@ -47,7 +47,7 @@ jobs:
         - npm run build
       deploy:
         - provider: npm
-          email: $NPM_EMAIL_ACCOUNT
+          email: "sls-az@microsoft.com"
           api_key: $NPM_TOKEN
           skip_cleanup: true
           tag: beta   # tag all npm publish from dev branch with "beta" TODO: remove before merge to master
