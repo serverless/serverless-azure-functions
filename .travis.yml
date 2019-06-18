@@ -15,33 +15,32 @@ branches:
     - dev
     - /^v.*$/ # Ensure to build release tags of format v1.0.0-1
 
-script:
-  - npm run test:ci
-
-after_success:
-  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
-      
 stages:
-  - test
+  - name: test
+    if: tag IS NOT present
   - name: publish
     if: tag IS present # https://docs.travis-ci.com/user/conditions-v1
 
 install:
   - npm install
 
+script:
+  - printenv | sort
 jobs:
   include:
     - stage: test
       name: "Unit Tests on Node 8"
       node_js: "8"
+      script:
+        - npm run test:ci
+      after_success:
+        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
     - name: "Unit Tests on Node 10"
       node_js: "10"
-      after_success: skip
 
     - stage: publish
       name: "NPM release for dev" # rename before merge to master
       node_js: "8"
-      script: skip
       before_deploy: 
         - npm run build
       deploy:
