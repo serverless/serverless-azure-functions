@@ -31,6 +31,7 @@ jobs:
     - stage: test
       name: "Unit Tests on Node 8"
       node_js: "8"
+      skip_cleanup: true  # don't clean up so we can upload coverage report
       script:
         - npm run test:ci
       after_success:
@@ -51,4 +52,5 @@ jobs:
           skip_cleanup: true
           tag: beta   # tag all npm publish from dev branch with "beta" TODO: remove before merge to master
           on: # https://docs.travis-ci.com/user/deployment/#conditional-releases-with-on
+            tags: true
             repo: serverless/serverless-azure-functions
