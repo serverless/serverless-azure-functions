@@ -1,0 +1,6 @@
+participant Serverless CLI as s
+participant Resource Group as r 
+participant Function App as f
+participant Blob Storage as b
+
+s -> r: List deployments
