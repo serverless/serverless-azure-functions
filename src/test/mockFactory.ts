@@ -12,6 +12,7 @@ import PluginManager from "serverless/lib/classes/PluginManager";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
+import { ApiCorsPolicy } from "../models/apiManagement";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -236,7 +237,7 @@ export class MockFactory {
     const result = []
     functions = functions || MockFactory.createTestSlsFunctionConfig();
     for (const name of Object.keys(functions)) {
-      result.push({ properties: MockFactory.createTestFunctionEnvelope(name)});
+      result.push({ properties: MockFactory.createTestFunctionEnvelope(name) });
     }
     return result;
   }
@@ -271,7 +272,7 @@ export class MockFactory {
       subscriptionId: "azureSubId",
     }
   }
-  
+
   public static createTestSite(name: string = "Test"): Site {
     return {
       id: "appId",
@@ -408,6 +409,16 @@ export class MockFactory {
         end: jest.fn(),
       };
     });
+  }
+
+  public static createTestMockApiCorsPolicy(): ApiCorsPolicy {
+    return {
+      allowCredentials: false,
+      allowedOrigins: ["*"],
+      allowedHeaders: ["*"],
+      exposeHeaders: ["*"],
+      allowedMethods: ["GET","POST"],
+    };
   }
 
   private static createTestCli(): Logger {

@@ -1,7 +1,6 @@
 import yaml from "js-yaml";
 import rimraf from "rimraf";
 import Serverless from "serverless";
-import httpBinding from "../plugins/func/bindingTemplates/http.json";
 import { BaseService } from "./baseService";
 import fs from "fs";
 
