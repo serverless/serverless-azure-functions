@@ -16,7 +16,8 @@ branches:
     - /^v.*$/ # Ensure to build release tags of format v1.0.0-1
 
 stages:
-  - test
+  - name: test
+    if: tag IS NOT present
   - name: publish
     if: tag IS present # https://docs.travis-ci.com/user/conditions-v1
 
