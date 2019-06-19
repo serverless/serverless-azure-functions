@@ -12,9 +12,12 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  protected constructor(protected serverless: Serverless, protected options: Serverless.Options = { stage: null, region: null }, authenticate: boolean = true) {
+  protected constructor(
+    protected serverless: Serverless,
+    protected options: Serverless.Options = { stage: null, region: null },
+    authenticate: boolean = true,
+  ) {
     Guard.null(serverless);
-    this.setDefaultRegion();
 
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
@@ -23,11 +26,13 @@ export abstract class BaseService {
     this.resourceGroup = this.getResourceGroupName(this.serviceName);
     this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
 
+    this.setDefaultValues();
+
     if (!this.credentials && authenticate) {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
-  
+
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
@@ -82,18 +87,19 @@ export abstract class BaseService {
   protected slsConfigFile(): string {
     return ("config" in this.options) ? this.options["config"] : "serverless.yml";
   }
-  
-  /**
-   * Normalize provider object b/c serverless set an incorrect region default
-   * that use AWS syntax
-   */
-  private setDefaultRegion(): void {
-    const defaultRegion = "westus2";
+
+  private setDefaultValues(): void {
+    // TODO: Right now the serverless core will always default to AWS default region if the
+    // region has not been set in the serverless.yml or CLI options
     const awsDefault = "us-east-1"
     const providerRegion = this.serverless.service.provider.region;
 
-    if (providerRegion === awsDefault) { // no region specified in serverless.yml
-      this.serverless.service.provider.region = defaultRegion;
+    if (!providerRegion || providerRegion === awsDefault) { // no region specified in serverless.yml
+      this.serverless.service.provider.region = "westus";
+    }
+
+    if (!this.serverless.service.provider.stage) {
+      this.serverless.service.provider.stage = "dev";
     }
   }
 
@@ -101,9 +107,8 @@ export abstract class BaseService {
     return this.options.region || this.serverless.service.provider.region;
   }
 
-  private getStage(): string {
-    const defaultStage = "dev";
-    return this.options.stage || this.serverless.service.provider.stage || defaultStage;
+  protected getStage(): string {
+    return this.options.stage || this.serverless.service.provider.stage || "dev";
   }
 
   private getResourceGroupName(serviceName: string): string {

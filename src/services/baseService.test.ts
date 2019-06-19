@@ -21,6 +21,14 @@ class TestService extends BaseService {
     return this.sendFile(requestOptions, filePath);
   }
 
+  public getSlsRegion() {
+    return this.getRegion();
+  }
+
+  public getSlsStage() {
+    return this.getStage();
+  }
+
   public getProperties() {
     return {
       baseUrl: this.baseUrl,
@@ -49,12 +57,17 @@ describe("Base Service", () => {
     mockFs.restore();
   });
 
-  beforeEach(() => {
+  function createTestService(options?: Serverless.Options) {
     sls = MockFactory.createTestServerless();
     sls.variables["azureCredentials"] = MockFactory.createTestAzureCredentials();
     sls.variables["subscriptionId"] = "ABC123";
     Object.assign(sls.service, slsConfig);
-    service = new TestService(sls);
+
+    return new TestService(sls, options);
+  }
+
+  beforeEach(() => {
+    service = createTestService();
   });
 
   it("Initializes common service properties", () => {
@@ -65,6 +78,25 @@ describe("Base Service", () => {
     expect(props.serviceName).toEqual(slsConfig.service);
     expect(props.resourceGroup).toEqual(slsConfig.provider.resourceGroup);
     expect(props.deploymentName).toEqual(slsConfig.provider.deploymentName);
+  });
+
+  it("Sets default region and stage values if not defined", () => {
+    const testService = new TestService(sls);
+
+    expect(testService).not.toBeNull();
+    expect(sls.service.provider.region).toEqual("westus");
+    expect(sls.service.provider.stage).toEqual("dev");
+  });
+
+  it("returns region and stage based on CLI options", () => {
+    const cliOptions = {
+      stage: "prod",
+      region: "eastus2"
+    };
+    const testService = new TestService(sls, cliOptions);
+
+    expect(testService.getSlsRegion()).toEqual(cliOptions.region);
+    expect(testService.getSlsStage()).toEqual(cliOptions.stage);
   });
 
   it("Fails if credentials have not been set in serverless config", () => {
