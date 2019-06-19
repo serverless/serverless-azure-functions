@@ -1,6 +1,6 @@
 {
   "name": "serverless-azure-functions",
-  "version": "0.7.0",
+  "version": "1.0.0-3",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
   "main": "./lib/index.js",
@@ -30,6 +30,9 @@
     "iot",
     "internet of things",
     "serverless.com"
+  ],
+  "files": [
+    "lib/"
   ],
   "dependencies": {
     "@azure/arm-apimanagement": "^5.1.0",
