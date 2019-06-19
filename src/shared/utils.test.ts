@@ -1,7 +1,7 @@
-import Serverless from "serverless";
 import path from "path";
+import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
-import { Utils, FunctionMetadata } from "./utils";
+import { FunctionMetadata, Utils } from "./utils";
 
 describe("utils", () => {
   let sls: Serverless;
@@ -19,6 +19,7 @@ describe("utils", () => {
 
   it("resolves handler when handler code is outside function folders", () => {
     sls.service["functions"].hello.handler = "src/handlers/hello.handler";
+    MockFactory.updateService(sls);
 
     const functions = sls.service.getAllFunctions();
     const metadata = Utils.getFunctionMetaData(functions[0], sls);
@@ -34,6 +35,7 @@ describe("utils", () => {
 
   it("resolves handler when code is in function folder", () => {
     sls.service["functions"].hello.handler = "hello/index.handler";
+    MockFactory.updateService(sls);
 
     const functions = sls.service.getAllFunctions();
     const metadata = Utils.getFunctionMetaData(functions[0], sls);
@@ -49,6 +51,7 @@ describe("utils", () => {
 
   it("resolves handler when code is at the project root", () => {
     sls.service["functions"].hello.handler = "hello.handler";
+    MockFactory.updateService(sls);
 
     const functions = sls.service.getAllFunctions();
     const metadata = Utils.getFunctionMetaData(functions[0], sls);

@@ -29,8 +29,37 @@ export class MockFactory {
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     sls.service = getAttribute(config, "service", MockFactory.createTestService());
-    sls.service.getFunction = jest.fn((functionName) => sls.service["functions"][functionName]);
+    sls.config.servicePath = "";
     return sls;
+  }
+
+  public static createTestService(functions?): Service {
+    if (!functions) {
+      functions = MockFactory.createTestSlsFunctionConfig()
+    }
+    const serviceName = "serviceName";
+    return {
+      getAllFunctions: jest.fn(() => Object.keys(functions)),
+      getFunction: jest.fn((name: string) => functions[name]),
+      getAllEventsInFunction: jest.fn(),
+      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
+      getEventInFunction: jest.fn(),
+      getServiceName: jest.fn(() => serviceName),
+      load: jest.fn(),
+      mergeResourceArrays: jest.fn(),
+      setFunctionNames: jest.fn(),
+      update: jest.fn(),
+      validate: jest.fn(),
+      custom: null,
+      provider: MockFactory.createTestAzureServiceProvider(),
+      service: serviceName,
+      artifact: "app.zip",
+      functions
+    } as any as Service;
+  }
+
+  public static updateService(sls: Serverless) {
+    sls.service = MockFactory.createTestService(sls.service["functions"]);
   }
 
   public static createTestServerlessOptions(): Serverless.Options {
@@ -69,6 +98,25 @@ export class MockFactory {
         },
       ] as any as LinkedSubscription[],
     };
+  }
+
+  public static createTestFunctions(functionCount = 3) {
+    const functions = []
+    for (let i = 0; i < functionCount; i++) {
+      functions.push(MockFactory.createTestFunction(`function${i + 1}`));
+    }
+    return functions;
+  }
+
+  public static createTestFunction(name: string = "TestFunction") {
+    return {
+      properties: {
+        name,
+        config: {
+          bindings: MockFactory.createTestBindings()
+        }
+      }
+    }
   }
 
   public static createTestAzureCredentials(): TokenClientCredentials {
@@ -141,19 +189,10 @@ export class MockFactory {
       plugins: [
         "serverless-azure-functions"
       ],
-      functions: functionMetadata || MockFactory.createTestFunctionsMetadata(2),
+      functions: functionMetadata || MockFactory.createTestSlsFunctionConfig(),
     }
     return (asYaml) ? yaml.dump(data) : data;
-  }
-
-  public static createTestFunctionsMetadata(functionCount = 2) {
-    const data = {}
-    for (let i = 0; i < functionCount; i++) {
-      const functionName = `function${i + 1}`;
-      data[functionName] = MockFactory.createTestFunctionMetadata(functionName);
-    }
-    return data;
-  }
+  } 
 
   public static createTestFunctionApimConfig(name: string) {
     return {
@@ -171,48 +210,27 @@ export class MockFactory {
 
   public static createTestFunctionMetadata(name: string) {
     return {
-      handler: `src/handlers/${name}.handler`,
-      events: [
-        {
-          http: true,
-          "x-azure-settings": {
-            authLevel: "anonymous"
-          }
-        },
-        {
-          http: true,
-          "x-azure-settings": {
-            direction: "out",
-            name: "res"
-          },
-        }
-      ]
-    };
+      "handler": `${name}.handler`,
+      "events": MockFactory.createTestFunctionEvents(),
+    }
   }
 
-  public static createTestService(functions?): Service {
-    if (!functions) {
-      functions = MockFactory.createTestSlsFunctionConfig()
-    }
-    const serviceName = "serviceName";
-    return {
-      getAllFunctions: jest.fn(() => Object.keys(functions)),
-      getFunction: jest.fn(),
-      getAllEventsInFunction: jest.fn(),
-      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
-      getEventInFunction: jest.fn(),
-      getServiceName: jest.fn(() => serviceName),
-      load: jest.fn(),
-      mergeResourceArrays: jest.fn(),
-      setFunctionNames: jest.fn(),
-      update: jest.fn(),
-      validate: jest.fn(),
-      custom: null,
-      provider: MockFactory.createTestAzureServiceProvider(),
-      service: serviceName,
-      artifact: "app.zip",
-      functions
-    } as any as Service;
+  public static createTestFunctionEvents() {
+    return [
+      {
+        "http": true,
+        "x-azure-settings": {
+          "authLevel": "anonymous"
+        }
+      },
+      {
+        "http": true,
+        "x-azure-settings": {
+          "direction": "out",
+          "name": "res"
+        }
+      }
+    ]
   }
 
   public static createTestFunctionsResponse(functions?) {
@@ -289,14 +307,31 @@ export class MockFactory {
     return MockFactory.createTestHttpBinding();
   }
 
-  public static createTestHttpBinding() {
+  public static createTestHttpBinding(direction: string = "in") {
+    if (direction === "in") {
+      return {
+        authLevel: "anonymous",
+        type: "httpTrigger",
+        direction,
+        name: "req",
+      }
+    } else {
+      return {
+        type: "http",
+        direction,
+        name: "res"
+      }
+    }
+  }
+
+  public static createTestBindingsObject(name: string = "index.js") {
     return {
-      type: "httpTrigger",
-      authLevel: "anonymous",
-      direction: "in",
-      methods: [
-        "get",
-        "post"
+      scriptFile: name,
+      entryPoint: "handler",
+      disabled: false,
+      bindings: [
+        MockFactory.createTestHttpBinding("in"),
+        MockFactory.createTestHttpBinding("out")
       ]
     }
   }

@@ -1,7 +1,7 @@
-import Serverless from "serverless";
 import axios from "axios";
-import request from "request";
 import fs from "fs";
+import request from "request";
+import Serverless from "serverless";
 import { Guard } from "../shared/guard";
 
 export abstract class BaseService {
@@ -12,7 +12,7 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
 
-  protected constructor(protected serverless: Serverless, protected options?: Serverless.Options) {
+  protected constructor(protected serverless: Serverless, protected options?: Serverless.Options, authenticate = true) {
     Guard.null(serverless);
 
     this.baseUrl = "https://management.azure.com";
@@ -22,13 +22,9 @@ export abstract class BaseService {
     this.resourceGroup = serverless.service.provider["resourceGroup"] || `${this.serviceName}-rg`;
     this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
 
-    if (!this.credentials) {
+    if (!this.credentials && authenticate) {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
-  }
-
-  protected log(message: string) {
-    this.serverless.cli.log(message);
   }
   
   /**
@@ -72,5 +68,17 @@ export abstract class BaseService {
           resolve(response);
         }));
     });
+  }
+
+  protected log(message: string) {
+    this.serverless.cli.log(message);
+  }
+
+  protected slsFunctions() {
+    return this.serverless.service["functions"];
+  }
+
+  protected slsConfigFile(): string {
+    return ("config" in this.options) ? this.options["config"] : "serverless.yml";
   }
 }

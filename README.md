@@ -38,6 +38,33 @@ This will remove the `{functionName}` directory and remove the function from `se
 
 *Note: Add & remove currently only support HTTP triggered functions. For other triggers, you will need to update `serverless.yml` manually
 
+### Running Function App Locally (`offline` plugin)
+
+In order to run a Azure Function App locally, the `azure-functions-core-tools` package needs to be installed from NPM. Since it is only used for local development, we did not include it in the `devDependencies` of `package.json`. To install globally, run:
+
+```bash
+npm i azure-functions-core-tools -g
+```
+
+Then, at the root of your project directory, run:
+
+```bash
+# Builds necessary function bindings files
+sls offline
+# Starts the function app
+npm start
+```
+
+The build process will generate a directory for each of your functions, which will contain a file titled `function.json`. This will contain a relative reference to your handler file & exported function from that file as long as they are referenced correctly in `serverless.yml`.
+
+The `npm start` script just runs `func host start`, but we included the `npm` script for ease of use.
+
+To clean up files generated from the build, you can simply run:
+
+```bash
+sls offline cleanup
+```
+
 ### Deploy, test, and diagnose your Azure service
 
 1. Deploy your new service to Azure! The first time you do this, you will be asked to authenticate with your Azure account, so the `serverless` CLI can manage Functions on your behalf. Simply follow the provided instructions, and the deployment will continue as soon as the authentication process is completed.
