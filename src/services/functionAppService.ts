@@ -10,8 +10,6 @@ import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
-import { stringLiteral } from "@babel/types";
-import { hostname } from "os";
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
