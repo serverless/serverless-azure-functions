@@ -23,8 +23,6 @@ stages:
 install:
   - npm install
 
-script:
-  - printenv | sort
 jobs:
   include:
     - stage: test
