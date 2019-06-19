@@ -11,7 +11,7 @@
 - Open questions:
   - How to ensure rollback to corresponding ARM deployment and function app from blob storage? Custom named deployments containing version number?
 
-##### Sequence diagram
+##### Sequence diagram for rollback
 
 ```mermaid
 sequenceDiagram
@@ -24,9 +24,7 @@ sequenceDiagram
   s ->> r: Request deployments
   r ->> s: Return deployments
   note right of s: Select deployment
-  loop Deploy
-    s ->> r: Deploy ARM template
-  end
+  s ->> r: Deploy ARM template
   s ->> b: Request names of previously deployed artifacts
   b ->> s: Return names
   note right of s: Select artifact
