@@ -13,6 +13,7 @@ describe("Bindings", () => {
   beforeEach(() => {
     sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
+    jest.clearAllMocks();
   });
 
   it("should get bindings metadata from serverless", () => {
