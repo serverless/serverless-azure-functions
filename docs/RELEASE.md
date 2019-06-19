@@ -2,13 +2,13 @@
 
 ## Beta development
 
-This is the instruction on how to release new beta packages on the `dev` branch
+Instructions for releasing beta packages on the `dev` branch
 
 ### Steps
 
 1. Check out `dev`
 1. Pull latest
-1. Run script to bump versiona and push changes to new branch `npmRelease`
+1. Run script to bump versions and push changes to new branch `npmRelease`
 
     ```bash
     ./scripts/npmVersionBumpPrerelease.sh
