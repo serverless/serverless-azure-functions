@@ -85,6 +85,25 @@ describe("Base Service", () => {
   });
 
   it("Sets default region and stage values if not defined", () => {
+    const testService = new TestService(sls);
+
+    expect(testService).not.toBeNull();
+    expect(sls.service.provider.region).toEqual("westus");
+    expect(sls.service.provider.stage).toEqual("dev");
+  });
+
+  it("returns region and stage based on CLI options", () => {
+    const cliOptions = {
+      stage: "prod",
+      region: "eastus2"
+    };
+    const testService = new TestService(sls, cliOptions);
+
+    expect(testService.getSlsRegion()).toEqual(cliOptions.region);
+    expect(testService.getSlsStage()).toEqual(cliOptions.stage);
+  });
+
+  it("Sets default region and stage values if not defined", () => {
     const testService = new MockService(sls);
 
     expect(testService).not.toBeNull();

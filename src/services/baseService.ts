@@ -18,7 +18,6 @@ export abstract class BaseService {
     authenticate: boolean = true,
   ) {
     Guard.null(serverless);
-    this.setDefaultRegion();
 
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
