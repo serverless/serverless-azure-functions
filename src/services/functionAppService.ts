@@ -123,16 +123,17 @@ export class FunctionAppService extends BaseService {
    */
   public async deploy() {
     this.log(`Creating function app: ${this.serviceName}`);
-    let parameters: any = { functionAppName: { value: this.serviceName } };
 
-    const gitUrl = this.serverless.service.provider["gitUrl"];
+    const parameters = this.serverless.service.provider["armTemplate"]["parameters"];
 
-    if (gitUrl) {
-      parameters = {
-        functionAppName: { value: this.serviceName },
-        gitUrl: { value: gitUrl }
-      };
-    }
+    // const gitUrl = this.serverless.service.provider["gitUrl"];
+
+    // if (gitUrl) {
+    //   parameters = {
+    //     functionAppName: { value: this.serviceName },
+    //     gitUrl: { value: gitUrl }
+    //   };
+    // }
 
     let templateFilePath = path.join(__dirname, "..", "provider", "armTemplates", "azuredeploy.json");
 
@@ -140,22 +141,66 @@ export class FunctionAppService extends BaseService {
       templateFilePath = path.join(__dirname, "armTemplates", "azuredeployWithGit.json");
     }
 
-    if (this.serverless.service.provider["armTemplate"]) {
-      this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
-      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
-      const userParameters = this.serverless.service.provider["armTemplate"].parameters;
-      const userParametersKeys = Object.keys(userParameters);
+    // Deploy ARM template
+    await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, deploymentParameters);
 
-      for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
-        const item = {};
+    // Return function app 
+    return await this.get();
+  }
 
-        item[userParametersKeys[paramIndex]] = { "value": userParameters[userParametersKeys[paramIndex]] };
-        parameters = _.merge(parameters, item);
-      }
+  private buildArmTemplateFromConfig(type: string): Deployment {
+    const apim = require("../armTemplates/resources/apim.json");
+    const template = require(`../armTemplates/${type}`);
+
+    if (this.serverless.service.provider["apim"]) {
+      template.parameters = {
+        ...template.parameters
+        apim.parameters
+      };
+      template.resources = [
+        ...template.resources,
+        apim.resources,
+      ]
     }
 
-    let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
+    this.applyAppSettings(template);
 
+    return {
+      properties: {
+        mode: "Incremental",
+        parameters,
+        template
+      }
+    };
+  }
+
+  private getDeploymentFromCustomArmTemplate(): Deployment {
+    const templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
+    const template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
+    const userParameters = this.serverless.service.provider["armTemplate"].parameters;
+    const userParametersKeys = Object.keys(userParameters);
+
+    let parameters = {};
+
+    for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
+      const item = {};
+
+      item[userParametersKeys[paramIndex]] = { "value": userParameters[userParametersKeys[paramIndex]] };
+      parameters = _.merge(parameters, item);
+    }
+
+    this.applyAppSettings(template);
+
+    return {
+      properties: {
+        mode: "Incremental",
+        parameters,
+        template
+      }
+    };
+  }
+
+  private applyAppSettings(template: any) {
     // Check if there are custom environment variables defined that need to be
     // added to the ARM template used in the deployment.
     const environmentVariables = this.serverless.service.provider["environment"];
@@ -173,20 +218,6 @@ export class FunctionAppService extends BaseService {
         return appSettingsList;
       });
     }
-
-    const deploymentParameters: Deployment = {
-      properties: {
-        mode: "Incremental",
-        parameters,
-        template
-      }
-    };
-
-    // Deploy ARM template
-    await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, deploymentParameters);
-
-    // Return function app 
-    return await this.get();
   }
 
   private async zipDeploy(functionApp) {
