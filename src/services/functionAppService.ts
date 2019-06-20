@@ -292,6 +292,11 @@ export class FunctionAppService extends BaseService {
     return response.data.replace(/"/g, "");
   }
 
+  /**
+   * Retrieves the SCM domain from the list of enabled domains within the app
+   * Note: The SCM domain exposes additional API calls from the standard REST APIs.
+   * @param functionApp The function app / web site
+   */
   private getScmDomain(functionApp: Site) {
     return functionApp.enabledHostNames.find((hostName: string) => {
       return hostName.endsWith("scm.azurewebsites.net");
