@@ -68,7 +68,7 @@
       "type": "Microsoft.Web/hostingEnvironments",
       "apiVersion": "2016-09-01",
       "name": "[parameters('hostingEnvironmentName')]",
-      "location": "West US",
+      "location": "[parameters('location')]",
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
       ],
@@ -76,7 +76,7 @@
       "zones": [],
       "properties": {
         "name": "[parameters('hostingEnvironmentName')]",
-        "location": "West US",
+        "location": "[parameters('location')]",
         "vnetName": "[parameters('virtualNetworkName')]",
         "vnetResourceGroupName": "[resourceGroup().name]",
         "vnetSubnetName": "default",
@@ -92,33 +92,6 @@
         "networkAccessControlList": [],
         "frontEndScaleFactor": 15,
         "suspended": false
-      }
-    },
-    {
-      "type": "Microsoft.Web/serverfarms",
-      "apiVersion": "2016-09-01",
-      "name": "[parameters('appServicePlanName')]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/hostingEnvironments', parameters('hostingEnvironmentName'))]"
-      ],
-      "sku": {
-        "name": "I1",
-        "tier": "Isolated",
-        "size": "I1",
-        "family": "I",
-        "capacity": 3
-      },
-      "kind": "app",
-      "properties": {
-        "name": "[parameters('appServicePlanName')]",
-        "hostingEnvironmentProfile": {
-          "id": "[resourceId('Microsoft.Web/hostingEnvironments', parameters('hostingEnvironmentName'))]"
-        },
-        "perSiteScaling": false,
-        "reserved": false,
-        "targetWorkerCount": 0,
-        "targetWorkerSizeId": 0
       }
     }
   ]

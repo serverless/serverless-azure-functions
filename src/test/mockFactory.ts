@@ -12,7 +12,7 @@ import PluginManager from "serverless/lib/classes/PluginManager";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
-import { ApiCorsPolicy } from "../models/apiManagement";
+import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
 import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
@@ -207,6 +207,20 @@ export class MockFactory {
     }
     return (asYaml) ? yaml.dump(data) : data;
   } 
+
+  public static createTestApimConfig(): ApiManagementConfig {
+    return {
+      name: "test-apim-resource",
+      api: {
+        name: "test-apim-api1",
+        subscriptionRequired: false,
+        displayName: "API 1",
+        description: "description of api 1",
+        protocols: ["https"],
+        path: "test-api1",
+      },
+    };
+  }
 
   public static createTestFunctionApimConfig(name: string) {
     return {
@@ -432,7 +446,7 @@ export class MockFactory {
       allowedOrigins: ["*"],
       allowedHeaders: ["*"],
       exposeHeaders: ["*"],
-      allowedMethods: ["GET","POST"],
+      allowedMethods: ["GET", "POST"],
     };
   }
 

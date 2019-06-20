@@ -1,11 +1,11 @@
-import * as functionApp from "./resources/functionApp.json";
-import * as appInsights from "./resources/appInsights.json";
-import * as storage from "./resources/storage.json";
-import * as appServicePlan from "./resources/appServicePlan.json";
-import * as hostingEnvironment from "./resources/hostingEnvironment.json";
+import functionApp from "./resources/functionApp.json";
+import appInsights from "./resources/appInsights.json";
+import storage from "./resources/storageAccount.json";
+import appServicePlan from "./resources/appServicePlan.json";
+import hostingEnvironment from "./resources/hostingEnvironment.json";
 
 export function generate() {
-  return {
+  const template = {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
@@ -23,4 +23,9 @@ export function generate() {
       ...hostingEnvironment.resources,
     ],
   };
+
+  template.parameters.appServicePlanSkuName.defaultValue = "I1";
+  template.parameters.appServicePlanSkuTier.defaultValue = "Isolated";
+
+  return template;
 }
