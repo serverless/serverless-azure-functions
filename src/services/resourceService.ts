@@ -14,11 +14,9 @@ export class ResourceService extends BaseService {
   public async deployResourceGroup() {
     this.log(`Creating resource group: ${this.resourceGroup}`);
 
-    const groupParameters = {
-      location: this.serverless.service.provider["location"]
-    };
-
-    return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, groupParameters);
+    return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, {
+      location: this.getRegion(),
+    });
   }
 
   public async deleteDeployment() {
