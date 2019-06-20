@@ -43,7 +43,7 @@ describe("APIM Service", () => {
       provider: {
         name: "azure",
         resourceGroup: "test-sls-rg",
-        location: "West US",
+        region: "West US",
         apim: apimConfig,
       },
     };
@@ -91,7 +91,7 @@ describe("APIM Service", () => {
       const expectedResponse = interpolateJson(apimGetService200, {
         resourceGroup: {
           name: serverless.service.provider["resourceGroup"],
-          location: serverless.service.provider["location"],
+          location: serverless.service.provider.region,
         },
         resource: {
           name: apimConfig.name,
@@ -106,7 +106,7 @@ describe("APIM Service", () => {
       expect(resource).not.toBeNull();
       expect(resource).toMatchObject({
         name: apimConfig.name,
-        location: serverless.service.provider["location"],
+        location: serverless.service.provider.region,
       });
     });
   });
@@ -133,7 +133,7 @@ describe("APIM Service", () => {
       const expectedResponse = interpolateJson(apimGetApi200, {
         resourceGroup: {
           name: serverless.service.provider["resourceGroup"],
-          location: serverless.service.provider["location"],
+          location: serverless.service.provider.region,
         },
         service: {
           name: apimConfig.name,

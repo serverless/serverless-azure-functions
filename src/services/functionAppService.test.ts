@@ -2,7 +2,6 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { constants } from "../config";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionAppService } from "./functionAppService";
 
@@ -11,7 +10,7 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 jest.mock("@azure/arm-resources")
 
 describe("Function App Service", () => {
-  
+
   const app = MockFactory.createTestSite();
   const slsService = MockFactory.createTestService();
   const variables = MockFactory.createTestVariables();
@@ -29,17 +28,18 @@ describe("Function App Service", () => {
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const syncTriggersUrl = `${baseUrl}${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
-  const uploadUrl = `https://${app.enabledHostNames[0]}${constants.scmZipDeployApiPath}/`
+  const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
+  const uploadUrl = `https://${scmDomain}/api/zipdeploy/`;
 
-  beforeAll(() => {   
+  beforeAll(() => {
 
     // TODO: How to spy on defaul exported function?
     const axiosMock = new MockAdapter(axios);
-    
+
     // Master Key
     axiosMock.onGet(masterKeyUrl).reply(200, { value: masterKey });
     // Auth Key
-    axiosMock.onGet(authKeyUrl).reply(200, authKey);  
+    axiosMock.onGet(authKeyUrl).reply(200, authKey);
     // Sync Triggers
     axiosMock.onPost(syncTriggersUrl).reply(200, syncTriggersMessage);
     // List Functions
@@ -52,7 +52,7 @@ describe("Function App Service", () => {
 
     mockFs({
       "app.zip": "contents",
-    }, {createCwd: true, createTmp: true});
+    }, { createCwd: true, createTmp: true });
   });
 
   beforeEach(() => {
@@ -80,8 +80,8 @@ describe("Function App Service", () => {
       }),
       options || MockFactory.createTestServerlessOptions()
     )
-  } 
-  
+  }
+
   it("get returns function app", async () => {
     const service = createService();
     const result = await service.get();
@@ -93,7 +93,7 @@ describe("Function App Service", () => {
   it("get returns null if error occurred", async () => {
     const service = createService();
     WebSiteManagementClient.prototype.webApps = {
-      get: jest.fn(() => { return { error: { code: "ResourceNotFound"}}}),
+      get: jest.fn(() => { return { error: { code: "ResourceNotFound" } } }),
       deleteFunction: jest.fn(),
     } as any;
     const result = await service.get();
@@ -106,14 +106,14 @@ describe("Function App Service", () => {
     const service = createService();
     const masterKey = await service.getMasterKey();
     expect(masterKey).toEqual(masterKey);
-    
+
   });
 
   it("deletes function", async () => {
     const service = createService();
     const response = await service.deleteFunction(app, Object.keys(functions)[0]);
     expect(response.data).toEqual(deleteFunctionMessage);
-    
+
   });
 
   it("syncs triggers", async () => {
