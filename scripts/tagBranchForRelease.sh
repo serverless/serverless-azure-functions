@@ -12,5 +12,6 @@ fi
 echo "getting latest"
 git pull
 PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
-git tag $PACKAGE_VERSION
-git push origin $PACKAGE_VERSION
+TAG="v${PACKAGE_VERSION}"
+git tag $TAG
+git push origin $TAG
