@@ -8,7 +8,7 @@ import request from "request";
 import fs from "fs";
 import { BaseService } from "./baseService";
 
-class TestService extends BaseService {
+class MockService extends BaseService {
   public constructor(serverless: Serverless, options?: Serverless.Options) {
     super(serverless, options);
   }
@@ -46,7 +46,7 @@ class TestService extends BaseService {
 }
 
 describe("Base Service", () => {
-  let service: TestService;
+  let service: MockService;
   let sls: Serverless;
 
   const slsConfig = {
@@ -67,7 +67,7 @@ describe("Base Service", () => {
     sls.variables["subscriptionId"] = "ABC123";
     Object.assign(sls.service, slsConfig);
 
-    return new TestService(sls, options);
+    return new MockService(sls, options);
   }
 
   beforeEach(() => {
@@ -85,7 +85,7 @@ describe("Base Service", () => {
   });
 
   it("Sets default region and stage values if not defined", () => {
-    const testService = new TestService(sls);
+    const testService = new MockService(sls);
 
     expect(testService).not.toBeNull();
     expect(sls.service.provider.region).toEqual("westus");
@@ -97,14 +97,14 @@ describe("Base Service", () => {
       stage: "prod",
       region: "eastus2"
     };
-    const testService = new TestService(sls, cliOptions);
+    const testService = new MockService(sls, cliOptions);
 
     expect(testService.getSlsRegion()).toEqual(cliOptions.region);
     expect(testService.getSlsStage()).toEqual(cliOptions.stage);
   });
 
   it("Generates resource group name from sls yaml config", () => {
-    const testService = new TestService(sls);
+    const testService = new MockService(sls);
     const resourceGroupName = testService.getSlsResourceGroupName();
 
     expect(resourceGroupName).toEqual(sls.service.provider["resourceGroup"]);
@@ -112,7 +112,7 @@ describe("Base Service", () => {
 
   it("Generates resource group from convention when NOT defined in sls yaml", () => {
     sls.service.provider["resourceGroup"] = null;
-    const testService = new TestService(sls);
+    const testService = new MockService(sls);
     const resourceGroupName = testService.getSlsResourceGroupName();
     const region = testService.getSlsRegion();
     const stage = testService.getSlsStage();
@@ -122,7 +122,7 @@ describe("Base Service", () => {
 
   it("Fails if credentials have not been set in serverless config", () => {
     sls.variables["azureCredentials"] = null;
-    expect(() => new TestService(sls)).toThrow()
+    expect(() => new MockService(sls)).toThrow()
   });
 
   it("Makes HTTP request via axios", async () => {
