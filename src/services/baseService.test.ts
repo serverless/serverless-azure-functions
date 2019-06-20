@@ -21,6 +21,10 @@ class TestService extends BaseService {
     return this.sendFile(requestOptions, filePath);
   }
 
+  public getSlsResourceGroupName() {
+    return this.getResourceGroupName();
+  }
+
   public getSlsRegion() {
     return this.getRegion();
   }
@@ -97,6 +101,23 @@ describe("Base Service", () => {
 
     expect(testService.getSlsRegion()).toEqual(cliOptions.region);
     expect(testService.getSlsStage()).toEqual(cliOptions.stage);
+  });
+
+  it("Generates resource group name from sls yaml config", () => {
+    const testService = new TestService(sls);
+    const resourceGroupName = testService.getSlsResourceGroupName();
+
+    expect(resourceGroupName).toEqual(sls.service.provider["resourceGroup"]);
+  });
+
+  it("Generates resource group from convention when NOT defined in sls yaml", () => {
+    sls.service.provider["resourceGroup"] = null;
+    const testService = new TestService(sls);
+    const resourceGroupName = testService.getSlsResourceGroupName();
+    const region = testService.getSlsRegion();
+    const stage = testService.getSlsStage();
+
+    expect(resourceGroupName).toEqual(`${sls.service["service"]}-${region}-${stage}-rg`);
   });
 
   it("Fails if credentials have not been set in serverless config", () => {

@@ -23,7 +23,7 @@ export abstract class BaseService {
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
     this.subscriptionId = serverless.variables["subscriptionId"];
-    this.resourceGroup = this.getResourceGroupName(this.serviceName);
+    this.resourceGroup = this.getResourceGroupName();
     this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
 
     this.setDefaultValues();
@@ -108,12 +108,12 @@ export abstract class BaseService {
   }
 
   protected getStage(): string {
-    return this.options.stage || this.serverless.service.provider.stage || "dev";
+    return this.options.stage || this.serverless.service.provider.stage;
   }
 
-  private getResourceGroupName(serviceName: string): string {
+  protected getResourceGroupName(): string {
     return this.options["resourceGroup"]
       || this.serverless.service.provider["resourceGroup"]
-      || `${serviceName}-rg`;
+      || `${this.serviceName}-${this.getRegion()}-${this.getStage()}-rg`;
   }
 }
