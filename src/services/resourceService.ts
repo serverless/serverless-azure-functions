@@ -11,6 +11,11 @@ export class ResourceService extends BaseService {
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }
 
+  public async getDeployments() {
+    this.log(`Listing deployments for resource group '${this.resourceGroup}':`);
+    return await this.resourceClient.deployments.listByResourceGroup(this.resourceGroup);
+  }
+
   public async deployResourceGroup() {
     this.log(`Creating resource group: ${this.resourceGroup}`);
 

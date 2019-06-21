@@ -33,6 +33,10 @@ export abstract class BaseService {
     }
   }
 
+  public getResourceGroup(): string {
+    return this.resourceGroup;
+  }
+  
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
