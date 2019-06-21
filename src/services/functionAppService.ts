@@ -10,6 +10,7 @@ import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
+import { ArmService, ArmDeployment } from "./armService";
 
 export class FunctionAppService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -123,38 +124,29 @@ export class FunctionAppService extends BaseService {
    */
   public async deploy() {
     this.log(`Creating function app: ${this.serviceName}`);
-    let parameters: any = { functionAppName: { value: this.serviceName } };
 
-    const gitUrl = this.serverless.service.provider["gitUrl"];
-
-    if (gitUrl) {
-      parameters = {
-        functionAppName: { value: this.serviceName },
-        gitUrl: { value: gitUrl }
-      };
-    }
-
-    let templateFilePath = path.join(__dirname, "..", "provider", "armTemplates", "azuredeploy.json");
-
-    if (gitUrl) {
-      templateFilePath = path.join(__dirname, "armTemplates", "azuredeployWithGit.json");
-    }
+    const armService = new ArmService(this.serverless);
+    let deployment: ArmDeployment;
 
     if (this.serverless.service.provider["armTemplate"]) {
       this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
-      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
+      const templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
       const userParameters = this.serverless.service.provider["armTemplate"].parameters;
       const userParametersKeys = Object.keys(userParameters);
-
+      let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
+      let parameters: any;
       for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
         const item = {};
 
         item[userParametersKeys[paramIndex]] = { "value": userParameters[userParametersKeys[paramIndex]] };
         parameters = _.merge(parameters, item);
       }
-    }
 
-    let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
+      deployment = { template, parameters };
+
+    } else {
+      deployment = await armService.createDeployment(this.serverless.service.provider["type"] || "consumption");
+    }
 
     // Check if there are custom environment variables defined that need to be
     // added to the ARM template used in the deployment.
@@ -162,7 +154,7 @@ export class FunctionAppService extends BaseService {
     if (environmentVariables) {
       const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
 
-      jsonpath.apply(template, appSettingsPath, function (appSettingsList) {
+      jsonpath.apply(deployment.template, appSettingsPath, function (appSettingsList) {
         Object.keys(environmentVariables).forEach(function (key) {
           appSettingsList.push({
             name: key,
@@ -174,16 +166,7 @@ export class FunctionAppService extends BaseService {
       });
     }
 
-    const deploymentParameters: Deployment = {
-      properties: {
-        mode: "Incremental",
-        parameters,
-        template
-      }
-    };
-
-    // Deploy ARM template
-    await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, deploymentParameters);
+    await armService.deployTemplate(deployment);
 
     // Return function app 
     return await this.get();

@@ -1,11 +1,28 @@
 import Serverless from "serverless";
-import { Deployment } from "@azure/arm-resources/esm/models";
+import { Deployment, DeploymentsCreateOrUpdateResponse, DeploymentExtended } from "@azure/arm-resources/esm/models";
 import { BaseService } from "./baseService";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { Guard } from "../shared/guard";
+import { ServerlessAzureConfig } from "../models/serverless";
 
-export interface ArmTemplateGenerator {
-  generate(): any;
+export interface ArmResourceTemplateGenerator {
+  getTemplate(): ArmResourceTemplate;
+  getParameters(config: ServerlessAzureConfig): any;
+}
+
+export interface ArmResourceTemplate {
+  $schema: string;
+  contentVersion: string;
+  parameters: {
+    [key: string]: any;
+  };
+  resources: any[];
+  variables?: any;
+}
+
+export interface ArmDeployment {
+  template: any;
+  parameters: { [key: string]: any };
 }
 
 export class ArmService extends BaseService {
@@ -16,47 +33,60 @@ export class ArmService extends BaseService {
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }
 
-  public async createTemplate(type: string): Promise<any> {
+  public async createDeployment(type: string): Promise<ArmDeployment> {
     Guard.empty(type);
 
-    const apim = await import("../armTemplates/resources/apim.json");
-    let template: ArmTemplateGenerator;
+    const { ApimResource } = await import("../armTemplates/resources/apim");
+    let template: ArmResourceTemplateGenerator;
 
     try {
-      template = await import(`../armTemplates/${type}`);
+      template = (await import(`../armTemplates/${type}`)).default;
     } catch (e) {
       throw new Error(`Unable to find template with name ${type} `);
     }
 
-    const mergedTemplate = template.generate();
+    const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
+
+    const mergedTemplate = template.getTemplate();
+    let parameters = template.getParameters(azureConfig);
 
     if (this.serverless.service.provider["apim"]) {
+      const apimTemplate = ApimResource.getTemplate();
+      const apimParameters = ApimResource.getParameters(azureConfig);
+
       mergedTemplate.parameters = {
         ...mergedTemplate.parameters,
-        ...apim.parameters,
+        ...apimTemplate.parameters,
       };
       mergedTemplate.resources = [
         ...mergedTemplate.resources,
-        ...apim.resources,
-      ]
+        ...apimTemplate.resources,
+      ];
+
+      parameters = {
+        ...parameters,
+        ...apimParameters,
+      };
     }
 
-    return mergedTemplate;
+    return {
+      template: mergedTemplate,
+      parameters,
+    };
   }
 
-  public async deployTemplate(template: any, parameters: string[]) {
-    Guard.null(template);
-    Guard.null(parameters);
+  public async deployTemplate(deployment: ArmDeployment): Promise<DeploymentExtended> {
+    Guard.null(deployment);
 
     const deploymentParameters: Deployment = {
       properties: {
         mode: "Incremental",
-        parameters,
-        template
+        template: deployment.template,
+        parameters: deployment.parameters,
       }
     };
 
     // Deploy ARM template
-    await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, deploymentParameters);
+    return await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, deploymentParameters);
   }
 }
