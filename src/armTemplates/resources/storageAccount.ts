@@ -43,10 +43,10 @@ export const StorageAccountResource: ArmResourceTemplateGenerator = {
       ]
     }
   },
-  
+
   getParameters: (config: ServerlessAzureConfig) => {
     const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}${config.provider.region}${config.provider.stage}-sa`.toLocaleLowerCase(),
+      name: `${config.provider.prefix}${config.provider.region.substr(0,3)}${config.provider.stage.substr(0,3)}sa`.replace("-", "").toLocaleLowerCase(),
       sku: {},
       ...config.provider.storageAccount,
     };

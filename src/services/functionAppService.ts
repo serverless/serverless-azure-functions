@@ -1,8 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { ResourceManagementClient } from "@azure/arm-resources";
-import { Deployment } from "@azure/arm-resources/esm/models";
 import jsonpath from "jsonpath";
 import _ from "lodash";
 import Serverless from "serverless";
@@ -13,18 +11,15 @@ import { Guard } from "../shared/guard";
 import { ArmService, ArmDeployment } from "./armService";
 
 export class FunctionAppService extends BaseService {
-  private resourceClient: ResourceManagementClient;
   private webClient: WebSiteManagementClient;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-
-    this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
   }
 
   public async get(): Promise<Site> {
-    const response: any = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
+    const response: any = await this.webClient.webApps.get(this.resourceGroup, this.getFunctionAppName());
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       return null;
     }
@@ -112,7 +107,7 @@ export class FunctionAppService extends BaseService {
   }
 
   public async uploadFunctions(functionApp: Site): Promise<any> {
-    Guard.null(functionApp);
+    Guard.null(functionApp, "functionApp");
 
     this.log("Deploying serverless functions...");
     await this.zipDeploy(functionApp);
@@ -128,10 +123,10 @@ export class FunctionAppService extends BaseService {
     const armService = new ArmService(this.serverless);
     let deployment: ArmDeployment;
 
-    if (this.serverless.service.provider["armTemplate"]) {
-      this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
-      const templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
-      const userParameters = this.serverless.service.provider["armTemplate"].parameters;
+    if (this.config.provider.armTemplate) {
+      this.log(`-> Deploying custom ARM template: ${this.config.provider.armTemplate.file}`);
+      const templateFilePath = path.join(this.serverless.config.servicePath, this.config.provider.armTemplate.file);
+      const userParameters = this.config.provider.armTemplate.parameters;
       const userParametersKeys = Object.keys(userParameters);
       let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
       let parameters: any;
@@ -145,7 +140,7 @@ export class FunctionAppService extends BaseService {
       deployment = { template, parameters };
 
     } else {
-      deployment = await armService.createDeployment(this.serverless.service.provider["type"] || "consumption");
+      deployment = await armService.createDeployment(this.config.provider.type || "consumption");
     }
 
     // Check if there are custom environment variables defined that need to be

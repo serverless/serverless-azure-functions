@@ -11,10 +11,6 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
           "defaultValue": "",
           "type": "String"
         },
-        "appServicePlanName": {
-          "defaultValue": "",
-          "type": "String"
-        },
         "storageAccountName": {
           "defaultValue": "",
           "type": "String"
@@ -36,7 +32,6 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
           "name": "[parameters('functionAppName')]",
           "location": "[parameters('location')]",
           "dependsOn": [
-            "[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]",
             "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
             "[concat('microsoft.insights/components/', parameters('appInsightsName'))]"
           ],
@@ -80,7 +75,6 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
             },
             "name": "[parameters('functionAppName')]",
             "clientAffinityEnabled": false,
-            "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
             "hostingEnvironment": ""
           }
         }
@@ -90,7 +84,7 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
 
   getParameters: (config: ServerlessAzureConfig) => {
     const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-functionapp`,
+      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-${config.service}`,
       ...config.provider.functionApp,
     };
 

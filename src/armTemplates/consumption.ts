@@ -1,7 +1,7 @@
 import { FunctionAppResource } from "./resources/functionApp";
 import { AppInsightsResource } from "./resources/appInsights";
 import { StorageAccountResource } from "./resources/storageAccount";
-import { ArmResourceTemplateGenerator } from "../services/armService.js";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../services/armService.js";
 import { ServerlessAzureConfig } from "../models/serverless";
 
 const resources: ArmResourceTemplateGenerator[] = [
@@ -12,7 +12,7 @@ const resources: ArmResourceTemplateGenerator[] = [
 
 const ConsumptionTemplate: ArmResourceTemplateGenerator = {
   getTemplate: () => {
-    const template: any = {
+    const template: ArmResourceTemplate = {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
       "parameters": {},
@@ -41,6 +41,7 @@ const ConsumptionTemplate: ArmResourceTemplateGenerator = {
       parameters = {
         ...parameters,
         ...resource.getParameters(config),
+        location: config.provider.region,
       }
     });
 

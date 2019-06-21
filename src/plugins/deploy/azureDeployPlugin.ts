@@ -47,11 +47,6 @@ export class AzureDeployPlugin {
   }
 
   private async deploy() {
-    this.serverless.cli.log("OPTIONS");
-    this.serverless.cli.log(JSON.stringify(this.options, null, 4));
-    this.serverless.cli.log("PROVIDER REGION");
-    this.serverless.cli.log(this.serverless.service.provider.region);
-
     const resourceService = new ResourceService(this.serverless, this.options);
     await resourceService.deployResourceGroup();
 

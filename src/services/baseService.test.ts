@@ -85,7 +85,7 @@ describe("Base Service", () => {
   });
 
   it("Sets default region and stage values if not defined", () => {
-    const testService = new TestService(sls);
+    const testService = new MockService(sls);
 
     expect(testService).not.toBeNull();
     expect(sls.service.provider.region).toEqual("westus");
@@ -97,7 +97,7 @@ describe("Base Service", () => {
       stage: "prod",
       region: "eastus2"
     };
-    const testService = new TestService(sls, cliOptions);
+    const testService = new MockService(sls, cliOptions);
 
     expect(testService.getSlsRegion()).toEqual(cliOptions.region);
     expect(testService.getSlsStage()).toEqual(cliOptions.stage);
@@ -136,7 +136,7 @@ describe("Base Service", () => {
     const region = testService.getSlsRegion();
     const stage = testService.getSlsStage();
 
-    expect(resourceGroupName).toEqual(`${sls.service["service"]}-${region}-${stage}-rg`);
+    expect(resourceGroupName).toEqual(`sls-${region}-${stage}-${sls.service["service"]}-rg`);
   });
 
   it("Fails if credentials have not been set in serverless config", () => {

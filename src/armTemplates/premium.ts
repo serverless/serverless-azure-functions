@@ -2,7 +2,7 @@ import { FunctionAppResource } from "./resources/functionApp";
 import { AppInsightsResource } from "./resources/appInsights";
 import { StorageAccountResource } from "./resources/storageAccount";
 import { AppServicePlanResource } from "./resources/appServicePlan";
-import { ArmResourceTemplateGenerator } from "../services/armService.js";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../services/armService.js";
 import { ServerlessAzureConfig } from "../models/serverless";
 
 const resources: ArmResourceTemplateGenerator[] = [
@@ -14,7 +14,7 @@ const resources: ArmResourceTemplateGenerator[] = [
 
 const PremiumTemplate: ArmResourceTemplateGenerator = {
   getTemplate: () => {
-    const template: any = {
+    const template: ArmResourceTemplate = {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
       "parameters": {},
@@ -37,6 +37,13 @@ const PremiumTemplate: ArmResourceTemplateGenerator = {
     template.parameters.appServicePlanSkuName.defaultValue = "EP1";
     template.parameters.appServicePlanSkuTier.defaultValue = "ElasticPremium";
 
+    // Update the functionApp resource to include the app service plan references
+    const app: any = template.resources.find((resource: any) => resource.type === "Microsoft.Web/sites");
+    if (app) {
+      app.properties.serverFarmId = "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]";
+      app.dependsOn.push("[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]")
+    }
+
     return template;
   },
 
@@ -46,6 +53,7 @@ const PremiumTemplate: ArmResourceTemplateGenerator = {
       parameters = {
         ...parameters,
         ...resource.getParameters(config),
+        location: config.provider.region,
       }
     });
 

@@ -63,6 +63,11 @@ describe("Arm Service", () => {
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Web/sites")).not.toBeNull();
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Storage/storageAccounts")).not.toBeNull();
       expect(deployment.template.resources.find((resource) => resource.type === "microsoft.insights/components")).not.toBeNull();
+      
+      // Verify the ARM template includes the linkage to the correct server farm
+      const functionApp = deployment.template.resources.find((res) => res.type === "Microsoft.Web/sites");
+      expect(functionApp.dependsOn).toContain("[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]");
+      expect(functionApp.properties.serverFarmId).toEqual("[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]");
     });
 
     it("ASE template includes correct resources", async () => {
@@ -77,6 +82,11 @@ describe("Arm Service", () => {
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Web/sites")).not.toBeNull();
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Storage/storageAccounts")).not.toBeNull();
       expect(deployment.template.resources.find((resource) => resource.type === "microsoft.insights/components")).not.toBeNull();
+
+      // Verify the ARM template includes the linkage to the correct server farm
+      const functionApp = deployment.template.resources.find((res) => res.type === "Microsoft.Web/sites");
+      expect(functionApp.dependsOn).toContain("[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]");
+      expect(functionApp.properties.serverFarmId).toEqual("[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]");
     });
 
     it("Consumption template includes correct resources", async () => {

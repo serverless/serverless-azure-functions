@@ -33,7 +33,7 @@ describe("Function App Service", () => {
 
   beforeAll(() => {
 
-    // TODO: How to spy on defaul exported function?
+    // TODO: How to spy on default exported function?
     const axiosMock = new MockAdapter(axios);
 
     // Master Key
@@ -86,7 +86,7 @@ describe("Function App Service", () => {
     const service = createService();
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(provider.resourceGroup, slsService["service"]);
+      .toBeCalledWith(provider.resourceGroup, service.getFunctionAppName());
     expect(result).toEqual(app)
   });
 
@@ -98,7 +98,7 @@ describe("Function App Service", () => {
     } as any;
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(provider.resourceGroup, slsService["service"]);
+      .toBeCalledWith(provider.resourceGroup, service.getFunctionAppName());
     expect(result).toBeNull();
   });
 
