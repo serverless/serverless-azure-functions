@@ -39,6 +39,7 @@
     "@azure/arm-appservice": "^5.7.0",
     "@azure/arm-resources": "^1.0.1",
     "@azure/ms-rest-nodeauth": "^1.0.1",
+    "@azure/storage-blob": "^10.3.0",
     "axios": "^0.18.0",
     "js-yaml": "^3.13.1",
     "jsonpath": "^1.0.1",

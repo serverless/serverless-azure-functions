@@ -13,6 +13,8 @@ import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
 import { ApiCorsPolicy } from "../models/apiManagement";
+import { ServiceListContainersSegmentResponse } from "@azure/storage-blob/typings/lib/generated/lib/models";
+import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -140,6 +142,19 @@ export class MockFactory {
     return credentials;
   }
 
+  public static createTestDeployments(count: number = 5): DeploymentsListByResourceGroupResponse {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push({
+        name: `deployment${i+1}`,
+        properties: {
+          timestamp: new Date(),
+        }
+      })
+    }
+    return result as DeploymentsListByResourceGroupResponse
+  }
+
   public static createTestAxiosResponse<T>(
     config: AxiosRequestConfig,
     responseJson: T,
@@ -166,6 +181,39 @@ export class MockFactory {
     };
 
     return Promise.resolve(response);
+  }
+
+  public static createTestAzureContainers(count: number = 5): ServiceListContainersSegmentResponse {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push({
+        name: `container${i}`,
+        blobs: MockFactory.createTestAzureBlobItems(i),
+      });
+    }
+    return { containerItems: result } as ServiceListContainersSegmentResponse;
+  }
+
+  public static createTestBlockBlobUrl(containerName: string, blobName: string) {
+    return {
+      containerName,
+      blobName,
+      delete: jest.fn(),
+    }
+  }
+
+  public static createTestAzureBlobItems(id: number = 1, count: number = 5) {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push(MockFactory.createTestAzureBlobItem(id, i));
+    }
+    return { segment: { blobItems: result } };
+  }
+
+  public static createTestAzureBlobItem(id: number = 1, index: number = 1, ext: string = ".zip") {
+    return  {
+      name: `blob-${id}-${index}${ext}`
+    }
   }
 
   public static createTestAzureClientResponse<T>(responseJson: T, statusCode: number = 200): Promise<HttpOperationResponse> {

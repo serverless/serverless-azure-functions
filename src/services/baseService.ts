@@ -11,6 +11,8 @@ export abstract class BaseService {
   protected subscriptionId: string;
   protected resourceGroup: string;
   protected deploymentName: string;
+  protected deploymentContainerName: string;
+  protected storageAccountName: string;
 
   protected constructor(
     protected serverless: Serverless,
@@ -33,6 +35,10 @@ export abstract class BaseService {
     }
   }
 
+  public getResourceGroup(): string {
+    return this.resourceGroup;
+  }
+  
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
