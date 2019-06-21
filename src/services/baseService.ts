@@ -26,6 +26,10 @@ export abstract class BaseService {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
+
+  public getResourceGroup(): string {
+    return this.resourceGroup;
+  }
   
   /**
    * Sends an API request using axios HTTP library

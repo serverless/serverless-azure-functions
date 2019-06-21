@@ -34,7 +34,7 @@ describe("Deploy plugin", () => {
 
   it("lists deployments", async () => {
     const deployments = MockFactory.createTestDeployments();
-    ResourceService.prototype.listDeployments = jest.fn(() => Promise.resolve(deployments));
+    ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments));
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureDeployPlugin(sls, options);

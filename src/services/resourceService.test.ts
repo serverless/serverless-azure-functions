@@ -80,7 +80,7 @@ describe("Resource Service", () => {
     sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
-    const deps = await service.listDeployments();
+    const deps = await service.getDeployments();
     expect(deps).toEqual(deployments);
   });
 });

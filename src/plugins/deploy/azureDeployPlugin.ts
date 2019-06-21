@@ -29,8 +29,13 @@ export class AzureDeployPlugin {
   private async list() {
     this.serverless.cli.log("Listing deployments");
     const resourceService = new ResourceService(this.serverless, this.options);
-    const deployments = await resourceService.listDeployments();
+    const deployments = await resourceService.getDeployments();
+    if (!deployments || deployments.length === 0) {
+      this.serverless.cli.log(`No deployments found for resource group '${resourceService.getResourceGroup()}'`);
+      return;
+    }
     let stringDeployments = "\n\nDeployments";
+
     for (const dep of deployments) {
       stringDeployments += "\n-----------\n"
       stringDeployments += `Name: ${dep.name}\n`
