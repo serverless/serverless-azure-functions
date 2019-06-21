@@ -4,38 +4,10 @@ import { BaseService } from "./baseService";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { Guard } from "../shared/guard";
 import { ServerlessAzureConfig, ArmTemplateConfig } from "../models/serverless";
+import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
 import fs from "fs";
 import path from "path";
 import jsonpath from "jsonpath";
-
-export interface ArmResourceTemplateGenerator {
-  getTemplate(): ArmResourceTemplate;
-  getParameters(config: ServerlessAzureConfig): any;
-}
-
-/**
- * The well-known serverless Azure template types
- */
-export enum ArmTemplateType {
-  Consumption = "consumption",
-  Premium = "premium",
-  AppServiceEnvironment = "ase",
-}
-
-export interface ArmResourceTemplate {
-  $schema: string;
-  contentVersion: string;
-  parameters: {
-    [key: string]: any;
-  };
-  resources: any[];
-  variables?: any;
-}
-
-export interface ArmDeployment {
-  template: any;
-  parameters: { [key: string]: any };
-}
 
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;

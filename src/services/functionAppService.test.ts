@@ -4,10 +4,11 @@ import mockFs from "mock-fs";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionAppService } from "./functionAppService";
+import { ArmService } from "./armService";
 
 jest.mock("@azure/arm-appservice")
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { ArmService, ArmDeployment, ArmTemplateType } from "./armService";
+import { ArmDeployment, ArmTemplateType } from "../models/armTemplates";
 jest.mock("@azure/arm-resources")
 
 describe("Function App Service", () => {

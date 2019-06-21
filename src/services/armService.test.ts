@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
-import { ArmService, ArmResourceTemplate, ArmTemplateType } from "./armService";
+import { ArmService } from "./armService";
+import { ArmResourceTemplate, ArmTemplateType } from "../models/armTemplates";
 import { ArmTemplateConfig } from "../models/serverless";
 import mockFs from "mock-fs";
 import jsonpath from "jsonpath";
