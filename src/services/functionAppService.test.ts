@@ -145,7 +145,7 @@ describe("Function App Service", () => {
   describe("Deployments", () => {
     const expectedDeployment: ArmDeployment = {
       parameters: {},
-      template: {},
+      template: MockFactory.createTestArmTemplate(),
     };
 
     const expectedSite = MockFactory.createTestSite();

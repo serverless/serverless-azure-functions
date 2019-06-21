@@ -4,7 +4,7 @@ import { StorageAccountResource } from "./resources/storageAccount";
 import { AppServicePlanResource } from "./resources/appServicePlan";
 import { HostingEnvironmentResource } from "./resources/hostingEnvironment";
 import { VirtualNetworkResource } from "./resources/virtualNetwork";
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../services/armService.js";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../models/armTemplates";
 import { ServerlessAzureConfig } from "../models/serverless.js";
 
 const resources: ArmResourceTemplateGenerator[] = [

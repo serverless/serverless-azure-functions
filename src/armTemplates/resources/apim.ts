@@ -1,5 +1,5 @@
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { ArmResourceTemplateGenerator } from "../../services/armService";
+import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ApiManagementConfig } from "../../models/apiManagement";
 
 export const ApimResource: ArmResourceTemplateGenerator = {

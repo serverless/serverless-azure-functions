@@ -6,7 +6,8 @@ import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
-import { ArmService, ArmDeployment } from "./armService";
+import { ArmService } from "./armService";
+import { ArmDeployment } from "../models/armTemplates";
 
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;

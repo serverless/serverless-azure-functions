@@ -1,4 +1,4 @@
-import { ArmResourceTemplateGenerator } from "../../services/armService";
+import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 
 export const VirtualNetworkResource: ArmResourceTemplateGenerator = {
