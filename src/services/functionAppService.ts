@@ -1,8 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import jsonpath from "jsonpath";
-import _ from "lodash";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
@@ -121,45 +119,9 @@ export class FunctionAppService extends BaseService {
     this.log(`Creating function app: ${this.serviceName}`);
 
     const armService = new ArmService(this.serverless);
-    let deployment: ArmDeployment;
-
-    if (this.config.provider.armTemplate) {
-      this.log(`-> Deploying custom ARM template: ${this.config.provider.armTemplate.file}`);
-      const templateFilePath = path.join(this.serverless.config.servicePath, this.config.provider.armTemplate.file);
-      const userParameters = this.config.provider.armTemplate.parameters;
-      const userParametersKeys = Object.keys(userParameters);
-      let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
-      let parameters: any;
-      for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
-        const item = {};
-
-        item[userParametersKeys[paramIndex]] = { "value": userParameters[userParametersKeys[paramIndex]] };
-        parameters = _.merge(parameters, item);
-      }
-
-      deployment = { template, parameters };
-
-    } else {
-      deployment = await armService.createDeployment(this.config.provider.type || "consumption");
-    }
-
-    // Check if there are custom environment variables defined that need to be
-    // added to the ARM template used in the deployment.
-    const environmentVariables = this.serverless.service.provider["environment"];
-    if (environmentVariables) {
-      const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
-
-      jsonpath.apply(deployment.template, appSettingsPath, function (appSettingsList) {
-        Object.keys(environmentVariables).forEach(function (key) {
-          appSettingsList.push({
-            name: key,
-            value: environmentVariables[key]
-          });
-        });
-
-        return appSettingsList;
-      });
-    }
+    let deployment: ArmDeployment = this.config.provider.armTemplate
+      ? await armService.createDeploymentFromConfig(this.config.provider.armTemplate)
+      : await armService.createDeploymentFromType(this.config.provider.type || "consumption");
 
     await armService.deployTemplate(deployment);
 

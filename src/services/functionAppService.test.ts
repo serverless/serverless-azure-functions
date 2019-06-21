@@ -7,6 +7,7 @@ import { FunctionAppService } from "./functionAppService";
 
 jest.mock("@azure/arm-appservice")
 import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { ArmService, ArmDeployment, ArmTemplateType } from "./armService";
 jest.mock("@azure/arm-resources")
 
 describe("Function App Service", () => {
@@ -138,6 +139,59 @@ describe("Function App Service", () => {
   it("lists functions", async () => {
     const service = createService();
     expect(await service.listFunctions(app)).toEqual(functionsResponse.map((f) => f.properties));
+  });
+
+  describe("Deployments", () => {
+    const expectedDeployment: ArmDeployment = {
+      parameters: {},
+      template: {},
+    };
+
+    const expectedSite = MockFactory.createTestSite();
+
+    beforeEach(() => {
+      FunctionAppService.prototype.get = jest.fn(() => Promise.resolve(expectedSite));
+      ArmService.prototype.createDeploymentFromConfig = jest.fn(() => Promise.resolve(expectedDeployment));
+      ArmService.prototype.createDeploymentFromType = jest.fn(() => Promise.resolve(expectedDeployment));
+      ArmService.prototype.deployTemplate = jest.fn(() => Promise.resolve(null));
+    });
+
+    it("deploys ARM templates with custom configuration", async () => {
+      slsService.provider["armTemplate"] = {};
+
+      const service = createService();
+      const site = await service.deploy();
+
+      expect(site).toEqual(expectedSite);
+      expect(ArmService.prototype.createDeploymentFromConfig).toBeCalledWith(slsService.provider["armTemplate"]);
+      expect(ArmService.prototype.createDeploymentFromType).not.toBeCalled();
+      expect(ArmService.prototype.deployTemplate).toBeCalledWith(expectedDeployment);
+    });
+
+    it("deploys ARM template from well-known (default) configuration", async () => {
+      slsService.provider["armTemplate"] = null;
+
+      const service = createService();
+      const site = await service.deploy();
+
+      expect(site).toEqual(expectedSite);
+      expect(ArmService.prototype.createDeploymentFromConfig).not.toBeCalled();
+      expect(ArmService.prototype.createDeploymentFromType).toBeCalledWith(ArmTemplateType.Consumption);
+      expect(ArmService.prototype.deployTemplate).toBeCalledWith(expectedDeployment);
+    });
+
+    it("deploys ARM template from well-known configuration", async () => {
+      slsService.provider["armTemplate"] = null;
+      slsService.provider["type"] = "premium";
+
+      const service = createService();
+      const site = await service.deploy();
+
+      expect(site).toEqual(expectedSite);
+      expect(ArmService.prototype.createDeploymentFromConfig).not.toBeCalled();
+      expect(ArmService.prototype.createDeploymentFromType).toBeCalledWith(ArmTemplateType.Premium);
+      expect(ArmService.prototype.deployTemplate).toBeCalledWith(expectedDeployment);
+    });
   });
 
   it("uploads functions", async () => {

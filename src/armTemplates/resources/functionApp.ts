@@ -11,6 +11,18 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
           "defaultValue": "",
           "type": "String"
         },
+        "functionAppNodeVersion": {
+          "defaultValue": "10.14.1",
+          "type": "String"
+        },
+        "functionAppWorkerRuntime": {
+          "defaultValue": "node",
+          "type": "String"
+        },
+        "functionAppExtensionVersion": {
+          "defaultValue": "~2",
+          "type": "String"
+        },
         "storageAccountName": {
           "defaultValue": "",
           "type": "String"
@@ -41,11 +53,11 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
               "appSettings": [
                 {
                   "name": "FUNCTIONS_WORKER_RUNTIME",
-                  "value": "node"
+                  "value": "[parameters('functionAppWorkerRuntime')]"
                 },
                 {
                   "name": "FUNCTIONS_EXTENSION_VERSION",
-                  "value": "~2"
+                  "value": "[parameters('functionAppExtensionVersion')]"
                 },
                 {
                   "name": "AzureWebJobsStorage",
@@ -61,7 +73,7 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
                 },
                 {
                   "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                  "value": "10.14.1"
+                  "value": "[parameters('functionAppNodeVersion')]"
                 },
                 {
                   "name": "WEBSITE_RUN_FROM_PACKAGE",

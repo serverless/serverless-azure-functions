@@ -41,7 +41,7 @@ const PremiumTemplate: ArmResourceTemplateGenerator = {
     const app: any = template.resources.find((resource: any) => resource.type === "Microsoft.Web/sites");
     if (app) {
       app.properties.serverFarmId = "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]";
-      app.dependsOn.push("[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]")
+      app.dependsOn = [...(app.dependsOn || []), "[concat('Microsoft.Web/serverfarms/', parameters('appServicePlanName'))]"]
     }
 
     return template;

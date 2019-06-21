@@ -6,7 +6,6 @@ export enum DeploymentType {
 }
 
 export interface ArmTemplateConfig {
-  type: string;
   file: string;
   parameters:
   {
@@ -31,6 +30,9 @@ export interface ServerlessAzureConfig {
     region: string;
     stage: string;
     name: string;
+    environment?: {
+      [key: string]: any;
+    };
     resourceGroup?: string;
     apim?: ApiManagementConfig;
     functionApp?: ResourceConfig;
