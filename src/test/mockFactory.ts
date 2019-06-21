@@ -13,6 +13,7 @@ import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
 import { ApiCorsPolicy } from "../models/apiManagement";
+import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -138,6 +139,19 @@ export class MockFactory {
     };
 
     return credentials;
+  }
+
+  public static createTestDeployments(count: number = 5): DeploymentsListByResourceGroupResponse {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push({
+        name: `deployment${i+1}`,
+        properties: {
+          timestamp: new Date(),
+        }
+      })
+    }
+    return result as DeploymentsListByResourceGroupResponse
   }
 
   public static createTestAxiosResponse<T>(

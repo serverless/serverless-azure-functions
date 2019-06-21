@@ -10,7 +10,8 @@ export class AzureLoginPlugin {
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
     this.hooks = {
-      "before:package:initialize": this.login.bind(this)
+      "before:package:initialize": this.login.bind(this),
+      "before:deploy:list:list": this.login.bind(this),
     };
   }
 
