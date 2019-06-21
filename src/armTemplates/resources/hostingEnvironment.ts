@@ -46,7 +46,6 @@ export const HostingEnvironmentResource: ArmResourceTemplateGenerator = {
             "multiSize": "Standard_D1_V2",
             "multiRoleCount": 2,
             "ipsslAddressCount": 2,
-            "dnsSuffix": "[concat(parameters('hostingEnvironmentName'), '.p.azurewebsites.net')]",
             "networkAccessControlList": [],
             "frontEndScaleFactor": 15,
             "suspended": false

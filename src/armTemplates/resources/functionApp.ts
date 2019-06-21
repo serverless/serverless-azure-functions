@@ -1,5 +1,5 @@
 import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
-import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
+import { ServerlessAzureConfig, ResourceConfig, FunctionAppConfig } from "../../models/serverless";
 
 export const FunctionAppResource: ArmResourceTemplateGenerator = {
   getTemplate: () => {
@@ -95,13 +95,16 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
   },
 
   getParameters: (config: ServerlessAzureConfig) => {
-    const resourceConfig: ResourceConfig = {
+    const resourceConfig: FunctionAppConfig = {
       name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-${config.service}`,
       ...config.provider.functionApp,
     };
 
     return {
       functionAppName: resourceConfig.name,
+      functionAppNodeVersion: resourceConfig.nodeVersion,
+      functionAppWorkerRuntime: resourceConfig.workerRuntime,
+      functionAppExtensionVersion: resourceConfig.extensionVersion,
     };
   }
 };

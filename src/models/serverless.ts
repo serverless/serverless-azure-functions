@@ -1,10 +1,5 @@
 import { ApiManagementConfig } from "./apiManagement";
 
-export enum DeploymentType {
-  Consumption,
-  Premium,
-}
-
 export interface ArmTemplateConfig {
   file: string;
   parameters:
@@ -22,6 +17,12 @@ export interface ResourceConfig {
   [key: string]: any;
 }
 
+export interface FunctionAppConfig extends ResourceConfig {
+  nodeVersion?: string;
+  workerRuntime?: string;
+  extensionVersion?;
+}
+
 export interface ServerlessAzureConfig {
   service: string;
   provider: {
@@ -35,7 +36,7 @@ export interface ServerlessAzureConfig {
     };
     resourceGroup?: string;
     apim?: ApiManagementConfig;
-    functionApp?: ResourceConfig;
+    functionApp?: FunctionAppConfig;
     appInsightsConfig?: ResourceConfig;
     appServicePlan?: ResourceConfig;
     storageAccount?: ResourceConfig;
