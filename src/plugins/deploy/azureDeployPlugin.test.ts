@@ -11,6 +11,10 @@ import { Site } from "@azure/arm-appservice/esm/models";
 
 describe("Deploy plugin", () => {
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  })
+
   it("calls deploy hook", async () => {
     const deployResourceGroup = jest.fn();
     const functionAppStub: Site = MockFactory.createTestSite();
@@ -48,5 +52,16 @@ describe("Deploy plugin", () => {
     }
     expectedLogStatement += "-----------\n"
     expect(sls.cli.log).lastCalledWith(expectedLogStatement);
+  });
+
+  it("logs empty deployment list", async () => {
+    const sls = MockFactory.createTestServerless();
+    const resourceGroup = "rg1";
+    ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve([])) as any;
+    ResourceService.prototype.getResourceGroup = jest.fn(() => resourceGroup);
+    const options = MockFactory.createTestServerlessOptions();
+    const plugin = new AzureDeployPlugin(sls, options);
+    await invokeHook(plugin, "deploy:list:list");
+    expect(sls.cli.log).lastCalledWith(`No deployments found for resource group '${resourceGroup}'`);
   });
 });
