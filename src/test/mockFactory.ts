@@ -198,7 +198,7 @@ export class MockFactory {
     const data = {
       provider: {
         name: "azure",
-        location: "West US 2"
+        region: "West US 2"
       },
       plugins: [
         "serverless-azure-functions"
@@ -292,9 +292,10 @@ export class MockFactory {
       id: "appId",
       name: name,
       location: "West US",
-      defaultHostName: "myHostName",
+      defaultHostName: "myHostName.azurewebsites.net",
       enabledHostNames: [
-        "myHostName"
+        "myHostName.azurewebsites.net",
+        "myHostName.scm.azurewebsites.net",
       ]
     };
   }
