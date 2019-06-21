@@ -21,18 +21,6 @@ class MockService extends BaseService {
     return this.sendFile(requestOptions, filePath);
   }
 
-  public getSlsResourceGroupName() {
-    return this.getResourceGroupName();
-  }
-
-  public getSlsRegion() {
-    return this.getRegion();
-  }
-
-  public getSlsStage() {
-    return this.getStage();
-  }
-
   public getProperties() {
     return {
       baseUrl: this.baseUrl,
@@ -99,8 +87,8 @@ describe("Base Service", () => {
     };
     const mockService = new MockService(sls, cliOptions);
 
-    expect(mockService.getSlsRegion()).toEqual(cliOptions.region);
-    expect(mockService.getSlsStage()).toEqual(cliOptions.stage);
+    expect(mockService.getRegion()).toEqual(cliOptions.region);
+    expect(mockService.getStage()).toEqual(cliOptions.stage);
   });
 
   it("Sets default region and stage values if not defined", () => {
@@ -118,13 +106,13 @@ describe("Base Service", () => {
     };
     const mockService = new MockService(sls, cliOptions);
 
-    expect(mockService.getSlsRegion()).toEqual(cliOptions.region);
-    expect(mockService.getSlsStage()).toEqual(cliOptions.stage);
+    expect(mockService.getRegion()).toEqual(cliOptions.region);
+    expect(mockService.getStage()).toEqual(cliOptions.stage);
   });
 
   it("Generates resource group name from sls yaml config", () => {
     const mockService = new MockService(sls);
-    const resourceGroupName = mockService.getSlsResourceGroupName();
+    const resourceGroupName = mockService.getResourceGroupName();
 
     expect(resourceGroupName).toEqual(sls.service.provider["resourceGroup"]);
   });
@@ -132,9 +120,9 @@ describe("Base Service", () => {
   it("Generates resource group from convention when NOT defined in sls yaml", () => {
     sls.service.provider["resourceGroup"] = null;
     const mockService = new MockService(sls);
-    const resourceGroupName = mockService.getSlsResourceGroupName();
-    const region = mockService.getSlsRegion();
-    const stage = mockService.getSlsStage();
+    const resourceGroupName = mockService.getResourceGroupName();
+    const region = mockService.getRegion();
+    const stage = mockService.getStage();
 
     expect(resourceGroupName).toEqual(`sls-${region}-${stage}-${sls.service["service"]}-rg`);
   });
