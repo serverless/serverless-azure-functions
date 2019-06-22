@@ -29,6 +29,14 @@ export class ApimResource implements ArmResourceTemplateGenerator {
         "apimCapacity": {
           "defaultValue": 0,
           "type": "int"
+        },
+        "apimPublisherEmail": {
+          "defaultValue": "contact@contoso.com",
+          "type": "String"
+        },
+        "apimPublisherName": {
+          "defaultValue": "Contoso",
+          "type": "String"
         }
       },
       "variables": {},
@@ -43,8 +51,8 @@ export class ApimResource implements ArmResourceTemplateGenerator {
             "capacity": "[parameters('apimCapacity')]"
           },
           "properties": {
-            "publisherEmail": "wabrez@microsoft.com",
-            "publisherName": "Microsoft",
+            "publisherEmail": "[parameters('apimPublisherEmail')]",
+            "publisherName": "[parameters('apimPublisherName')]",
             "notificationSenderEmail": "apimgmt-noreply@mail.windowsazure.com",
             "hostnameConfigurations": [],
             "virtualNetworkType": "None"
@@ -64,6 +72,8 @@ export class ApimResource implements ArmResourceTemplateGenerator {
       apiManagementName: ApimResource.getResourceName(config),
       apimSkuName: apimConfig.sku.name,
       apimSkuCapacity: apimConfig.sku.capacity,
+      apimPublisherEmail: apimConfig.publisherEmail,
+      apimPublisherName: apimConfig.publisherName,
     };
   }
 }

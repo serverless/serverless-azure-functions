@@ -16,6 +16,8 @@ export interface ApiManagementConfig {
     name?: string;
     capacity?: number;
   };
+  publisherEmail?: string;
+  publisherName?: string;
 }
 
 /**
