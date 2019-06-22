@@ -1,8 +1,14 @@
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 
-export const VirtualNetworkResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class VirtualNetworkResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.virtualNetwork && config.provider.virtualNetwork.name
+      ? config.provider.virtualNetwork.name
+      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-vnet`;
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -71,17 +77,12 @@ export const VirtualNetworkResource: ArmResourceTemplateGenerator = {
         }
       ]
     };
-  },
+  }
 
-  getParameters: (config: ServerlessAzureConfig) => {
-    const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-vnet`,
-      ...config.provider.hostingEnvironment,
-    };
-    
+  public getParameters(config: ServerlessAzureConfig): any {
     return {
-      virtualNetworkName: resourceConfig.name,
+      virtualNetworkName: VirtualNetworkResource.getResourceName(config),
     }
   }
-};
+}
 

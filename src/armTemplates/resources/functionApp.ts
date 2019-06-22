@@ -1,8 +1,14 @@
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
-import { ServerlessAzureConfig, ResourceConfig, FunctionAppConfig } from "../../models/serverless";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
+import { ServerlessAzureConfig, FunctionAppConfig } from "../../models/serverless";
 
-export const FunctionAppResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class FunctionAppResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.functionApp && config.provider.functionApp.name
+      ? config.provider.functionApp.name
+      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-${config.service}`;
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -92,19 +98,18 @@ export const FunctionAppResource: ArmResourceTemplateGenerator = {
         }
       ]
     };
-  },
+  }
 
-  getParameters: (config: ServerlessAzureConfig) => {
+  public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: FunctionAppConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-${config.service}`,
       ...config.provider.functionApp,
     };
 
     return {
-      functionAppName: resourceConfig.name,
+      functionAppName: FunctionAppResource.getResourceName(config),
       functionAppNodeVersion: resourceConfig.nodeVersion,
       functionAppWorkerRuntime: resourceConfig.workerRuntime,
       functionAppExtensionVersion: resourceConfig.extensionVersion,
     };
   }
-};
+}

@@ -1,8 +1,14 @@
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 
-export const StorageAccountResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class StorageAccountResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.storageAccount && config.provider.storageAccount.name
+      ? config.provider.storageAccount.name
+      : `${config.provider.prefix}${config.provider.region.substr(0, 3)}${config.provider.stage.substr(0, 3)}sa`.replace("-", "").toLocaleLowerCase();
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -42,19 +48,18 @@ export const StorageAccountResource: ArmResourceTemplateGenerator = {
         }
       ]
     }
-  },
+  }
 
-  getParameters: (config: ServerlessAzureConfig) => {
+  public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}${config.provider.region.substr(0,3)}${config.provider.stage.substr(0,3)}sa`.replace("-", "").toLocaleLowerCase(),
       sku: {},
       ...config.provider.storageAccount,
     };
 
     return {
-      storageAccountName: resourceConfig.name,
+      storageAccountName: StorageAccountResource.getResourceName(config),
       storageAccountSkuName: resourceConfig.sku.name,
       storageAccoutSkuTier: resourceConfig.sku.tier,
     };
   }
-};
+}

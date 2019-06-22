@@ -27,6 +27,7 @@ export class ArmService extends BaseService {
     this.log(`-> Creating ARM template from type: ${type}`);
 
     const { ApimResource } = await import("../armTemplates/resources/apim");
+    const apimResource = new ApimResource();
     let template: ArmResourceTemplateGenerator;
 
     try {
@@ -41,8 +42,8 @@ export class ArmService extends BaseService {
     let parameters = template.getParameters(azureConfig);
 
     if (this.config.provider.apim) {
-      const apimTemplate = ApimResource.getTemplate();
-      const apimParameters = ApimResource.getParameters(azureConfig);
+      const apimTemplate = apimResource.getTemplate();
+      const apimParameters = apimResource.getParameters(azureConfig);
 
       mergedTemplate.parameters = {
         ...mergedTemplate.parameters,
@@ -99,9 +100,6 @@ export class ArmService extends BaseService {
         deploymentParameters[key] = { value: deployment.parameters[key] };
       }
     });
-
-    // this.serverless.cli.log(JSON.stringify(deploymentParameters, null, 4));
-    // fs.writeFileSync(".serverless/arm-template.json", JSON.stringify(deployment.template, null, 4));
 
     // Construct deployment object
     const armDeployment: Deployment = {

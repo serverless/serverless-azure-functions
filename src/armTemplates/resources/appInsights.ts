@@ -1,8 +1,14 @@
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 
-export const AppInsightsResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class AppInsightsResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.appInsights && config.provider.appInsights.name
+      ? config.provider.appInsights.name
+      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-appinsights`;
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -31,16 +37,11 @@ export const AppInsightsResource: ArmResourceTemplateGenerator = {
         }
       ]
     }
-  },
+  }
 
-  getParameters: (config: ServerlessAzureConfig) => {
-    const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-appinsights`,
-      ...config.provider.appInsightsConfig,
-    };
-
+  public getParameters(config: ServerlessAzureConfig): any {
     return {
-      appInsightsName: resourceConfig.name,
+      appInsightsName: AppInsightsResource.getResourceName(config),
     };
   }
-};
+}

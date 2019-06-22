@@ -37,7 +37,7 @@ export interface ServerlessAzureConfig {
     resourceGroup?: string;
     apim?: ApiManagementConfig;
     functionApp?: FunctionAppConfig;
-    appInsightsConfig?: ResourceConfig;
+    appInsights?: ResourceConfig;
     appServicePlan?: ResourceConfig;
     storageAccount?: ResourceConfig;
     hostingEnvironment?: ResourceConfig;

@@ -8,6 +8,7 @@ import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ArmService } from "./armService";
 import { ArmDeployment } from "../models/armTemplates";
+import { FunctionAppResource } from "../armTemplates/resources/functionApp";
 
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
@@ -18,7 +19,7 @@ export class FunctionAppService extends BaseService {
   }
 
   public async get(): Promise<Site> {
-    const response: any = await this.webClient.webApps.get(this.resourceGroup, this.getFunctionAppName());
+    const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       return null;
     }

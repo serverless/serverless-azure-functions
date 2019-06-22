@@ -1,8 +1,14 @@
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 
-export const HostingEnvironmentResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class HostingEnvironmentResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.hostingEnvironment && config.provider.hostingEnvironment.name
+      ? config.provider.hostingEnvironment.name
+      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-ase`;
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -53,17 +59,12 @@ export const HostingEnvironmentResource: ArmResourceTemplateGenerator = {
         }
       ]
     };
-  },
+  }
 
-  getParameters: (config: ServerlessAzureConfig) => {
-    const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-ase`,
-      ...config.provider.hostingEnvironment,
-    };
-    
+  public getParameters(config: ServerlessAzureConfig): any {
     return {
-      hostingEnvironmentName: resourceConfig.name,
+      hostingEnvironmentName: HostingEnvironmentResource.getResourceName(config)
     }
   }
-};
+}
 

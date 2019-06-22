@@ -5,6 +5,7 @@ import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionAppService } from "./functionAppService";
 import { ArmService } from "./armService";
+import { FunctionAppResource } from "../armTemplates/resources/functionApp";
 
 jest.mock("@azure/arm-appservice")
 import { WebSiteManagementClient } from "@azure/arm-appservice";
@@ -88,7 +89,7 @@ describe("Function App Service", () => {
     const service = createService();
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(provider.resourceGroup, service.getFunctionAppName());
+      .toBeCalledWith(provider.resourceGroup, FunctionAppResource.getResourceName(slsService as any));
     expect(result).toEqual(app)
   });
 
@@ -100,7 +101,7 @@ describe("Function App Service", () => {
     } as any;
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(provider.resourceGroup, service.getFunctionAppName());
+      .toBeCalledWith(provider.resourceGroup, FunctionAppResource.getResourceName(slsService as any));
     expect(result).toBeNull();
   });
 

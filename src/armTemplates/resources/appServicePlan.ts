@@ -1,8 +1,14 @@
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 
-export const AppServicePlanResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class AppServicePlanResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.appServicePlan && config.provider.appServicePlan.name
+      ? config.provider.appServicePlan.name
+      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-asp`;
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -45,19 +51,18 @@ export const AppServicePlanResource: ArmResourceTemplateGenerator = {
         }
       ]
     };
-  },
-  
-  getParameters: (config: ServerlessAzureConfig) => {
+  }
+
+  public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: ResourceConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-asp`,
       sku: {},
       ...config.provider.storageAccount,
     };
 
     return {
-      appServicePlanName: resourceConfig.name,
+      appServicePlanName: AppServicePlanResource.getResourceName(config),
       appServicePlanSkuName: resourceConfig.sku.name,
       appServicePlanSkuTier: resourceConfig.sku.tier,
     }
   }
-};
+}

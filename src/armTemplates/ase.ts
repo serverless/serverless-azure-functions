@@ -4,39 +4,23 @@ import { StorageAccountResource } from "./resources/storageAccount";
 import { AppServicePlanResource } from "./resources/appServicePlan";
 import { HostingEnvironmentResource } from "./resources/hostingEnvironment";
 import { VirtualNetworkResource } from "./resources/virtualNetwork";
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../models/armTemplates";
-import { ServerlessAzureConfig } from "../models/serverless.js";
+import { CompositeArmTemplate } from "./compositeArmTemplate";
+import { ArmResourceTemplate } from "../models/armTemplates";
 
-const resources: ArmResourceTemplateGenerator[] = [
-  FunctionAppResource,
-  AppInsightsResource,
-  StorageAccountResource,
-  AppServicePlanResource,
-  HostingEnvironmentResource,
-  VirtualNetworkResource,
-];
+class AppServiceEnvironmentTemplate extends CompositeArmTemplate {
+  public constructor() {
+    super([
+      new FunctionAppResource(),
+      new AppInsightsResource(),
+      new StorageAccountResource(),
+      new AppServicePlanResource(),
+      new HostingEnvironmentResource(),
+      new VirtualNetworkResource(),
+    ])
+  }
 
-const AseTemplate: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
-    const template: ArmResourceTemplate = {
-      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-      "contentVersion": "1.0.0.0",
-      "parameters": {},
-      "resources": [],
-    };
-
-    resources.forEach((resource) => {
-      const resourceTemplate = resource.getTemplate();
-      template.parameters = {
-        ...template.parameters,
-        ...resourceTemplate.parameters,
-      };
-
-      template.resources = [
-        ...template.resources,
-        ...resourceTemplate.resources,
-      ];
-    });
+  public getTemplate(): ArmResourceTemplate {
+    const template = super.getTemplate();
 
     template.parameters.appServicePlanSkuName.defaultValue = "I1";
     template.parameters.appServicePlanSkuTier.defaultValue = "Isolated";
@@ -63,20 +47,7 @@ const AseTemplate: ArmResourceTemplateGenerator = {
     }
 
     return template;
-  },
-
-  getParameters: (config: ServerlessAzureConfig) => {
-    let parameters = {};
-    resources.forEach((resource) => {
-      parameters = {
-        ...parameters,
-        ...resource.getParameters(config),
-        location: config.provider.region,
-      }
-    });
-
-    return parameters;
   }
-};
+}
 
-export default AseTemplate;
+export default new AppServiceEnvironmentTemplate();

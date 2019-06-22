@@ -1,9 +1,15 @@
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ApiManagementConfig } from "../../models/apiManagement";
 
-export const ApimResource: ArmResourceTemplateGenerator = {
-  getTemplate: () => {
+export class ApimResource implements ArmResourceTemplateGenerator {
+  public static getResourceName(config: ServerlessAzureConfig) {
+    return config.provider.apim && config.provider.apim.name
+      ? config.provider.apim.name
+      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-apim`;
+  }
+
+  public getTemplate(): ArmResourceTemplate {
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
@@ -46,19 +52,18 @@ export const ApimResource: ArmResourceTemplateGenerator = {
         }
       ]
     };
-  },
+  }
 
-  getParameters: (config: ServerlessAzureConfig) => {
+  public getParameters(config: ServerlessAzureConfig) {
     const apimConfig: ApiManagementConfig = {
-      name: `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-apim`,
       sku: {},
       ...config.provider.apim,
     };
 
     return {
-      apiManagementName: apimConfig.name,
+      apiManagementName: ApimResource.getResourceName(config),
       apimSkuName: apimConfig.sku.name,
       apimSkuCapacity: apimConfig.sku.capacity,
     };
   }
-};
+}

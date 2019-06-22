@@ -44,12 +44,6 @@ export abstract class BaseService {
     return this.options.stage || this.serverless.service.provider.stage;
   }
 
-  public getFunctionAppName(): string {
-    return this.config.provider.functionApp
-      ? this.config.provider.functionApp.name
-      : `${this.config.provider.prefix}-${this.config.provider.region}-${this.config.provider.stage}-${this.config.service}`;
-  }
-
   public getResourceGroupName(): string {
     return this.options["resourceGroup"]
       || this.serverless.service.provider["resourceGroup"]
