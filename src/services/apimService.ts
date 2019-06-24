@@ -17,18 +17,22 @@ import { Guard } from "../shared/guard";
 export class ApimService extends BaseService {
   private apimClient: ApiManagementClient;
   private functionAppService: FunctionAppService;
-  private config: ApiManagementConfig;
+  private apimConfig: ApiManagementConfig;
 
   public constructor(serverless: Serverless, options?: Serverless.Options) {
     super(serverless, options);
 
-    this.config = this.serverless.service.provider["apim"];
-    if (!this.config) {
+    this.apimConfig = this.config.provider.apim;
+    if (!this.apimConfig) {
       return;
     }
 
-    if (!this.config.backend) {
-      this.config.backend = {} as any;
+    if (!this.apimConfig.name) {
+      this.apimConfig.name = `${this.config.provider.prefix}-${this.config.provider.region}-${this.config.provider.stage}-apim`
+    }
+
+    if (!this.apimConfig.backend) {
+      this.apimConfig.backend = {} as any;
     }
 
     this.apimClient = new ApiManagementClient(this.credentials, this.subscriptionId);
@@ -39,24 +43,24 @@ export class ApimService extends BaseService {
    * Gets the configured APIM resource
    */
   public async get(): Promise<ApiManagementServiceResource> {
-    if (!(this.config && this.config.name)) {
+    if (!(this.apimConfig && this.apimConfig.name)) {
       return null;
     }
 
     try {
-      return await this.apimClient.apiManagementService.get(this.resourceGroup, this.config.name);
+      return await this.apimClient.apiManagementService.get(this.resourceGroup, this.apimConfig.name);
     } catch (err) {
       return null;
     }
   }
 
   public async getApi(): Promise<ApiContract> {
-    if (!(this.config && this.config.api && this.config.api.name)) {
+    if (!(this.apimConfig && this.apimConfig.api && this.apimConfig.api.name)) {
       return null;
     }
 
     try {
-      return await this.apimClient.api.get(this.resourceGroup, this.config.name, this.config.api.name);
+      return await this.apimClient.api.get(this.resourceGroup, this.apimConfig.name, this.apimConfig.api.name);
     } catch (err) {
       return null;
     }
@@ -66,7 +70,7 @@ export class ApimService extends BaseService {
    * Deploys the APIM top level api
    */
   public async deployApi() {
-    if (!(this.config && this.config.name)) {
+    if (!(this.apimConfig && this.apimConfig.name)) {
       return null;
     }
 
@@ -86,7 +90,7 @@ export class ApimService extends BaseService {
     Guard.null(service);
     Guard.null(api);
 
-    if (!(this.config && this.config.name)) {
+    if (!(this.apimConfig && this.apimConfig.name)) {
       return null;
     }
 
@@ -131,21 +135,21 @@ export class ApimService extends BaseService {
     this.log("-> Deploying API");
 
     try {
-      const api = await this.apimClient.api.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
+      const api = await this.apimClient.api.createOrUpdate(this.resourceGroup, this.apimConfig.name, this.apimConfig.api.name, {
         isCurrent: true,
-        subscriptionRequired: this.config.api.subscriptionRequired,
-        displayName: this.config.api.displayName,
-        description: this.config.api.description,
-        path: this.config.api.path,
-        protocols: this.config.api.protocols,
+        subscriptionRequired: this.apimConfig.api.subscriptionRequired,
+        displayName: this.apimConfig.api.displayName,
+        description: this.apimConfig.api.description,
+        path: this.apimConfig.api.path,
+        protocols: this.apimConfig.api.protocols,
       });
 
-      if (this.config.cors) {
+      if (this.apimConfig.cors) {
         this.log("-> Deploying CORS policy");
 
-        await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, {
+        await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, this.apimConfig.api.name, {
           format: "rawxml",
-          value: this.createCorsXmlPolicy(this.config.cors)
+          value: this.createCorsXmlPolicy(this.apimConfig.cors)
         });
       }
 
@@ -168,17 +172,17 @@ export class ApimService extends BaseService {
     try {
       const functionAppResourceId = `https://management.azure.com${functionApp.id}`;
 
-      return await this.apimClient.backend.createOrUpdate(this.resourceGroup, this.config.name, this.serviceName, {
+      return await this.apimClient.backend.createOrUpdate(this.resourceGroup, this.apimConfig.name, this.serviceName, {
         credentials: {
           header: {
             "x-functions-key": [`{{${this.serviceName}-key}}`],
           },
         },
-        title: this.config.backend.title || functionApp.name,
-        tls: this.config.backend.tls,
-        proxy: this.config.backend.proxy,
-        description: this.config.backend.description,
-        protocol: this.config.backend.protocol || "http",
+        title: this.apimConfig.backend.title || functionApp.name,
+        tls: this.apimConfig.backend.tls,
+        proxy: this.apimConfig.backend.proxy,
+        description: this.apimConfig.backend.description,
+        protocol: this.apimConfig.backend.protocol || "http",
         resourceId: functionAppResourceId,
         url: backendUrl,
       });
@@ -216,13 +220,13 @@ export class ApimService extends BaseService {
 
       const operation = await client.apiOperation.createOrUpdate(
         this.resourceGroup,
-        this.config.name,
-        this.config.api.name,
+        this.apimConfig.name,
+        this.apimConfig.api.name,
         options.function,
         operationConfig,
       );
 
-      await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.config.name, this.config.api.name, options.function, {
+      await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, this.apimConfig.api.name, options.function, {
         format: "rawxml",
         value: this.createApiOperationXmlPolicy(),
       });
@@ -245,7 +249,7 @@ export class ApimService extends BaseService {
       const masterKey = await this.functionAppService.getMasterKey(functionApp);
       const keyName = `${this.serviceName}-key`;
 
-      return await this.apimClient.property.createOrUpdate(this.resourceGroup, this.config.name, keyName, {
+      return await this.apimClient.property.createOrUpdate(this.resourceGroup, this.apimConfig.name, keyName, {
         displayName: keyName,
         secret: true,
         value: masterKey,

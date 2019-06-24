@@ -3,6 +3,7 @@ import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
 import { Guard } from "../shared/guard";
+import { ServerlessAzureConfig } from "../models/serverless";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -11,6 +12,7 @@ export abstract class BaseService {
   protected subscriptionId: string;
   protected resourceGroup: string;
   protected deploymentName: string;
+  protected config: ServerlessAzureConfig;
 
   protected constructor(
     protected serverless: Serverless,
@@ -19,24 +21,35 @@ export abstract class BaseService {
   ) {
     Guard.null(serverless);
 
+    this.setDefaultValues();
+
     this.baseUrl = "https://management.azure.com";
+    this.config = serverless.service as any;
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
     this.subscriptionId = serverless.variables["subscriptionId"];
     this.resourceGroup = this.getResourceGroupName();
     this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
 
-    this.setDefaultValues();
-
     if (!this.credentials && authenticate) {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
 
-  public getResourceGroup(): string {
-    return this.resourceGroup;
+  public getRegion(): string {
+    return this.options.region || this.serverless.service.provider.region;
   }
   
+  public getStage(): string {
+    return this.options.stage || this.serverless.service.provider.stage;
+  }
+
+  public getResourceGroupName(): string {
+    return this.options["resourceGroup"]
+      || this.serverless.service.provider["resourceGroup"]
+      || `${this.config.provider.prefix}-${this.getRegion()}-${this.getStage()}-${this.serviceName}-rg`;
+  }
+
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
@@ -105,19 +118,9 @@ export abstract class BaseService {
     if (!this.serverless.service.provider.stage) {
       this.serverless.service.provider.stage = "dev";
     }
-  }
 
-  protected getRegion(): string {
-    return this.options.region || this.serverless.service.provider.region;
-  }
-
-  protected getStage(): string {
-    return this.options.stage || this.serverless.service.provider.stage;
-  }
-
-  protected getResourceGroupName(): string {
-    return this.options["resourceGroup"]
-      || this.serverless.service.provider["resourceGroup"]
-      || `${this.serviceName}-${this.getRegion()}-${this.getStage()}-rg`;
+    if (!this.serverless.service.provider["prefix"]) {
+      this.serverless.service.provider["prefix"] = "sls";
+    }
   }
 }
