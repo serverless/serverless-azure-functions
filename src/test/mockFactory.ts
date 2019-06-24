@@ -12,8 +12,9 @@ import PluginManager from "serverless/lib/classes/PluginManager";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
-import { ApiCorsPolicy } from "../models/apiManagement";
+import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
 import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
+import { ArmResourceTemplate } from "../models/armTemplates";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -145,7 +146,7 @@ export class MockFactory {
     const result = [];
     for (let i = 0; i < count; i++) {
       result.push({
-        name: `deployment${i+1}`,
+        name: `deployment${i + 1}`,
         properties: {
           timestamp: new Date(),
         }
@@ -206,7 +207,21 @@ export class MockFactory {
       functions: functionMetadata || MockFactory.createTestSlsFunctionConfig(),
     }
     return (asYaml) ? yaml.dump(data) : data;
-  } 
+  }
+
+  public static createTestApimConfig(): ApiManagementConfig {
+    return {
+      name: "test-apim-resource",
+      api: {
+        name: "test-apim-api1",
+        subscriptionRequired: false,
+        displayName: "API 1",
+        description: "description of api 1",
+        protocols: ["https"],
+        path: "test-api1",
+      },
+    };
+  }
 
   public static createTestFunctionApimConfig(name: string) {
     return {
@@ -432,7 +447,26 @@ export class MockFactory {
       allowedOrigins: ["*"],
       allowedHeaders: ["*"],
       exposeHeaders: ["*"],
-      allowedMethods: ["GET","POST"],
+      allowedMethods: ["GET", "POST"],
+    };
+  }
+
+  public static createTestArmTemplate(): ArmResourceTemplate {
+    return {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "param1": {
+          "defaultValue": "",
+          "type": "String"
+        },
+        "param2": {
+          "defaultValue": "",
+          "type": "String"
+        },
+      },
+      "variables": {},
+      "resources": []
     };
   }
 
