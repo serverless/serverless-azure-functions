@@ -1,5 +1,5 @@
 import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
-import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
+import { ServerlessAzureConfig } from "../../models/serverless";
 
 export class HostingEnvironmentResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {

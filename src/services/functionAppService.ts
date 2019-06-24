@@ -241,7 +241,7 @@ export class FunctionAppService extends BaseService {
    */
   private getScmDomain(functionApp: Site) {
     return functionApp.enabledHostNames.find((hostName: string) => {
-      return hostName.endsWith("scm.azurewebsites.net");
+      return hostName.includes(".scm.") && hostName.endsWith(".azurewebsites.net");
     });
   }
 }
