@@ -89,15 +89,7 @@ export class AzureBlobStorageService extends BaseService {
    */
   public async createContainer(containerName: string): Promise<void> {
     const containerURL = this.getContainerURL(containerName);
-    try {
-      await containerURL.create(Aborter.none);
-    } catch (e) {
-      if (e.statusCode === 409) {
-        return;
-      }
-
-      throw e;
-    }
+    await containerURL.create(Aborter.none);
   }
 
   /**
@@ -105,7 +97,8 @@ export class AzureBlobStorageService extends BaseService {
    * @param containerName Name of container to delete
    */
   public async deleteContainer(containerName: string): Promise<void> {
-    await this.getContainerURL(containerName).delete(Aborter.none);
+    const containerUrl = await this.getContainerURL(containerName)
+    await containerUrl.delete(Aborter.none);
   }
 
   /**
@@ -127,9 +120,9 @@ export class AzureBlobStorageService extends BaseService {
    * @param containerName Name of container
    * @param serviceURL Previously created ServiceURL object (will create if undefined)
    */
-  private getContainerURL(containerName: string, serviceURL?: ServiceURL): ContainerURL {
+  private getContainerURL(containerName: string): ContainerURL {
     return ContainerURL.fromServiceURL(
-      (serviceURL) ? serviceURL : this.getServiceURL(),
+      this.getServiceURL(),
       containerName
     );
   }
@@ -140,9 +133,8 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Name of blob
    */
   private getBlockBlobURL(containerName: string, blobName: string): BlockBlobURL {
-    const containerURL = this.getContainerURL(containerName);
     return BlockBlobURL.fromContainerURL(
-      containerURL,
+      this.getContainerURL(containerName),
       blobName,
     );
   }

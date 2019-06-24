@@ -80,7 +80,7 @@ describe("Azure Blob Storage Service", () => {
     expect(ContainerURL.fromServiceURL).toBeCalledWith(expect.anything(), newContainerName);
     expect(ContainerURL.prototype.create).toBeCalledWith(Aborter.none);
   });
-
+  
   it("deletes a container", async () => {
     const containerToDelete = "delete container";
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
