@@ -70,7 +70,7 @@ describe("Offline Service", () => {
     rmdirSpy.mockRestore();
   });
 
-  it("instructs users how to run locally", async () => {
+ /* it("instructs users how to run locally", async () => {
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     await service.start();
@@ -78,5 +78,5 @@ describe("Offline Service", () => {
     // may spawn the start process itself rather than telling
     // the user how to do it.
     expect(sls.cli.log).toBeCalledTimes(3);
-  });
+  });*/
 });

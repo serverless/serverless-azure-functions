@@ -3,14 +3,17 @@ import AzureProvider from "../../provider/azureProvider";
 import { AzureLoginService } from "../../services/loginService";
 
 export class AzureLoginPlugin {
+
   private provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
   public constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
+    this.login.bind(this);
 
     this.hooks = {
-      "before:package:initialize": this.login.bind(this)
+      "before:invoke:invoke": this.login.bind(this),
+      "before:package:initialize": this.login.bind(this),
     };
   }
 

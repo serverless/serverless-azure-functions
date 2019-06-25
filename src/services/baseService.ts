@@ -22,6 +22,7 @@ export abstract class BaseService {
     this.baseUrl = "https://management.azure.com";
     this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
+    this.serverless.cli.log(this.credentials);
     this.subscriptionId = serverless.variables["subscriptionId"];
     this.resourceGroup = this.getResourceGroupName();
     this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;

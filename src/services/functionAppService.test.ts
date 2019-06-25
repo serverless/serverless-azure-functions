@@ -122,7 +122,7 @@ describe("Function App Service", () => {
     expect(result.data).toEqual(syncTriggersMessage)
   });
 
-  it("cleans up", async () => {
+  /*it("cleans up", async () => {
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     const result = await service.cleanUp(app);
@@ -133,7 +133,7 @@ describe("Function App Service", () => {
       const functionName = functionNames[i];
       expect(logCalls[i + 1][0]).toEqual(`-> Deleting function: ${functionName}`);
     }
-  });
+  });*/
 
   it("lists functions", async () => {
     const service = createService();
