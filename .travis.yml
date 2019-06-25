@@ -26,6 +26,11 @@ install:
 
 jobs:
   include:
+    - stage: compile
+      name: "TypeScript compile for Node"
+      node_js: "8"
+      script: 
+        - npm run compile
     - stage: test
       name: "Unit Tests on Node 8"
       node_js: "8"
