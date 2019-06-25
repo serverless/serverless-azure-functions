@@ -66,7 +66,6 @@ then user try to deploy
 - Deploy resource group, upload packaged function app to blob storage with version name. Sets function app `RUN_FROM_PACKAGE` setting to path of zipped artifact in blob storage
 - Default container name - `DEPLOYMENT_ARTIFACTS` (configurable in `serverless.yml`, see below)
 
-
 ### Deployment configuration
 
 ```yml
@@ -118,4 +117,3 @@ sequenceDiagram
 ##### Sub-Commands
 
 - `sls deploy list` - Logs list of deployments to configured resource group with relevant metadata (name, timestamp, etc.). Also logs versions of deployed function app code if available
-
