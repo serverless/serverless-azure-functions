@@ -1,10 +1,9 @@
 import fs from "fs";
 import mockFs from "mock-fs";
-import path from "path";
+import rimraf from "rimraf";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzureFuncPlugin } from "./azureFunc";
-import rimraf from "rimraf";
 
 describe("Azure Func Plugin", () => {
 
@@ -34,6 +33,10 @@ describe("Azure Func Plugin", () => {
       mockFs.restore();
     });
 
+    afterEach(() => {
+      jest.clearAllMocks();
+    })
+
     it("returns with missing name", async () => {
       const sls = MockFactory.createTestServerless();
       const options = MockFactory.createTestServerlessOptions();
@@ -47,37 +50,31 @@ describe("Azure Func Plugin", () => {
     it("returns with pre-existing function", async () => {
       const sls = MockFactory.createTestServerless();
       const options = MockFactory.createTestServerlessOptions();
-      options["name"] = "myExistingFunction";
+      options["name"] = "hello";
 
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:add:add");
 
-      expect(sls.cli.log).toBeCalledWith("Function myExistingFunction already exists");
+      expect(sls.cli.log).toBeCalledWith("Function hello already exists");
     });
 
-    it("creates function directory and updates serverless.yml", async () => {
+    it("creates function handler and updates serverless.yml", async () => {
       const sls = MockFactory.createTestServerless();
       const options = MockFactory.createTestServerlessOptions();
       const functionName = "myFunction";
       options["name"] = functionName;
-      const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
+      const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig();
       expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName);
 
       const plugin = new AzureFuncPlugin(sls, options);
-      const mkdirSpy = jest.spyOn(fs, "mkdirSync");
 
       await invokeHook(plugin, "func:add:add");
 
-      expect(mkdirSpy).toBeCalledWith(functionName);
-
       const writeFileCalls = (sls.utils.writeFileSync as any).mock.calls;
-      expect(writeFileCalls[0][0]).toBe(path.join(functionName, "index.js"));
-      expect(writeFileCalls[1][0]).toBe(path.join(functionName, "function.json"));
+      expect(writeFileCalls[0][0]).toBe(`./${functionName}.js`);
 
-      expect(writeFileCalls[2][0]).toBe("serverless.yml");
-      expect(writeFileCalls[2][1]).toBe(MockFactory.createTestServerlessYml(true, expectedFunctionsYml));
-
-      mkdirSpy.mockRestore();
+      expect(writeFileCalls[1][0]).toBe("serverless.yml");
+      expect(writeFileCalls[1][1]).toBe(MockFactory.createTestServerlessYml(true, expectedFunctionsYml));
     });
   });
 
@@ -85,8 +82,8 @@ describe("Azure Func Plugin", () => {
 
     beforeAll(() => {
       mockFs({
+        "index.js": "contents",
         "function1": {
-          "index.js": "contents",
           "function.json": "contents",
         },
       });
@@ -114,15 +111,25 @@ describe("Azure Func Plugin", () => {
     });
 
     it("deletes directory and updates serverless.yml", async () => {
+      mockFs({
+        "hello.js": "contents",
+        hello: {
+          "function.json": "contents",
+        }
+      })
       const sls = MockFactory.createTestServerless();
       const options = MockFactory.createTestServerlessOptions();
       const plugin = new AzureFuncPlugin(sls, options);
-      const functionName = "function1";
+      const functionName = "hello";
       options["name"] = functionName;
+      const unlinkSpy = jest.spyOn(fs, "unlinkSync");
       const rimrafSpy = jest.spyOn(rimraf, "sync");
       await invokeHook(plugin, "func:remove:remove");
+      expect(unlinkSpy).toBeCalledWith(`${functionName}.js`)
       expect(rimrafSpy).toBeCalledWith(functionName);
-      const expectedFunctionsYml = MockFactory.createTestFunctionsMetadata();
+      unlinkSpy.mockRestore();
+      rimrafSpy.mockRestore();
+      const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig();
       delete expectedFunctionsYml[functionName];
       expect(sls.utils.writeFileSync).toBeCalledWith("serverless.yml", MockFactory.createTestServerlessYml(true, expectedFunctionsYml))
     });

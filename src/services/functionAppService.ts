@@ -1,28 +1,25 @@
 import fs from "fs";
 import path from "path";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { ResourceManagementClient } from "@azure/arm-resources";
-import { Deployment } from "@azure/arm-resources/esm/models";
-import jsonpath from "jsonpath";
-import _ from "lodash";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
+import { Guard } from "../shared/guard";
+import { ArmService } from "./armService";
+import { ArmDeployment } from "../models/armTemplates";
+import { FunctionAppResource } from "../armTemplates/resources/functionApp";
 
 export class FunctionAppService extends BaseService {
-  private resourceClient: ResourceManagementClient;
   private webClient: WebSiteManagementClient;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-
-    this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
   }
 
   public async get(): Promise<Site> {
-    const response: any = await this.webClient.webApps.get(this.resourceGroup, this.serviceName);
+    const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       return null;
     }
@@ -46,6 +43,9 @@ export class FunctionAppService extends BaseService {
   }
 
   public async deleteFunction(functionApp: Site, functionName: string) {
+    Guard.null(functionApp);
+    Guard.empty(functionName);
+
     this.serverless.cli.log(`-> Deleting function: ${functionName}`);
     const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
 
@@ -53,6 +53,8 @@ export class FunctionAppService extends BaseService {
   }
 
   public async syncTriggers(functionApp: Site) {
+    Guard.null(functionApp);
+
     this.serverless.cli.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
@@ -60,6 +62,8 @@ export class FunctionAppService extends BaseService {
   }
 
   public async cleanUp(functionApp: Site) {
+    Guard.null(functionApp);
+
     this.serverless.cli.log("Cleaning up existing functions");
     const deleteTasks = [];
 
@@ -76,6 +80,8 @@ export class FunctionAppService extends BaseService {
   }
 
   public async listFunctions(functionApp: Site): Promise<FunctionEnvelope[]> {
+    Guard.null(functionApp);
+
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", getTokenUrl);
 
@@ -87,6 +93,9 @@ export class FunctionAppService extends BaseService {
   }
 
   public async getFunction(functionApp: Site, functionName: string): Promise<FunctionEnvelope> {
+    Guard.null(functionApp);
+    Guard.empty(functionName);
+
     const getFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
     const response = await this.sendApiRequest("GET", getFunctionUrl);
 
@@ -98,6 +107,9 @@ export class FunctionAppService extends BaseService {
   }
 
   public async uploadFunctions(functionApp: Site): Promise<any> {
+    Guard.null(functionApp, "functionApp");
+
+    this.log("Deploying serverless functions...");
     await this.zipDeploy(functionApp);
   }
 
@@ -107,67 +119,13 @@ export class FunctionAppService extends BaseService {
    */
   public async deploy() {
     this.log(`Creating function app: ${this.serviceName}`);
-    let parameters: any = { functionAppName: { value: this.serviceName } };
 
-    const gitUrl = this.serverless.service.provider["gitUrl"];
+    const armService = new ArmService(this.serverless);
+    let deployment: ArmDeployment = this.config.provider.armTemplate
+      ? await armService.createDeploymentFromConfig(this.config.provider.armTemplate)
+      : await armService.createDeploymentFromType(this.config.provider.type || "consumption");
 
-    if (gitUrl) {
-      parameters = {
-        functionAppName: { value: this.serviceName },
-        gitUrl: { value: gitUrl }
-      };
-    }
-
-    let templateFilePath = path.join(__dirname, "..", "provider", "armTemplates", "azuredeploy.json");
-
-    if (gitUrl) {
-      templateFilePath = path.join(__dirname, "armTemplates", "azuredeployWithGit.json");
-    }
-
-    if (this.serverless.service.provider["armTemplate"]) {
-      this.log(`-> Deploying custom ARM template: ${this.serverless.service.provider["armTemplate"].file}`);
-      templateFilePath = path.join(this.serverless.config.servicePath, this.serverless.service.provider["armTemplate"].file);
-      const userParameters = this.serverless.service.provider["armTemplate"].parameters;
-      const userParametersKeys = Object.keys(userParameters);
-
-      for (let paramIndex = 0; paramIndex < userParametersKeys.length; paramIndex++) {
-        const item = {};
-
-        item[userParametersKeys[paramIndex]] = { "value": userParameters[userParametersKeys[paramIndex]] };
-        parameters = _.merge(parameters, item);
-      }
-    }
-
-    let template = JSON.parse(fs.readFileSync(templateFilePath, "utf8"));
-
-    // Check if there are custom environment variables defined that need to be
-    // added to the ARM template used in the deployment.
-    const environmentVariables = this.serverless.service.provider["environment"];
-    if (environmentVariables) {
-      const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
-
-      jsonpath.apply(template, appSettingsPath, function (appSettingsList) {
-        Object.keys(environmentVariables).forEach(function (key) {
-          appSettingsList.push({
-            name: key,
-            value: environmentVariables[key]
-          });
-        });
-
-        return appSettingsList;
-      });
-    }
-
-    const deploymentParameters: Deployment = {
-      properties: {
-        mode: "Incremental",
-        parameters,
-        template
-      }
-    };
-
-    // Deploy ARM template
-    await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, deploymentParameters);
+    await armService.deployTemplate(deployment);
 
     // Return function app 
     return await this.get();
@@ -175,7 +133,7 @@ export class FunctionAppService extends BaseService {
 
   private async zipDeploy(functionApp) {
     const functionAppName = functionApp.name;
-    const scmDomain = functionApp.enabledHostNames[0];
+    const scmDomain = this.getScmDomain(functionApp);
 
     this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
 
@@ -246,7 +204,7 @@ export class FunctionAppService extends BaseService {
   private async runKuduCommand(functionApp: Site, command: string) {
     this.serverless.cli.log(`-> Running Kudu command ${command}...`);
 
-    const scmDomain = functionApp.enabledHostNames[0];
+    const scmDomain = this.getScmDomain(functionApp);
     const requestUrl = `https://${scmDomain}/api/command`;
 
     // TODO: There is a case where the body will contain an error, but it's
@@ -274,5 +232,16 @@ export class FunctionAppService extends BaseService {
     const response = await this.sendApiRequest("GET", adminTokenUrl);
 
     return response.data.replace(/"/g, "");
+  }
+
+  /**
+   * Retrieves the SCM domain from the list of enabled domains within the app
+   * Note: The SCM domain exposes additional API calls from the standard REST APIs.
+   * @param functionApp The function app / web site
+   */
+  private getScmDomain(functionApp: Site) {
+    return functionApp.enabledHostNames.find((hostName: string) => {
+      return hostName.endsWith("scm.azurewebsites.net");
+    });
   }
 }

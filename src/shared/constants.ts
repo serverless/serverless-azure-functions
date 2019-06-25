@@ -20,5 +20,5 @@ export const constants = {
   queue: "queue",
   queueName: "queueName",
   xAzureSettings: "x-azure-settings",
-  entryPoint: "entryPoint"
+  entryPoint: "entryPoint",
 }

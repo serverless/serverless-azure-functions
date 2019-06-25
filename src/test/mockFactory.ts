@@ -12,7 +12,9 @@ import PluginManager from "serverless/lib/classes/PluginManager";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider"
 import { Logger } from "../models/generic";
-import { ApiCorsPolicy } from "../models/apiManagement";
+import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
+import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
+import { ArmResourceTemplate } from "../models/armTemplates";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -29,8 +31,37 @@ export class MockFactory {
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     sls.service = getAttribute(config, "service", MockFactory.createTestService());
-    sls.service.getFunction = jest.fn((functionName) => sls.service["functions"][functionName]);
+    sls.config.servicePath = "";
     return sls;
+  }
+
+  public static createTestService(functions?): Service {
+    if (!functions) {
+      functions = MockFactory.createTestSlsFunctionConfig()
+    }
+    const serviceName = "serviceName";
+    return {
+      getAllFunctions: jest.fn(() => Object.keys(functions)),
+      getFunction: jest.fn((name: string) => functions[name]),
+      getAllEventsInFunction: jest.fn(),
+      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
+      getEventInFunction: jest.fn(),
+      getServiceName: jest.fn(() => serviceName),
+      load: jest.fn(),
+      mergeResourceArrays: jest.fn(),
+      setFunctionNames: jest.fn(),
+      update: jest.fn(),
+      validate: jest.fn(),
+      custom: null,
+      provider: MockFactory.createTestAzureServiceProvider(),
+      service: serviceName,
+      artifact: "app.zip",
+      functions
+    } as any as Service;
+  }
+
+  public static updateService(sls: Serverless) {
+    sls.service = MockFactory.createTestService(sls.service["functions"]);
   }
 
   public static createTestServerlessOptions(): Serverless.Options {
@@ -71,6 +102,25 @@ export class MockFactory {
     };
   }
 
+  public static createTestFunctions(functionCount = 3) {
+    const functions = []
+    for (let i = 0; i < functionCount; i++) {
+      functions.push(MockFactory.createTestFunction(`function${i + 1}`));
+    }
+    return functions;
+  }
+
+  public static createTestFunction(name: string = "TestFunction") {
+    return {
+      properties: {
+        name,
+        config: {
+          bindings: MockFactory.createTestBindings()
+        }
+      }
+    }
+  }
+
   public static createTestAzureCredentials(): TokenClientCredentials {
     const credentials = {
       getToken: jest.fn(() => {
@@ -90,6 +140,19 @@ export class MockFactory {
     };
 
     return credentials;
+  }
+
+  public static createTestDeployments(count: number = 5): DeploymentsListByResourceGroupResponse {
+    const result = [];
+    for (let i = 0; i < count; i++) {
+      result.push({
+        name: `deployment${i + 1}`,
+        properties: {
+          timestamp: new Date(),
+        }
+      })
+    }
+    return result as DeploymentsListByResourceGroupResponse
   }
 
   public static createTestAxiosResponse<T>(
@@ -136,23 +199,28 @@ export class MockFactory {
     const data = {
       provider: {
         name: "azure",
-        location: "West US 2"
+        region: "West US 2"
       },
       plugins: [
         "serverless-azure-functions"
       ],
-      functions: functionMetadata || MockFactory.createTestFunctionsMetadata(2),
+      functions: functionMetadata || MockFactory.createTestSlsFunctionConfig(),
     }
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestFunctionsMetadata(functionCount = 2) {
-    const data = {}
-    for (let i = 0; i < functionCount; i++) {
-      const functionName = `function${i + 1}`;
-      data[functionName] = MockFactory.createTestFunctionMetadata(functionName);
-    }
-    return data;
+  public static createTestApimConfig(): ApiManagementConfig {
+    return {
+      name: "test-apim-resource",
+      api: {
+        name: "test-apim-api1",
+        subscriptionRequired: false,
+        displayName: "API 1",
+        description: "description of api 1",
+        protocols: ["https"],
+        path: "test-api1",
+      },
+    };
   }
 
   public static createTestFunctionApimConfig(name: string) {
@@ -171,48 +239,27 @@ export class MockFactory {
 
   public static createTestFunctionMetadata(name: string) {
     return {
-      handler: `src/handlers/${name}.handler`,
-      events: [
-        {
-          http: true,
-          "x-azure-settings": {
-            authLevel: "anonymous"
-          }
-        },
-        {
-          http: true,
-          "x-azure-settings": {
-            direction: "out",
-            name: "res"
-          },
-        }
-      ]
-    };
+      "handler": `${name}.handler`,
+      "events": MockFactory.createTestFunctionEvents(),
+    }
   }
 
-  public static createTestService(functions?): Service {
-    if (!functions) {
-      functions = MockFactory.createTestSlsFunctionConfig()
-    }
-    const serviceName = "serviceName";
-    return {
-      getAllFunctions: jest.fn(() => Object.keys(functions)),
-      getFunction: jest.fn(),
-      getAllEventsInFunction: jest.fn(),
-      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
-      getEventInFunction: jest.fn(),
-      getServiceName: jest.fn(() => serviceName),
-      load: jest.fn(),
-      mergeResourceArrays: jest.fn(),
-      setFunctionNames: jest.fn(),
-      update: jest.fn(),
-      validate: jest.fn(),
-      custom: null,
-      provider: MockFactory.createTestAzureServiceProvider(),
-      service: serviceName,
-      artifact: "app.zip",
-      functions
-    } as any as Service;
+  public static createTestFunctionEvents() {
+    return [
+      {
+        "http": true,
+        "x-azure-settings": {
+          "authLevel": "anonymous"
+        }
+      },
+      {
+        "http": true,
+        "x-azure-settings": {
+          "direction": "out",
+          "name": "res"
+        }
+      }
+    ]
   }
 
   public static createTestFunctionsResponse(functions?) {
@@ -260,9 +307,10 @@ export class MockFactory {
       id: "appId",
       name: name,
       location: "West US",
-      defaultHostName: "myHostName",
+      defaultHostName: "myHostName.azurewebsites.net",
       enabledHostNames: [
-        "myHostName"
+        "myHostName.azurewebsites.net",
+        "myHostName.scm.azurewebsites.net",
       ]
     };
   }
@@ -289,14 +337,31 @@ export class MockFactory {
     return MockFactory.createTestHttpBinding();
   }
 
-  public static createTestHttpBinding() {
+  public static createTestHttpBinding(direction: string = "in") {
+    if (direction === "in") {
+      return {
+        authLevel: "anonymous",
+        type: "httpTrigger",
+        direction,
+        name: "req",
+      }
+    } else {
+      return {
+        type: "http",
+        direction,
+        name: "res"
+      }
+    }
+  }
+
+  public static createTestBindingsObject(name: string = "index.js") {
     return {
-      type: "httpTrigger",
-      authLevel: "anonymous",
-      direction: "in",
-      methods: [
-        "get",
-        "post"
+      scriptFile: name,
+      entryPoint: "handler",
+      disabled: false,
+      bindings: [
+        MockFactory.createTestHttpBinding("in"),
+        MockFactory.createTestHttpBinding("out")
       ]
     }
   }
@@ -382,7 +447,26 @@ export class MockFactory {
       allowedOrigins: ["*"],
       allowedHeaders: ["*"],
       exposeHeaders: ["*"],
-      allowedMethods: ["GET","POST"],
+      allowedMethods: ["GET", "POST"],
+    };
+  }
+
+  public static createTestArmTemplate(): ArmResourceTemplate {
+    return {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "param1": {
+          "defaultValue": "",
+          "type": "String"
+        },
+        "param2": {
+          "defaultValue": "",
+          "type": "String"
+        },
+      },
+      "variables": {},
+      "resources": []
     };
   }
 

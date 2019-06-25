@@ -1,7 +1,6 @@
 import Serverless from "serverless";
 import _ from "lodash";
 import { MockFactory } from "../test/mockFactory";
-import { ApiManagementConfig } from "../models/apiManagement";
 import { ApimService } from "./apimService";
 import { interpolateJson } from "../test/utils";
 import axios from "axios";
@@ -22,18 +21,7 @@ import {
 } from "@azure/arm-apimanagement/esm/models";
 
 describe("APIM Service", () => {
-  const apimConfig: ApiManagementConfig = {
-    name: "test-apim-resource",
-    api: {
-      name: "test-apim-api1",
-      subscriptionRequired: false,
-      displayName: "API 1",
-      description: "description of api 1",
-      protocols: ["https"],
-      path: "test-api1",
-    },
-  };
-
+  const apimConfig = MockFactory.createTestApimConfig();
   let serverless: Serverless;
 
   beforeEach(() => {
@@ -43,7 +31,7 @@ describe("APIM Service", () => {
       provider: {
         name: "azure",
         resourceGroup: "test-sls-rg",
-        location: "West US",
+        region: "West US",
         apim: apimConfig,
       },
     };
@@ -91,7 +79,7 @@ describe("APIM Service", () => {
       const expectedResponse = interpolateJson(apimGetService200, {
         resourceGroup: {
           name: serverless.service.provider["resourceGroup"],
-          location: serverless.service.provider["location"],
+          location: serverless.service.provider.region,
         },
         resource: {
           name: apimConfig.name,
@@ -106,7 +94,7 @@ describe("APIM Service", () => {
       expect(resource).not.toBeNull();
       expect(resource).toMatchObject({
         name: apimConfig.name,
-        location: serverless.service.provider["location"],
+        location: serverless.service.provider.region,
       });
     });
   });
@@ -133,7 +121,7 @@ describe("APIM Service", () => {
       const expectedResponse = interpolateJson(apimGetApi200, {
         resourceGroup: {
           name: serverless.service.provider["resourceGroup"],
-          location: serverless.service.provider["location"],
+          location: serverless.service.provider.region,
         },
         service: {
           name: apimConfig.name,

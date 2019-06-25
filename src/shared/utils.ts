@@ -83,19 +83,19 @@ export class Utils {
     functionsJson.bindings = bindings;
     params.functionsJson = functionsJson;
 
-    const entryPointAndHandlerPath = Utils.getEntryPointAndHandlerPath(handler);
+    let { handlerPath, entryPoint } = Utils.getEntryPointAndHandlerPath(handler);
     if (functionObject["scriptFile"]) {
-      entryPointAndHandlerPath.handlerPath = functionObject["scriptFile"];
+      handlerPath = functionObject["scriptFile"];
     }
 
     return {
-      entryPoint: entryPointAndHandlerPath.entryPoint,
-      handlerPath: relative(functionName, entryPointAndHandlerPath.handlerPath),
+      entryPoint,
+      handlerPath: relative(functionName, handlerPath),
       params: params
     };
   }
 
-  public static getEntryPointAndHandlerPath(handler) {
+  public static getEntryPointAndHandlerPath(handler: string) {
     let handlerPath = "handler.js";
     let entryPoint = handler;
     const handlerSplit = handler.split(".");
@@ -104,12 +104,17 @@ export class Utils {
       entryPoint = handlerSplit[handlerSplit.length - 1];
       handlerPath = `${handler.substring(0, handler.lastIndexOf("."))}.js`;
     }
+    
     const metaData = {
       entryPoint: entryPoint,
       handlerPath: handlerPath
     };
 
     return metaData;
+  }
+
+  public static prettyPrint(json) {
+    return JSON.stringify(json, null, 2);
   }
 
   public static interpolateFile(sls: Serverless, path: string, params: Map<string, string>) {

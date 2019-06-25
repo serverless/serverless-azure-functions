@@ -6,6 +6,7 @@ jest.mock("@azure/arm-resources")
 import { ResourceManagementClient } from "@azure/arm-resources";
 
 describe("Resource Service", () => {
+  const deployments = MockFactory.createTestDeployments();
 
   beforeAll(() => {
     ResourceManagementClient.prototype.resourceGroups = {
@@ -14,7 +15,8 @@ describe("Resource Service", () => {
     } as any;
 
     ResourceManagementClient.prototype.deployments = {
-      deleteMethod: jest.fn()
+      deleteMethod: jest.fn(),
+      listByResourceGroup: jest.fn(() => Promise.resolve(deployments)),
     } as any;
   });
 
@@ -36,7 +38,7 @@ describe("Resource Service", () => {
     const resourceGroup = "myResourceGroup"
     const location = "West Us";
     sls.service.provider["resourceGroup"] = resourceGroup
-    sls.service.provider["location"] = location;
+    sls.service.provider.region = location;
     sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
@@ -69,5 +71,16 @@ describe("Resource Service", () => {
     service.deleteResourceGroup();
     expect(ResourceManagementClient.prototype.resourceGroups.deleteMethod)
       .toBeCalledWith(resourceGroup);
+  });
+
+  it("lists deployments", async () => {
+    const sls = MockFactory.createTestServerless();
+    const resourceGroup = "myResourceGroup";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.variables["azureCredentials"] = "fake credentials"
+    const options = MockFactory.createTestServerlessOptions();
+    const service = new ResourceService(sls, options);
+    const deps = await service.getDeployments();
+    expect(deps).toEqual(deployments);
   });
 });
