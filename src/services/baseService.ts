@@ -12,6 +12,8 @@ export abstract class BaseService {
   protected subscriptionId: string;
   protected resourceGroup: string;
   protected deploymentName: string;
+  protected deploymentContainerName: string;
+  protected storageAccountName: string;
   protected config: ServerlessAzureConfig;
 
   protected constructor(
