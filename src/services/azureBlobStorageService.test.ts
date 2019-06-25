@@ -37,7 +37,7 @@ describe("Azure Blob Storage Service", () => {
     service = new AzureBlobStorageService(sls, options);
   });
 
-  it("uploads a file", async () => {
+  it("should upload a file", async () => {
     uploadFileToBlockBlob.prototype = jest.fn();
     ContainerURL.fromServiceURL = jest.fn((serviceUrl, containerName) => (containerName as any));
     await service.uploadFile(filePath, containerName);
@@ -48,13 +48,13 @@ describe("Azure Blob Storage Service", () => {
     );
   });
 
-  it("deletes a file", async () => {
+  it("should delete a file", async () => {
     ContainerURL.fromServiceURL = jest.fn((serviceUrl, containerName) => (containerName as any));
     await service.deleteFile(containerName, fileName);
     expect(blockBlobUrl.delete).toBeCalledWith(Aborter.none)
   });
 
-  it("lists files of container", async () => {
+  it("should list files of container", async () => {
     const blobs = MockFactory.createTestAzureBlobItems();
     ContainerURL.prototype.listBlobFlatSegment = jest.fn(() => Promise.resolve(blobs)) as any;
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
@@ -65,14 +65,14 @@ describe("Azure Blob Storage Service", () => {
     expect(otherFiles.length).toEqual(0);
   });
 
-  it("lists containers", async () => {
+  it("should list containers", async () => {
     ServiceURL.prototype.listContainersSegment = jest.fn(() => Promise.resolve(containers));
     const containerList = await service.listContainers();
     expect(containerList).toEqual(
       containers.containerItems.map((container) => container.name));
   });
 
-  it("creates a container", async () => {
+  it("should create a container", async () => {
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
     ContainerURL.prototype.create = jest.fn(() => Promise.resolve({ statusCode: 201 })) as any;
     const newContainerName = "newContainer";
@@ -81,7 +81,7 @@ describe("Azure Blob Storage Service", () => {
     expect(ContainerURL.prototype.create).toBeCalledWith(Aborter.none);
   });
   
-  it("deletes a container", async () => {
+  it("should delete a container", async () => {
     const containerToDelete = "delete container";
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
     ContainerURL.prototype.delete = jest.fn(() => Promise.resolve({ statusCode: 204 })) as any;

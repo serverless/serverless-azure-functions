@@ -52,6 +52,7 @@
   "devDependencies": {
     "@babel/runtime": "^7.4.5",
     "@types/jest": "^24.0.13",
+    "@types/jsonpath": "^0.2.0",
     "@types/lodash": "^4.14.130",
     "@types/mock-fs": "^3.6.30",
     "@types/open": "^6.1.0",

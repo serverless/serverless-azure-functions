@@ -1,6 +1,7 @@
 import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, StorageURL, uploadFileToBlockBlob } from "@azure/storage-blob";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
+import { Guard } from "../shared/guard";
 
 /**
  * Wrapper for operations on Azure Blob Storage account
@@ -24,7 +25,10 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Name of blob file created as a result of upload
    */
   public async uploadFile(path: string, containerName: string, blobName?: string) {
-    const name = blobName || path.replace(/^.*[\\\/]/, "");
+    Guard.empty(path);
+    Guard.empty(containerName);
+    // Use specified blob name or replace `/` in path with `-`
+    const name = blobName || path.replace(/^.*[\\\/]/, "-");
     uploadFileToBlockBlob(Aborter.none, path, this.getBlockBlobURL(containerName, name));
   };
   
@@ -34,6 +38,8 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Blob to delete
    */
   public async deleteFile(containerName: string, blobName: string): Promise<void> {
+    Guard.empty(containerName);
+    Guard.empty(blobName);
     const blockBlobUrl = await this.getBlockBlobURL(containerName, blobName)
     await blockBlobUrl.delete(Aborter.none);
   }
@@ -44,6 +50,7 @@ export class AzureBlobStorageService extends BaseService {
    * from container
    */
   public async listFiles(containerName: string, ext?: string): Promise<string[]> {
+    Guard.empty(containerName, "containerName");
     const result: string[] = [];
     let marker;
     const containerURL = this.getContainerURL(containerName);
@@ -88,6 +95,7 @@ export class AzureBlobStorageService extends BaseService {
    * @param containerName - Name of container to create
    */
   public async createContainer(containerName: string): Promise<void> {
+    Guard.empty(containerName);
     const containerURL = this.getContainerURL(containerName);
     await containerURL.create(Aborter.none);
   }
@@ -97,6 +105,7 @@ export class AzureBlobStorageService extends BaseService {
    * @param containerName Name of container to delete
    */
   public async deleteContainer(containerName: string): Promise<void> {
+    Guard.empty(containerName);
     const containerUrl = await this.getContainerURL(containerName)
     await containerUrl.delete(Aborter.none);
   }
@@ -105,8 +114,7 @@ export class AzureBlobStorageService extends BaseService {
    * Get ServiceURL object for Azure Blob Storage Account
    */
   private getServiceURL(): ServiceURL {
-    const credential = this.credentials
-    const pipeline = StorageURL.newPipeline(credential);
+    const pipeline = StorageURL.newPipeline(this.credentials);
     const accountUrl = this.accountUrl;
     const serviceUrl = new ServiceURL(
       accountUrl,
@@ -121,6 +129,7 @@ export class AzureBlobStorageService extends BaseService {
    * @param serviceURL Previously created ServiceURL object (will create if undefined)
    */
   private getContainerURL(containerName: string): ContainerURL {
+    Guard.empty(containerName);
     return ContainerURL.fromServiceURL(
       this.getServiceURL(),
       containerName
@@ -133,6 +142,8 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Name of blob
    */
   private getBlockBlobURL(containerName: string, blobName: string): BlockBlobURL {
+    Guard.empty(containerName);
+    Guard.empty(blobName);
     return BlockBlobURL.fromContainerURL(
       this.getContainerURL(containerName),
       blobName,

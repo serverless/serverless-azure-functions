@@ -31,7 +31,7 @@ export class AzureDeployPlugin {
     const resourceService = new ResourceService(this.serverless, this.options);
     const deployments = await resourceService.getDeployments();
     if (!deployments || deployments.length === 0) {
-      this.serverless.cli.log(`No deployments found for resource group '${resourceService.getResourceGroup()}'`);
+      this.serverless.cli.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
       return;
     }
     let stringDeployments = "\n\nDeployments";

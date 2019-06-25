@@ -12,6 +12,12 @@ export interface ApiManagementConfig {
   backend?: BackendContract;
   /** The API's CORS policy */
   cors?: ApiCorsPolicy;
+  sku?: {
+    name?: string;
+    capacity?: number;
+  };
+  publisherEmail?: string;
+  publisherName?: string;
 }
 
 /**

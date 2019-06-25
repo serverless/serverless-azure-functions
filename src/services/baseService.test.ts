@@ -21,18 +21,6 @@ class MockService extends BaseService {
     return this.sendFile(requestOptions, filePath);
   }
 
-  public getSlsResourceGroupName() {
-    return this.getResourceGroupName();
-  }
-
-  public getSlsRegion() {
-    return this.getRegion();
-  }
-
-  public getSlsStage() {
-    return this.getStage();
-  }
-
   public getProperties() {
     return {
       baseUrl: this.baseUrl,
@@ -61,7 +49,7 @@ describe("Base Service", () => {
     mockFs.restore();
   });
 
-  function createTestService(options?: Serverless.Options) {
+  function createMockService(options?: Serverless.Options) {
     sls = MockFactory.createTestServerless();
     sls.variables["azureCredentials"] = MockFactory.createTestAzureCredentials();
     sls.variables["subscriptionId"] = "ABC123";
@@ -71,7 +59,7 @@ describe("Base Service", () => {
   }
 
   beforeEach(() => {
-    service = createTestService();
+    service = createMockService();
   });
 
   it("Initializes common service properties", () => {
@@ -85,9 +73,9 @@ describe("Base Service", () => {
   });
 
   it("Sets default region and stage values if not defined", () => {
-    const testService = new MockService(sls);
+    const mockService = new MockService(sls);
 
-    expect(testService).not.toBeNull();
+    expect(mockService).not.toBeNull();
     expect(sls.service.provider.region).toEqual("westus");
     expect(sls.service.provider.stage).toEqual("dev");
   });
@@ -97,27 +85,46 @@ describe("Base Service", () => {
       stage: "prod",
       region: "eastus2"
     };
-    const testService = new MockService(sls, cliOptions);
+    const mockService = new MockService(sls, cliOptions);
 
-    expect(testService.getSlsRegion()).toEqual(cliOptions.region);
-    expect(testService.getSlsStage()).toEqual(cliOptions.stage);
+    expect(mockService.getRegion()).toEqual(cliOptions.region);
+    expect(mockService.getStage()).toEqual(cliOptions.stage);
+  });
+
+  it("Sets default region and stage values if not defined", () => {
+    const mockService = new MockService(sls);
+
+    expect(mockService).not.toBeNull();
+    expect(sls.service.provider.region).toEqual("westus");
+    expect(sls.service.provider.stage).toEqual("dev");
+  });
+
+  it("returns region and stage based on CLI options", () => {
+    const cliOptions = {
+      stage: "prod",
+      region: "eastus2"
+    };
+    const mockService = new MockService(sls, cliOptions);
+
+    expect(mockService.getRegion()).toEqual(cliOptions.region);
+    expect(mockService.getStage()).toEqual(cliOptions.stage);
   });
 
   it("Generates resource group name from sls yaml config", () => {
-    const testService = new MockService(sls);
-    const resourceGroupName = testService.getSlsResourceGroupName();
+    const mockService = new MockService(sls);
+    const resourceGroupName = mockService.getResourceGroupName();
 
     expect(resourceGroupName).toEqual(sls.service.provider["resourceGroup"]);
   });
 
   it("Generates resource group from convention when NOT defined in sls yaml", () => {
     sls.service.provider["resourceGroup"] = null;
-    const testService = new MockService(sls);
-    const resourceGroupName = testService.getSlsResourceGroupName();
-    const region = testService.getSlsRegion();
-    const stage = testService.getSlsStage();
+    const mockService = new MockService(sls);
+    const resourceGroupName = mockService.getResourceGroupName();
+    const region = mockService.getRegion();
+    const stage = mockService.getStage();
 
-    expect(resourceGroupName).toEqual(`${sls.service["service"]}-${region}-${stage}-rg`);
+    expect(resourceGroupName).toEqual(`sls-${region}-${stage}-${sls.service["service"]}-rg`);
   });
 
   it("Fails if credentials have not been set in serverless config", () => {

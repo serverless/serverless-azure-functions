@@ -1,7 +1,6 @@
 import Serverless from "serverless";
 import _ from "lodash";
 import { MockFactory } from "../test/mockFactory";
-import { ApiManagementConfig } from "../models/apiManagement";
 import { ApimService } from "./apimService";
 import { interpolateJson } from "../test/utils";
 import axios from "axios";
@@ -22,18 +21,7 @@ import {
 } from "@azure/arm-apimanagement/esm/models";
 
 describe("APIM Service", () => {
-  const apimConfig: ApiManagementConfig = {
-    name: "test-apim-resource",
-    api: {
-      name: "test-apim-api1",
-      subscriptionRequired: false,
-      displayName: "API 1",
-      description: "description of api 1",
-      protocols: ["https"],
-      path: "test-api1",
-    },
-  };
-
+  const apimConfig = MockFactory.createTestApimConfig();
   let serverless: Serverless;
 
   beforeEach(() => {
