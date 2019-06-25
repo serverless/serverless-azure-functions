@@ -101,8 +101,8 @@ describe("Function App Service", () => {
 
   it("gets master key", async () => {
     const service = createService();
-    const masterKey = await service.getMasterKey();
-    expect(masterKey).toEqual(masterKey);
+    const result = await service.getMasterKey();
+    expect(result).toEqual(masterKey);
 
   });
 
