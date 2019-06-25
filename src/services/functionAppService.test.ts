@@ -13,7 +13,6 @@ import { ArmDeployment, ArmTemplateType } from "../models/armTemplates";
 jest.mock("@azure/arm-resources")
 
 describe("Function App Service", () => {
-
   const app = MockFactory.createTestSite();
   const slsService = MockFactory.createTestService();
   const variables = MockFactory.createTestVariables();
@@ -31,12 +30,8 @@ describe("Function App Service", () => {
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const syncTriggersUrl = `${baseUrl}${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
-  const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
-  const uploadUrl = `https://${scmDomain}/api/zipdeploy/`;
 
   beforeAll(() => {
-
-    // TODO: How to spy on default exported function?
     const axiosMock = new MockAdapter(axios);
 
     // Master Key
@@ -59,7 +54,6 @@ describe("Function App Service", () => {
   });
 
   beforeEach(() => {
-
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => app),
       deleteFunction: jest.fn(),
@@ -197,11 +191,41 @@ describe("Function App Service", () => {
   });
 
   it("uploads functions", async () => {
+    const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
+    const expectedUploadUrl = `https://${scmDomain}/api/zipdeploy/`;
+
     const service = createService();
     await service.uploadFunctions(app);
+
     expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
       method: "POST",
-      uri: uploadUrl,
+      uri: expectedUploadUrl,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${variables["azureCredentials"].tokenCache._entries[0].accessToken}`,
+        Accept: "*/*",
+        ContentType: "application/octet-stream",
+      }
+    }, slsService["artifact"])
+  });
+
+  it("uploads functions with custom SCM domain (aka App service environments)", async () => {
+    const customApp = {
+      ...MockFactory.createTestSite("CustomAppWithinASE"),
+      enabledHostNames: [
+        "myapi.customase.p.azurewebsites.net",
+        "myapi.scm.customase.p.azurewebsites.net"
+      ],
+    }
+
+    const expectedUploadUrl = `https://${customApp.enabledHostNames[1]}/api/zipdeploy/`;
+
+    const service = createService();
+    await service.uploadFunctions(customApp);
+
+    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
+      method: "POST",
+      uri: expectedUploadUrl,
       json: true,
       headers: {
         Authorization: `Bearer ${variables["azureCredentials"].tokenCache._entries[0].accessToken}`,
