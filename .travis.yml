@@ -29,21 +29,22 @@ install:
 jobs:
   include:
     - stage: compile
-      name: "TypeScript compile for Node"
-      node_js: "8"
+      name: "TypeScript compiler for Node"
+      node_js: 
+        - "8"
+        - "10"
       script: 
         - npm run compile
     - stage: test
-      name: "Unit Tests on Node 8"
-      node_js: "8"
+      name: "Unit Tests on Node"
+      node_js: 
+        - "8"
+        - "10"
       script:
         - npm run test:ci
       after_success:
         - npm run test:coverage
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
-    - name: "Unit Tests on Node 10"
-      node_js: "10"
-
     - stage: publish
       name: "NPM release for dev" # rename before merge to master
       node_js: "8"
