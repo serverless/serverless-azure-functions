@@ -1,10 +1,8 @@
+import { isAbsolute, join } from "path";
 import Serverless from "serverless";
-import { join, isAbsolute } from "path";
 import AzureProvider from "../../provider/azureProvider";
-import { AzureLoginPlugin } from "../login/loginPlugin";
-import { AzureLoginService } from "../../services/loginService";
 import { InvokeService } from "../../services/invokeService";
-import fs from 'fs';
+import { AzureLoginPlugin } from "../login/loginPlugin";
 
 export class AzureInvoke {
   public hooks: { [eventName: string]: Promise<any> };
@@ -22,9 +20,9 @@ export class AzureInvoke {
         ? path
         : join(this.serverless.config.servicePath, path);
 
-    if (!this.serverless.utils.fileExistsSync(absolutePath)) {
-      throw new Error("The file you provided does not exist.");
-    }
+      if (!this.serverless.utils.fileExistsSync(absolutePath)) {
+        throw new Error("The file you provided does not exist.");
+      }
       this.options["data"] = this.serverless.utils.readFileSync(absolutePath);
     }
     this.commands = {
@@ -46,9 +44,9 @@ export class AzureInvoke {
             usage: "Data string for body of request",
             shortcut: "d"
           },
-          name: {
-            usage: "Name of the function to invoke",
-            shortcut: "n"
+          method: {
+            usage: "GET or POST request (Default is GET)",
+            shortcut: "m"
           }
         }
       }
@@ -60,22 +58,18 @@ export class AzureInvoke {
   }
 
   private async invoke() {
-
-    this.invokeService = new InvokeService(this.serverless, this.options);
-    await this.invokeService.invoke();
-
-    if (!("function" in this.options)) {
+    const functionName = this.options["function"];
+    const data = this.options["data"];
+    const method = this.options["method"] || "GET";
+    if (!functionName) {
       this.serverless.cli.log("Need to provide a name of function to invoke");
       return;
     }
-    const funcToInvoke = this.options["function"];
-    const exists = fs.existsSync(funcToInvoke);
-    if (!exists) {
-      this.serverless.cli.log(`Function ${funcToInvoke} does not exist`);
+    if (!data) {
+      this.serverless.cli.log("Need to provide data or path");
       return;
     }
-    this.serverless.cli.log(`Invoking ${funcToInvoke}`);
-    const functionObject = this.serverless.service.getFunction(funcToInvoke);
-    return this.invokeService.invokefunction(funcToInvoke, Object.keys(functionObject["events"][0])[0], this.options["data"]);
+    this.invokeService = new InvokeService(this.serverless, this.options);
+    await this.invokeService.invoke(functionName, data, method);
   }
 }
