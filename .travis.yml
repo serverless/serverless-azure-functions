@@ -16,6 +16,8 @@ branches:
     - /^v.*$/ # Ensure to build release tags of format v1.0.0-1
 
 stages:
+  - name: compile
+    if: tag IS NOT present
   - name: test
     if: tag IS NOT present
   - name: publish
