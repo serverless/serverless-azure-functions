@@ -27,14 +27,15 @@ install:
 jobs:
   include:
     - stage: test
-      name: "Unit Tests on Node 8"
+      name: "Compile & Unit Tests on Node 8"
       node_js: "8"
       script:
+        - npm run compile
         - npm run test:ci
       after_success:
         - npm run test:coverage
         - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
-    - name: "Unit Tests on Node 10"
+    - name: "Compile & Unit Tests on Node 10"
       node_js: "10"
 
     - stage: publish
