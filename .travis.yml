@@ -2,6 +2,7 @@
 dist: xenial
 
 language: node_js
+
 node_js: 
   - "8"
   - "10"
@@ -19,8 +20,6 @@ branches:
     - /^v.*$/ # Ensure to build release tags of format v1.0.0-1
 
 stages:
-  - name: compile
-    if: tag IS NOT present
   - name: test
     if: tag IS NOT present
   - name: publish
@@ -31,13 +30,10 @@ install:
 
 jobs:
   include:
-    - stage: compile
-      name: "TypeScript compiler for Node"
-      script: 
-        - npm run compile
     - stage: test
-      name: "Unit Tests on Node"
+      name: "Compile & Run Unit Tests on Node"
       script:
+        - npm run compile
         - npm run test:ci
       after_success:
         - npm run test:coverage
