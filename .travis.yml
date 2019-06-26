@@ -2,6 +2,9 @@
 dist: xenial
 
 language: node_js
+node_js: 
+  - "8"
+  - "10"
 
 # we don't need previous commits, so don't need default depth of 50
 git:
@@ -30,16 +33,10 @@ jobs:
   include:
     - stage: compile
       name: "TypeScript compiler for Node"
-      node_js: 
-        - "8"
-        - "10"
       script: 
         - npm run compile
     - stage: test
       name: "Unit Tests on Node"
-      node_js: 
-        - "8"
-        - "10"
       script:
         - npm run test:ci
       after_success:
