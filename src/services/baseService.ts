@@ -60,7 +60,8 @@ export abstract class BaseService {
 
   public getDeploymentConfig(): DeploymentConfig {
     const providedConfig = this.serverless["deploy"] as DeploymentConfig;
-    if (providedConfig && providedConfig.name && providedConfig.rollback) {
+    const providedDepName = this.serverless.service.provider["deploymentName"];
+    if (providedConfig && providedDepName && providedConfig.rollback) {
       throw new Error("Cannot both specify a deployment name and enable rollback. " +
       "In order for rollback to work, the name of deployment must follow the generated " +
       "naming convention")

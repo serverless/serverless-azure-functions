@@ -212,7 +212,7 @@ export class MockFactory {
   }
 
   public static createTestAzureBlobItem(id: number = 1, index: number = 1, ext: string = ".zip") {
-    return  {
+    return {
       name: `blob-${id}-${index}${ext}`
     }
   }
