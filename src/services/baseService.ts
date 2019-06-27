@@ -2,16 +2,20 @@ import axios from "axios";
 import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
+import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
+import { configConstants } from "../config";
+import { DeploymentConfig, ServerlessAzureConfig } from "../models/serverless";
 import { Guard } from "../shared/guard";
-import { ServerlessAzureConfig } from "../models/serverless";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 export abstract class BaseService {
   protected baseUrl: string;
   protected serviceName: string;
-  protected credentials: any;
+  protected credentials: TokenCredentialsBase
   protected subscriptionId: string;
   protected resourceGroup: string;
   protected deploymentName: string;
+  protected deploymentConfig: DeploymentConfig
   protected deploymentContainerName: string;
   protected storageAccountName: string;
   protected config: ServerlessAzureConfig;
@@ -26,12 +30,14 @@ export abstract class BaseService {
     this.setDefaultValues();
 
     this.baseUrl = "https://management.azure.com";
+    this.serviceName = this.getServiceName();
     this.config = serverless.service as any;
-    this.serviceName = serverless.service["service"];
     this.credentials = serverless.variables["azureCredentials"];
     this.subscriptionId = serverless.variables["subscriptionId"];
     this.resourceGroup = this.getResourceGroupName();
-    this.deploymentName = serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
+    this.deploymentConfig = this.getDeploymentConfig();
+    this.deploymentName = this.getDeploymentName();
+    this.storageAccountName = StorageAccountResource.getResourceName(serverless.service as any)
 
     if (!this.credentials && authenticate) {
       throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
@@ -52,6 +58,41 @@ export abstract class BaseService {
       || `${this.config.provider.prefix}-${this.getRegion()}-${this.getStage()}-${this.serviceName}-rg`;
   }
 
+  public getDeploymentConfig(): DeploymentConfig {
+    const providedConfig = this.serverless["deploy"] as DeploymentConfig;
+    if (providedConfig && providedConfig.name && providedConfig.rollback) {
+      throw new Error("Cannot both specify a deployment name and enable rollback. " +
+      "In order for rollback to work, the name of deployment must follow the generated " +
+      "naming convention")
+    }
+    const config = providedConfig || {
+      rollback: configConstants.rollbackEnabled,
+      container: configConstants.deploymentArtifactContainer,
+    }
+    return config;
+  }
+
+  public getDeploymentName(): string {
+    const name = this.serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`
+    return this.rollbackConfiguredName(name);
+  }
+
+  public getServiceName(): string {
+    return this.serverless.service["service"];
+  }
+
+  /**
+   * Get rollback-configured artifact name. Contains `-t{timestamp}`
+   * if rollback is configured
+   */
+  public getArtifactName(): string {
+    return this.rollbackConfiguredName(this.getServiceName());
+  }
+
+  protected getAccessToken(): string{
+    return (this.credentials.tokenCache as any)._entries[0].accessToken;
+  }
+
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
@@ -60,7 +101,7 @@ export abstract class BaseService {
    */
   protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
     const defaultHeaders = {
-      Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+      Authorization: `Bearer ${this.getAccessToken()}`,
     };
 
     const allHeaders = {
@@ -124,5 +165,22 @@ export abstract class BaseService {
     if (!this.serverless.service.provider["prefix"]) {
       this.serverless.service.provider["prefix"] = "sls";
     }
+  }
+
+  private rollbackConfiguredName(name: string) {
+    return (this.deploymentConfig.rollback) ? `${name}-t${this.getTimestamp()}` : name;
+  }
+
+  /**
+   * Get timestamp from `packageTimestamp` serverless variable
+   * If not set, create timestamp, set variable and return timestamp
+   */
+  private getTimestamp(): number {
+    let timestamp = +this.serverless.variables["packageTimestamp"];
+    if (!timestamp) {
+      timestamp = Date.now();
+      this.serverless.variables["packageTimestamp"] = timestamp;
+    }
+    return timestamp;
   }
 }

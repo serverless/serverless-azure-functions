@@ -60,7 +60,8 @@ describe("Login Plugin", () => {
     expect(AzureLoginService.servicePrincipalLogin).toBeCalledWith(
       "azureServicePrincipalClientId",
       "azureServicePrincipalPassword",
-      "azureServicePrincipalTenantId"
+      "azureServicePrincipalTenantId",
+      undefined // would be options
     )
     expect(AzureLoginService.interactiveLogin).not.toBeCalled();
     expect(sls.variables["azureCredentials"]).toEqual(credentials);

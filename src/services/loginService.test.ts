@@ -30,7 +30,8 @@ describe("Login Service", () => {
     expect(loginWithServicePrincipalSecretWithAuthResponse).toBeCalledWith(
       "azureServicePrincipalClientId",
       "azureServicePrincipalPassword",
-      "azureServicePrincipalTenantId"
+      "azureServicePrincipalTenantId",
+      undefined // would be options
     );
   });
 });
