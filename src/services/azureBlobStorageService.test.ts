@@ -1,9 +1,13 @@
-import { MockFactory } from "../test/mockFactory"
 import mockFs from "mock-fs";
+import { MockFactory } from "../test/mockFactory";
+import { AzureBlobStorageService } from "./azureBlobStorageService";
 
 jest.mock("@azure/storage-blob");
-import { BlockBlobURL, ContainerURL, ServiceURL, Aborter, uploadFileToBlockBlob } from "@azure/storage-blob";
-import { AzureBlobStorageService } from "./azureBlobStorageService";
+jest.genMockFromModule("@azure/storage-blob")
+import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, uploadFileToBlockBlob, TokenCredential } from "@azure/storage-blob";
+
+jest.mock("./loginService");
+import { AzureLoginService } from "./loginService"
 
 describe("Azure Blob Storage Service", () => {
 
@@ -18,9 +22,23 @@ describe("Azure Blob Storage Service", () => {
   const blockBlobUrl = MockFactory.createTestBlockBlobUrl(containerName, filePath);
 
   let service: AzureBlobStorageService;
+  const token = "myToken";
 
   beforeAll(() => {
+    (TokenCredential as any).mockImplementation((token: string) => {
+      token
+    });
+
     BlockBlobURL.fromContainerURL = jest.fn(() => blockBlobUrl) as any;
+    AzureLoginService.login = jest.fn(() => Promise.resolve({
+      credentials: {
+        getToken: jest.fn(() => {
+          return {
+            accessToken: token
+          }
+        })
+      }
+    } as any));
   });
 
   beforeAll(() => {
@@ -35,6 +53,12 @@ describe("Azure Blob Storage Service", () => {
 
   beforeEach(() => {
     service = new AzureBlobStorageService(sls, options);
+  });
+
+  it("should initialize authentication", async () => {
+    await service.initialize();
+    expect(TokenCredential).toBeCalledWith(token);
+
   });
 
   it("should upload a file", async () => {

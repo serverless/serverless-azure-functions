@@ -213,29 +213,6 @@ export class FunctionAppService extends BaseService {
     };
   }
 
-  private async runKuduCommand(functionApp: Site, command: string) {
-    this.serverless.cli.log(`-> Running Kudu command ${command}...`);
-
-    const scmDomain = this.getScmDomain(functionApp);
-    const requestUrl = `https://${scmDomain}/api/command`;
-
-    // TODO: There is a case where the body will contain an error, but it's
-    // not actually an error. These are warnings from npm install.
-    const response = await this.sendApiRequest("POST", requestUrl, {
-      data: {
-        command: command,
-        dir: "site\\wwwroot"
-      }
-    });
-
-    if (response.status !== 200) {
-      if (response.data && response.data.Error) {
-        throw new Error(response.data.Error);
-      }
-      throw new Error(`Error executing ${command} command, try again later.`);
-    }
-  }
-
   /**
    * Gets a short lived admin token used to retrieve function keys
    */
