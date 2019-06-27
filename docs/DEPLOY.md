@@ -92,7 +92,7 @@ functions:
   ...
 ```
 
-If rollback is enabled, the name of the created package will include the UTC timestamp of its creation. This timestamp will also be included in the name of the Azure deployment so as to be able to link the two together. Both names will be with `{serviceName}-t{timestamp}` (with `.zip` in the case of the packaged code).
+If rollback is enabled, the name of the created package will include the UTC timestamp of its creation. This timestamp will also be included in the name of the Azure deployment so as to be able to link the two together. Both names will have `-t{timestamp}` appended to the end.
 
 ##### Sequence diagram for deployment to blob storage
 

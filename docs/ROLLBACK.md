@@ -6,7 +6,7 @@
   - `-t` or `--timestamp` - Timestamp associated with version to target
   - Use `sls deploy list` to discover timestamps
   - Defaults to previous deployment
-- Important to note that there is no option for rolling back an individual function. A function app is considered one unit and will be rolled back as such.
+- **Important to note that there is no option for rolling back an individual function. A function app is considered one unit and will be rolled back as such.**
 - In order to roll back your function app, make sure your `deploy.rollback` is either set to `true` or not specified (defaults to `true`). The container in Azure Blob Storage which contains the packaged code artifacts can also be specified, defaults to `DEPLOYMENT_ARTIFACTS` (see [deploy documentation](./DEPLOY.md))
 
 ##### Example usage
