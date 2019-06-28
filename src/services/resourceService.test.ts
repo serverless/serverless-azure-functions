@@ -8,6 +8,7 @@ import { Utils } from "../shared/utils";
 
 describe("Resource Service", () => {
   const deployments = MockFactory.createTestDeployments();
+  const template = "myTemplate";
 
   beforeAll(() => {
     ResourceManagementClient.prototype.resourceGroups = {
@@ -18,6 +19,7 @@ describe("Resource Service", () => {
     ResourceManagementClient.prototype.deployments = {
       deleteMethod: jest.fn(),
       listByResourceGroup: jest.fn(() => Promise.resolve(deployments)),
+      exportTemplate: jest.fn(() => Promise.resolve(template)),
     } as any;
   });
 
@@ -87,5 +89,22 @@ describe("Resource Service", () => {
     const service = new ResourceService(sls, options);
     const deps = await service.getDeployments();
     expect(deps).toEqual(deployments);
+  });
+
+  it("gets deployment template",async () => {
+    const sls = MockFactory.createTestServerless();
+    const resourceGroup = "myResourceGroup";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.variables["azureCredentials"] = "fake credentials"
+    const options = MockFactory.createTestServerlessOptions();
+    const service = new ResourceService(sls, options);
+    const deploymentName = "myDeployment";
+    const result = await service.getDeploymentTemplate(deploymentName);
+    expect(ResourceManagementClient.prototype.deployments.exportTemplate)
+      .toBeCalledWith(
+        resourceGroup,
+        deploymentName
+      );
+    expect(result).toEqual(template);
   });
 });

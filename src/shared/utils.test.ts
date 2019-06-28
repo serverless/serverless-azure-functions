@@ -162,4 +162,12 @@ describe("utils", () => {
     const actual = Utils.getNormalizedRegionName(expected);
     expect(actual).toEqual(expected);
   });
+  it("should get a timestamp from a name", () => {
+    expect(Utils.getTimestampFromName("myDeployment-t12345")).toEqual("12345");
+    expect(Utils.getTimestampFromName("myDeployment-t678987645")).toEqual("678987645");
+    expect(Utils.getTimestampFromName("-t12345")).toEqual("12345");
+
+    expect(Utils.getTimestampFromName("myDeployment-t")).toEqual(null);
+    expect(Utils.getTimestampFromName("")).toEqual(null);
+  })
 });
