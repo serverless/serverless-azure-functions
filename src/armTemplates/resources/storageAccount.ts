@@ -1,11 +1,12 @@
 import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
+import { Utils } from "../../shared/utils";
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     return config.provider.storageAccount && config.provider.storageAccount.name
       ? config.provider.storageAccount.name
-      : `${config.provider.prefix}${config.provider.region.substr(0, 3)}${config.provider.stage.substr(0, 3)}sa`.replace("-", "").toLocaleLowerCase();
+      : StorageAccountResource.getDefaultStorageAccountName(config)
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -61,5 +62,24 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
       storageAccountSkuName: resourceConfig.sku.name,
       storageAccoutSkuTier: resourceConfig.sku.tier,
     };
+  }
+
+  /**
+   * Gets a default storage account name.
+   * Storage account names can have at most 24 characters and can have only alpha-numerics
+   * Default naming convention:
+   * 
+   * "(first 3 of prefix)(first 3 of region)(first 3 of stage)(first 12 of service)sa"
+   * (Maximum of 23 characters)
+   * @param config Serverless Azure Config
+   */
+  private static getDefaultStorageAccountName(config: ServerlessAzureConfig): string {
+    const prefix = Utils.appendSubstrings(
+      3,
+      config.provider.prefix,
+      config.provider.region,
+      config.provider.stage,
+    );
+    return `${prefix}${config.service.substr(0, 12)}sa`.replace("-", "").toLocaleLowerCase();
   }
 }

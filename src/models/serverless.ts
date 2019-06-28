@@ -23,6 +23,11 @@ export interface FunctionAppConfig extends ResourceConfig {
   extensionVersion?;
 }
 
+export interface DeploymentConfig {
+  rollback?: boolean;
+  container?: string;
+}
+
 export interface ServerlessAzureConfig {
   service: string;
   provider: {

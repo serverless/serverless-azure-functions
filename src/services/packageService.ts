@@ -1,7 +1,7 @@
-import Serverless from "serverless";
-import path from "path";
 import fs from "fs";
-import { Utils, FunctionMetadata } from "../shared/utils";
+import path from "path";
+import Serverless from "serverless";
+import { FunctionMetadata, Utils } from "../shared/utils";
 
 /**
  * Adds service packing support

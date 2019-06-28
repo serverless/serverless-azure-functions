@@ -64,4 +64,18 @@ describe("utils", () => {
 
     expect(metadata).toEqual(expectedMetadata);
   });
+
+  it("should create string from substrings", () => {
+    expect(
+      Utils.appendSubstrings(
+        2,
+        "abcde",
+        "fghij",
+        "klmno",
+        "pqrst",
+        "uvwxyz",
+        "ab",
+      )
+    ).toEqual("abfgklpquvab");
+  });
 });

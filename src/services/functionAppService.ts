@@ -1,14 +1,15 @@
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { FunctionEnvelope, Site } from "@azure/arm-appservice/esm/models";
 import fs from "fs";
 import path from "path";
-import { WebSiteManagementClient } from "@azure/arm-appservice";
 import Serverless from "serverless";
-import { BaseService } from "./baseService";
+import { FunctionAppResource } from "../armTemplates/resources/functionApp";
+import { ArmDeployment } from "../models/armTemplates";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
-import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ArmService } from "./armService";
-import { ArmDeployment } from "../models/armTemplates";
-import { FunctionAppResource } from "../armTemplates/resources/functionApp";
+import { AzureBlobStorageService } from "./azureBlobStorageService";
+import { BaseService } from "./baseService";
 
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
@@ -40,6 +41,17 @@ export class FunctionAppService extends BaseService {
     });
 
     return response.data.value;
+  }
+
+  /**
+   * Initialize deployment artifact container if rollback is specified
+   */
+  public async initialize() {
+    if (this.deploymentConfig.rollback) {
+      const blobService = new AzureBlobStorageService(this.serverless, this.options);
+      await blobService.initialize();
+      blobService.createContainer(this.deploymentConfig.container);
+    }
   }
 
   public async deleteFunction(functionApp: Site, functionName: string) {
@@ -109,7 +121,8 @@ export class FunctionAppService extends BaseService {
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
 
-    this.log("Deploying serverless functions...");
+    this.log("Deploying serverless functions...");    
+
     await this.zipDeploy(functionApp);
   }
 
@@ -132,10 +145,9 @@ export class FunctionAppService extends BaseService {
   }
 
   private async zipDeploy(functionApp) {
-    const functionAppName = functionApp.name;
     const scmDomain = this.getScmDomain(functionApp);
 
-    this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
+    this.serverless.cli.log(`Deploying zip file to function app: ${functionApp.name}`);
 
     // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
     let functionZipFile = this.serverless.service["artifact"];
@@ -155,7 +167,7 @@ export class FunctionAppService extends BaseService {
       uri: `https://${scmDomain}/api/zipdeploy/`,
       json: true,
       headers: {
-        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+        Authorization: `Bearer ${this.getAccessToken()}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }
@@ -199,29 +211,6 @@ export class FunctionAppService extends BaseService {
       route: httpTrigger.route,
       name: functionConfig.name,
     };
-  }
-
-  private async runKuduCommand(functionApp: Site, command: string) {
-    this.serverless.cli.log(`-> Running Kudu command ${command}...`);
-
-    const scmDomain = this.getScmDomain(functionApp);
-    const requestUrl = `https://${scmDomain}/api/command`;
-
-    // TODO: There is a case where the body will contain an error, but it's
-    // not actually an error. These are warnings from npm install.
-    const response = await this.sendApiRequest("POST", requestUrl, {
-      data: {
-        command: command,
-        dir: "site\\wwwroot"
-      }
-    });
-
-    if (response.status !== 200) {
-      if (response.data && response.data.Error) {
-        throw new Error(response.data.Error);
-      }
-      throw new Error(`Error executing ${command} command, try again later.`);
-    }
   }
 
   /**

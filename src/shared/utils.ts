@@ -1,5 +1,5 @@
-import Serverless from "serverless";
 import { relative } from "path";
+import Serverless from "serverless";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 
@@ -122,5 +122,18 @@ export class Utils {
     const names = params.keys();
     const vals = params.values();
     return new Function(...names, `return \`${template}\`;`)(...vals);
+  }
+
+  /**
+   * Take the first `substringSize` characters from each string and return as one string
+   * @param substringSize Size of substring to take from beginning of each string
+   * @param args Strings to take substrings from
+   */
+  public static appendSubstrings(substringSize: number, ...args: string[]): string {
+    let result = "";
+    for (const s of args) {
+      result += (s.substr(0, substringSize));
+    }
+    return result;
   }
 }

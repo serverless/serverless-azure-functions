@@ -1,7 +1,8 @@
-import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, StorageURL, uploadFileToBlockBlob } from "@azure/storage-blob";
+import { Aborter, BlockBlobURL, ContainerURL, Credential, ServiceURL, StorageURL, TokenCredential, uploadFileToBlockBlob } from "@azure/storage-blob";
 import Serverless from "serverless";
-import { BaseService } from "./baseService";
 import { Guard } from "../shared/guard";
+import { BaseService } from "./baseService";
+import { AzureLoginService } from "./loginService";
 
 /**
  * Wrapper for operations on Azure Blob Storage account
@@ -12,10 +13,15 @@ export class AzureBlobStorageService extends BaseService {
    * Account URL for Azure Blob Storage account. Depends on `storageAccountName` being set in baseService
    */
   private accountUrl: string;
+  private storageCredential: Credential;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     this.accountUrl = `https://${this.storageAccountName}.blob.core.windows.net`;
+  }
+
+  public async initialize() {
+    this.storageCredential = new TokenCredential(await this.getToken());
   }
 
   /**
@@ -114,7 +120,7 @@ export class AzureBlobStorageService extends BaseService {
    * Get ServiceURL object for Azure Blob Storage Account
    */
   private getServiceURL(): ServiceURL {
-    const pipeline = StorageURL.newPipeline(this.credentials);
+    const pipeline = StorageURL.newPipeline(this.storageCredential);
     const accountUrl = this.accountUrl;
     const serviceUrl = new ServiceURL(
       accountUrl,
@@ -148,5 +154,13 @@ export class AzureBlobStorageService extends BaseService {
       this.getContainerURL(containerName),
       blobName,
     );
+  }
+
+  private async getToken(): Promise<string> {
+    const authResponse = await AzureLoginService.login({
+      tokenAudience: "https://storage.azure.com/"
+    });
+    const token = await authResponse.credentials.getToken();
+    return token.accessToken;
   }
 }
