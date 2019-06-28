@@ -30,6 +30,10 @@ export class AzureBlobStorageService extends BaseService {
     this.authType = authType;
   }
 
+  /**
+   * Initialize Blob Storage service. This creates the credentials required
+   * to perform any operation with the service
+   */
   public async initialize() {
     this.storageCredential = (this.authType === AzureStorageAuthType.SharedKey) 
       ?
@@ -48,7 +52,6 @@ export class AzureBlobStorageService extends BaseService {
     Guard.empty(path, "path");
     Guard.empty(containerName, "containerName");
     this.checkInitialization();
-
 
     // Use specified blob name or replace `/` in path with `-`
     const name = blobName || path.replace(/^.*[\\\/]/, "-");
@@ -148,6 +151,12 @@ export class AzureBlobStorageService extends BaseService {
     await containerUrl.delete(Aborter.none);
   }
 
+  /**
+   * Generate URL with SAS token for a specific blob
+   * @param containerName Name of container containing blob
+   * @param blobName Name of blob to generate SAS token for
+   * @param days Number of days from current date until expiry of SAS token. Defaults to 1 year
+   */
   public async generateBlobSasTokenUrl(containerName: string, blobName: string, days: number = 365): Promise<string> {
     this.checkInitialization();
     if (this.authType !== AzureStorageAuthType.SharedKey) {
@@ -226,6 +235,9 @@ export class AzureBlobStorageService extends BaseService {
     );
   }
 
+  /**
+   * Get access token by logging in (again) with a storage-specific context
+   */
   private async getToken(): Promise<string> {
     const authResponse = await AzureLoginService.login({
       tokenAudience: "https://storage.azure.com/"
@@ -234,6 +246,9 @@ export class AzureBlobStorageService extends BaseService {
     return token.accessToken;
   }
 
+  /**
+   * Get access key for storage account
+   */
   private async getKey(): Promise<string> {
     const context = new StorageManagementClientContext(this.credentials, this.subscriptionId)
     const storageAccounts = new StorageAccounts(context);
@@ -241,8 +256,13 @@ export class AzureBlobStorageService extends BaseService {
     return keys.keys[0].value;
   }
 
+  /**
+   * Ensure that the blob storage service has been initialized. If not initialized,
+   * the credentials will not be available for any operation
+   */
   private checkInitialization() {
     Guard.null(this.storageCredential, "storageCredential", 
-      "Azure Blob Storage Service has not been initialized. Call .initialize() before performing any operation");
+      "Azure Blob Storage Service has not been initialized. Make sure .initialize() has been called " + 
+      "before performing any operation");
   }
 }

@@ -121,8 +121,7 @@ export class FunctionAppService extends BaseService {
     this.log("Deploying serverless functions...");    
 
     await this.zipDeploy(functionApp);
-    const sas = await this.uploadFunctionAppToBlobStorage();
-    this.log(sas);
+    await this.uploadFunctionAppToBlobStorage();
   }
 
   /**
@@ -186,7 +185,10 @@ export class FunctionAppService extends BaseService {
     });
   }
 
-  private async uploadFunctionAppToBlobStorage(createSas: boolean = true): Promise<string> {
+  /**
+   * Uploads artifact file to blob storage container 
+   */
+  private async uploadFunctionAppToBlobStorage() {
     await this.blobService.initialize();
     await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
     await this.blobService.uploadFile(
@@ -194,15 +196,12 @@ export class FunctionAppService extends BaseService {
       this.containerName,
       this.blobName,
     );
-    
-    return (createSas)
-      ?
-      this.blobService.generateBlobSasTokenUrl(this.containerName, this.blobName)
-      :
-      null
   }
 
-  private getFunctionZipFile() {
+  /**
+   * Gets local path of packaged function app
+   */
+  private getFunctionZipFile(): string {
     let functionZipFile = this.serverless.service["artifact"];
     if (!functionZipFile) {
       functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
