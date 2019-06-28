@@ -60,12 +60,6 @@ export abstract class BaseService {
 
   public getDeploymentConfig(): DeploymentConfig {
     const providedConfig = this.serverless["deploy"] as DeploymentConfig;
-    const providedDepName = this.serverless.service.provider["deploymentName"];
-    if (providedConfig && providedDepName && providedConfig.rollback) {
-      throw new Error("Cannot both specify a deployment name and enable rollback. " +
-      "In order for rollback to work, the name of deployment must follow the generated " +
-      "naming convention")
-    }
     const config = providedConfig || {
       rollback: configConstants.rollbackEnabled,
       container: configConstants.deploymentArtifactContainer,
@@ -87,9 +81,12 @@ export abstract class BaseService {
    * if rollback is configured
    */
   public getArtifactName(): string {
-    return this.rollbackConfiguredName(this.getServiceName());
+    return `${this.rollbackConfiguredName(this.getServiceName())}.zip`;
   }
 
+  /**
+   * Get the access token from credentials token cache
+   */
   protected getAccessToken(): string{
     return (this.credentials.tokenCache as any)._entries[0].accessToken;
   }
@@ -168,6 +165,10 @@ export abstract class BaseService {
     }
   }
 
+  /**
+   * Add `-t{timestamp}` if rollback is enabled
+   * @param name Original name
+   */
   private rollbackConfiguredName(name: string) {
     return (this.deploymentConfig.rollback) ? `${name}-t${this.getTimestamp()}` : name;
   }

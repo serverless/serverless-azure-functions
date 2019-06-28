@@ -1,4 +1,4 @@
-# Overview
+# Deploy Overview
 
 Deploy usage guide and design decision.
 
@@ -56,3 +56,64 @@ then user try to deploy
 
 1. always using the right resource group
 1. restrictive for user who have already defined their resources
+
+## Deployment Methodologies
+
+#### 1. Deployment to Function App (rollback disabled)
+- Deploy resource group, upload packaged artifact directly to function app. Sets function app `RUN_FROM_PACKAGE` setting to `1`.
+
+#### 2. Deployment to Blob Storage (rollback enabled)
+- Deploy resource group, upload packaged function app to blob storage with version name. Sets function app `RUN_FROM_PACKAGE` setting to path of zipped artifact in blob storage
+- Default container name - `DEPLOYMENT_ARTIFACTS` (configurable in `serverless.yml`, see below)
+
+### Deployment configuration
+
+```yml
+service: my-app
+provider:
+  ...
+
+plugins:
+  - serverless-azure-functions
+
+package:
+  ...
+
+deploy:
+  # Rollback enabled, deploying to blob storage
+  # Default is true
+  # If false, deploys directly to function app
+  rollback: true
+  # Container in blob storage containing deployed packages
+  # Default is DEPLOYMENT_ARTIFACTS
+  container: MY_CONTAINER_NAME
+
+functions:
+  ...
+```
+
+If rollback is enabled, the name of the created package will include the UTC timestamp of its creation. This timestamp will also be included in the name of the Azure deployment so as to be able to link the two together. Both names will have `-t{timestamp}` appended to the end.
+
+##### Sequence diagram for deployment to blob storage
+
+```mermaid
+sequenceDiagram
+  participant s as Serverless CLI
+  participant r as Resource Group 
+  participant f as Function App
+  participant b as Blob Storage
+
+  note right of s: `sls deploy`
+  s ->> r: Create resource group
+  s ->> r: Deploy ARM template
+  r ->> f: Included in ARM template
+  r ->> b: Included in ARM template
+  note right of s: Zip code
+  s ->> b: Deploy zip code with name {appName}-v{version}.zip
+  s ->> f: Set package path in settings
+  note right of s: Log URLs 
+```
+
+##### Sub-Commands
+
+- `sls deploy list` - Logs list of deployments to configured resource group with relevant metadata (name, timestamp, etc.). Also logs versions of deployed function app code if available

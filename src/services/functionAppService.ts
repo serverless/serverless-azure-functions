@@ -13,10 +13,18 @@ import { BaseService } from "./baseService";
 
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
+  private blobService: AzureBlobStorageService;
+  private functionZipFile: string;
+  private blobName: string;
+  private containerName: string;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
+    this.blobService = new AzureBlobStorageService(serverless, options);
+    this.functionZipFile = this.getFunctionZipFile();
+    this.blobName = this.getArtifactName();
+    this.containerName = this.deploymentConfig.container;
   }
 
   public async get(): Promise<Site> {
@@ -47,18 +55,14 @@ export class FunctionAppService extends BaseService {
    * Initialize deployment artifact container if rollback is specified
    */
   public async initialize() {
-    if (this.deploymentConfig.rollback) {
-      const blobService = new AzureBlobStorageService(this.serverless, this.options);
-      await blobService.initialize();
-      blobService.createContainer(this.deploymentConfig.container);
-    }
+    
   }
 
   public async deleteFunction(functionApp: Site, functionName: string) {
     Guard.null(functionApp);
     Guard.empty(functionName);
 
-    this.serverless.cli.log(`-> Deleting function: ${functionName}`);
+    this.log(`-> Deleting function: ${functionName}`);
     const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
 
     return await this.sendApiRequest("DELETE", deleteFunctionUrl);
@@ -67,7 +71,7 @@ export class FunctionAppService extends BaseService {
   public async syncTriggers(functionApp: Site) {
     Guard.null(functionApp);
 
-    this.serverless.cli.log("Syncing function triggers");
+    this.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
     return await this.sendApiRequest("POST", syncTriggersUrl);
@@ -76,7 +80,7 @@ export class FunctionAppService extends BaseService {
   public async cleanUp(functionApp: Site) {
     Guard.null(functionApp);
 
-    this.serverless.cli.log("Cleaning up existing functions");
+    this.log("Cleaning up existing functions");
     const deleteTasks = [];
 
     const serviceFunctions = this.serverless.service.getAllFunctions();
@@ -124,6 +128,8 @@ export class FunctionAppService extends BaseService {
     this.log("Deploying serverless functions...");    
 
     await this.zipDeploy(functionApp);
+    const sas = await this.uploadFunctionAppToBlobStorage();
+    this.log(sas);
   }
 
   /**
@@ -147,19 +153,13 @@ export class FunctionAppService extends BaseService {
   private async zipDeploy(functionApp) {
     const scmDomain = this.getScmDomain(functionApp);
 
-    this.serverless.cli.log(`Deploying zip file to function app: ${functionApp.name}`);
+    this.log(`Deploying zip file to function app: ${functionApp.name}`);
 
-    // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    let functionZipFile = this.serverless.service["artifact"];
-    if (!functionZipFile) {
-      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
-    }
-
-    if (!(functionZipFile && fs.existsSync(functionZipFile))) {
+    if (!(this.functionZipFile && fs.existsSync(this.functionZipFile))) {
       throw new Error("No zip file found for function app");
     }
 
-    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
+    this.log(`-> Deploying service package @ ${this.functionZipFile}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
@@ -173,12 +173,13 @@ export class FunctionAppService extends BaseService {
       }
     };
 
-    await this.sendFile(requestOptions, functionZipFile);
-    this.serverless.cli.log("-> Function package uploaded successfully");
+    await this.sendFile(requestOptions, this.functionZipFile);
+    
+    this.log("-> Function package uploaded successfully");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
     const deployedFunctions = await this.listFunctions(functionApp);
 
-    this.serverless.cli.log("Deployed serverless functions:")
+    this.log("Deployed serverless functions:")
     deployedFunctions.forEach((functionConfig) => {
       // List functions that are part of the serverless yaml config
       if (serverlessFunctions.includes(functionConfig.name)) {
@@ -186,10 +187,34 @@ export class FunctionAppService extends BaseService {
 
         if (httpConfig) {
           const method = httpConfig.methods[0].toUpperCase();
-          this.serverless.cli.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+          this.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
         }
       }
     });
+  }
+
+  private async uploadFunctionAppToBlobStorage(createSas: boolean = true): Promise<string> {
+    await this.blobService.initialize();
+    await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
+    await this.blobService.uploadFile(
+      this.functionZipFile,
+      this.containerName,
+      this.blobName,
+    );
+    
+    return (createSas)
+      ?
+      this.blobService.generateBlobSasTokenUrl(this.containerName, this.blobName)
+      :
+      null
+  }
+
+  private getFunctionZipFile() {
+    let functionZipFile = this.serverless.service["artifact"];
+    if (!functionZipFile) {
+      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
+    }
+    return functionZipFile;
   }
 
   private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {

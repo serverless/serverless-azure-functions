@@ -182,6 +182,7 @@ describe("Arm Service", () => {
 
       const expectedResourceGroup = sls.service.provider["resourceGroup"];
       const expectedDeploymentName = sls.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
+      const expectedDeploymentNameRegex = new RegExp(expectedDeploymentName + "-t([0-9]+)")
       const expectedDeployment: Deployment = {
         properties: {
           mode: "Incremental",
@@ -190,7 +191,10 @@ describe("Arm Service", () => {
         },
       };
 
-      expect(Deployments.prototype.createOrUpdate).toBeCalledWith(expectedResourceGroup, expectedDeploymentName, expectedDeployment);
+      const call = (Deployments.prototype.createOrUpdate as any).mock.calls[0];
+      expect(call[0]).toEqual(expectedResourceGroup);
+      expect(call[1]).toMatch(expectedDeploymentNameRegex);
+      expect(call[2]).toEqual(expectedDeployment);
     });
   });
 });

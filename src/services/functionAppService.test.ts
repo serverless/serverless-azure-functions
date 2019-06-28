@@ -10,7 +10,12 @@ import { FunctionAppResource } from "../armTemplates/resources/functionApp";
 jest.mock("@azure/arm-appservice")
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { ArmDeployment, ArmTemplateType } from "../models/armTemplates";
-jest.mock("@azure/arm-resources")
+jest.mock("@azure/arm-resources");
+
+jest.mock("./azureBlobStorageService");
+import { AzureBlobStorageService } from "./azureBlobStorageService"
+import configConstants from "../config";
+
 
 describe("Function App Service", () => {
   const app = MockFactory.createTestSite();
@@ -190,7 +195,7 @@ describe("Function App Service", () => {
     });
   });
 
-  it("uploads functions", async () => {
+  it("uploads functions to function app and blob storage", async () => {
     const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
     const expectedUploadUrl = `https://${scmDomain}/api/zipdeploy/`;
 
@@ -206,7 +211,12 @@ describe("Function App Service", () => {
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }
-    }, slsService["artifact"])
+    }, slsService["artifact"]);
+    const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
+    expect(uploadCall[0]).toEqual(slsService["artifact"]);
+    expect(uploadCall[1]).toEqual(configConstants.deploymentArtifactContainer);
+    expect(uploadCall[2]).toMatch(new RegExp(slsService["service"] + "-t([0-9]+)"))
+    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalled();
   });
 
   it("uploads functions with custom SCM domain (aka App service environments)", async () => {
