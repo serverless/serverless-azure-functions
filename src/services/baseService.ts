@@ -90,6 +90,9 @@ export abstract class BaseService {
     return this.rollbackConfiguredName(this.getServiceName());
   }
 
+  /**
+   * Get the access token from credentials token cache
+   */
   protected getAccessToken(): string{
     return (this.credentials.tokenCache as any)._entries[0].accessToken;
   }
@@ -168,6 +171,10 @@ export abstract class BaseService {
     }
   }
 
+  /**
+   * Add `-t{timestamp}` if rollback is enabled
+   * @param name Original name
+   */
   private rollbackConfiguredName(name: string) {
     return (this.deploymentConfig.rollback) ? `${name}-t${this.getTimestamp()}` : name;
   }
