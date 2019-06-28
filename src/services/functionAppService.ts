@@ -51,13 +51,6 @@ export class FunctionAppService extends BaseService {
     return response.data.value;
   }
 
-  /**
-   * Initialize deployment artifact container if rollback is specified
-   */
-  public async initialize() {
-    
-  }
-
   public async deleteFunction(functionApp: Site, functionName: string) {
     Guard.null(functionApp);
     Guard.empty(functionName);

@@ -82,6 +82,11 @@ describe("Azure Blob Storage Service", () => {
     expect(TokenCredential).toBeCalled();
   });
 
+  it("should initialize authentication", async () => {
+    await service.initialize();
+    expect(TokenCredential).toBeCalledWith(token);
+  });
+
   it("should upload a file", async () => {
     uploadFileToBlockBlob.prototype = jest.fn(() => Promise.resolve());
     ContainerURL.fromServiceURL = jest.fn((serviceUrl, containerName) => (containerName as any));

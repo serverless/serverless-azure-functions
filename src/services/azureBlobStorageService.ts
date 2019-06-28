@@ -1,6 +1,6 @@
 import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-storage";
-import { Aborter, BlobSASPermissions, BlockBlobURL, ContainerURL, generateBlobSASQueryParameters, 
-  SASProtocol, ServiceURL, SharedKeyCredential, StorageURL, TokenCredential, uploadFileToBlockBlob } from "@azure/storage-blob";
+import { Aborter, BlobSASPermissions, BlockBlobURL, ContainerURL, generateBlobSASQueryParameters,SASProtocol,
+  ServiceURL, SharedKeyCredential, StorageURL, TokenCredential, uploadFileToBlockBlob } from "@azure/storage-blob";
 import Serverless from "serverless";
 import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
