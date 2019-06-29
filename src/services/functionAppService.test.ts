@@ -212,11 +212,14 @@ describe("Function App Service", () => {
         ContentType: "application/octet-stream",
       }
     }, slsService["artifact"]);
+    const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
+    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
+      slsService["artifact"],
+      configConstants.deploymentArtifactContainer,
+      `${expectedArtifactName}.zip`,
+    )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
-    expect(uploadCall[0]).toEqual(slsService["artifact"]);
-    expect(uploadCall[1]).toEqual(configConstants.deploymentArtifactContainer);
-    expect(uploadCall[2]).toMatch(new RegExp(slsService["service"] + "-t([0-9]+)"))
-    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalled();
+    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
   });
 
   it("uploads functions with custom SCM domain (aka App service environments)", async () => {

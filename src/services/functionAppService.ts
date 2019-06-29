@@ -15,16 +15,12 @@ export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
   private blobService: AzureBlobStorageService;
   private functionZipFile: string;
-  private blobName: string;
-  private containerName: string;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
     this.blobService = new AzureBlobStorageService(serverless, options);
     this.functionZipFile = this.getFunctionZipFile();
-    this.blobName = this.getArtifactName();
-    this.containerName = this.deploymentConfig.container;
   }
 
   public async get(): Promise<Site> {
@@ -193,8 +189,8 @@ export class FunctionAppService extends BaseService {
     await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
     await this.blobService.uploadFile(
       this.functionZipFile,
-      this.containerName,
-      this.blobName,
+      this.deploymentConfig.container,
+      this.getArtifactName(this.deploymentName),
     );
   }
 
@@ -207,6 +203,14 @@ export class FunctionAppService extends BaseService {
       functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
     }
     return functionZipFile;
+  }
+
+  /**
+   * Get rollback-configured artifact name. Contains `-t{timestamp}`
+   * if rollback is configured
+   */
+  public getArtifactName(deploymentName: string): string {
+    return `${deploymentName.replace("rg-deployment", "artifact")}.zip`;
   }
 
   private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
