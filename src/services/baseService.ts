@@ -16,7 +16,6 @@ export abstract class BaseService {
   protected resourceGroup: string;
   protected deploymentName: string;
   protected deploymentConfig: DeploymentConfig
-  protected deploymentContainerName: string;
   protected storageAccountName: string;
   protected config: ServerlessAzureConfig;
 
@@ -60,12 +59,6 @@ export abstract class BaseService {
 
   public getDeploymentConfig(): DeploymentConfig {
     const providedConfig = this.serverless["deploy"] as DeploymentConfig;
-    const providedDepName = this.serverless.service.provider["deploymentName"];
-    if (providedConfig && providedDepName && providedConfig.rollback) {
-      throw new Error("Cannot both specify a deployment name and enable rollback. " +
-      "In order for rollback to work, the name of deployment must follow the generated " +
-      "naming convention")
-    }
     const config = providedConfig || {
       rollback: configConstants.rollbackEnabled,
       container: configConstants.deploymentArtifactContainer,
@@ -80,14 +73,6 @@ export abstract class BaseService {
 
   public getServiceName(): string {
     return this.serverless.service["service"];
-  }
-
-  /**
-   * Get rollback-configured artifact name. Contains `-t{timestamp}`
-   * if rollback is configured
-   */
-  public getArtifactName(): string {
-    return this.rollbackConfiguredName(this.getServiceName());
   }
 
   /**

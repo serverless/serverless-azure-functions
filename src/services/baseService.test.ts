@@ -69,7 +69,8 @@ describe("Base Service", () => {
     expect(props.subscriptionId).toEqual(sls.variables["subscriptionId"]);
     expect(props.serviceName).toEqual(slsConfig.service);
     expect(props.resourceGroup).toEqual(slsConfig.provider.resourceGroup);
-    expect(props.deploymentName).toEqual(slsConfig.provider.deploymentName);
+    const expectedDeploymentNameRegex = new RegExp(slsConfig.provider.deploymentName + "-t([0-9]+)")
+    expect(props.deploymentName).toMatch(expectedDeploymentNameRegex);
   });
 
   it("Sets default region and stage values if not defined", () => {

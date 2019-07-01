@@ -11,7 +11,7 @@ export const configConstants = {
   logStreamApiPath: "/api/logstream/application/functions/function/",
   masterKeyApiPath: "/api/functions/admin/masterkey",
   providerName: "azure",
-  rollbackEnabled: false,
+  rollbackEnabled: true,
   scmCommandApiPath: "/api/command",
   scmDomain: ".scm.azurewebsites.net",
   scmVfsPath: "/api/vfs/site/wwwroot/",
