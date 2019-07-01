@@ -57,8 +57,10 @@ describe("Resource Service", () => {
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
     service.deleteDeployment();
-    expect(ResourceManagementClient.prototype.deployments.deleteMethod)
-      .toBeCalledWith(resourceGroup, deploymentName);
+    const call = (ResourceManagementClient.prototype.deployments.deleteMethod as any).mock.calls[0];
+    expect(call[0]).toEqual(resourceGroup);
+    const expectedDeploymentNameRegex = new RegExp(deploymentName + "-t([0-9]+)")
+    expect(call[1]).toMatch(expectedDeploymentNameRegex)
   });
 
   it("deletes a resource group", () => {
