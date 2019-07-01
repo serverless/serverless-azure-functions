@@ -5,12 +5,10 @@ import axios from "axios";
 import { FunctionAppService } from "./functionAppService";
 
 export class InvokeService extends BaseService {
-  public functionAppService: FunctionAppService;
   public serverless: Serverless;
   public options: Serverless.Options;
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-    this.functionAppService = new FunctionAppService(serverless, options);
     this.serverless = serverless;
     this.options = options;
   }
@@ -67,7 +65,9 @@ export class InvokeService extends BaseService {
    * @param data Data to use as body or query params
    */
   private async getOptions(method: string, data?: any) {
-    const functionsAdminKey = await this.functionAppService.getMasterKey();
+    
+    const functionAppService = new FunctionAppService(this.serverless, this.options);
+    const functionsAdminKey = await functionAppService.getMasterKey();
     this.log(functionsAdminKey);
     const options: any = {
       host: config.functionAppDomain,

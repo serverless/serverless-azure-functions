@@ -3,6 +3,7 @@ import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { InvokeService } from "../../services/invokeService";
 import { AzureLoginPlugin } from "../login/loginPlugin";
+import fs from "fs";
 
 export class AzureInvoke {
   public hooks: { [eventName: string]: Promise<any> };
@@ -19,13 +20,13 @@ export class AzureInvoke {
       const absolutePath = isAbsolute(path)
         ? path
         : join(this.serverless.config.servicePath, path);
-    this.serverless.cli.log(this.serverless.config.servicePath);
-    this.serverless.cli.log(path);
+      this.serverless.cli.log(this.serverless.config.servicePath);
+      this.serverless.cli.log(path);
 
-      if (!this.serverless.utils.fileExistsSync(absolutePath)) {
+      if (!fs.existsSync(absolutePath)) {
         throw new Error("The file you provided does not exist.");
       }
-      this.options["data"] = this.serverless.utils.readFileSync(absolutePath);
+      this.options["data"] = fs.readFileSync(absolutePath).toString();
     }
     this.commands = {
       invoke: {
@@ -73,6 +74,6 @@ export class AzureInvoke {
     }
     this.invokeService = new InvokeService(this.serverless, this.options);
     const response =  await this.invokeService.invoke(functionName, data, method);
-    this.serverless.cli.log(response.data);
+    //this.serverless.cli.log(response.data);
   }
 }
