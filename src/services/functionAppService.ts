@@ -116,8 +116,8 @@ export class FunctionAppService extends BaseService {
 
     this.log("Deploying serverless functions...");    
 
-    await this.zipDeploy(functionApp);
-    await this.uploadFunctionAppToBlobStorage();
+    await this.uploadZippedArfifactToFunctionApp(functionApp);
+    await this.uploadZippedArtifactToBlobStorage();
   }
 
   /**
@@ -138,7 +138,7 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  private async zipDeploy(functionApp) {
+  private async uploadZippedArfifactToFunctionApp(functionApp) {
     const scmDomain = this.getScmDomain(functionApp);
 
     this.log(`Deploying zip file to function app: ${functionApp.name}`);
@@ -184,7 +184,7 @@ export class FunctionAppService extends BaseService {
   /**
    * Uploads artifact file to blob storage container 
    */
-  private async uploadFunctionAppToBlobStorage() {
+  private async uploadZippedArtifactToBlobStorage() {
     await this.blobService.initialize();
     await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
     await this.blobService.uploadFile(
