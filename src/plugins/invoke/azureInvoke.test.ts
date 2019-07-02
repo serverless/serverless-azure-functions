@@ -1,12 +1,12 @@
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import mockFs from "mock-fs";
+import { AzureInvoke } from "./azureInvoke";
+import { InvokeService } from "../../services/invokeService";
 
 jest.mock("../../services/functionAppService");
 jest.mock("../../services/resourceService");
-import { AzureInvoke } from "./azureInvoke";
 jest.mock("../../services/invokeService");
-import { InvokeService } from "../../services/invokeService";
 
 describe("Azure Invoke Plugin", () => {
   const fileContent =  JSON.stringify({
