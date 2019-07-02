@@ -25,7 +25,7 @@ describe("Azure Invoke Plugin", () => {
     mockFs.restore();
   });
 
-  it("calls invoke hook", async () => {
+  it("Calls invoke hook", async () => {
 
     const invoke = jest.fn();
     InvokeService.prototype.invoke = invoke;
@@ -39,9 +39,10 @@ describe("Azure Invoke Plugin", () => {
     const plugin = new AzureInvoke(sls, options);
     await invokeHook(plugin, "invoke:invoke");
     expect(invoke).toBeCalledWith(options["function"], options["data"], options["method"]);
+
   });
 
-  it("calls the invoke hook with file path", async () => {
+  it("Calls the invoke hook with file path", async () => {
     const invoke = jest.fn();
     InvokeService.prototype.invoke = invoke;
     const sls = MockFactory.createTestServerless();
@@ -55,7 +56,7 @@ describe("Azure Invoke Plugin", () => {
     expect(invoke).toBeCalledWith(options["function"], fileContent, options["method"]);
   });
 
-  it("calls the invooke hook with file path", async () => {
+  it("Fails if wrong file name is provided", async () => {
     const invoke = jest.fn();
     InvokeService.prototype.invoke = invoke;
     const sls = MockFactory.createTestServerless();
@@ -63,8 +64,19 @@ describe("Azure Invoke Plugin", () => {
     options["function"] = "testApp";
     options["path"] = "garbage.json";
     options["method"] = "GET";
+    expect(() => new AzureInvoke(sls, options)).toThrow();
+  });
 
-    const plugin = await new AzureInvoke(sls, options);
-    await expect(invokeHook(plugin, "invoke:invoke")).toThrow();
+  it("The invoke function should not be called when no data is passsed", async () => {
+    const invoke = jest.fn();
+    InvokeService.prototype.invoke = invoke;
+    const sls = MockFactory.createTestServerless();
+    const options = MockFactory.createTestServerlessOptions();
+    options["function"] = "testApp";
+    options["data"] = null;
+    options["method"] = "GET";
+    const plugin = new AzureInvoke(sls, options);
+    await invokeHook(plugin, "invoke:invoke"); 
+    expect(invoke).not.toBeCalled();
   });
 });
