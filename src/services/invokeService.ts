@@ -13,6 +13,7 @@ export class InvokeService extends BaseService {
     this.options = options;
   }
 
+  
   /**
    * Invoke an Azure Function
    * @param functionName Name of function to invoke

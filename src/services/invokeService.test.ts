@@ -21,7 +21,6 @@ describe("Invoke Service ", () => {
   beforeAll(() => {
 
     const axiosMock = new MockAdapter(axios);
-    
     // Master Key
     axiosMock.onGet(masterKeyUrl).reply(200, { value: masterKey });
     // Auth Key
