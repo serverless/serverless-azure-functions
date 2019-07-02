@@ -83,7 +83,7 @@ describe("Azure Invoke Plugin", () => {
     expect(invoke).not.toBeCalled();
   });
 
-  it("The invoke function fails when no function name is passsed", async () => {
+  it("The invoke function fails when no function name is passed", async () => {
     const invoke = jest.fn();
     InvokeService.prototype.invoke = invoke;
     const sls = MockFactory.createTestServerless();
