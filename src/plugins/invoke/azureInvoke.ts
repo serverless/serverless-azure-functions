@@ -74,6 +74,6 @@ export class AzureInvoke {
     }
     this.invokeService = new InvokeService(this.serverless, this.options);
     const response =  await this.invokeService.invoke(functionName, data, method);
-    //this.serverless.cli.log(response.data);
+    this.serverless.cli.log(response.data);
   }
 }
