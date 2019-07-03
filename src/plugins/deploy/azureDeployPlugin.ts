@@ -24,7 +24,7 @@ export class AzureDeployPlugin {
         },
         options: {
           "resourceGroup": {
-            usage: "resource group for the service",
+            usage: "Resource group for the service",
             shortcut: "g",
           }
         }
@@ -32,16 +32,12 @@ export class AzureDeployPlugin {
     }
   }
 
-  private log(message: string) {
-    this.serverless.cli.log(message);
-  }
-
   private async list() {
     this.serverless.cli.log("Listing deployments");
     const resourceService = new ResourceService(this.serverless, this.options);
     const deployments = await resourceService.getDeployments();
     if (!deployments || deployments.length === 0) {
-      this.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
+      this.serverless.cli.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
       return;
     }
     let stringDeployments = "\n\nDeployments";
@@ -53,7 +49,7 @@ export class AzureDeployPlugin {
       stringDeployments += `Datetime: ${dep.properties.timestamp.toISOString()}\n`
     }
     stringDeployments += "-----------\n"
-    this.log(stringDeployments);
+    this.serverless.cli.log(stringDeployments);
   }
 
   private async deploy() {

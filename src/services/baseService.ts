@@ -44,11 +44,11 @@ export abstract class BaseService {
   }
 
   public getRegion(): string {
-    return this.options.region || this.serverless.service.provider.region;
+    return this.options.region || this.config.provider.region;
   }
 
   public getStage(): string {
-    return this.options.stage || this.serverless.service.provider.stage;
+    return this.options.stage || this.config.provider.stage;
   }
 
   public getPrefix(): string {
@@ -57,7 +57,7 @@ export abstract class BaseService {
 
   public getResourceGroupName(): string {
     const name = this.options.resourceGroup
-      || this.serverless.service.provider["resourceGroup"]
+      || this.config.provider["resourceGroup"]
       || `${this.getPrefix()}-${this.getRegion()}-${this.getStage()}-${this.serviceName}-rg`;
 
     return name;
@@ -73,7 +73,7 @@ export abstract class BaseService {
   }
 
   public getDeploymentName(): string {
-    const name = this.serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`
+    const name = this.config.provider["deploymentName"] || `${this.resourceGroup}-deployment`
     return this.rollbackConfiguredName(name);
   }
 
