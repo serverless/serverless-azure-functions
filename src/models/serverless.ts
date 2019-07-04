@@ -29,27 +29,30 @@ export interface DeploymentConfig {
   container?: string;
 }
 
+export interface ServerlessAzureProvider {
+  type?: string;
+  prefix?: string;
+  region: string;
+  stage: string;
+  name: string;
+  environment?: {
+    [key: string]: any;
+  };
+  deploymentName?: string;
+  resourceGroup?: string;
+  apim?: ApiManagementConfig;
+  functionApp?: FunctionAppConfig;
+  appInsights?: ResourceConfig;
+  appServicePlan?: ResourceConfig;
+  storageAccount?: ResourceConfig;
+  hostingEnvironment?: ResourceConfig;
+  virtualNetwork?: ResourceConfig;
+  armTemplate?: ArmTemplateConfig;
+}
+
 export interface ServerlessAzureConfig {
   service: string;
-  provider: {
-    type?: string;
-    prefix?: string;
-    region: string;
-    stage: string;
-    name: string;
-    environment?: {
-      [key: string]: any;
-    };
-    resourceGroup?: string;
-    apim?: ApiManagementConfig;
-    functionApp?: FunctionAppConfig;
-    appInsights?: ResourceConfig;
-    appServicePlan?: ResourceConfig;
-    storageAccount?: ResourceConfig;
-    hostingEnvironment?: ResourceConfig;
-    virtualNetwork?: ResourceConfig;
-    armTemplate?: ArmTemplateConfig;
-  };
+  provider: ServerlessAzureProvider;
   plugins: string[];
   functions: any;
 }

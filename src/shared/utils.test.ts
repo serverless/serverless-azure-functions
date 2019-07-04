@@ -78,4 +78,77 @@ describe("utils", () => {
       )
     ).toEqual("abfgklpquvab");
   });
+
+  it("Creates a short name for an azure region", () => {
+    const expected = "ausse";
+    const actual = Utils.createShortAzureRegionName("australiasoutheast");
+
+    expect(actual).toEqual(expected);
+  });
+
+  it("Creates a short stage name from a well known name", () => {
+    const expected = "prod";
+    const actual = Utils.createShortStageName("production");
+
+    expect(actual).toEqual(expected);
+  });
+
+  it("Creates a short stage name from a unknown name", () => {
+    const value = "user acceptance";
+    const actual = Utils.createShortStageName(value);
+
+    expect(actual).toEqual(value.substr(0, 3));
+  });
+
+  it("Creates a short stage name from multiple values", () => {
+    const actual = Utils.createShortStageName("production dogfood");
+    expect(actual).toEqual("proddf");
+  });
+
+  it("Creates unique short names for all azure regions", () => {
+    const regions = [
+      "eastasia",
+      "southeastasia",
+      "centralus",
+      "eastus",
+      "eastus2",
+      "westus",
+      "northcentralus",
+      "southcentralus",
+      "northeurope",
+      "westeurope",
+      "japanwest",
+      "japaneast",
+      "brazilsouth",
+      "australiaeast",
+      "australiasoutheast",
+      "southindia",
+      "centralindia",
+      "westindia",
+      "canadacentral",
+      "canadaeast",
+      "uksouth",
+      "ukwest",
+      "westcentralus",
+      "westus2",
+      "koreacentral",
+      "koreasouth",
+      "francecentral",
+      "francesouth",
+      "australiacentral",
+      "australiacentral2",
+      "uaecentral",
+      "uaenorth",
+      "southafricanorth",
+      "southafricawest"
+    ];
+
+    const results = {};
+    regions.forEach((region) => {
+      const result = Utils.createShortAzureRegionName(region);
+      results[result] = region;
+    });
+
+    expect(Object.keys(results)).toHaveLength(regions.length);
+  });
 });

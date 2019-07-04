@@ -1,6 +1,7 @@
 import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
 import { Utils } from "../../shared/utils";
+import md5 from "md5";
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -67,19 +68,30 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
   /**
    * Gets a default storage account name.
    * Storage account names can have at most 24 characters and can have only alpha-numerics
-   * Default naming convention:
-   * 
-   * "(first 3 of prefix)(first 3 of region)(first 3 of stage)(first 12 of service)sa"
-   * (Maximum of 23 characters)
    * @param config Serverless Azure Config
    */
   private static getDefaultStorageAccountName(config: ServerlessAzureConfig): string {
-    const prefix = Utils.appendSubstrings(
-      3,
-      config.provider.prefix,
-      config.provider.region,
-      config.provider.stage,
-    );
-    return `${prefix}${config.service.substr(0, 12)}sa`.replace("-", "").toLocaleLowerCase();
+    const maxAccountNameLength = 24;
+    const nameHash = md5(config.service);
+    const replacer = /[^\w]+/g;
+
+    let safePrefix = config.provider.prefix.replace(replacer, "");
+    const safeRegion = Utils.createShortAzureRegionName(config.provider.region);
+    let safeStage = Utils.createShortStageName(config.provider.stage);
+    let safeNameHash = nameHash.substr(0, 6);
+
+    const remaining = maxAccountNameLength - (safePrefix.length + safeRegion.length + safeStage.length + safeNameHash.length);
+
+    // Dynamically adjust the substring based on space needed
+    if (remaining < 0) {
+      const partLength = Math.floor(Math.abs(remaining) / 3);
+      safePrefix = safePrefix.substr(0, partLength);
+      safeStage = safeStage.substr(0, partLength);
+      safeNameHash = safeNameHash.substr(0, partLength);
+    }
+
+    return [safePrefix, safeRegion, safeStage, safeNameHash]
+      .join("")
+      .toLocaleLowerCase();
   }
 }

@@ -2,6 +2,7 @@ import { relative } from "path";
 import Serverless from "serverless";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
+import { Guard } from "./guard";
 
 export interface FunctionMetadata {
   entryPoint: any;
@@ -104,7 +105,7 @@ export class Utils {
       entryPoint = handlerSplit[handlerSplit.length - 1];
       handlerPath = `${handler.substring(0, handler.lastIndexOf("."))}.js`;
     }
-    
+
     const metaData = {
       entryPoint: entryPoint,
       handlerPath: handlerPath
@@ -135,5 +136,62 @@ export class Utils {
       result += (s.substr(0, substringSize));
     }
     return result;
+  }
+
+  /**
+   * Creates a short name to be used for state name abbreviation
+   * @param stageName The stage name
+   */
+  public static createShortStageName(stageName: string) {
+    Guard.empty(stageName);
+
+    const stageMap = {
+      "dogfood": "df",
+      "production": "prod",
+      "development": "dev",
+      "testing": "test"
+    };
+
+    return this.createShortName(stageName, stageMap);
+  }
+
+  /**
+   * Creates a short name for an azure region
+   * @param regionName The azure region name
+   */
+  public static createShortAzureRegionName(regionName: string) {
+    Guard.empty(regionName);
+
+    const locationMap = {
+      "north": "n",
+      "south": "s",
+      "east": "e",
+      "west": "w",
+      "central": "c",
+    };
+
+    return this.createShortName(regionName, locationMap);
+  }
+
+  /**
+   * Creates a short name from a long name based on a well-known string map
+   * @param longName The long name to replace
+   * @param wellKnownMap A well known map of long terms to short abbreviations
+   */
+  private static createShortName(longName: string, wellKnownMap: { [key: string]: string }) {
+    Guard.empty(longName);
+    Guard.null(wellKnownMap);
+
+    const pattern = `(${Object.keys(wellKnownMap).join("|")})`;
+    const regex = new RegExp(pattern, "g");
+
+    return longName
+      .replace(/[^\w]+/g, "")
+      .toLowerCase()
+      .split(regex)
+      .map((part) => {
+        return wellKnownMap[part] || part.substr(0, 3);
+      })
+      .join("");
   }
 }
