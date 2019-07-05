@@ -12,9 +12,9 @@ import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-stor
 
 jest.mock("./loginService");
 import { AzureLoginService } from "./loginService"
+import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
 
 describe("Azure Blob Storage Service", () => {
-
   const filePath = "deployments/deployment.zip";
   const fileName = "deployment.zip";
   const fileContents = "contents";
@@ -22,7 +22,7 @@ describe("Azure Blob Storage Service", () => {
 
   const containers = MockFactory.createTestAzureContainers();
   const sls = MockFactory.createTestServerless();
-  const accountName = "slswesdevservicenamesa";
+  const accountName = StorageAccountResource.getResourceName(sls.service as any);
   const options = MockFactory.createTestServerlessOptions();
   const blockBlobUrl = MockFactory.createTestBlockBlobUrl(containerName, filePath);
 

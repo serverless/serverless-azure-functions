@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { BaseService } from "./baseService";
+import { Utils } from "../shared/utils";
 
 export class ResourceService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -20,7 +21,7 @@ export class ResourceService extends BaseService {
     this.log(`Creating resource group: ${this.resourceGroup}`);
 
     return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, {
-      location: this.getRegion(),
+      location: Utils.getNormalizedRegionName(this.getRegion()),
     });
   }
 
