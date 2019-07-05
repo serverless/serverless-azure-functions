@@ -151,4 +151,15 @@ describe("utils", () => {
 
     expect(Object.keys(results)).toHaveLength(regions.length);
   });
+
+  it("gets a normalized region name from full region name", () => {
+    const result = Utils.getNormalizedRegionName("West US 2");
+    expect(result).toEqual("westus2");
+  });
+
+  it("Performs noop if region name is already normalized", () => {
+    const expected = "westus2";
+    const actual = Utils.getNormalizedRegionName(expected);
+    expect(actual).toEqual(expected);
+  });
 });

@@ -1,11 +1,12 @@
 import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
+import { Utils } from "../../shared/utils";
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     return config.provider.appServicePlan && config.provider.appServicePlan.name
       ? config.provider.appServicePlan.name
-      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-asp`;
+      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-asp`;
   }
 
   public getTemplate(): ArmResourceTemplate {

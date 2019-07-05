@@ -4,6 +4,7 @@ import { ResourceService } from "./resourceService";
 
 jest.mock("@azure/arm-resources")
 import { ResourceManagementClient } from "@azure/arm-resources";
+import { Utils } from "../shared/utils";
 
 describe("Resource Service", () => {
   const deployments = MockFactory.createTestDeployments();
@@ -37,14 +38,16 @@ describe("Resource Service", () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup"
     const location = "West Us";
+    const expectedLocation = Utils.getNormalizedRegionName(location);
     sls.service.provider["resourceGroup"] = resourceGroup
     sls.service.provider.region = location;
     sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
     service.deployResourceGroup();
+
     expect(ResourceManagementClient.prototype.resourceGroups.createOrUpdate)
-      .toBeCalledWith(resourceGroup, { location });
+      .toBeCalledWith(resourceGroup, { location: expectedLocation });
   });
 
   it("deletes a deployment", () => {

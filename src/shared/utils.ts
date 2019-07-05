@@ -156,6 +156,15 @@ export class Utils {
   }
 
   /**
+   * Gets the normalized region name from long name (ex. West US 2 -> westus2)
+   * @param regionName The region name
+   */
+  public static getNormalizedRegionName(regionName: string) {
+    Guard.empty(regionName);
+    return regionName.replace(/\W/g, "").toLowerCase();
+  }
+
+  /**
    * Creates a short name for an azure region
    * @param regionName The azure region name
    */
@@ -186,7 +195,7 @@ export class Utils {
     const regex = new RegExp(pattern, "g");
 
     return longName
-      .replace(/[^\w]+/g, "")
+      .replace(/\W+/g, "")
       .toLowerCase()
       .split(regex)
       .map((part) => {

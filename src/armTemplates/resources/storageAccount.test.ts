@@ -149,6 +149,6 @@ describe("Storage Account Resource", () => {
   }
 
   function createSafeString(value: string) {
-    return value.replace(/[^\w]+/g, "").toLocaleLowerCase().substr(0, 3);
+    return value.replace(/\W+/g, "").toLocaleLowerCase().substr(0, 3);
   };
 });

@@ -73,7 +73,7 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
   private static getDefaultStorageAccountName(config: ServerlessAzureConfig): string {
     const maxAccountNameLength = 24;
     const nameHash = md5(config.service);
-    const replacer = /[^\w]+/g;
+    const replacer = /\W+/g;
 
     let safePrefix = config.provider.prefix.replace(replacer, "");
     const safeRegion = Utils.createShortAzureRegionName(config.provider.region);
