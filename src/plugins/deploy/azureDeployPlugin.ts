@@ -21,6 +21,12 @@ export class AzureDeployPlugin {
               "list"
             ]
           }
+        },
+        options: {
+          "resourceGroup": {
+            usage: "Resource group for the service",
+            shortcut: "g",
+          }
         }
       }
     }
@@ -48,12 +54,11 @@ export class AzureDeployPlugin {
 
   private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
-
     await resourceService.deployResourceGroup();
 
     const functionAppService = new FunctionAppService(this.serverless, this.options);
-
     const functionApp = await functionAppService.deploy();
+
     await functionAppService.uploadFunctions(functionApp);
   }
 }

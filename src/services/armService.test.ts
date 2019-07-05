@@ -2,7 +2,7 @@ import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ArmService } from "./armService";
 import { ArmResourceTemplate, ArmTemplateType } from "../models/armTemplates";
-import { ArmTemplateConfig } from "../models/serverless";
+import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import mockFs from "mock-fs";
 import jsonpath from "jsonpath";
 import { Deployments } from "@azure/arm-resources";
@@ -11,9 +11,10 @@ import { Deployment } from "@azure/arm-resources/esm/models";
 describe("Arm Service", () => {
   let sls: Serverless
   let service: ArmService;
+  let options: ServerlessAzureOptions;
 
   function createService() {
-    return new ArmService(sls);
+    return new ArmService(sls, options);
   }
 
   beforeEach(() => {
