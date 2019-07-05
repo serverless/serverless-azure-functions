@@ -1,4 +1,5 @@
 import { ApiManagementConfig } from "./apiManagement";
+import Serverless from "serverless";
 
 export interface ArmTemplateConfig {
   file: string;
@@ -51,4 +52,8 @@ export interface ServerlessAzureConfig {
   };
   plugins: string[];
   functions: any;
+}
+
+export interface ServerlessAzureOptions extends Serverless.Options {
+  resourceGroup?: string;
 }

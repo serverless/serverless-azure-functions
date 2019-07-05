@@ -2,6 +2,7 @@ import axios from "axios";
 import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
+import { ServerlessAzureOptions } from "../models/serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
 import { configConstants } from "../config";
 import { DeploymentConfig, ServerlessAzureConfig } from "../models/serverless";
@@ -21,11 +22,10 @@ export abstract class BaseService {
 
   protected constructor(
     protected serverless: Serverless,
-    protected options: Serverless.Options = { stage: null, region: null },
+    protected options: ServerlessAzureOptions = { stage: null, region: null },
     authenticate: boolean = true,
   ) {
     Guard.null(serverless);
-
     this.setDefaultValues();
 
     this.baseUrl = "https://management.azure.com";
@@ -44,17 +44,23 @@ export abstract class BaseService {
   }
 
   public getRegion(): string {
-    return this.options.region || this.serverless.service.provider.region;
+    return this.options.region || this.config.provider.region;
   }
-  
+
   public getStage(): string {
-    return this.options.stage || this.serverless.service.provider.stage;
+    return this.options.stage || this.config.provider.stage;
+  }
+
+  public getPrefix(): string {
+    return this.config.provider.prefix;
   }
 
   public getResourceGroupName(): string {
-    return this.options["resourceGroup"]
-      || this.serverless.service.provider["resourceGroup"]
-      || `${this.config.provider.prefix}-${this.getRegion()}-${this.getStage()}-${this.serviceName}-rg`;
+    const name = this.options.resourceGroup
+      || this.config.provider["resourceGroup"]
+      || `${this.getPrefix()}-${this.getRegion()}-${this.getStage()}-${this.serviceName}-rg`;
+
+    return name;
   }
 
   public getDeploymentConfig(): DeploymentConfig {
@@ -67,7 +73,7 @@ export abstract class BaseService {
   }
 
   public getDeploymentName(): string {
-    const name = this.serverless.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`
+    const name = this.config.provider["deploymentName"] || `${this.resourceGroup}-deployment`
     return this.rollbackConfiguredName(name);
   }
 
@@ -78,7 +84,7 @@ export abstract class BaseService {
   /**
    * Get the access token from credentials token cache
    */
-  protected getAccessToken(): string{
+  protected getAccessToken(): string {
     return (this.credentials.tokenCache as any)._entries[0].accessToken;
   }
 

@@ -3,7 +3,7 @@ import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models"
 import { BaseService } from "./baseService";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { Guard } from "../shared/guard";
-import { ServerlessAzureConfig, ArmTemplateConfig } from "../models/serverless";
+import { ServerlessAzureConfig, ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
 import fs from "fs";
 import path from "path";
@@ -12,8 +12,8 @@ import jsonpath from "jsonpath";
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
 
-  public constructor(serverless: Serverless) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: ServerlessAzureOptions) {
+    super(serverless, options);
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }
 

@@ -18,6 +18,7 @@ export class FunctionAppService extends BaseService {
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
+
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
     this.blobService = new AzureBlobStorageService(serverless, options);
     this.functionZipFile = this.getFunctionZipFile();
@@ -114,7 +115,7 @@ export class FunctionAppService extends BaseService {
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
 
-    this.log("Deploying serverless functions...");    
+    this.log("Deploying serverless functions...");
 
     await this.uploadZippedArfifactToFunctionApp(functionApp);
     await this.uploadZippedArtifactToBlobStorage();
@@ -127,14 +128,14 @@ export class FunctionAppService extends BaseService {
   public async deploy() {
     this.log(`Creating function app: ${this.serviceName}`);
 
-    const armService = new ArmService(this.serverless);
+    const armService = new ArmService(this.serverless, this.options);
     let deployment: ArmDeployment = this.config.provider.armTemplate
       ? await armService.createDeploymentFromConfig(this.config.provider.armTemplate)
       : await armService.createDeploymentFromType(this.config.provider.type || "consumption");
 
     await armService.deployTemplate(deployment);
 
-    // Return function app 
+    // Return function app
     return await this.get();
   }
 
@@ -162,7 +163,7 @@ export class FunctionAppService extends BaseService {
     };
 
     await this.sendFile(requestOptions, this.functionZipFile);
-    
+
     this.log("-> Function package uploaded successfully");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
     const deployedFunctions = await this.listFunctions(functionApp);
@@ -182,7 +183,7 @@ export class FunctionAppService extends BaseService {
   }
 
   /**
-   * Uploads artifact file to blob storage container 
+   * Uploads artifact file to blob storage container
    */
   private async uploadZippedArtifactToBlobStorage() {
     await this.blobService.initialize();
