@@ -8,22 +8,23 @@ import { configConstants } from "../config";
 import { DeploymentConfig, ServerlessAzureConfig } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { Utils } from "../shared/utils";
 
 export abstract class BaseService {
   protected baseUrl: string;
   protected serviceName: string;
-  protected credentials: TokenCredentialsBase
+  protected credentials: TokenCredentialsBase;
   protected subscriptionId: string;
   protected resourceGroup: string;
   protected deploymentName: string;
-  protected deploymentConfig: DeploymentConfig
+  protected deploymentConfig: DeploymentConfig;
   protected storageAccountName: string;
   protected config: ServerlessAzureConfig;
 
   protected constructor(
     protected serverless: Serverless,
     protected options: ServerlessAzureOptions = { stage: null, region: null },
-    authenticate: boolean = true,
+    authenticate: boolean = true
   ) {
     Guard.null(serverless);
     this.setDefaultValues();
@@ -36,10 +37,14 @@ export abstract class BaseService {
     this.resourceGroup = this.getResourceGroupName();
     this.deploymentConfig = this.getDeploymentConfig();
     this.deploymentName = this.getDeploymentName();
-    this.storageAccountName = StorageAccountResource.getResourceName(serverless.service as any)
+    this.storageAccountName = StorageAccountResource.getResourceName(
+      serverless.service as any
+    );
 
     if (!this.credentials && authenticate) {
-      throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
+      throw new Error(
+        `Azure Credentials has not been set in ${this.constructor.name}`
+      );
     }
   }
 
@@ -56,24 +61,25 @@ export abstract class BaseService {
   }
 
   public getResourceGroupName(): string {
-    const name = this.options.resourceGroup
-      || this.config.provider["resourceGroup"]
-      || `${this.getPrefix()}-${this.getRegion()}-${this.getStage()}-${this.serviceName}-rg`;
+    const regionName = Utils.createShortAzureRegionName(this.getRegion());
+    const stageName = Utils.createShortStageName(this.getStage());
 
-    return name;
+    return this.options.resourceGroup
+      || this.config.provider.resourceGroup
+      || `${this.getPrefix()}-${regionName}-${stageName}-${this.serviceName}-rg`;
   }
 
   public getDeploymentConfig(): DeploymentConfig {
     const providedConfig = this.serverless["deploy"] as DeploymentConfig;
     const config = providedConfig || {
       rollback: configConstants.rollbackEnabled,
-      container: configConstants.deploymentArtifactContainer,
-    }
+      container: configConstants.deploymentArtifactContainer
+    };
     return config;
   }
 
   public getDeploymentName(): string {
-    const name = this.config.provider["deploymentName"] || `${this.resourceGroup}-deployment`
+    const name = this.config.provider.deploymentName || `${this.resourceGroup}-deployment`;
     return this.rollbackConfiguredName(name);
   }
 
@@ -94,20 +100,24 @@ export abstract class BaseService {
    * @param relativeUrl The relative url
    * @param options Additional HTTP options including headers, etc
    */
-  protected async sendApiRequest(method: string, relativeUrl: string, options: any = {}) {
+  protected async sendApiRequest(
+    method: string,
+    relativeUrl: string,
+    options: any = {}
+  ) {
     const defaultHeaders = {
-      Authorization: `Bearer ${this.getAccessToken()}`,
+      Authorization: `Bearer ${this.getAccessToken()}`
     };
 
     const allHeaders = {
       ...defaultHeaders,
-      ...options.headers,
+      ...options.headers
     };
 
     const requestOptions = {
       ...options,
       method,
-      headers: allHeaders,
+      headers: allHeaders
     };
 
     return await axios(relativeUrl, requestOptions);
@@ -120,14 +130,15 @@ export abstract class BaseService {
    */
   protected sendFile(requestOptions, filePath) {
     return new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(request(requestOptions, (err, response) => {
+      fs.createReadStream(filePath).pipe(
+        request(requestOptions, (err, response) => {
           if (err) {
             this.log(JSON.stringify(err, null, 4));
             return reject(err);
           }
           resolve(response);
-        }));
+        })
+      );
     });
   }
 
@@ -140,16 +151,17 @@ export abstract class BaseService {
   }
 
   protected slsConfigFile(): string {
-    return ("config" in this.options) ? this.options["config"] : "serverless.yml";
+    return "config" in this.options ? this.options["config"] : "serverless.yml";
   }
 
   private setDefaultValues(): void {
     // TODO: Right now the serverless core will always default to AWS default region if the
     // region has not been set in the serverless.yml or CLI options
-    const awsDefault = "us-east-1"
+    const awsDefault = "us-east-1";
     const providerRegion = this.serverless.service.provider.region;
 
-    if (!providerRegion || providerRegion === awsDefault) { // no region specified in serverless.yml
+    if (!providerRegion || providerRegion === awsDefault) {
+      // no region specified in serverless.yml
       this.serverless.service.provider.region = "westus";
     }
 
@@ -167,7 +179,9 @@ export abstract class BaseService {
    * @param name Original name
    */
   private rollbackConfiguredName(name: string) {
-    return (this.deploymentConfig.rollback) ? `${name}-t${this.getTimestamp()}` : name;
+    return this.deploymentConfig.rollback
+      ? `${name}-t${this.getTimestamp()}`
+      : name;
   }
 
   /**

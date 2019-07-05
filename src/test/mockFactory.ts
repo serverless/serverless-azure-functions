@@ -13,9 +13,9 @@ import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
 import { ArmResourceTemplate } from "../models/armTemplates";
-import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider";
+import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureProvider } from "../models/serverless";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -305,10 +305,14 @@ export class MockFactory {
     return result;
   }
 
-  public static createTestAzureServiceProvider(): AzureServiceProvider {
+  public static createTestAzureServiceProvider(): ServerlessAzureProvider {
     return {
+      name: "azure",
+      prefix: "sls",
       resourceGroup: "myResourceGroup",
       deploymentName: "myDeploymentName",
+      region: "eastus2",
+      stage: "dev",
     }
   }
 

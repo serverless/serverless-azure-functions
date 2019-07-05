@@ -8,6 +8,7 @@ import request from "request";
 import fs from "fs";
 import { BaseService } from "./baseService";
 import { ServerlessAzureOptions } from "../models/serverless";
+import { Utils } from "../shared/utils";
 
 class MockService extends BaseService {
   public constructor(serverless: Serverless, options?: ServerlessAzureOptions) {
@@ -118,10 +119,9 @@ describe("Base Service", () => {
     sls.service.provider["resourceGroup"] = null;
     const mockService = new MockService(sls);
     const actualResourceGroupName = mockService.getResourceGroupName();
-
-    const region = mockService.getRegion();
-    const stage = mockService.getStage();
-    const expectedResourceGroupName = `sls-${region}-${stage}-${sls.service["service"]}-rg`;
+    const expectedRegion = Utils.createShortAzureRegionName(mockService.getRegion());
+    const expectedStage = Utils.createShortStageName(mockService.getStage());
+    const expectedResourceGroupName = `sls-${expectedRegion}-${expectedStage}-${sls.service["service"]}-rg`;
 
     expect(actualResourceGroupName).toEqual(expectedResourceGroupName);
   });
