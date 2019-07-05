@@ -65,7 +65,7 @@ export abstract class BaseService {
     const stageName = Utils.createShortStageName(this.getStage());
 
     return this.options.resourceGroup
-      || this.config.provider["resourceGroup"]
+      || this.config.provider.resourceGroup
       || `${this.getPrefix()}-${regionName}-${stageName}-${this.serviceName}-rg`;
   }
 
@@ -79,7 +79,7 @@ export abstract class BaseService {
   }
 
   public getDeploymentName(): string {
-    const name = this.config.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
+    const name = this.config.provider.deploymentName || `${this.resourceGroup}-deployment`;
     return this.rollbackConfiguredName(name);
   }
 
