@@ -27,6 +27,7 @@ export interface FunctionAppConfig extends ResourceConfig {
 export interface DeploymentConfig {
   rollback?: boolean;
   container?: string;
+  runFromBlobUrl?: boolean;
 }
 
 export interface ServerlessAzureProvider {

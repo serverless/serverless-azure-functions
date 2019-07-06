@@ -203,4 +203,20 @@ export class Utils {
       })
       .join("");
   }
+
+  public static get(object: any, key: string, defaultValue?: any) {
+    if (key in object) {
+      return object[key];
+    }
+    return defaultValue
+  }
+
+  public static getTimestampFromName(name: string): string {
+    const regex = /.*-t([0-9]+)/;
+    const match = name.match(regex);
+    if (!match || match.length < 2) {
+      return null;
+    }
+    return match[1];
+  }
 }

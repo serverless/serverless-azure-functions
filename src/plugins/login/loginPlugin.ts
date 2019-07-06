@@ -12,6 +12,7 @@ export class AzureLoginPlugin {
     this.hooks = {
       "before:package:initialize": this.login.bind(this),
       "before:deploy:list:list": this.login.bind(this),
+      "before:rollback:rollback": this.login.bind(this),
     };
   }
 

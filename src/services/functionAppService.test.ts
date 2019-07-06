@@ -215,7 +215,7 @@ describe("Function App Service", () => {
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
     expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
       slsService["artifact"],
-      configConstants.deploymentArtifactContainer,
+      configConstants.deploymentConfig.container,
       `${expectedArtifactName}.zip`,
     )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
