@@ -22,6 +22,9 @@ describe("Rollback Service", () => {
 
   const template = MockFactory.createTestArmTemplate();
   const parameters = MockFactory.createTestParameters();
+  for (const p of Object.keys(parameters)) {
+    parameters[p] = parameters[p].value
+  }
   const appStub = "appStub";
   const sasURL = "sasURL";
   const containerName = "deployment-artifacts";

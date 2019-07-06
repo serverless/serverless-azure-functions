@@ -97,7 +97,7 @@ export class ArmService extends BaseService {
     Object.keys(deployment.parameters).forEach((key) => {
       const parameterValue = deployment.parameters[key];
       if (parameterValue) {
-        deploymentParameters[key] = (typeof parameterValue === "string") ? { value: parameterValue } : { value: parameterValue.value }
+        deploymentParameters[key] = { value: parameterValue }
       }
     });
 

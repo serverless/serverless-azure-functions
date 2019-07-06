@@ -116,8 +116,9 @@ export class FunctionAppService extends BaseService {
     this.log("Deploying serverless functions...");
 
     const functionZipFile = this.getFunctionZipFile();
-    await this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
-    await this.uploadZippedArtifactToBlobStorage(functionZipFile);
+    const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
+    const uploadBlobStorage = await this.uploadZippedArtifactToBlobStorage(functionZipFile);
+    await Promise.all([uploadFunctionApp, uploadBlobStorage]);
   }
 
   /**

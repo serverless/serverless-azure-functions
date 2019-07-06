@@ -160,8 +160,8 @@ export class MockFactory {
 
   public static createTestParameters() {
     return {
-      param1: "1",
-      param2: "2",
+      param1: { value: "1", type: "String" },
+      param2: { value: "2", type: "String" },
     }
   }
 

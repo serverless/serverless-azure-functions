@@ -51,7 +51,7 @@ export class RollbackService extends BaseService {
    * @param artifactName Name of zipped artifact in blob storage associated with deployment
    */
   private async redeployDeployment(deployment: DeploymentExtended, artifactName: string) {
-    const armService = new ArmService(this.serverless);
+    const armService = new ArmService(this.serverless, this.options);
     const armDeployment = await this.convertToArmDeployment(deployment);
     // Initialize blob service for either creating SAS token or downloading artifact to uplod to function app
     await this.blobService.initialize();
@@ -80,9 +80,13 @@ export class RollbackService extends BaseService {
   private async convertToArmDeployment(deployment: DeploymentExtended): Promise<ArmDeployment> {
     const resourceService = new ResourceService(this.serverless, this.options);
     const { template } = await resourceService.getDeploymentTemplate(deployment.name);
+    const { parameters } = deployment.properties;
+    for (const key of Object.keys(parameters)) {
+      parameters[key] = parameters[key].value;
+    }
     return {
       template,
-      parameters: deployment.properties.parameters,
+      parameters,
     }
   }
 
@@ -112,14 +116,14 @@ export class RollbackService extends BaseService {
       this.log(`Couldn't find deployment with timestamp: ${timestamp}`);
       this.log(`Timestamps: ${Array.from(deployments.keys()).map((key) => `\n${key}`)}`)
     }
-    return deployment;    
+    return deployment;
   }
 
   /**
    * Download zipped function app artifact from blob storage corresponding to the specified deployment
    * @param artifactName Name of artifact to download
    */
-  private async downloadArtifact(artifactName: string): Promise<string> {    
+  private async downloadArtifact(artifactName: string): Promise<string> {
     const artifactPath = path.join(this.serverless.config.servicePath, ".serverless", artifactName)
     await this.blobService.downloadBinary(
       this.deploymentConfig.container,
@@ -142,5 +146,5 @@ export class RollbackService extends BaseService {
       }
     }
     return result;
-  }  
+  }
 }
