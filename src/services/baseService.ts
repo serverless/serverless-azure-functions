@@ -48,10 +48,16 @@ export abstract class BaseService {
     }
   }
 
+  /**
+   * Name of Azure Region for deployment
+   */
   public getRegion(): string {
     return this.options.region || this.config.provider.region;
   }
 
+  /**
+   * Name of current deployment stage
+   */
   public getStage(): string {
     return this.options.stage || this.config.provider.stage;
   }
@@ -60,6 +66,9 @@ export abstract class BaseService {
     return this.config.provider.prefix;
   }
 
+  /**
+   * Name of current resource group
+   */
   public getResourceGroupName(): string {
     const regionName = Utils.createShortAzureRegionName(this.getRegion());
     const stageName = Utils.createShortStageName(this.getStage());
@@ -69,22 +78,41 @@ export abstract class BaseService {
       || `${this.getPrefix()}-${regionName}-${stageName}-${this.serviceName}-rg`;
   }
 
+  /**
+   * Deployment config from `serverless.yml` or default.
+   * Defaults can be found in the `config.ts` file
+   */
   public getDeploymentConfig(): DeploymentConfig {
     const providedConfig = this.serverless["deploy"] as DeploymentConfig;
-    const config = providedConfig || {
-      rollback: configConstants.rollbackEnabled,
-      container: configConstants.deploymentArtifactContainer
-    };
-    return config;
+    return {
+      ...configConstants.deploymentConfig,
+      ...providedConfig,
+    }
   }
 
+  /**
+   * Name of current ARM deployment
+   */
   public getDeploymentName(): string {
     const name = this.config.provider.deploymentName || `${this.resourceGroup}-deployment`;
     return this.rollbackConfiguredName(name);
   }
 
+  /**
+   * Name of Function App Service
+   */
   public getServiceName(): string {
     return this.serverless.service["service"];
+  }
+
+  /**
+   * Get rollback-configured artifact name. Contains `-t{timestamp}`
+   * Takes name of deployment and replaces `rg-deployment` or `deployment` with `artifact`
+   */
+  protected getArtifactName(deploymentName: string): string {
+    return `${deploymentName
+      .replace("rg-deployment", "artifact")
+      .replace("deployment", "artifact")}.zip`;
   }
 
   /**
@@ -142,10 +170,17 @@ export abstract class BaseService {
     });
   }
 
+  /**
+   * Log message to Serverless CLI
+   * @param message Message to log
+   */
   protected log(message: string) {
     this.serverless.cli.log(message);
   }
 
+  /**
+   * Get function objects
+   */
   protected slsFunctions() {
     return this.serverless.service["functions"];
   }

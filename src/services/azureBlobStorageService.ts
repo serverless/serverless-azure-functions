@@ -1,11 +1,18 @@
 import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-storage";
-import { Aborter, BlobSASPermissions, BlockBlobURL, ContainerURL, generateBlobSASQueryParameters,SASProtocol,
-  ServiceURL, SharedKeyCredential, StorageURL, TokenCredential, uploadFileToBlockBlob } from "@azure/storage-blob";
+import { Aborter, BlobSASPermissions, BlockBlobURL, ContainerURL,
+  generateBlobSASQueryParameters, SASProtocol, ServiceURL, SharedKeyCredential,
+  StorageURL, TokenCredential, uploadFileToBlockBlob, downloadBlobToBuffer } from "@azure/storage-blob";
+import fs from "fs";
 import Serverless from "serverless";
 import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
 import { AzureLoginService } from "./loginService";
 
+/**
+ * Type of authentication with Azure Storage
+ * @member SharedKey - Retrieve and use a Shared Key for Azure Blob BStorage
+ * @member Token - Retrieve and use an Access Token to authenticate with Azure Blob Storage
+ */
 export enum AzureStorageAuthType {
   SharedKey,
   Token
@@ -35,6 +42,9 @@ export class AzureBlobStorageService extends BaseService {
    * to perform any operation with the service
    */
   public async initialize() {
+    if (this.storageCredential) {
+      return;
+    }
     this.storageCredential = (this.authType === AzureStorageAuthType.SharedKey) 
       ?
       new SharedKeyCredential(this.storageAccountName, await this.getKey())
@@ -59,6 +69,31 @@ export class AzureBlobStorageService extends BaseService {
     await uploadFileToBlockBlob(Aborter.none, path, this.getBlockBlobURL(containerName, name));
     this.log("Finished uploading blob");
   };
+
+  /**
+   * Download blob to file
+   * https://github.com/Azure/azure-storage-js/blob/master/blob/samples/highlevel.sample.js#L82-L97
+   * @param containerName Container containing blob to download
+   * @param blobName Blob to download
+   * @param targetPath Path to which blob will be downloaded
+   */
+  public async downloadBinary(containerName: string, blobName: string, targetPath: string) {
+    const blockBlobUrl = this.getBlockBlobURL(containerName, blobName);
+    const props = await blockBlobUrl.getProperties(Aborter.none);
+    const buffer = Buffer.alloc(props.contentLength);
+    await downloadBlobToBuffer(
+      Aborter.timeout(30 * 60 * 1000),
+      buffer,
+      blockBlobUrl,
+      0,
+      undefined,
+      {
+        blockSize: 4 * 1024 * 1024, // 4MB block size
+        parallelism: 20, // 20 concurrency
+      }
+    );    
+    fs.writeFileSync(targetPath, buffer, "binary");
+  }
   
   /**
    * Delete a blob from Azure Blob Storage

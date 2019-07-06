@@ -1,6 +1,6 @@
 import { ApiContract, ApiManagementServiceResource } from "@azure/arm-apimanagement/esm/models";
 import { FunctionEnvelope, Site } from "@azure/arm-appservice/esm/models";
-import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
+import { DeploymentExtended, DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 import { HttpHeaders, HttpOperationResponse, HttpResponse, WebResource } from "@azure/ms-rest-js";
 import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
@@ -12,7 +12,7 @@ import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
-import { ArmResourceTemplate } from "../models/armTemplates";
+import { ArmDeployment, ArmResourceTemplate } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
 import { ServerlessAzureConfig, ServerlessAzureProvider } from "../models/serverless";
@@ -143,17 +143,36 @@ export class MockFactory {
     return credentials;
   }
 
-  public static createTestDeployments(count: number = 5): DeploymentsListByResourceGroupResponse {
+  public static createTestTimestamp(): string {
+    return "1562184492";
+  }
+
+  public static createTestDeployments(count: number = 5, includeTimestamp = false): DeploymentsListByResourceGroupResponse {
     const result = [];
+    const originalTimestamp = +MockFactory.createTestTimestamp();
     for (let i = 0; i < count; i++) {
-      result.push({
-        name: `deployment${i + 1}`,
-        properties: {
-          timestamp: new Date(),
-        }
-      })
+      result.push(
+        MockFactory.createTestDeployment((includeTimestamp) ? `deployment${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`)
+      )
     }
     return result as DeploymentsListByResourceGroupResponse
+  }
+
+  public static createTestParameters() {
+    return {
+      param1: { value: "1", type: "String" },
+      param2: { value: "2", type: "String" },
+    }
+  }
+
+  public static createTestDeployment(name?: string): DeploymentExtended {
+    return {
+      name: name || `deployment1-t${MockFactory.createTestTimestamp()}`,
+      properties: {
+        timestamp: new Date(),
+        parameters: MockFactory.createTestParameters(),
+      }
+    }
   }
 
   public static createTestAxiosResponse<T>(
@@ -195,11 +214,15 @@ export class MockFactory {
     return { containerItems: result } as ServiceListContainersSegmentResponse;
   }
 
-  public static createTestBlockBlobUrl(containerName: string, blobName: string) {
+  public static createTestBlockBlobUrl(containerName: string, blobName: string, contents: string = "test") {
     return {
       containerName,
       blobName,
+      url: `http://storage.azure.com/${containerName}/${blobName}`,
       delete: jest.fn(),
+      getProperties: jest.fn(() => Promise.resolve({
+        contentLength: contents.length
+      }))
     }
   }
 
@@ -487,6 +510,13 @@ export class MockFactory {
       exposeHeaders: ["*"],
       allowedMethods: ["GET", "POST"],
     };
+  }
+
+  public static createTestArmDeployment(): ArmDeployment {
+    return {
+      template: MockFactory.createTestArmTemplate(),
+      parameters: MockFactory.createTestParameters(),
+    }
   }
 
   public static createTestArmTemplate(): ArmResourceTemplate {

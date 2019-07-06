@@ -14,14 +14,12 @@ import { BaseService } from "./baseService";
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
   private blobService: AzureBlobStorageService;
-  private functionZipFile: string;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
 
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
     this.blobService = new AzureBlobStorageService(serverless, options);
-    this.functionZipFile = this.getFunctionZipFile();
   }
 
   public async get(): Promise<Site> {
@@ -117,8 +115,10 @@ export class FunctionAppService extends BaseService {
 
     this.log("Deploying serverless functions...");
 
-    await this.uploadZippedArfifactToFunctionApp(functionApp);
-    await this.uploadZippedArtifactToBlobStorage();
+    const functionZipFile = this.getFunctionZipFile();
+    const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
+    const uploadBlobStorage = await this.uploadZippedArtifactToBlobStorage(functionZipFile);
+    await Promise.all([uploadFunctionApp, uploadBlobStorage]);
   }
 
   /**
@@ -139,16 +139,16 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  private async uploadZippedArfifactToFunctionApp(functionApp) {
+  public async uploadZippedArfifactToFunctionApp(functionApp: Site, functionZipFile: string) {
     const scmDomain = this.getScmDomain(functionApp);
 
     this.log(`Deploying zip file to function app: ${functionApp.name}`);
 
-    if (!(this.functionZipFile && fs.existsSync(this.functionZipFile))) {
+    if (!(functionZipFile && fs.existsSync(functionZipFile))) {
       throw new Error("No zip file found for function app");
     }
 
-    this.log(`-> Deploying service package @ ${this.functionZipFile}`);
+    this.log(`-> Deploying service package @ ${functionZipFile}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
@@ -162,7 +162,7 @@ export class FunctionAppService extends BaseService {
       }
     };
 
-    await this.sendFile(requestOptions, this.functionZipFile);
+    await this.sendFile(requestOptions, functionZipFile);
 
     this.log("-> Function package uploaded successfully");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
@@ -185,11 +185,11 @@ export class FunctionAppService extends BaseService {
   /**
    * Uploads artifact file to blob storage container
    */
-  private async uploadZippedArtifactToBlobStorage() {
+  private async uploadZippedArtifactToBlobStorage(functionZipFile: string) {
     await this.blobService.initialize();
     await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
     await this.blobService.uploadFile(
-      this.functionZipFile,
+      functionZipFile,
       this.deploymentConfig.container,
       this.getArtifactName(this.deploymentName),
     );

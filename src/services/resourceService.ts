@@ -12,9 +12,20 @@ export class ResourceService extends BaseService {
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }
 
+  /**
+   * Get all deployments for resource group
+   */
   public async getDeployments() {
     this.log(`Listing deployments for resource group '${this.resourceGroup}':`);
     return await this.resourceClient.deployments.listByResourceGroup(this.resourceGroup);
+  }
+
+  /**
+   * Get ARM template for previous deployment
+   * @param deploymentName Name of deployment
+   */
+  public async getDeploymentTemplate(deploymentName: string) {
+    return await this.resourceClient.deployments.exportTemplate(this.resourceGroup, deploymentName);
   }
 
   public async deployResourceGroup() {

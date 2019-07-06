@@ -36,7 +36,29 @@ describe("Deploy plugin", () => {
     expect(uploadFunctions).toBeCalledWith(functionAppStub);
   });
 
-  it("lists deployments", async () => {
+  it("lists deployments with timestamps", async () => {
+    const deployments = MockFactory.createTestDeployments(5, true);
+    ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments));
+    const sls = MockFactory.createTestServerless();
+    const options = MockFactory.createTestServerlessOptions();
+    const plugin = new AzureDeployPlugin(sls, options);
+    await invokeHook(plugin, "deploy:list:list");
+    let expectedLogStatement = "\n\nDeployments";
+    const originalTimestamp = +MockFactory.createTestTimestamp();
+    let i = 0
+    for (const dep of deployments) {
+      const timestamp = originalTimestamp + i
+      expectedLogStatement += "\n-----------\n"
+      expectedLogStatement += `Name: ${dep.name}\n`
+      expectedLogStatement += `Timestamp: ${timestamp}\n`;
+      expectedLogStatement += `Datetime: ${new Date(timestamp).toISOString()}\n`
+      i++
+    }
+    expectedLogStatement += "-----------\n"
+    expect(sls.cli.log).lastCalledWith(expectedLogStatement);
+  });
+
+  it("lists deployments without timestamps", async () => {
     const deployments = MockFactory.createTestDeployments();
     ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments));
     const sls = MockFactory.createTestServerless();
@@ -47,8 +69,8 @@ describe("Deploy plugin", () => {
     for (const dep of deployments) {
       expectedLogStatement += "\n-----------\n"
       expectedLogStatement += `Name: ${dep.name}\n`
-      expectedLogStatement += `Timestamp: ${dep.properties.timestamp.getTime()}\n`;
-      expectedLogStatement += `Datetime: ${dep.properties.timestamp.toISOString()}\n`
+      expectedLogStatement += "Timestamp: None\n";
+      expectedLogStatement += "Datetime: None\n"
     }
     expectedLogStatement += "-----------\n"
     expect(sls.cli.log).lastCalledWith(expectedLogStatement);

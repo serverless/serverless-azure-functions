@@ -16,6 +16,10 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
       "parameters": {
+        "functionAppRunFromPackage": {
+          "defaultValue": "1",
+          "type": "String"
+        },
         "functionAppName": {
           "defaultValue": "",
           "type": "String"
@@ -86,7 +90,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 },
                 {
                   "name": "WEBSITE_RUN_FROM_PACKAGE",
-                  "value": "1"
+                  "value": "[parameters('functionAppRunFromPackage')]"
                 },
                 {
                   "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
