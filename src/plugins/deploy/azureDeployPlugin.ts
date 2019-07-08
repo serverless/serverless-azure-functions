@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { FunctionAppService } from "../../services/functionAppService";
 import { ResourceService } from "../../services/resourceService";
+import { Utils } from "../../shared/utils";
 
 export class AzureDeployPlugin {
   public hooks: { [eventName: string]: Promise<any> };
@@ -21,6 +22,12 @@ export class AzureDeployPlugin {
               "list"
             ]
           }
+        },
+        options: {
+          "resourceGroup": {
+            usage: "Resource group for the service",
+            shortcut: "g",
+          }
         }
       }
     }
@@ -39,8 +46,14 @@ export class AzureDeployPlugin {
     for (const dep of deployments) {
       stringDeployments += "\n-----------\n"
       stringDeployments += `Name: ${dep.name}\n`
-      stringDeployments += `Timestamp: ${dep.properties.timestamp.getTime()}\n`;
-      stringDeployments += `Datetime: ${dep.properties.timestamp.toISOString()}\n`
+      const timestampFromName = Utils.getTimestampFromName(dep.name);
+      stringDeployments += `Timestamp: ${(timestampFromName) ? timestampFromName : "None"}\n`;
+      stringDeployments += `Datetime: ${(timestampFromName)
+        ?
+        new Date(+timestampFromName).toISOString()
+        :
+        "None"
+      }\n`
     }
     stringDeployments += "-----------\n"
     this.serverless.cli.log(stringDeployments);
@@ -52,8 +65,8 @@ export class AzureDeployPlugin {
     await resourceService.deployResourceGroup();
 
     const functionAppService = new FunctionAppService(this.serverless, this.options);
-
     const functionApp = await functionAppService.deploy();
+
     await functionAppService.uploadFunctions(functionApp);
   }
 }

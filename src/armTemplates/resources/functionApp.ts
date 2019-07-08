@@ -1,11 +1,14 @@
 import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ServerlessAzureConfig, FunctionAppConfig } from "../../models/serverless";
+import { Utils } from "../../shared/utils";
 
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
+    const safeServiceName = config.service.replace(/\s/g, "-");
+
     return config.provider.functionApp && config.provider.functionApp.name
       ? config.provider.functionApp.name
-      : `${config.provider.prefix}-${config.provider.region}-${config.provider.stage}-${config.service}`;
+      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-${safeServiceName}`;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -13,6 +16,10 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
       "parameters": {
+        "functionAppRunFromPackage": {
+          "defaultValue": "1",
+          "type": "String"
+        },
         "functionAppName": {
           "defaultValue": "",
           "type": "String"
@@ -83,7 +90,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 },
                 {
                   "name": "WEBSITE_RUN_FROM_PACKAGE",
-                  "value": "1"
+                  "value": "[parameters('functionAppRunFromPackage')]"
                 },
                 {
                   "name": "APPINSIGHTS_INSTRUMENTATIONKEY",

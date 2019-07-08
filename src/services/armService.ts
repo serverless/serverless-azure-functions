@@ -1,19 +1,19 @@
-import Serverless from "serverless";
-import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
-import { BaseService } from "./baseService";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { Guard } from "../shared/guard";
-import { ServerlessAzureConfig, ArmTemplateConfig } from "../models/serverless";
-import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
+import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
 import fs from "fs";
-import path from "path";
 import jsonpath from "jsonpath";
+import path from "path";
+import Serverless from "serverless";
+import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
+import { ArmTemplateConfig, ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
+import { Guard } from "../shared/guard";
+import { BaseService } from "./baseService";
 
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
 
-  public constructor(serverless: Serverless) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: ServerlessAzureOptions) {
+    super(serverless, options);
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
   }
 
@@ -97,7 +97,7 @@ export class ArmService extends BaseService {
     Object.keys(deployment.parameters).forEach((key) => {
       const parameterValue = deployment.parameters[key];
       if (parameterValue) {
-        deploymentParameters[key] = { value: deployment.parameters[key] };
+        deploymentParameters[key] = { value: parameterValue }
       }
     });
 

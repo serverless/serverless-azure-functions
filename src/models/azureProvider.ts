@@ -18,8 +18,3 @@ export interface FunctionMetadata {
   handler: string;
   events: FunctionEvent[];
 }
-
-export interface AzureServiceProvider {
-  resourceGroup: string;
-  deploymentName: string;
-}

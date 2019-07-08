@@ -14,18 +14,20 @@ import { BaseService } from "./baseService";
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
   private blobService: AzureBlobStorageService;
-  private functionZipFile: string;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
+
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
     this.blobService = new AzureBlobStorageService(serverless, options);
-    this.functionZipFile = this.getFunctionZipFile();
   }
 
   public async get(): Promise<Site> {
     const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
+      this.serverless.cli.log(this.resourceGroup);
+      this.serverless.cli.log(FunctionAppResource.getResourceName(this.config));
+      this.serverless.cli.log(JSON.stringify(response));
       return null;
     }
 
@@ -114,10 +116,12 @@ export class FunctionAppService extends BaseService {
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
 
-    this.log("Deploying serverless functions...");    
+    this.log("Deploying serverless functions...");
 
-    await this.uploadZippedArfifactToFunctionApp(functionApp);
-    await this.uploadZippedArtifactToBlobStorage();
+    const functionZipFile = this.getFunctionZipFile();
+    const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
+    const uploadBlobStorage = await this.uploadZippedArtifactToBlobStorage(functionZipFile);
+    await Promise.all([uploadFunctionApp, uploadBlobStorage]);
   }
 
   /**
@@ -127,27 +131,27 @@ export class FunctionAppService extends BaseService {
   public async deploy() {
     this.log(`Creating function app: ${this.serviceName}`);
 
-    const armService = new ArmService(this.serverless);
+    const armService = new ArmService(this.serverless, this.options);
     let deployment: ArmDeployment = this.config.provider.armTemplate
       ? await armService.createDeploymentFromConfig(this.config.provider.armTemplate)
       : await armService.createDeploymentFromType(this.config.provider.type || "consumption");
 
     await armService.deployTemplate(deployment);
 
-    // Return function app 
+    // Return function app
     return await this.get();
   }
 
-  private async uploadZippedArfifactToFunctionApp(functionApp) {
+  public async uploadZippedArfifactToFunctionApp(functionApp: Site, functionZipFile: string) {
     const scmDomain = this.getScmDomain(functionApp);
 
     this.log(`Deploying zip file to function app: ${functionApp.name}`);
 
-    if (!(this.functionZipFile && fs.existsSync(this.functionZipFile))) {
+    if (!(functionZipFile && fs.existsSync(functionZipFile))) {
       throw new Error("No zip file found for function app");
     }
 
-    this.log(`-> Deploying service package @ ${this.functionZipFile}`);
+    this.log(`-> Deploying service package @ ${functionZipFile}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
@@ -161,8 +165,8 @@ export class FunctionAppService extends BaseService {
       }
     };
 
-    await this.sendFile(requestOptions, this.functionZipFile);
-    
+    await this.sendFile(requestOptions, functionZipFile);
+
     this.log("-> Function package uploaded successfully");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
     const deployedFunctions = await this.listFunctions(functionApp);
@@ -182,13 +186,13 @@ export class FunctionAppService extends BaseService {
   }
 
   /**
-   * Uploads artifact file to blob storage container 
+   * Uploads artifact file to blob storage container
    */
-  private async uploadZippedArtifactToBlobStorage() {
+  private async uploadZippedArtifactToBlobStorage(functionZipFile: string) {
     await this.blobService.initialize();
     await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
     await this.blobService.uploadFile(
-      this.functionZipFile,
+      functionZipFile,
       this.deploymentConfig.container,
       this.getArtifactName(this.deploymentName),
     );

@@ -4,7 +4,7 @@ import { AzureBlobStorageService, AzureStorageAuthType } from "./azureBlobStorag
 
 jest.mock("@azure/storage-blob");
 jest.genMockFromModule("@azure/storage-blob")
-import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, uploadFileToBlockBlob, TokenCredential, SharedKeyCredential } from "@azure/storage-blob";
+import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, uploadFileToBlockBlob, TokenCredential, SharedKeyCredential, downloadBlobToBuffer, generateBlobSASQueryParameters, BlobSASPermissions } from "@azure/storage-blob";
 
 jest.mock("@azure/arm-storage")
 jest.genMockFromModule("@azure/arm-storage");
@@ -12,9 +12,12 @@ import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-stor
 
 jest.mock("./loginService");
 import { AzureLoginService } from "./loginService"
+import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
+
+jest.mock("fs")
+import fs from "fs";
 
 describe("Azure Blob Storage Service", () => {
-
   const filePath = "deployments/deployment.zip";
   const fileName = "deployment.zip";
   const fileContents = "contents";
@@ -22,9 +25,10 @@ describe("Azure Blob Storage Service", () => {
 
   const containers = MockFactory.createTestAzureContainers();
   const sls = MockFactory.createTestServerless();
-  const accountName = "slswesdevservicenamesa";
+  const accountName = StorageAccountResource.getResourceName(sls.service as any);
   const options = MockFactory.createTestServerlessOptions();
-  const blockBlobUrl = MockFactory.createTestBlockBlobUrl(containerName, filePath);
+  const blobContent = "testContent";
+  const blockBlobUrl = MockFactory.createTestBlockBlobUrl(containerName, filePath, blobContent);
 
   let service: AzureBlobStorageService;
   const token = "myToken";
@@ -130,6 +134,14 @@ describe("Azure Blob Storage Service", () => {
     expect(ContainerURL.fromServiceURL).toBeCalledWith(expect.anything(), newContainerName);
     expect(ContainerURL.prototype.create).toBeCalledWith(Aborter.none);
   });
+
+  it("should not create a container if it exists already", async () => {
+    ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
+    ContainerURL.prototype.create = jest.fn(() => Promise.resolve({ statusCode: 201 })) as any;
+    await service.createContainerIfNotExists("container1");
+    expect(ContainerURL.fromServiceURL).not.toBeCalled();
+    expect(ContainerURL.prototype.create).not.toBeCalled
+  })
   
   it("should delete a container", async () => {
     const containerToDelete = "delete container";
@@ -139,4 +151,45 @@ describe("Azure Blob Storage Service", () => {
     expect(ContainerURL.fromServiceURL).toBeCalledWith(expect.anything(), containerToDelete);
     expect(ContainerURL.prototype.delete).toBeCalledWith(Aborter.none);
   });
+
+  it("should download a binary file", async () => {
+    const targetPath = "";
+    await service.downloadBinary(containerName, fileName, targetPath);
+    const buffer = Buffer.alloc(blobContent.length)
+    expect(downloadBlobToBuffer).toBeCalledWith(
+      Aborter.timeout(30 * 60 * 1000),
+      buffer,
+      blockBlobUrl,
+      0,
+      undefined,
+      {
+        blockSize: 4 * 1024 * 1024, // 4MB block size
+        parallelism: 20, // 20 concurrency
+      }
+    );
+    expect(fs.writeFileSync).toBeCalledWith(
+      targetPath,
+      buffer,
+      "binary"
+    )
+  });
+
+  it("should generate a SAS url", async () => {
+    const sasToken = "myToken"
+    BlobSASPermissions.parse = jest.fn(() => {
+      return {
+        toString: jest.fn()
+      }
+    }) as any;
+    (generateBlobSASQueryParameters as any).mockReturnValue(token);
+    const url = await service.generateBlobSasTokenUrl(containerName, fileName);
+    expect(generateBlobSASQueryParameters).toBeCalled();
+    expect(url).toEqual(`${blockBlobUrl.url}?${sasToken}`)
+  });
+
+  it("should throw an error when trying to get a SAS Token with Token Auth", async () => {
+    const newService = new AzureBlobStorageService(sls, options, AzureStorageAuthType.Token);
+    await newService.initialize();
+    await expect(newService.generateBlobSasTokenUrl(containerName, fileName)).rejects.not.toBeNull();
+  })
 });

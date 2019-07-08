@@ -13,6 +13,7 @@ export class AzureLoginPlugin {
       "before:package:initialize": this.login.bind(this),
       "before:deploy:list:list": this.login.bind(this),
       "before:invoke:invoke": this.login.bind(this),
+      "before:rollback:rollback": this.login.bind(this),
     };
   }
 

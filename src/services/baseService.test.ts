@@ -7,9 +7,11 @@ jest.mock("request", () => MockFactory.createTestMockRequestFactory());
 import request from "request";
 import fs from "fs";
 import { BaseService } from "./baseService";
+import { ServerlessAzureOptions } from "../models/serverless";
+import { Utils } from "../shared/utils";
 
 class MockService extends BaseService {
-  public constructor(serverless: Serverless, options?: Serverless.Options) {
+  public constructor(serverless: Serverless, options?: ServerlessAzureOptions) {
     super(serverless, options);
   }
 
@@ -84,7 +86,7 @@ describe("Base Service", () => {
   it("returns region and stage based on CLI options", () => {
     const cliOptions = {
       stage: "prod",
-      region: "eastus2"
+      region: "eastus2",
     };
     const mockService = new MockService(sls, cliOptions);
 
@@ -92,40 +94,51 @@ describe("Base Service", () => {
     expect(mockService.getStage()).toEqual(cliOptions.stage);
   });
 
-  it("Sets default region and stage values if not defined", () => {
-    const mockService = new MockService(sls);
-
-    expect(mockService).not.toBeNull();
-    expect(sls.service.provider.region).toEqual("westus");
-    expect(sls.service.provider.stage).toEqual("dev");
-  });
-
-  it("returns region and stage based on CLI options", () => {
+  it("use the resource group name specified in CLI", () => {
+    const resourceGroupName = "cliResourceGroupName"
     const cliOptions = {
       stage: "prod",
-      region: "eastus2"
+      region: "eastus2",
+      resourceGroup: resourceGroupName
     };
-    const mockService = new MockService(sls, cliOptions);
 
-    expect(mockService.getRegion()).toEqual(cliOptions.region);
-    expect(mockService.getStage()).toEqual(cliOptions.stage);
+    const mockService = new MockService(sls, cliOptions);
+    const actualResourceGroupName = mockService.getResourceGroupName();
+
+    expect(actualResourceGroupName).toEqual(resourceGroupName);
   });
 
-  it("Generates resource group name from sls yaml config", () => {
+  it("use the resource group name from sls yaml config", () => {
     const mockService = new MockService(sls);
-    const resourceGroupName = mockService.getResourceGroupName();
+    const actualResourceGroupName = mockService.getResourceGroupName();
 
-    expect(resourceGroupName).toEqual(sls.service.provider["resourceGroup"]);
+    expect(actualResourceGroupName).toEqual(sls.service.provider["resourceGroup"]);
   });
 
   it("Generates resource group from convention when NOT defined in sls yaml", () => {
     sls.service.provider["resourceGroup"] = null;
     const mockService = new MockService(sls);
-    const resourceGroupName = mockService.getResourceGroupName();
-    const region = mockService.getRegion();
-    const stage = mockService.getStage();
+    const actualResourceGroupName = mockService.getResourceGroupName();
+    const expectedRegion = Utils.createShortAzureRegionName(mockService.getRegion());
+    const expectedStage = Utils.createShortStageName(mockService.getStage());
+    const expectedResourceGroupName = `sls-${expectedRegion}-${expectedStage}-${sls.service["service"]}-rg`;
 
-    expect(resourceGroupName).toEqual(`sls-${region}-${stage}-${sls.service["service"]}-rg`);
+    expect(actualResourceGroupName).toEqual(expectedResourceGroupName);
+  });
+
+  it("set default prefix when one is not defined in yaml config", () => {
+    const mockService = new MockService(sls);
+    const actualPrefix = mockService.getPrefix();
+    expect(actualPrefix).toEqual("sls");
+  });
+
+  it("use the prefix defined in sls yaml config", () => {
+    const expectedPrefix = "testPrefix"
+    sls.service.provider["prefix"] = expectedPrefix;
+    const mockService = new MockService(sls);
+    const actualPrefix = mockService.getPrefix();
+
+    expect(actualPrefix).toEqual(expectedPrefix);
   });
 
   it("Fails if credentials have not been set in serverless config", () => {

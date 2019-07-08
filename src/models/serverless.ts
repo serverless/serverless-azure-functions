@@ -1,4 +1,5 @@
 import { ApiManagementConfig } from "./apiManagement";
+import Serverless from "serverless";
 
 export interface ArmTemplateConfig {
   file: string;
@@ -26,28 +27,33 @@ export interface FunctionAppConfig extends ResourceConfig {
 export interface DeploymentConfig {
   rollback?: boolean;
   container?: string;
+  runFromBlobUrl?: boolean;
 }
+
+export interface ServerlessAzureProvider {
+  type?: string;
+  prefix?: string;
+  region: string;
+  stage: string;
+  name: string;
+  environment?: {
+    [key: string]: any;
+  };
+  deploymentName?: string;
+  resourceGroup?: string;
+  apim?: ApiManagementConfig;
+  functionApp?: FunctionAppConfig;
+  appInsights?: ResourceConfig;
+  appServicePlan?: ResourceConfig;
+  storageAccount?: ResourceConfig;
+  hostingEnvironment?: ResourceConfig;
+  virtualNetwork?: ResourceConfig;
+  armTemplate?: ArmTemplateConfig;
+}
+
 export interface ServerlessAzureConfig {
   service: string;
-  provider: {
-    type?: string;
-    prefix?: string;
-    region: string;
-    stage: string;
-    name: string;
-    environment?: {
-      [key: string]: any;
-    };
-    resourceGroup?: string;
-    apim?: ApiManagementConfig;
-    functionApp?: FunctionAppConfig;
-    appInsights?: ResourceConfig;
-    appServicePlan?: ResourceConfig;
-    storageAccount?: ResourceConfig;
-    hostingEnvironment?: ResourceConfig;
-    virtualNetwork?: ResourceConfig;
-    armTemplate?: ArmTemplateConfig;
-  };
+  provider: ServerlessAzureProvider;
   plugins: string[];
   functions: any;
 }
@@ -66,4 +72,7 @@ export interface ServerlessCommand {
 
 export interface ServerlessCommandMap {
   [command: string]: ServerlessCommand;
+}
+export interface ServerlessAzureOptions extends Serverless.Options {
+  resourceGroup?: string;
 }

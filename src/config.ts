@@ -1,6 +1,10 @@
 export const configConstants = {
   bearer: "Bearer ",
-  deploymentArtifactContainer: "deployment-artifacts",
+  deploymentConfig: {
+    container: "deployment-artifacts",
+    rollback: true,
+    runFromBlobUrl: false,
+  },
   functionAppApiPath: "/api/",
   functionAppDomain: ".azurewebsites.net",
   functionsAdminApiPath: "/admin/functions/",
@@ -11,7 +15,6 @@ export const configConstants = {
   logStreamApiPath: "/api/logstream/application/functions/function/",
   masterKeyApiPath: "/api/functions/admin/masterkey",
   providerName: "azure",
-  rollbackEnabled: true,
   scmCommandApiPath: "/api/command",
   scmDomain: ".scm.azurewebsites.net",
   scmVfsPath: "/api/vfs/site/wwwroot/",
