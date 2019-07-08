@@ -22,6 +22,7 @@ export class InvokeService extends BaseService {
     /* accesses the admin key */
     if (!(functionName in this.slsFunctions())) {
       this.serverless.cli.log(`Function ${functionName} does not exist`);
+      return;
     }
     
     const functionObject = this.slsFunctions()[functionName];
