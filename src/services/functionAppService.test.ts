@@ -104,7 +104,7 @@ describe("Function App Service", () => {
     expect(result).toBeNull();
   });
 
-  fit("gets master key", async () => {
+  it("gets master key", async () => {
     const service = createService();
     const result = await service.getMasterKey();
     expect(result).toEqual(masterKey);
