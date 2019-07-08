@@ -1,7 +1,15 @@
-import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, StorageURL, uploadFileToBlockBlob } from "@azure/storage-blob";
+import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-storage";
+import { Aborter, BlobSASPermissions, BlockBlobURL, ContainerURL, generateBlobSASQueryParameters,SASProtocol,
+  ServiceURL, SharedKeyCredential, StorageURL, TokenCredential, uploadFileToBlockBlob } from "@azure/storage-blob";
 import Serverless from "serverless";
-import { BaseService } from "./baseService";
 import { Guard } from "../shared/guard";
+import { BaseService } from "./baseService";
+import { AzureLoginService } from "./loginService";
+
+export enum AzureStorageAuthType {
+  SharedKey,
+  Token
+}
 
 /**
  * Wrapper for operations on Azure Blob Storage account
@@ -12,10 +20,26 @@ export class AzureBlobStorageService extends BaseService {
    * Account URL for Azure Blob Storage account. Depends on `storageAccountName` being set in baseService
    */
   private accountUrl: string;
+  private authType: AzureStorageAuthType;
+  private storageCredential: SharedKeyCredential|TokenCredential;
 
-  public constructor(serverless: Serverless, options: Serverless.Options) {
+  public constructor(serverless: Serverless, options: Serverless.Options,
+    authType: AzureStorageAuthType = AzureStorageAuthType.SharedKey) {
     super(serverless, options);
     this.accountUrl = `https://${this.storageAccountName}.blob.core.windows.net`;
+    this.authType = authType;
+  }
+
+  /**
+   * Initialize Blob Storage service. This creates the credentials required
+   * to perform any operation with the service
+   */
+  public async initialize() {
+    this.storageCredential = (this.authType === AzureStorageAuthType.SharedKey) 
+      ?
+      new SharedKeyCredential(this.storageAccountName, await this.getKey())
+      :
+      new TokenCredential(await this.getToken());
   }
 
   /**
@@ -25,11 +49,15 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Name of blob file created as a result of upload
    */
   public async uploadFile(path: string, containerName: string, blobName?: string) {
-    Guard.empty(path);
-    Guard.empty(containerName);
+    Guard.empty(path, "path");
+    Guard.empty(containerName, "containerName");
+    this.checkInitialization();
+
     // Use specified blob name or replace `/` in path with `-`
     const name = blobName || path.replace(/^.*[\\\/]/, "-");
-    uploadFileToBlockBlob(Aborter.none, path, this.getBlockBlobURL(containerName, name));
+    this.log(`Uploading file at '${path}' to container '${containerName}' with name '${name}'`)
+    await uploadFileToBlockBlob(Aborter.none, path, this.getBlockBlobURL(containerName, name));
+    this.log("Finished uploading blob");
   };
   
   /**
@@ -38,8 +66,10 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Blob to delete
    */
   public async deleteFile(containerName: string, blobName: string): Promise<void> {
-    Guard.empty(containerName);
-    Guard.empty(blobName);
+    Guard.empty(containerName, "containerName");
+    Guard.empty(blobName, "blobName");
+    this.checkInitialization();
+
     const blockBlobUrl = await this.getBlockBlobURL(containerName, blobName)
     await blockBlobUrl.delete(Aborter.none);
   }
@@ -51,6 +81,8 @@ export class AzureBlobStorageService extends BaseService {
    */
   public async listFiles(containerName: string, ext?: string): Promise<string[]> {
     Guard.empty(containerName, "containerName");
+    this.checkInitialization();
+
     const result: string[] = [];
     let marker;
     const containerURL = this.getContainerURL(containerName);
@@ -74,6 +106,8 @@ export class AzureBlobStorageService extends BaseService {
    * Lists the containers within the Azure Blob Storage account
    */
   public async listContainers() {
+    this.checkInitialization();
+
     const result: string[] = [];
     let marker;
     do {
@@ -94,10 +128,15 @@ export class AzureBlobStorageService extends BaseService {
    * Creates container specified in Azure Cloud Storage options
    * @param containerName - Name of container to create
    */
-  public async createContainer(containerName: string): Promise<void> {
-    Guard.empty(containerName);
-    const containerURL = this.getContainerURL(containerName);
-    await containerURL.create(Aborter.none);
+  public async createContainerIfNotExists(containerName: string): Promise<void> {
+    Guard.empty(containerName, "containerName");
+    this.checkInitialization();
+
+    const containers = await this.listContainers();
+    if (!containers.find((name) => name === containerName)) {
+      const containerURL = this.getContainerURL(containerName);
+      await containerURL.create(Aborter.none);
+    }
   }
 
   /**
@@ -105,16 +144,58 @@ export class AzureBlobStorageService extends BaseService {
    * @param containerName Name of container to delete
    */
   public async deleteContainer(containerName: string): Promise<void> {
-    Guard.empty(containerName);
+    Guard.empty(containerName, "containerName");
+    this.checkInitialization();
+
     const containerUrl = await this.getContainerURL(containerName)
     await containerUrl.delete(Aborter.none);
+  }
+
+  /**
+   * Generate URL with SAS token for a specific blob
+   * @param containerName Name of container containing blob
+   * @param blobName Name of blob to generate SAS token for
+   * @param days Number of days from current date until expiry of SAS token. Defaults to 1 year
+   */
+  public async generateBlobSasTokenUrl(containerName: string, blobName: string, days: number = 365): Promise<string> {
+    this.checkInitialization();
+    if (this.authType !== AzureStorageAuthType.SharedKey) {
+      throw new Error("Need to authenticate with shared key in order to generate SAS tokens. " + 
+      "Initialize Blob Service with SharedKey auth type");
+    }
+
+    const now = new Date();
+    const endDate = new Date(now);
+    endDate.setDate(endDate.getDate() + days);
+
+    const blobSas = generateBlobSASQueryParameters({
+      blobName,
+      cacheControl: "cache-control-override",
+      containerName,
+      contentDisposition: "content-disposition-override",
+      contentEncoding: "content-encoding-override",
+      contentLanguage: "content-language-override",
+      contentType: "content-type-override",
+      expiryTime: endDate,
+      ipRange: { start: "0.0.0.0", end: "255.255.255.255" },
+      permissions: BlobSASPermissions.parse("racwd").toString(),
+      protocol: SASProtocol.HTTPSandHTTP,
+      startTime: now,
+      version: "2016-05-31"
+    },
+    this.storageCredential as SharedKeyCredential);
+    
+    const blobUrl = this.getBlockBlobURL(containerName, blobName);
+    return `${blobUrl.url}?${blobSas}`
   }
 
   /**
    * Get ServiceURL object for Azure Blob Storage Account
    */
   private getServiceURL(): ServiceURL {
-    const pipeline = StorageURL.newPipeline(this.credentials);
+    this.checkInitialization();
+
+    const pipeline = StorageURL.newPipeline(this.storageCredential);
     const accountUrl = this.accountUrl;
     const serviceUrl = new ServiceURL(
       accountUrl,
@@ -129,7 +210,9 @@ export class AzureBlobStorageService extends BaseService {
    * @param serviceURL Previously created ServiceURL object (will create if undefined)
    */
   private getContainerURL(containerName: string): ContainerURL {
-    Guard.empty(containerName);
+    Guard.empty(containerName, "containerName");
+    this.checkInitialization();
+
     return ContainerURL.fromServiceURL(
       this.getServiceURL(),
       containerName
@@ -142,11 +225,44 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Name of blob
    */
   private getBlockBlobURL(containerName: string, blobName: string): BlockBlobURL {
-    Guard.empty(containerName);
-    Guard.empty(blobName);
+    Guard.empty(containerName, "containerName");
+    Guard.empty(blobName, "blobName");
+    this.checkInitialization();
+
     return BlockBlobURL.fromContainerURL(
       this.getContainerURL(containerName),
       blobName,
     );
+  }
+
+  /**
+   * Get access token by logging in (again) with a storage-specific context
+   */
+  private async getToken(): Promise<string> {
+    const authResponse = await AzureLoginService.login({
+      tokenAudience: "https://storage.azure.com/"
+    });
+    const token = await authResponse.credentials.getToken();
+    return token.accessToken;
+  }
+
+  /**
+   * Get access key for storage account
+   */
+  private async getKey(): Promise<string> {
+    const context = new StorageManagementClientContext(this.credentials, this.subscriptionId)
+    const storageAccounts = new StorageAccounts(context);
+    const keys = await storageAccounts.listKeys(this.resourceGroup, this.storageAccountName);
+    return keys.keys[0].value;
+  }
+
+  /**
+   * Ensure that the blob storage service has been initialized. If not initialized,
+   * the credentials will not be available for any operation
+   */
+  private checkInitialization() {
+    Guard.null(this.storageCredential, "storageCredential", 
+      "Azure Blob Storage Service has not been initialized. Make sure .initialize() has been called " + 
+      "before performing any operation");
   }
 }

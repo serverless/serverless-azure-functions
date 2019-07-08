@@ -1,6 +1,6 @@
 import Serverless from "serverless";
-import { ResourceService } from "../../services/resourceService";
 import { FunctionAppService } from "../../services/functionAppService";
+import { ResourceService } from "../../services/resourceService";
 
 export class AzureDeployPlugin {
   public hooks: { [eventName: string]: Promise<any> };
@@ -48,6 +48,7 @@ export class AzureDeployPlugin {
 
   private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
+
     await resourceService.deployResourceGroup();
 
     const functionAppService = new FunctionAppService(this.serverless, this.options);

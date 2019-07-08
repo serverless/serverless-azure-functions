@@ -1,9 +1,17 @@
-import { MockFactory } from "../test/mockFactory"
 import mockFs from "mock-fs";
+import { MockFactory } from "../test/mockFactory";
+import { AzureBlobStorageService, AzureStorageAuthType } from "./azureBlobStorageService";
 
 jest.mock("@azure/storage-blob");
-import { BlockBlobURL, ContainerURL, ServiceURL, Aborter, uploadFileToBlockBlob } from "@azure/storage-blob";
-import { AzureBlobStorageService } from "./azureBlobStorageService";
+jest.genMockFromModule("@azure/storage-blob")
+import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, uploadFileToBlockBlob, TokenCredential, SharedKeyCredential } from "@azure/storage-blob";
+
+jest.mock("@azure/arm-storage")
+jest.genMockFromModule("@azure/arm-storage");
+import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-storage"
+
+jest.mock("./loginService");
+import { AzureLoginService } from "./loginService"
 
 describe("Azure Blob Storage Service", () => {
 
@@ -14,13 +22,38 @@ describe("Azure Blob Storage Service", () => {
 
   const containers = MockFactory.createTestAzureContainers();
   const sls = MockFactory.createTestServerless();
+  const accountName = "slswesdevservicenamesa";
   const options = MockFactory.createTestServerlessOptions();
   const blockBlobUrl = MockFactory.createTestBlockBlobUrl(containerName, filePath);
 
   let service: AzureBlobStorageService;
+  const token = "myToken";
+  const keyValue = "keyValue";
 
   beforeAll(() => {
+    (SharedKeyCredential as any).mockImplementation();
+    (TokenCredential as any).mockImplementation();
+
+    StorageAccounts.prototype.listKeys = jest.fn(() => {
+      return {
+        keys: [
+          {
+            value: keyValue
+          }
+        ]
+      }
+    }) as any;
+
     BlockBlobURL.fromContainerURL = jest.fn(() => blockBlobUrl) as any;
+    AzureLoginService.login = jest.fn(() => Promise.resolve({
+      credentials: {
+        getToken: jest.fn(() => {
+          return {
+            accessToken: token
+          }
+        })
+      }
+    } as any));
   });
 
   beforeAll(() => {
@@ -33,12 +66,29 @@ describe("Azure Blob Storage Service", () => {
     mockFs.restore();
   });
 
-  beforeEach(() => {
+  beforeEach( async () => {
     service = new AzureBlobStorageService(sls, options);
+    await service.initialize();
+  });
+
+  it("should initialize authentication", async () => {
+    // Note: initialize called in beforeEach
+    expect(SharedKeyCredential).toBeCalledWith(accountName, keyValue);
+    expect(StorageManagementClientContext).toBeCalled();
+    expect(StorageAccounts).toBeCalled();
+
+    const tokenService = new AzureBlobStorageService(sls, options, AzureStorageAuthType.Token);
+    await tokenService.initialize();
+    expect(TokenCredential).toBeCalled();
+  });
+
+  it("should initialize authentication", async () => {
+    await service.initialize();
+    expect(TokenCredential).toBeCalledWith(token);
   });
 
   it("should upload a file", async () => {
-    uploadFileToBlockBlob.prototype = jest.fn();
+    uploadFileToBlockBlob.prototype = jest.fn(() => Promise.resolve());
     ContainerURL.fromServiceURL = jest.fn((serviceUrl, containerName) => (containerName as any));
     await service.uploadFile(filePath, containerName);
     expect(uploadFileToBlockBlob).toBeCalledWith(
@@ -76,7 +126,7 @@ describe("Azure Blob Storage Service", () => {
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
     ContainerURL.prototype.create = jest.fn(() => Promise.resolve({ statusCode: 201 })) as any;
     const newContainerName = "newContainer";
-    await service.createContainer(newContainerName);
+    await service.createContainerIfNotExists(newContainerName);
     expect(ContainerURL.fromServiceURL).toBeCalledWith(expect.anything(), newContainerName);
     expect(ContainerURL.prototype.create).toBeCalledWith(Aborter.none);
   });

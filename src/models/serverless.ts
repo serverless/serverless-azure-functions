@@ -23,6 +23,10 @@ export interface FunctionAppConfig extends ResourceConfig {
   extensionVersion?;
 }
 
+export interface DeploymentConfig {
+  rollback?: boolean;
+  container?: string;
+}
 export interface ServerlessAzureConfig {
   service: string;
   provider: {
@@ -46,4 +50,20 @@ export interface ServerlessAzureConfig {
   };
   plugins: string[];
   functions: any;
+}
+
+export interface ServerlessCommand {
+  usage: string;
+  lifecycleEvents: string[];
+  options?: {
+    [key: string]: {
+      usage: string;
+      shortcut?: string;
+    };
+  };
+  commands?: ServerlessCommandMap;
+}
+
+export interface ServerlessCommandMap {
+  [command: string]: ServerlessCommand;
 }

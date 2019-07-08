@@ -1,5 +1,6 @@
-export const constants = {
+export const configConstants = {
   bearer: "Bearer ",
+  deploymentArtifactContainer: "deployment-artifacts",
   functionAppApiPath: "/api/",
   functionAppDomain: ".azurewebsites.net",
   functionsAdminApiPath: "/admin/functions/",
@@ -10,10 +11,11 @@ export const constants = {
   logStreamApiPath: "/api/logstream/application/functions/function/",
   masterKeyApiPath: "/api/functions/admin/masterkey",
   providerName: "azure",
+  rollbackEnabled: true,
   scmCommandApiPath: "/api/command",
   scmDomain: ".scm.azurewebsites.net",
   scmVfsPath: "/api/vfs/site/wwwroot/",
   scmZipDeployApiPath: "/api/zipdeploy"
 };
 
-export default constants;
+export default configConstants;

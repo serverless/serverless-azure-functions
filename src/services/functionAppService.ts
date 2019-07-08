@@ -1,21 +1,26 @@
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { FunctionEnvelope, Site } from "@azure/arm-appservice/esm/models";
 import fs from "fs";
 import path from "path";
-import { WebSiteManagementClient } from "@azure/arm-appservice";
 import Serverless from "serverless";
-import { BaseService } from "./baseService";
+import { FunctionAppResource } from "../armTemplates/resources/functionApp";
+import { ArmDeployment } from "../models/armTemplates";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
-import { Site, FunctionEnvelope } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ArmService } from "./armService";
-import { ArmDeployment } from "../models/armTemplates";
-import { FunctionAppResource } from "../armTemplates/resources/functionApp";
+import { AzureBlobStorageService } from "./azureBlobStorageService";
+import { BaseService } from "./baseService";
 
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
+  private blobService: AzureBlobStorageService;
+  private functionZipFile: string;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     this.webClient = new WebSiteManagementClient(this.credentials, this.subscriptionId);
+    this.blobService = new AzureBlobStorageService(serverless, options);
+    this.functionZipFile = this.getFunctionZipFile();
   }
 
   public async get(): Promise<Site> {
@@ -46,7 +51,7 @@ export class FunctionAppService extends BaseService {
     Guard.null(functionApp);
     Guard.empty(functionName);
 
-    this.serverless.cli.log(`-> Deleting function: ${functionName}`);
+    this.log(`-> Deleting function: ${functionName}`);
     const deleteFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
 
     return await this.sendApiRequest("DELETE", deleteFunctionUrl);
@@ -55,7 +60,7 @@ export class FunctionAppService extends BaseService {
   public async syncTriggers(functionApp: Site) {
     Guard.null(functionApp);
 
-    this.serverless.cli.log("Syncing function triggers");
+    this.log("Syncing function triggers");
 
     const syncTriggersUrl = `${this.baseUrl}${functionApp.id}/syncfunctiontriggers?api-version=2016-08-01`;
     return await this.sendApiRequest("POST", syncTriggersUrl);
@@ -64,7 +69,7 @@ export class FunctionAppService extends BaseService {
   public async cleanUp(functionApp: Site) {
     Guard.null(functionApp);
 
-    this.serverless.cli.log("Cleaning up existing functions");
+    this.log("Cleaning up existing functions");
     const deleteTasks = [];
 
     const serviceFunctions = this.serverless.service.getAllFunctions();
@@ -109,8 +114,10 @@ export class FunctionAppService extends BaseService {
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
 
-    this.log("Deploying serverless functions...");
-    await this.zipDeploy(functionApp);
+    this.log("Deploying serverless functions...");    
+
+    await this.uploadZippedArfifactToFunctionApp(functionApp);
+    await this.uploadZippedArtifactToBlobStorage();
   }
 
   /**
@@ -131,23 +138,16 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  private async zipDeploy(functionApp) {
-    const functionAppName = functionApp.name;
+  private async uploadZippedArfifactToFunctionApp(functionApp) {
     const scmDomain = this.getScmDomain(functionApp);
 
-    this.serverless.cli.log(`Deploying zip file to function app: ${functionAppName}`);
+    this.log(`Deploying zip file to function app: ${functionApp.name}`);
 
-    // Upload function artifact if it exists, otherwise the full service is handled in 'uploadFunctions' method
-    let functionZipFile = this.serverless.service["artifact"];
-    if (!functionZipFile) {
-      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
-    }
-
-    if (!(functionZipFile && fs.existsSync(functionZipFile))) {
+    if (!(this.functionZipFile && fs.existsSync(this.functionZipFile))) {
       throw new Error("No zip file found for function app");
     }
 
-    this.serverless.cli.log(`-> Deploying service package @ ${functionZipFile}`);
+    this.log(`-> Deploying service package @ ${this.functionZipFile}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
@@ -155,18 +155,19 @@ export class FunctionAppService extends BaseService {
       uri: `https://${scmDomain}/api/zipdeploy/`,
       json: true,
       headers: {
-        Authorization: `Bearer ${this.credentials.tokenCache._entries[0].accessToken}`,
+        Authorization: `Bearer ${this.getAccessToken()}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }
     };
 
-    await this.sendFile(requestOptions, functionZipFile);
-    this.serverless.cli.log("-> Function package uploaded successfully");
+    await this.sendFile(requestOptions, this.functionZipFile);
+    
+    this.log("-> Function package uploaded successfully");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
     const deployedFunctions = await this.listFunctions(functionApp);
 
-    this.serverless.cli.log("Deployed serverless functions:")
+    this.log("Deployed serverless functions:")
     deployedFunctions.forEach((functionConfig) => {
       // List functions that are part of the serverless yaml config
       if (serverlessFunctions.includes(functionConfig.name)) {
@@ -174,13 +175,45 @@ export class FunctionAppService extends BaseService {
 
         if (httpConfig) {
           const method = httpConfig.methods[0].toUpperCase();
-          this.serverless.cli.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+          this.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
         }
       }
     });
   }
 
-  private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
+  /**
+   * Uploads artifact file to blob storage container 
+   */
+  private async uploadZippedArtifactToBlobStorage() {
+    await this.blobService.initialize();
+    await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
+    await this.blobService.uploadFile(
+      this.functionZipFile,
+      this.deploymentConfig.container,
+      this.getArtifactName(this.deploymentName),
+    );
+  }
+
+  /**
+   * Gets local path of packaged function app
+   */
+  private getFunctionZipFile(): string {
+    let functionZipFile = this.serverless.service["artifact"];
+    if (!functionZipFile) {
+      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
+    }
+    return functionZipFile;
+  }
+
+  /**
+   * Get rollback-configured artifact name. Contains `-t{timestamp}`
+   * if rollback is configured
+   */
+  public getArtifactName(deploymentName: string): string {
+    return `${deploymentName.replace("rg-deployment", "artifact")}.zip`;
+  }
+
+  public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
     const httpTrigger = functionConfig.config.bindings.find((binding) => {
       return binding.type === "httpTrigger";
     });
@@ -199,29 +232,6 @@ export class FunctionAppService extends BaseService {
       route: httpTrigger.route,
       name: functionConfig.name,
     };
-  }
-
-  private async runKuduCommand(functionApp: Site, command: string) {
-    this.serverless.cli.log(`-> Running Kudu command ${command}...`);
-
-    const scmDomain = this.getScmDomain(functionApp);
-    const requestUrl = `https://${scmDomain}/api/command`;
-
-    // TODO: There is a case where the body will contain an error, but it's
-    // not actually an error. These are warnings from npm install.
-    const response = await this.sendApiRequest("POST", requestUrl, {
-      data: {
-        command: command,
-        dir: "site\\wwwroot"
-      }
-    });
-
-    if (response.status !== 200) {
-      if (response.data && response.data.Error) {
-        throw new Error(response.data.Error);
-      }
-      throw new Error(`Error executing ${command} command, try again later.`);
-    }
   }
 
   /**

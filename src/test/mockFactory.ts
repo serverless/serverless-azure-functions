@@ -1,14 +1,21 @@
+import { ApiContract, ApiManagementServiceResource } from "@azure/arm-apimanagement/esm/models";
+import { FunctionEnvelope, Site } from "@azure/arm-appservice/esm/models";
 import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 import { HttpHeaders, HttpOperationResponse, HttpResponse, WebResource } from "@azure/ms-rest-js";
-import { LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
+import { AuthResponse, LinkedSubscription, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenClientCredentials, TokenResponse } from "@azure/ms-rest-nodeauth/dist/lib/credentials/tokenClientCredentials";
 import { ServiceListContainersSegmentResponse } from "@azure/storage-blob/typings/lib/generated/lib/models";
-import { AxiosResponse } from "axios";
+import { AxiosRequestConfig, AxiosResponse } from "axios";
 import yaml from "js-yaml";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
+import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
+import { ArmResourceTemplate } from "../models/armTemplates";
+import { AzureServiceProvider, ServicePrincipalEnvVariables } from "../models/azureProvider";
+import { Logger } from "../models/generic";
+import { ServerlessAzureConfig } from "../models/serverless";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -205,7 +212,7 @@ export class MockFactory {
   }
 
   public static createTestAzureBlobItem(id: number = 1, index: number = 1, ext: string = ".zip") {
-    return  {
+    return {
       name: `blob-${id}-${index}${ext}`
     }
   }

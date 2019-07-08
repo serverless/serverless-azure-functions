@@ -1,6 +1,6 @@
 {
   "name": "serverless-azure-functions",
-  "version": "1.0.0-4",
+  "version": "1.0.0-5",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
   "main": "./lib/index.js",
@@ -14,8 +14,9 @@
     "test": "jest",
     "test:ci": "npm run test -- --ci",
     "test:coverage": "npm run test -- --coverage",
+    "compile": "tsc",
     "prebuild": "shx rm -rf lib/ && npm run test",
-    "build": "tsc"
+    "build": "npm run compile"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -38,6 +39,7 @@
     "@azure/arm-apimanagement": "^5.1.0",
     "@azure/arm-appservice": "^5.7.0",
     "@azure/arm-resources": "^1.0.1",
+    "@azure/arm-storage": "^9.0.1",
     "@azure/ms-rest-nodeauth": "^1.0.1",
     "@azure/storage-blob": "^10.3.0",
     "axios": "^0.18.0",

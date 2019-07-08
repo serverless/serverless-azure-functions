@@ -111,9 +111,12 @@ export class ArmService extends BaseService {
     };
 
     // Deploy ARM template
-    this.serverless.cli.log("-> Deploying ARM template...");
+    this.log("-> Deploying ARM template...");
+    this.log(`---> Resource Group: ${this.resourceGroup}`)
+    this.log(`---> Deployment Name: ${this.deploymentName}`)
+
     const result = await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, armDeployment);
-    this.serverless.cli.log("-> ARM deployment complete");
+    this.log("-> ARM deployment complete");
 
     return result;
   }
