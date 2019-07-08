@@ -117,7 +117,7 @@ export class FunctionAppService extends BaseService {
 
     const functionZipFile = this.getFunctionZipFile();
     const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
-    const uploadBlobStorage = await this.uploadZippedArtifactToBlobStorage(functionZipFile);
+    const uploadBlobStorage = this.uploadZippedArtifactToBlobStorage(functionZipFile);
     await Promise.all([uploadFunctionApp, uploadBlobStorage]);
   }
 
