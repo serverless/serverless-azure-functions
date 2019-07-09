@@ -35,6 +35,7 @@ export class AzureLoginPlugin {
     catch (e) {
       this.serverless.cli.log("Error logging into azure");
       this.serverless.cli.log(`${e}`);
+      process.exit(0);
     }
   }
 }

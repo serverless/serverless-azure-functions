@@ -78,16 +78,18 @@ describe("Login Plugin", () => {
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
   });
 
-  it("logs an error from authentication", async () => {
+  it("logs an error from authentication and exits process", async () => {
     unsetServicePrincipalEnvVariables();
+    process.exit = jest.fn() as any;
     const errorMessage = "This is my error message";
     AzureLoginService.interactiveLogin = jest.fn(() => {
       throw new Error(errorMessage);
-    });    
+    });
     const sls = MockFactory.createTestServerless();
     await invokeLoginHook(false, sls);
     expect(AzureLoginService.interactiveLogin).toBeCalled()
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
-    expect(sls.cli.log).lastCalledWith(`Error: ${errorMessage}`)
+    expect(sls.cli.log).lastCalledWith(`Error: ${errorMessage}`);
+    expect(process.exit).toBeCalledWith(0);
   });
-})
+});
