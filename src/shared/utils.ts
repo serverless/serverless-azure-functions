@@ -118,13 +118,6 @@ export class Utils {
     return JSON.stringify(json, null, 2);
   }
 
-  public static interpolateFile(sls: Serverless, path: string, params: Map<string, string>) {
-    const template = sls.utils.readFileSync(path);
-    const names = params.keys();
-    const vals = params.values();
-    return new Function(...names, `return \`${template}\`;`)(...vals);
-  }
-
   /**
    * Take the first `substringSize` characters from each string and return as one string
    * @param substringSize Size of substring to take from beginning of each string

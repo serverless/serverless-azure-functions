@@ -44,6 +44,19 @@ describe("Offline Service", () => {
     writeFileSpy.mockRestore();
   });
 
+  it("does not write files if they already exist", async () => {
+    const sls = MockFactory.createTestServerless();
+    const service = createService(sls);
+    const functionNames = sls.service.getAllFunctions();
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+    mockFs({
+      "local.settings.json": "contents",
+    });
+    await service.build();
+    const calls = writeFileSpy.mock.calls;
+    expect(calls).toHaveLength(functionNames.length);
+  });
+
   it("cleans up functions files", async () => {
     mockFs({
       hello: {
@@ -63,6 +76,31 @@ describe("Offline Service", () => {
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
     expect(unlinkCalls[2][0]).toBe("local.settings.json");
+    const rmdirCalls = rmdirSpy.mock.calls;
+    expect(rmdirCalls[0][0]).toBe("hello");
+    expect(rmdirCalls[1][0]).toBe("goodbye");
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
+  });
+
+  it("does not try to remove files if they don't exist", async () => {
+    mockFs({
+      hello: {
+        "function.json": "contents"
+      },
+      goodbye: {
+        "function.json": "contents"
+      },
+    })
+    const sls = MockFactory.createTestServerless();
+    const service = createService(sls);
+    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync")
+    await service.cleanup();
+    const unlinkCalls = unlinkSpy.mock.calls;
+    expect(unlinkCalls).toHaveLength(2);
+    expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
+    expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
     const rmdirCalls = rmdirSpy.mock.calls;
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");
