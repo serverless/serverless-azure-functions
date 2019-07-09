@@ -61,6 +61,7 @@ export class AzureDeployPlugin {
 
   private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
+
     await resourceService.deployResourceGroup();
 
     const functionAppService = new FunctionAppService(this.serverless, this.options);
