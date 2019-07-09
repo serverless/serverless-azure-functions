@@ -19,13 +19,13 @@ export class InvokeService extends BaseService {
    */
   public async invoke(method: string, functionName: string, data?: any){
 
+    const functionObject = this.slsFunctions()[functionName];
     /* accesses the admin key */
-    if (!(functionName in this.slsFunctions())) {
+    if (!functionObject) {
       this.serverless.cli.log(`Function ${functionName} does not exist`);
       return;
     }
     
-    const functionObject = this.slsFunctions()[functionName];
     const eventType = Object.keys(functionObject["events"][0])[0];
 
     if (eventType !== "http") {
@@ -59,9 +59,9 @@ export class InvokeService extends BaseService {
         "Please correct it and try invoking the function again.");
       }
     }
-    return Object.keys(eventData)
+    return encodeURIComponent(Object.keys(eventData)
       .map((key) => `${key}=${eventData[key]}`)
-      .join("&");
+      .join("&"));
   }
 
   /**

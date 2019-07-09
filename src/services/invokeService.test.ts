@@ -17,7 +17,7 @@ describe("Invoke Service ", () => {
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   let urlPOST = `http://${app.defaultHostName}/api/hello`;
-  let urlGET = `http://${app.defaultHostName}/api/hello?name=${testData}`;
+  let urlGET = `http://${app.defaultHostName}/api/hello?name%3D${testData}`;
   let masterKey: string;
 
   beforeAll(() => {
