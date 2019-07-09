@@ -121,7 +121,7 @@ export abstract class BaseService {
   protected getAccessToken(): string {
     return (this.credentials.tokenCache as any)._entries[0].accessToken;
   }
-
+  
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method

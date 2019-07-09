@@ -58,6 +58,21 @@ export interface ServerlessAzureConfig {
   functions: any;
 }
 
+export interface ServerlessCommand {
+  usage: string;
+  lifecycleEvents: string[];
+  options?: {
+    [key: string]: {
+      usage: string;
+      shortcut?: string;
+    };
+  };
+  commands?: ServerlessCommandMap;
+}
+
+export interface ServerlessCommandMap {
+  [command: string]: ServerlessCommand;
+}
 export interface ServerlessAzureOptions extends Serverless.Options {
   resourceGroup?: string;
 }

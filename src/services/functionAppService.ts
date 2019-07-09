@@ -25,6 +25,9 @@ export class FunctionAppService extends BaseService {
   public async get(): Promise<Site> {
     const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
+      this.serverless.cli.log(this.resourceGroup);
+      this.serverless.cli.log(FunctionAppResource.getResourceName(this.config));
+      this.serverless.cli.log(JSON.stringify(response));
       return null;
     }
 
@@ -214,7 +217,7 @@ export class FunctionAppService extends BaseService {
     return `${deploymentName.replace("rg-deployment", "artifact")}.zip`;
   }
 
-  private getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
+  public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
     const httpTrigger = functionConfig.config.bindings.find((binding) => {
       return binding.type === "httpTrigger";
     });
