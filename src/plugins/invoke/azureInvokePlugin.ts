@@ -17,8 +17,8 @@ export class AzureInvokePlugin extends AzureBasePlugin {
       const absolutePath = isAbsolute(path)
         ? path
         : join(this.serverless.config.servicePath, path);
-      this.serverless.cli.log(this.serverless.config.servicePath);
-      this.serverless.cli.log(path);
+      this.log(this.serverless.config.servicePath);
+      this.log(path);
 
       if (!fs.existsSync(absolutePath)) {
         throw new Error("The file you provided does not exist.");
@@ -61,14 +61,14 @@ export class AzureInvokePlugin extends AzureBasePlugin {
     const data = this.options["data"];
     const method = this.options["method"] || "GET";
     if (!functionName) {
-      this.serverless.cli.log("Need to provide a name of function to invoke");
+      this.log("Need to provide a name of function to invoke");
       return;
     }
 
     this.invokeService = new InvokeService(this.serverless, this.options);
     const response = await this.invokeService.invoke(method, functionName, data);
     if (response) {
-      this.serverless.cli.log(JSON.stringify(response.data));
+      this.log(JSON.stringify(response.data));
     }
   }
 }

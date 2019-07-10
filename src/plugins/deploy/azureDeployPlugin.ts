@@ -41,7 +41,7 @@ export class AzureDeployPlugin extends AzureBasePlugin {
     const resourceService = new ResourceService(this.serverless, this.options);
     const deployments = await resourceService.getDeployments();
     if (!deployments || deployments.length === 0) {
-      this.serverless.cli.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
+      this.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
       return;
     }
     let stringDeployments = "\n\nDeployments";
@@ -57,7 +57,7 @@ export class AzureDeployPlugin extends AzureBasePlugin {
     }
 
     stringDeployments += "-----------\n"
-    this.serverless.cli.log(stringDeployments);
+    this.log(stringDeployments);
   }
 
   private async deploy() {
