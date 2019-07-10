@@ -1,19 +1,19 @@
 import Serverless from "serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzurePackage } from "./azurePackage";
+import { AzurePackagePlugin } from "./azurePackagePlugin";
 jest.mock("../../services/packageService");
 import { PackageService } from "../../services/packageService";
 
 describe("Azure Package Plugin", () => {
   let sls: Serverless;
-  let plugin: AzurePackage;
+  let plugin: AzurePackagePlugin;
 
   beforeEach(() => {
     jest.resetAllMocks();
     sls = MockFactory.createTestServerless();
 
-    plugin = new AzurePackage(sls);
+    plugin = new AzurePackagePlugin(sls);
   });
 
   it("sets creates function bindings before package:setupProviderConfiguration life cycle event", async () => {

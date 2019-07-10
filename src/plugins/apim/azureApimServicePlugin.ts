@@ -1,10 +1,12 @@
 import Serverless from "serverless";
 import { ApimService } from "../../services/apimService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureApimServicePlugin {
+export class AzureApimServicePlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
     this.hooks = {
       "after:deploy:deploy": this.deploy.bind(this)
     };
@@ -23,6 +25,6 @@ export class AzureApimServicePlugin {
     const api = await apimService.deployApi();
     await apimService.deployFunctions(service, api);
 
-    this.serverless.cli.log("Finished APIM service deployment");
+    this.log("Finished APIM service deployment");
   }
 }

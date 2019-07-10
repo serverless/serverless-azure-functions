@@ -1,13 +1,15 @@
 import Serverless from "serverless";
 import { FuncService } from "../../services/funcService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureFuncPlugin {
+export class AzureFuncPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
   private service: FuncService;
 
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.hooks = {
       "func:func": this.func.bind(this),
       "func:add:add": this.add.bind(this),
@@ -53,7 +55,7 @@ export class AzureFuncPlugin {
   }
 
   private async func() {
-    this.serverless.cli.log("Use the func plugin to add or remove functions within Function App");
+    this.log("Use the func plugin to add or remove functions within Function App");
   }
 
   private async add() {

@@ -1,6 +1,6 @@
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureApimFunctionPlugin } from "./apimFunctionPlugin";
+import { AzureApimFunctionPlugin } from "./azureApimFunctionPlugin";
 
 jest.mock("../../services/apimService");
 import { ApimService } from "../../services/apimService";

@@ -2,12 +2,15 @@ import Serverless from "serverless";
 import { FunctionAppService } from "../../services/functionAppService";
 import { ResourceService } from "../../services/resourceService";
 import { Utils } from "../../shared/utils";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureDeployPlugin {
+export class AzureDeployPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
+
     this.hooks = {
       "deploy:deploy": this.deploy.bind(this),
       "deploy:list:list": this.list.bind(this),
@@ -34,11 +37,11 @@ export class AzureDeployPlugin {
   }
 
   private async list() {
-    this.serverless.cli.log("Listing deployments");
+    this.log("Listing deployments");
     const resourceService = new ResourceService(this.serverless, this.options);
     const deployments = await resourceService.getDeployments();
     if (!deployments || deployments.length === 0) {
-      this.serverless.cli.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
+      this.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
       return;
     }
     let stringDeployments = "\n\nDeployments";
@@ -48,15 +51,13 @@ export class AzureDeployPlugin {
       stringDeployments += `Name: ${dep.name}\n`
       const timestampFromName = Utils.getTimestampFromName(dep.name);
       stringDeployments += `Timestamp: ${(timestampFromName) ? timestampFromName : "None"}\n`;
-      stringDeployments += `Datetime: ${(timestampFromName)
-        ?
-        new Date(+timestampFromName).toISOString()
-        :
-        "None"
-      }\n`
+
+      const dateTime = timestampFromName ? new Date(+timestampFromName).toISOString() : "None";
+      stringDeployments += `Datetime: ${dateTime}\n`
     }
+
     stringDeployments += "-----------\n"
-    this.serverless.cli.log(stringDeployments);
+    this.log(stringDeployments);
   }
 
   private async deploy() {

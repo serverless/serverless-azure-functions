@@ -2,7 +2,7 @@ import Serverless from "serverless";
 import { AzureLoginService } from "../../services/loginService";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook, setEnvVariables, unsetEnvVariables } from "../../test/utils";
-import { AzureLoginPlugin } from "./loginPlugin";
+import { AzureLoginPlugin } from "./azureLoginPlugin";
 
 describe("Login Plugin", () => {
 
@@ -54,7 +54,7 @@ describe("Login Plugin", () => {
   });
 
   it("calls service principal login if environment variables are set", async () => {
-    setServicePrincipalEnvVariables();    
+    setServicePrincipalEnvVariables();
     const sls = MockFactory.createTestServerless();
     await invokeLoginHook(false, sls);
     expect(AzureLoginService.servicePrincipalLogin).toBeCalledWith(

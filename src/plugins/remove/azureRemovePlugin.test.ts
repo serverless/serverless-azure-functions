@@ -1,6 +1,6 @@
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureRemove } from "./azureRemove";
+import { AzureRemovePlugin } from "./azureRemovePlugin";
 
 jest.mock("../../services/resourceService");
 import { ResourceService } from "../../services/resourceService";
@@ -15,7 +15,7 @@ describe("Remove Plugin", () => {
 
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureRemove(sls, options);
+    const plugin = new AzureRemovePlugin(sls, options);
 
     await invokeHook(plugin, "remove:remove");
 
