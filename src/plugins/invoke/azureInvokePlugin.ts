@@ -3,14 +3,16 @@ import Serverless from "serverless";
 import { InvokeService } from "../../services/invokeService";
 import fs from "fs";
 import { ServerlessCommandMap } from "../../models/serverless";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureInvoke {
+export class AzureInvokePlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   private commands: ServerlessCommandMap;
   private invokeService: InvokeService;
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
     const path = this.options["path"];
-    
+
     if (path) {
       const absolutePath = isAbsolute(path)
         ? path
@@ -53,7 +55,7 @@ export class AzureInvoke {
       "invoke:invoke": this.invoke.bind(this)
     };
   }
-  
+
   private async invoke() {
     const functionName = this.options["function"];
     const data = this.options["data"];
@@ -64,8 +66,8 @@ export class AzureInvoke {
     }
 
     this.invokeService = new InvokeService(this.serverless, this.options);
-    const response =  await this.invokeService.invoke(method, functionName, data);
-    if(response){
+    const response = await this.invokeService.invoke(method, functionName, data);
+    if (response) {
       this.serverless.cli.log(JSON.stringify(response.data));
     }
   }

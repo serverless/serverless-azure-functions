@@ -3,7 +3,7 @@ import mockFs from "mock-fs";
 import rimraf from "rimraf";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureFuncPlugin } from "./azureFunc";
+import { AzureFuncPlugin } from "./azureFuncPlugin";
 
 describe("Azure Func Plugin", () => {
 

@@ -6,15 +6,15 @@ whole provider implementation.
 
 import Serverless from "serverless";
 import AzureProvider from "./provider/azureProvider";
-import { AzureInvoke } from "./plugins/invoke/azureInvoke";
-import { AzureLogs } from "./plugins/logs/azureLogs";
-import { AzureRemove } from "./plugins/remove/azureRemove";
-import { AzurePackage } from "./plugins/package/azurePackage";
+import { AzureInvokePlugin } from "./plugins/invoke/azureInvokePlugin";
+import { AzureLogsPlugin } from "./plugins/logs/azureLogsPlugin";
+import { AzureRemovePlugin } from "./plugins/remove/azureRemovePlugin";
+import { AzurePackagePlugin } from "./plugins/package/azurePackagePlugin";
 import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
-import { AzureLoginPlugin } from "./plugins/login/loginPlugin";
-import { AzureApimServicePlugin } from "./plugins/apim/apimServicePlugin";
-import { AzureApimFunctionPlugin } from "./plugins/apim/apimFunctionPlugin";
-import { AzureFuncPlugin } from "./plugins/func/azureFunc";
+import { AzureLoginPlugin } from "./plugins/login/azureLoginPlugin";
+import { AzureApimServicePlugin } from "./plugins/apim/azureApimServicePlugin";
+import { AzureApimFunctionPlugin } from "./plugins/apim/azureApimFunctionPlugin";
+import { AzureFuncPlugin } from "./plugins/func/azureFuncPlugin";
 import { AzureOfflinePlugin } from "./plugins/offline/azureOfflinePlugin"
 import { AzureRollbackPlugin } from "./plugins/rollback/azureRollbackPlugin"
 
@@ -24,10 +24,10 @@ export default class AzureIndex {
     this.serverless.setProvider(AzureProvider.getProviderName(), new AzureProvider(serverless) as any);
 
     // To be refactored
-    this.serverless.pluginManager.addPlugin(AzurePackage);
-    this.serverless.pluginManager.addPlugin(AzureInvoke);
-    this.serverless.pluginManager.addPlugin(AzureLogs);
-    this.serverless.pluginManager.addPlugin(AzureRemove);
+    this.serverless.pluginManager.addPlugin(AzurePackagePlugin);
+    this.serverless.pluginManager.addPlugin(AzureInvokePlugin);
+    this.serverless.pluginManager.addPlugin(AzureLogsPlugin);
+    this.serverless.pluginManager.addPlugin(AzureRemovePlugin);
     // Refactored
     this.serverless.pluginManager.addPlugin(AzureLoginPlugin);
     this.serverless.pluginManager.addPlugin(AzureDeployPlugin);

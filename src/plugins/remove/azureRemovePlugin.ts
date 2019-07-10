@@ -1,10 +1,12 @@
 import Serverless from "serverless";
 import { ResourceService } from "../../services/resourceService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureRemove {
+export class AzureRemovePlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
     this.hooks = {
       "remove:remove": this.remove.bind(this)
     };
@@ -15,6 +17,6 @@ export class AzureRemove {
     await resourceClient.deleteDeployment();
     await resourceClient.deleteResourceGroup();
 
-    this.serverless.cli.log("Service successfully removed");
+    this.log("Service successfully removed");
   }
 }

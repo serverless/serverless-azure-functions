@@ -1,13 +1,13 @@
 import AzureIndex from "./index";
 import { MockFactory } from "./test/mockFactory"
-import { AzureInvoke } from "./plugins/invoke/azureInvoke";
-import { AzureLogs } from "./plugins/logs/azureLogs";
-import { AzureRemove } from "./plugins/remove/azureRemove";
-import { AzurePackage } from "./plugins/package/azurePackage";
+import { AzureInvokePlugin } from "./plugins/invoke/azureInvokePlugin";
+import { AzureLogsPlugin } from "./plugins/logs/azureLogsPlugin";
+import { AzureRemovePlugin } from "./plugins/remove/azureRemovePlugin";
+import { AzurePackagePlugin } from "./plugins/package/azurePackagePlugin";
 import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
-import { AzureLoginPlugin } from "./plugins/login/loginPlugin";
-import { AzureApimServicePlugin } from "./plugins/apim/apimServicePlugin";
-import { AzureApimFunctionPlugin } from "./plugins/apim/apimFunctionPlugin";
+import { AzureLoginPlugin } from "./plugins/login/azureLoginPlugin";
+import { AzureApimServicePlugin } from "./plugins/apim/azureApimServicePlugin";
+import { AzureApimFunctionPlugin } from "./plugins/apim/azureApimFunctionPlugin";
 import AzureProvider from "./provider/azureProvider";
 
 describe("Azure Index", () => {
@@ -19,10 +19,10 @@ describe("Azure Index", () => {
 
     expect(sls.setProvider).toBeCalledWith("azure", new AzureProvider(sls));
 
-    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzurePackage);
-    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureInvoke);
-    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureLogs);
-    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureRemove);
+    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzurePackagePlugin);
+    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureInvokePlugin);
+    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureLogsPlugin);
+    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureRemovePlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureLoginPlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureDeployPlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureApimServicePlugin);
