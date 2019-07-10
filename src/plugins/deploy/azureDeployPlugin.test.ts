@@ -8,8 +8,21 @@ import { FunctionAppService } from "../../services/functionAppService";
 jest.mock("../../services/resourceService");
 import { ResourceService } from "../../services/resourceService";
 import { Site } from "@azure/arm-appservice/esm/models";
+import { ServerlessAzureOptions } from "../../models/serverless";
+import Serverless from "serverless";
 
 describe("Deploy plugin", () => {
+  let sls: Serverless;
+  let options: ServerlessAzureOptions;
+  let plugin: AzureDeployPlugin;
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    sls = MockFactory.createTestServerless();
+    options = MockFactory.createTestServerlessOptions();
+
+    plugin = new AzureDeployPlugin(sls, options);
+  });
 
   afterEach(() => {
     jest.resetAllMocks();
@@ -25,10 +38,6 @@ describe("Deploy plugin", () => {
     FunctionAppService.prototype.deploy = deploy;
     FunctionAppService.prototype.uploadFunctions = uploadFunctions;
 
-    const sls = MockFactory.createTestServerless();
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureDeployPlugin(sls, options);
-
     await invokeHook(plugin, "deploy:deploy");
 
     expect(deployResourceGroup).toBeCalled();
@@ -39,10 +48,10 @@ describe("Deploy plugin", () => {
   it("lists deployments with timestamps", async () => {
     const deployments = MockFactory.createTestDeployments(5, true);
     ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments));
-    const sls = MockFactory.createTestServerless();
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureDeployPlugin(sls, options);
+
     await invokeHook(plugin, "deploy:list:list");
+    expect(ResourceService.prototype.getDeployments).toBeCalled();
+
     let expectedLogStatement = "\n\nDeployments";
     const originalTimestamp = +MockFactory.createTestTimestamp();
     let i = 0
@@ -61,10 +70,10 @@ describe("Deploy plugin", () => {
   it("lists deployments without timestamps", async () => {
     const deployments = MockFactory.createTestDeployments();
     ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments));
-    const sls = MockFactory.createTestServerless();
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureDeployPlugin(sls, options);
+
     await invokeHook(plugin, "deploy:list:list");
+    expect(ResourceService.prototype.getDeployments).toBeCalled();
+
     let expectedLogStatement = "\n\nDeployments";
     for (const dep of deployments) {
       expectedLogStatement += "\n-----------\n"
@@ -77,13 +86,13 @@ describe("Deploy plugin", () => {
   });
 
   it("logs empty deployment list", async () => {
-    const sls = MockFactory.createTestServerless();
     const resourceGroup = "rg1";
     ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve([])) as any;
     ResourceService.prototype.getResourceGroupName = jest.fn(() => resourceGroup);
-    const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureDeployPlugin(sls, options);
+
     await invokeHook(plugin, "deploy:list:list");
+    expect(ResourceService.prototype.getDeployments).toBeCalled();
+
     expect(sls.cli.log).lastCalledWith(`No deployments found for resource group '${resourceGroup}'`);
   });
 });

@@ -1,12 +1,14 @@
 import Serverless from "serverless";
 import { OfflineService } from "../../services/offlineService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureOfflinePlugin {
+export class AzureOfflinePlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
   private offlineService: OfflineService;
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
     this.offlineService = new OfflineService(this.serverless, this.options);
 
     this.hooks = {

@@ -21,6 +21,9 @@
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
   },
+  "lcov.path": [
+    "./coverage/lcov.info"
+  ],
   "homepage": "https://github.com/serverless/serverless-azure-functions",
   "keywords": [
     "serverless",

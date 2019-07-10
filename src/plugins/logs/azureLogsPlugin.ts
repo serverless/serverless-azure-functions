@@ -1,14 +1,17 @@
 import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureLogs {
+export class AzureLogsPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
 
   private provider: AzureProvider;
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
+
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
-    
+
     this.hooks = {
       "logs:logs": this.retrieveLogs.bind(this)
     };

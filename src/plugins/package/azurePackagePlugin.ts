@@ -2,14 +2,16 @@
 import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { PackageService } from "../../services/packageService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzurePackage {
+export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;
   private packageService: PackageService;
   public provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(private serverless: Serverless) {
+  public constructor(serverless: Serverless) {
+    super(serverless);
     this.hooks = {
       "before:package:setupProviderConfiguration": this.setupProviderConfiguration.bind(this),
       "before:webpack:package:packageModules": this.webpack.bind(this),

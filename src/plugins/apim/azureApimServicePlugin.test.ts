@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureApimServicePlugin } from "./apimServicePlugin";
+import { AzureApimServicePlugin } from "./azureApimServicePlugin";
 
 jest.mock("../../services/apimService");
 import { ApimService } from "../../services/apimService";

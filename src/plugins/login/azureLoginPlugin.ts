@@ -1,12 +1,14 @@
 import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { AzureLoginService } from "../../services/loginService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureLoginPlugin {
+export class AzureLoginPlugin extends AzureBasePlugin {
   private provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options) {
+    super(serverless);
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
     this.hooks = {
@@ -23,7 +25,7 @@ export class AzureLoginPlugin {
       return;
     }
 
-    this.serverless.cli.log("Logging into Azure");
+    this.log("Logging into Azure");
 
     try {
       const authResult = await AzureLoginService.login();
@@ -33,8 +35,8 @@ export class AzureLoginPlugin {
       this.serverless.variables["subscriptionId"] = process.env.azureSubId || authResult.subscriptions[0].id;
     }
     catch (e) {
-      this.serverless.cli.log("Error logging into azure");
-      this.serverless.cli.log(`${e}`);
+      this.log("Error logging into azure");
+      this.log(`${e}`);
       process.exit(0);
     }
   }
