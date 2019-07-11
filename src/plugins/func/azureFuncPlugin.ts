@@ -7,8 +7,8 @@ export class AzureFuncPlugin extends AzureBasePlugin {
   public commands: any;
   private service: FuncService;
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
 
     this.hooks = {
       "func:func": this.func.bind(this),
