@@ -1,13 +1,13 @@
 import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
-import { AzureLoginService } from "../../services/loginService";
+import { AzureLoginService, AzureLoginOptions } from "../../services/loginService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureLoginPlugin extends AzureBasePlugin {
   private provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options & AzureLoginOptions) {
     super(serverless);
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
@@ -32,7 +32,9 @@ export class AzureLoginPlugin extends AzureBasePlugin {
       this.serverless.variables["azureCredentials"] = authResult.credentials;
       // Use environment variable for sub ID or use the first subscription in the list (service principal can
       // have access to more than one subscription)
-      this.serverless.variables["subscriptionId"] = process.env.azureSubId || authResult.subscriptions[0].id;
+      this.serverless.variables["subscriptionId"] = this.options.subscriptionId || process.env.azureSubId || authResult.subscriptions[0].id;
+      this.serverless.cli.log(`Deploying with subscription ID: ${ this.serverless.variables["subscriptionId"]}`);
+
     }
     catch (e) {
       this.log("Error logging into azure");

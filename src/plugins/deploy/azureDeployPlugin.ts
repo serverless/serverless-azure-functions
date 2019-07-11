@@ -3,12 +3,13 @@ import { FunctionAppService } from "../../services/functionAppService";
 import { ResourceService } from "../../services/resourceService";
 import { Utils } from "../../shared/utils";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { AzureLoginOptions } from "../../services/loginService";
 
 export class AzureDeployPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, private options: Serverless.Options & AzureLoginOptions) {
     super(serverless);
 
     this.hooks = {
@@ -30,6 +31,10 @@ export class AzureDeployPlugin extends AzureBasePlugin {
           "resourceGroup": {
             usage: "Resource group for the service",
             shortcut: "g",
+          }, 
+          subscriptionId: {
+            usage: "Sets the Azure subscription ID",
+            shortcut: "i",
           }
         }
       }
@@ -62,7 +67,6 @@ export class AzureDeployPlugin extends AzureBasePlugin {
 
   private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
-
     await resourceService.deployResourceGroup();
 
     const functionAppService = new FunctionAppService(this.serverless, this.options);
