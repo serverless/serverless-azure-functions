@@ -201,9 +201,15 @@ We're still in the process of getting everying running 100%, but please refer to
 1. Clone this repository to your local machine
 2. Navigate to the cloned folder
 3. Run `npm install`
-4. Run `npm run-script build`
+4. Run `npm run build`
 5. Navigate to a folder where you created a new Serverless project, run `npm install`, and then run `npm link {path to serverless-azure-functions folder}`. Running `npm install` after the link command may override the link.
 6. The npm modules should now contain your local version of this plugin.
+
+#### Unit Tests
+
+We use [Jest](https://jestjs.io/) for unit tests, and it is expected that every Pull Request containing code changes have accompanying unit tests.
+
+Run unit tests using `npm test` or `npm run test:coverage` to get coverage results.
 
 #### Signing commits
 
