@@ -12,10 +12,10 @@ npm config set sign-git-tag true
 
 version=$(npm version prerelease -m "Bumped to version %s")
 
-echo "Bumped to version ${version}"
+echo "release: Bumped to version ${version}"
 
 # remove git tag, we don't want to tag pr
-git tag -d ${version} 
+git tag -d ${version}
 
 # push to remote
 git push origin npmRelease
