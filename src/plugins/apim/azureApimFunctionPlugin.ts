@@ -5,8 +5,8 @@ import { AzureBasePlugin } from "../azureBasePlugin";
 export class AzureApimFunctionPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
     this.hooks = {
       "after:deploy:function:deploy": this.deploy.bind(this)
     };

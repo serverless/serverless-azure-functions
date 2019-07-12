@@ -7,8 +7,8 @@ export class AzureLogsPlugin extends AzureBasePlugin {
 
   private provider: AzureProvider;
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
 
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
