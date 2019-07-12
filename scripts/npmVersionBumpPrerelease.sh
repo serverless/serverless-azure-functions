@@ -10,9 +10,9 @@ git checkout -b npmRelease
 ## configure npm to sign commit
 npm config set sign-git-tag true
 
-version=$(npm version prerelease -m "Bumped to version %s")
+version=$(npm version prerelease -m "release: Bumped to version %s")
 
-echo "release: Bumped to version ${version}"
+echo "Bumped to version ${version}"
 
 # remove git tag, we don't want to tag pr
 git tag -d ${version}
