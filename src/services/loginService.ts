@@ -7,6 +7,9 @@ import {
   InteractiveLoginOptions,  
 } from "@azure/ms-rest-nodeauth";
 
+export interface AzureLoginOptions {
+  subscriptionId?: string;
+}
 
 export class AzureLoginService {
 

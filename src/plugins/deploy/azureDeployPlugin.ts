@@ -3,13 +3,13 @@ import { FunctionAppService } from "../../services/functionAppService";
 import { ResourceService } from "../../services/resourceService";
 import { Utils } from "../../shared/utils";
 import { AzureBasePlugin } from "../azureBasePlugin";
-
+import { AzureLoginOptions } from "../../services/loginService";
 
 export class AzureDeployPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
 
-  public constructor(serverless: Serverless, options: Serverless.Options & Serverless.AzureLoginOptions) {
+  public constructor(serverless: Serverless, options: Serverless.Options & AzureLoginOptions) {
     super(serverless, options);
 
     this.hooks = {

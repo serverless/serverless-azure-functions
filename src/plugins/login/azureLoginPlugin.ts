@@ -2,12 +2,13 @@ import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { AzureLoginService } from "../../services/loginService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { AzureLoginOptions } from "../../services/loginService";
 
 export class AzureLoginPlugin extends AzureBasePlugin {
   private provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(serverless: Serverless, options: Serverless.Options & Serverless.AzureLoginOptions) {
+  public constructor(serverless: Serverless, options: Serverless.Options & AzureLoginOptions) {
     super(serverless, options);
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
