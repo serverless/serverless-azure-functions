@@ -16,7 +16,8 @@
     "test:coverage": "npm run test -- --coverage",
     "compile": "tsc",
     "prebuild": "shx rm -rf lib/ && npm run test",
-    "build": "npm run compile"
+    "build": "npm run compile",
+    "generate:spn": "bash ./scripts/generate-service-principal.sh"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
