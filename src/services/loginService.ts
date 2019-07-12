@@ -1,4 +1,5 @@
 import open from "open";
+import Serverless from "serverless";
 import {
   interactiveLoginWithAuthResponse,
   loginWithServicePrincipalSecretWithAuthResponse,
@@ -7,7 +8,7 @@ import {
   InteractiveLoginOptions,  
 } from "@azure/ms-rest-nodeauth";
 
-export interface AzureLoginOptions {
+export interface AzureLoginOptions extends Serverless.Options {
   subscriptionId?: string;
 }
 

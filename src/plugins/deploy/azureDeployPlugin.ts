@@ -5,11 +5,11 @@ import { Utils } from "../../shared/utils";
 import { AzureBasePlugin } from "../azureBasePlugin";
 import { AzureLoginOptions } from "../../services/loginService";
 
-export class AzureDeployPlugin extends AzureBasePlugin {
+export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
 
-  public constructor(serverless: Serverless, options: Serverless.Options & AzureLoginOptions) {
+  public constructor(serverless: Serverless, options: AzureLoginOptions) {
     super(serverless, options);
 
     this.hooks = {

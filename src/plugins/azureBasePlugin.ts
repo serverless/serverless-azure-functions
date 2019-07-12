@@ -1,12 +1,11 @@
 import { Guard } from "../shared/guard";
 import Serverless from "serverless";
 import { Utils } from "../shared/utils";
-import { AzureLoginOptions } from "../services/loginService";
 
-export abstract class AzureBasePlugin {
+export abstract class AzureBasePlugin<TOptions=Serverless.Options> {
   public constructor(
     protected serverless: Serverless,
-    protected options: Serverless.Options & AzureLoginOptions,
+    protected options: TOptions,
   ) {
     Guard.null(serverless);
   }
