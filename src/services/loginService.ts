@@ -9,10 +9,6 @@ import {
 
 export interface AzureLoginOptions {
   subscriptionId?: string;
-  clientId?: string;
-  tenantId?: string;
-  password?: string;
-  interactive?: boolean;
 }
 
 export class AzureLoginService {
