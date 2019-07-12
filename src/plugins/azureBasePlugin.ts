@@ -5,7 +5,7 @@ import { Utils } from "../shared/utils";
 export abstract class AzureBasePlugin {
   public constructor(
     protected serverless: Serverless,
-    protected options: Serverless.Options,
+    protected options: Serverless.Options & Serverless.AzureLoginOptions,
   ) {
     Guard.null(serverless);
   }
