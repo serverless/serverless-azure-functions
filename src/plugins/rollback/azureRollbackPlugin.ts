@@ -1,13 +1,15 @@
 import Serverless from "serverless";
 import { RollbackService } from "../../services/rollbackService";
+import { AzureBasePlugin } from "../azureBasePlugin";
 
 /**
  * Plugin for rolling back Function App Service to previous deployment
  */
-export class AzureRollbackPlugin {
+export class AzureRollbackPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(private serverless: Serverless, private options: Serverless.Options) {
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
     this.hooks = {
       "rollback:rollback": this.rollback.bind(this)
     };

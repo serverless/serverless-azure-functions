@@ -7,8 +7,8 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
   public commands: any;
   private offlineService: OfflineService;
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
     this.offlineService = new OfflineService(this.serverless, this.options);
 
     this.hooks = {

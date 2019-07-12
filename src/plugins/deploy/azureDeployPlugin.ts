@@ -4,12 +4,13 @@ import { ResourceService } from "../../services/resourceService";
 import { Utils } from "../../shared/utils";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
+
 export class AzureDeployPlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
 
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
 
     this.hooks = {
       "deploy:deploy": this.deploy.bind(this),

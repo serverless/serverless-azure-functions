@@ -12,8 +12,9 @@ describe("Azure Package Plugin", () => {
   beforeEach(() => {
     jest.resetAllMocks();
     sls = MockFactory.createTestServerless();
+    const options = MockFactory.createTestServerlessOptions();
 
-    plugin = new AzurePackagePlugin(sls);
+    plugin = new AzurePackagePlugin(sls, options);
   });
 
   it("sets creates function bindings before package:setupProviderConfiguration life cycle event", async () => {

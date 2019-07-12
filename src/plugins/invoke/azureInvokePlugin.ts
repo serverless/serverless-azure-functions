@@ -9,8 +9,8 @@ export class AzureInvokePlugin extends AzureBasePlugin {
   public hooks: { [eventName: string]: Promise<any> };
   private commands: ServerlessCommandMap;
   private invokeService: InvokeService;
-  public constructor(serverless: Serverless, private options: Serverless.Options) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
     const path = this.options["path"];
 
     if (path) {

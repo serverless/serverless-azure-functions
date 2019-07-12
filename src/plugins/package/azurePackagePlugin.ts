@@ -10,8 +10,8 @@ export class AzurePackagePlugin extends AzureBasePlugin {
   public provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
-  public constructor(serverless: Serverless) {
-    super(serverless);
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options);
     this.hooks = {
       "before:package:setupProviderConfiguration": this.setupProviderConfiguration.bind(this),
       "before:webpack:package:packageModules": this.webpack.bind(this),
