@@ -15,8 +15,7 @@ describe("Login Plugin", () => {
     if (!hasCreds) {
       delete sls.variables["azureCredentials"];
     }
-    const opt = options || MockFactory.createTestServerlessOptions();
-    return new AzureLoginPlugin(sls, opt);
+    return new AzureLoginPlugin(sls, options || MockFactory.createTestServerlessOptions());
   }
 
   function createMockLoginFunction() {
@@ -103,13 +102,12 @@ describe("Login Plugin", () => {
     expect(sls.cli.log).toBeCalledWith("Using subscription ID: test-subs-id");
   })
 
-  it(" Uses the default subscription ID" , async () => {
+  it("Uses the default subscription ID" , async () => {
     const sls = MockFactory.createTestServerless();
     const opt = MockFactory.createTestServerlessOptions();
     await invokeLoginHook(false, sls, opt);
     expect(AzureLoginService.interactiveLogin).toBeCalled()
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
     expect(sls.cli.log).toBeCalledWith("Using subscription ID: azureSubId");
-  })
-
+  });
 });
