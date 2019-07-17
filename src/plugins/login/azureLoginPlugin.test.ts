@@ -32,7 +32,7 @@ describe("Login Plugin", () => {
 
   async function invokeLoginHook(hasCreds = false, serverless?: Serverless, options?: Serverless.Options) {
     const plugin = createPlugin(hasCreds, serverless, options);
-    await invokeHook(plugin, "before:package:initialize");
+    await invokeHook(plugin, "before:deploy:deploy");
   }
 
   beforeEach(() => {

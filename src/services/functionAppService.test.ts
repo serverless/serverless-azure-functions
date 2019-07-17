@@ -1,6 +1,7 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import mockFs from "mock-fs";
+import path from "path";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionAppService } from "./functionAppService";
@@ -55,6 +56,9 @@ describe("Function App Service", () => {
 
     mockFs({
       "app.zip": "contents",
+      ".serverless": {
+        "serviceName.zip": "contents",
+      }
     }, { createCwd: true, createTmp: true });
   });
 
@@ -222,6 +226,37 @@ describe("Function App Service", () => {
     expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
   });
 
+  it("uploads functions to function app and blob storage with default naming convention", async () => {
+    const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
+    const expectedUploadUrl = `https://${scmDomain}/api/zipdeploy/`;
+
+    const sls = MockFactory.createTestServerless();
+    delete sls.service["artifact"]
+    const service = createService(sls);
+    await service.uploadFunctions(app);
+
+    const defaultArtifact = path.join(".serverless", `${sls.service.getServiceName()}.zip`);
+
+    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
+      method: "POST",
+      uri: expectedUploadUrl,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${variables["azureCredentials"].tokenCache._entries[0].accessToken}`,
+        Accept: "*/*",
+        ContentType: "application/octet-stream",
+      }
+    }, defaultArtifact);
+    const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
+    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
+      defaultArtifact,
+      configConstants.deploymentConfig.container,
+      `${expectedArtifactName}.zip`,
+    )
+    const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
+    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
+  });
+
   it("uploads functions with custom SCM domain (aka App service environments)", async () => {
     const customApp = {
       ...MockFactory.createTestSite("CustomAppWithinASE"),
@@ -248,10 +283,19 @@ describe("Function App Service", () => {
     }, slsService["artifact"])
   });
 
-  it("throws an error with no zip file", async () => {
+  it("uses default name when no artifact provided", async () => {
     const sls = MockFactory.createTestServerless();
     delete sls.service["artifact"];
     const service = createService(sls);
-    await expect(service.uploadFunctions(app)).rejects.not.toBeNull()
+    expect(service.getFunctionZipFile()).toEqual(path.join(".serverless", `${sls.service.getServiceName()}.zip`))
+  });
+
+  it("uses package param from options if provided", async () => {
+    const sls = MockFactory.createTestServerless();
+    const options = MockFactory.createTestServerlessOptions({
+      package: "fake.zip",
+    });
+    const service = createService(sls, options);
+    expect(service.getFunctionZipFile()).toEqual("fake.zip")
   });
 });

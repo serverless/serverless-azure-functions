@@ -1,23 +1,31 @@
+import { Site } from "@azure/arm-appservice/esm/models";
+import Serverless from "serverless";
+import { ServerlessAzureOptions } from "../../models/serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzureDeployPlugin } from "./azureDeployPlugin";
+import mockFs  from "mock-fs"
 
 jest.mock("../../services/functionAppService");
 import { FunctionAppService } from "../../services/functionAppService";
 
 jest.mock("../../services/resourceService");
 import { ResourceService } from "../../services/resourceService";
-import { Site } from "@azure/arm-appservice/esm/models";
-import { ServerlessAzureOptions } from "../../models/serverless";
-import Serverless from "serverless";
 
 describe("Deploy plugin", () => {
   let sls: Serverless;
   let options: ServerlessAzureOptions;
   let plugin: AzureDeployPlugin;
 
+  beforeAll(() => {
+    mockFs({
+      "serviceName.zip": "contents",
+    }, { createCwd: true, createTmp: true });
+  });
+
   beforeEach(() => {
-    jest.resetAllMocks();
+    FunctionAppService.prototype.getFunctionZipFile = jest.fn(() => "serviceName.zip");
+
     sls = MockFactory.createTestServerless();
     options = MockFactory.createTestServerlessOptions();
 
@@ -26,9 +34,13 @@ describe("Deploy plugin", () => {
 
   afterEach(() => {
     jest.resetAllMocks();
+  });
+
+  afterAll(() => {
+    mockFs.restore();
   })
 
-  it("calls deploy hook", async () => {
+  it("calls deploy", async () => {
     const deployResourceGroup = jest.fn();
     const functionAppStub: Site = MockFactory.createTestSite();
     const deploy = jest.fn(() => Promise.resolve(functionAppStub));
@@ -43,6 +55,27 @@ describe("Deploy plugin", () => {
     expect(deployResourceGroup).toBeCalled();
     expect(deploy).toBeCalled();
     expect(uploadFunctions).toBeCalledWith(functionAppStub);
+  });
+
+  it("does not call deploy if zip does not exist", async () => {
+    const deployResourceGroup = jest.fn();
+    const functionAppStub: Site = MockFactory.createTestSite();
+    const deploy = jest.fn(() => Promise.resolve(functionAppStub));
+    const uploadFunctions = jest.fn();
+
+    const zipFile = "fake.zip";
+
+    FunctionAppService.prototype.getFunctionZipFile = (() => zipFile);
+    ResourceService.prototype.deployResourceGroup = deployResourceGroup;
+    FunctionAppService.prototype.deploy = deploy;
+    FunctionAppService.prototype.uploadFunctions = uploadFunctions;
+
+    await invokeHook(plugin, "deploy:deploy");
+
+    expect(deployResourceGroup).not.toBeCalled();
+    expect(deploy).not.toBeCalled();
+    expect(uploadFunctions).not.toBeCalled();
+    expect(sls.cli.log).lastCalledWith(`Function app zip file '${zipFile}' does not exist`);
   });
 
   it("lists deployments with timestamps", async () => {

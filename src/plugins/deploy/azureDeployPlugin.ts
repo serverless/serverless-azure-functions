@@ -1,9 +1,10 @@
+import fs from "fs";
 import Serverless from "serverless";
 import { FunctionAppService } from "../../services/functionAppService";
+import { AzureLoginOptions } from "../../services/loginService";
 import { ResourceService } from "../../services/resourceService";
 import { Utils } from "../../shared/utils";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import { AzureLoginOptions } from "../../services/loginService";
 
 export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   public hooks: { [eventName: string]: Promise<any> };
@@ -28,13 +29,17 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
           }
         },
         options: {
-          "resourceGroup": {
+          resourceGroup: {
             usage: "Resource group for the service",
             shortcut: "g",
           },
           subscriptionId: {
             usage: "Sets the Azure subscription ID",
             shortcut: "i",
+          },
+          package: {
+            usage: "Package to deploy",
+            shortcut: "p",
           }
         }
       }
@@ -67,12 +72,14 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
 
   private async deploy() {
     const resourceService = new ResourceService(this.serverless, this.options);
-
-    await resourceService.deployResourceGroup();
-
     const functionAppService = new FunctionAppService(this.serverless, this.options);
+    const zipFile = functionAppService.getFunctionZipFile();
+    if (!fs.existsSync(zipFile)) {
+      this.log(`Function app zip file '${zipFile}' does not exist`);
+      return Promise.resolve();
+    }
+    await resourceService.deployResourceGroup();
     const functionApp = await functionAppService.deploy();
-
     await functionAppService.uploadFunctions(functionApp);
   }
 }

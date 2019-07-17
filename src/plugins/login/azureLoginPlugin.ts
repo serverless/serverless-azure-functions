@@ -14,6 +14,7 @@ export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
 
     this.hooks = {
       "before:package:initialize": this.login.bind(this),
+      "before:deploy:deploy": this.login.bind(this),
       "before:deploy:list:list": this.login.bind(this),
       "before:invoke:invoke": this.login.bind(this),
       "before:rollback:rollback": this.login.bind(this),
