@@ -31,8 +31,7 @@ export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
     try {
       const authResult = await AzureLoginService.login();
       this.serverless.variables["azureCredentials"] = authResult.credentials;
-      // Use environment variable for sub ID or use the first subscription in the list (service principal can
-      // have access to more than one subscription)
+      // Use environment variable for sub ID or use the first subscription in the list (service principal can have access to more than one subscription)
       this.serverless.variables["subscriptionId"] = this.options.subscriptionId || process.env.azureSubId || this.serverless.service.provider["subscriptionId"] || authResult.subscriptions[0].id;
       this.serverless.cli.log(`Using subscription ID: ${this.serverless.variables["subscriptionId"]}`);
     }
