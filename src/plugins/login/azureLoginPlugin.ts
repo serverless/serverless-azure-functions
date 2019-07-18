@@ -13,7 +13,6 @@ export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
     this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
     this.hooks = {
-      "before:package:initialize": this.login.bind(this),
       "before:deploy:deploy": this.login.bind(this),
       "before:deploy:list:list": this.login.bind(this),
       "before:invoke:invoke": this.login.bind(this),
