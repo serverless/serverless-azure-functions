@@ -1,6 +1,6 @@
 {
   "name": "serverless-azure-functions",
-  "version": "1.0.0-5",
+  "version": "1.0.0-6",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Azure Functions.",
   "license": "MIT",
   "main": "./lib/index.js",
@@ -16,7 +16,8 @@
     "test:coverage": "npm run test -- --coverage",
     "compile": "tsc",
     "prebuild": "shx rm -rf lib/ && npm run test",
-    "build": "npm run compile"
+    "build": "npm run compile",
+    "generate:spn": "bash ./scripts/generate-service-principal.sh"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
