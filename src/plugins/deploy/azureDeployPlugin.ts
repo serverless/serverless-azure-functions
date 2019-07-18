@@ -3,7 +3,6 @@ import Serverless from "serverless";
 import { FunctionAppService } from "../../services/functionAppService";
 import { AzureLoginOptions } from "../../services/loginService";
 import { ResourceService } from "../../services/resourceService";
-import { Utils } from "../../shared/utils";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
@@ -49,25 +48,7 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   private async list() {
     this.log("Listing deployments");
     const resourceService = new ResourceService(this.serverless, this.options);
-    const deployments = await resourceService.getDeployments();
-    if (!deployments || deployments.length === 0) {
-      this.log(`No deployments found for resource group '${resourceService.getResourceGroupName()}'`);
-      return;
-    }
-    let stringDeployments = "\n\nDeployments";
-
-    for (const dep of deployments) {
-      stringDeployments += "\n-----------\n"
-      stringDeployments += `Name: ${dep.name}\n`
-      const timestampFromName = Utils.getTimestampFromName(dep.name);
-      stringDeployments += `Timestamp: ${(timestampFromName) ? timestampFromName : "None"}\n`;
-
-      const dateTime = timestampFromName ? new Date(+timestampFromName).toISOString() : "None";
-      stringDeployments += `Datetime: ${dateTime}\n`
-    }
-
-    stringDeployments += "-----------\n"
-    this.log(stringDeployments);
+    this.log(await resourceService.listDeployments());
   }
 
   private async deploy() {
