@@ -65,7 +65,7 @@ export class MockFactory {
     sls.service = MockFactory.createTestService(sls.service["functions"]);
   }
 
-  public static createTestServerlessOptions(): Serverless.Options {
+  public static createTestServerlessOptions(options?: any): Serverless.Options {
     return {
       extraServicePath: null,
       function: null,
@@ -73,6 +73,7 @@ export class MockFactory {
       region: null,
       stage: null,
       watch: null,
+      ...options
     };
   }
 

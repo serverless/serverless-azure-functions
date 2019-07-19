@@ -186,6 +186,17 @@ export class FunctionAppService extends BaseService {
   }
 
   /**
+   * Gets local path of packaged function app
+   */
+  public getFunctionZipFile(): string {
+    let functionZipFile = this.getOption("package") || this.serverless.service["artifact"];
+    if (!functionZipFile) {
+      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
+    }
+    return functionZipFile;
+  }
+
+  /**
    * Uploads artifact file to blob storage container
    */
   private async uploadZippedArtifactToBlobStorage(functionZipFile: string) {
@@ -196,17 +207,6 @@ export class FunctionAppService extends BaseService {
       this.deploymentConfig.container,
       this.getArtifactName(this.deploymentName),
     );
-  }
-
-  /**
-   * Gets local path of packaged function app
-   */
-  private getFunctionZipFile(): string {
-    let functionZipFile = this.serverless.service["artifact"];
-    if (!functionZipFile) {
-      functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
-    }
-    return functionZipFile;
   }
 
   /**

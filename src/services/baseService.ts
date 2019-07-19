@@ -121,7 +121,7 @@ export abstract class BaseService {
   protected getAccessToken(): string {
     return (this.credentials.tokenCache as any)._entries[0].accessToken;
   }
-  
+
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
@@ -187,6 +187,10 @@ export abstract class BaseService {
 
   protected slsConfigFile(): string {
     return "config" in this.options ? this.options["config"] : "serverless.yml";
+  }
+
+  protected getOption(key: string, defaultValue?: any) {
+    return Utils.get(this.options, key, defaultValue);
   }
 
   private setDefaultValues(): void {
