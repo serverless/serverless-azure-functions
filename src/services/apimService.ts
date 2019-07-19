@@ -10,6 +10,7 @@ import {
 } from "@azure/arm-apimanagement/esm/models";
 import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
+import { ApimResource } from "../armTemplates/resources/apim";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -28,7 +29,7 @@ export class ApimService extends BaseService {
     }
 
     if (!this.apimConfig.name) {
-      this.apimConfig.name = `${this.config.provider.prefix}-${this.config.provider.region}-${this.config.provider.stage}-apim`
+      this.apimConfig.name = ApimResource.getResourceName(this.config);
     }
 
     if (!this.apimConfig.backend) {
