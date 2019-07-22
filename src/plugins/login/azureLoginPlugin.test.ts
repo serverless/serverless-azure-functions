@@ -3,6 +3,7 @@ import { AzureLoginService } from "../../services/loginService";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook, setEnvVariables, unsetEnvVariables } from "../../test/utils";
 import { AzureLoginPlugin } from "./azureLoginPlugin";
+import { loginHooks } from "./loginHooks";
 
 describe("Login Plugin", () => {
 
@@ -32,12 +33,16 @@ describe("Login Plugin", () => {
 
   async function invokeLoginHook(hasCreds = false, serverless?: Serverless, options?: Serverless.Options) {
     const plugin = createPlugin(hasCreds, serverless, options);
-    await invokeHook(plugin, "before:deploy:deploy");
+    await invokeHook(plugin, `before:${loginHooks[0]}`);
   }
 
   beforeEach(() => {
     AzureLoginService.interactiveLogin = createMockLoginFunction();
     AzureLoginService.servicePrincipalLogin = createMockLoginFunction();
+  });
+
+  it("contains the hooks as contained in loginHooks", () => {
+    expect(Object.keys(createPlugin().hooks)).toEqual(loginHooks.map((hook) => `before:${hook}`));
   });
 
   it("returns if azure credentials are set", async () => {
