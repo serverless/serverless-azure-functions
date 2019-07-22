@@ -105,7 +105,7 @@ describe("Login Plugin", () => {
     expect(AzureLoginService.interactiveLogin).toBeCalled()
     expect(sls.variables["subscriptionId"]).toEqual("test-subs-id");
     expect(sls.cli.log).toBeCalledWith("Using subscription ID: test-subs-id");
-  })
+  });
 
   it("Uses the default subscription ID" , async () => {
     const sls = MockFactory.createTestServerless();
@@ -114,5 +114,15 @@ describe("Login Plugin", () => {
     expect(AzureLoginService.interactiveLogin).toBeCalled()
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
     expect(sls.cli.log).toBeCalledWith("Using subscription ID: azureSubId");
+  });
+  
+  it("Uses the subscription ID specified in serverless yaml", async () => {
+    const sls = MockFactory.createTestServerless();
+    const opt = MockFactory.createTestServerlessOptions();
+    sls.service.provider["subscriptionId"] = "test-subs-id";
+    await invokeLoginHook(false, sls, opt);
+    expect(AzureLoginService.interactiveLogin).toBeCalled()
+    expect(sls.variables["subscriptionId"]).toEqual("test-subs-id");
+    expect(sls.cli.log).toBeCalledWith("Using subscription ID: test-subs-id");
   });
 });
