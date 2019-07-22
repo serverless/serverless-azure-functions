@@ -1,16 +1,17 @@
+import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
+import { Utils } from "../shared/utils";
 import { MockFactory } from "../test/mockFactory";
 import { ResourceService } from "./resourceService";
 
-
 jest.mock("@azure/arm-resources")
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { Utils } from "../shared/utils";
 
 describe("Resource Service", () => {
-  const deployments = MockFactory.createTestDeployments();
+  let deployments: DeploymentsListByResourceGroupResponse;
   const template = "myTemplate";
 
-  beforeAll(() => {
+  beforeEach(() => {
+    deployments = MockFactory.createTestDeployments(5, true);
     ResourceManagementClient.prototype.resourceGroups = {
       createOrUpdate: jest.fn(),
       deleteMethod: jest.fn(),
@@ -80,7 +81,7 @@ describe("Resource Service", () => {
       .toBeCalledWith(resourceGroup);
   });
 
-  it("lists deployments", async () => {
+  it("gets deployments", async () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup";
     sls.service.provider["resourceGroup"] = resourceGroup
@@ -89,6 +90,53 @@ describe("Resource Service", () => {
     const service = new ResourceService(sls, options);
     const deps = await service.getDeployments();
     expect(deps).toEqual(deployments);
+  });
+
+  it("lists deployments as string with timestamps", async () => {
+    const sls = MockFactory.createTestServerless();
+    const resourceGroup = "myResourceGroup";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.variables["azureCredentials"] = "fake credentials"
+    const options = MockFactory.createTestServerlessOptions();
+    const service = new ResourceService(sls, options);
+    const deploymentString = await service.listDeployments();
+    let expectedDeploymentString = "\n\nDeployments";
+    const originalTimestamp = +MockFactory.createTestTimestamp();
+    let i = 0
+    for (const dep of deployments) {
+      const timestamp = originalTimestamp + i
+      expectedDeploymentString += "\n-----------\n"
+      expectedDeploymentString += `Name: ${dep.name}\n`
+      expectedDeploymentString += `Timestamp: ${timestamp}\n`;
+      expectedDeploymentString += `Datetime: ${new Date(timestamp).toISOString()}\n`
+      i++
+    }
+    expectedDeploymentString += "-----------\n"
+    expect(deploymentString).toEqual(expectedDeploymentString);
+  });
+
+  it("lists deployments as string without timestamps", async () => {
+    deployments = MockFactory.createTestDeployments();
+    ResourceManagementClient.prototype.deployments = {
+      listByResourceGroup: jest.fn(() => Promise.resolve(deployments)),
+    } as any;
+
+    const sls = MockFactory.createTestServerless();
+    const resourceGroup = "myResourceGroup";
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.variables["azureCredentials"] = "fake credentials"
+    const options = MockFactory.createTestServerlessOptions();
+    const service = new ResourceService(sls, options);
+    const deploymentString = await service.listDeployments();
+    let expectedDeploymentString = "\n\nDeployments";
+    for (const dep of deployments) {
+      expectedDeploymentString += "\n-----------\n"
+      expectedDeploymentString += `Name: ${dep.name}\n`
+      expectedDeploymentString += "Timestamp: None\n";
+      expectedDeploymentString += "Datetime: None\n"
+    }
+    expectedDeploymentString += "-----------\n"
+    expect(deploymentString).toEqual(expectedDeploymentString);
   });
 
   it("gets deployment template",async () => {

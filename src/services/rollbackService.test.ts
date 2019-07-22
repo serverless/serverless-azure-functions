@@ -31,6 +31,7 @@ describe("Rollback Service", () => {
   const artifactName = MockFactory.createTestDeployment().name.replace("deployment", "artifact") + ".zip";
   const artifactPath = `.serverless${path.sep}${artifactName}`
   const armDeployment: ArmDeployment = { template, parameters };
+  const deploymentString = "deployments";
 
   function createOptions(timestamp?: string): Serverless.Options {
     return {
@@ -58,6 +59,7 @@ describe("Rollback Service", () => {
     ResourceService.prototype.getDeploymentTemplate = jest.fn(
       () => Promise.resolve({ template })
     ) as any;
+    ResourceService.prototype.listDeployments = jest.fn(() => Promise.resolve(deploymentString))
     AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => sasURL) as any;
     FunctionAppService.prototype.get = jest.fn(() => appStub) as any;
   });
@@ -72,8 +74,7 @@ describe("Rollback Service", () => {
     const options = {} as any;
     const service = createService(sls, options);
     await service.rollback();
-    const calls = (sls.cli.log as any).mock.calls;
-    expect(calls[0][0]).toEqual("Need to specify a timestamp for rollback. Run `sls deploy list` to see timestamps of deployments");
+    expect(sls.cli.log).lastCalledWith(deploymentString);
   });
 
   it("should return early with invalid timestamp", async () => {

@@ -102,12 +102,14 @@ export class RollbackService extends BaseService {
 
   /**
    * Get deployment specified by timestamp in Serverless options
+   * Lists deployments if no timestamp is provided
    */
   private async getDeployment(): Promise<DeploymentExtended> {
     let timestamp = Utils.get(this.options, "timestamp");
     if (!timestamp) {
-      this.log("Need to specify a timestamp for rollback. Run `sls deploy list` to see timestamps of deployments");
+      this.log("Need to specify a timestamp for rollback.");
       this.log("Example usage:\n\nsls rollback -t 1562014362");
+      this.log(await this.resourceService.listDeployments());
       return null;
     }
     const deployments = await this.getArmDeploymentsByTimestamp();

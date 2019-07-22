@@ -21,6 +21,31 @@ export class ResourceService extends BaseService {
   }
 
   /**
+   * Returns stringified list of deployments with timestamps
+   */
+  public async listDeployments(): Promise<string> {
+    const deployments = await this.getDeployments()
+    if (!deployments || deployments.length === 0) {
+      this.log(`No deployments found for resource group '${this.getResourceGroupName()}'`);
+      return;
+    }
+    let stringDeployments = "\n\nDeployments";
+
+    for (const dep of deployments) {
+      stringDeployments += "\n-----------\n"
+      stringDeployments += `Name: ${dep.name}\n`
+      const timestampFromName = Utils.getTimestampFromName(dep.name);
+      stringDeployments += `Timestamp: ${(timestampFromName) ? timestampFromName : "None"}\n`;
+
+      const dateTime = timestampFromName ? new Date(+timestampFromName).toISOString() : "None";
+      stringDeployments += `Datetime: ${dateTime}\n`
+    }
+
+    stringDeployments += "-----------\n"
+    return stringDeployments
+  }
+
+  /**
    * Get ARM template for previous deployment
    * @param deploymentName Name of deployment
    */
