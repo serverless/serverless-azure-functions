@@ -1,23 +1,18 @@
 import Serverless from "serverless";
-import AzureProvider from "../../provider/azureProvider";
-import { AzureLoginService } from "../../services/loginService";
+import { AzureLoginOptions, AzureLoginService } from "../../services/loginService";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import { AzureLoginOptions } from "../../services/loginService";
+import { loginHooks } from "./loginHooks";
 
 export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
-  private provider: AzureProvider;
   public hooks: { [eventName: string]: Promise<any> };
 
   public constructor(serverless: Serverless, options: AzureLoginOptions) {
     super(serverless, options);
-    this.provider = (this.serverless.getProvider("azure") as any) as AzureProvider;
 
-    this.hooks = {
-      "before:deploy:deploy": this.login.bind(this),
-      "before:deploy:list:list": this.login.bind(this),
-      "before:invoke:invoke": this.login.bind(this),
-      "before:rollback:rollback": this.login.bind(this),
-    };
+    this.hooks = {};
+    for (const h of loginHooks) {
+      this.hooks[`before:${h}`] = this.login.bind(this);
+    }
   }
 
   private async login() {
