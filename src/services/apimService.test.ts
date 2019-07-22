@@ -19,6 +19,7 @@ import {
   OperationContract,
   ApiPolicyCreateOrUpdateResponse,
 } from "@azure/arm-apimanagement/esm/models";
+import { Utils } from "../shared/utils";
 
 describe("APIM Service", () => {
   const apimConfig = MockFactory.createTestApimConfig();
@@ -46,7 +47,6 @@ describe("APIM Service", () => {
       subscriptionId: "ABC123",
     };
   });
-
   it("is defined", () => {
     expect(ApimService).toBeDefined();
   });
@@ -54,6 +54,16 @@ describe("APIM Service", () => {
   it("can be instantiated", () => {
     const service = new ApimService(serverless);
     expect(service).not.toBeNull();
+  });
+
+  it("when generated, has a shorted region name in the resource name", () => {
+    // if APIM name is ommited, it should auto-generate one that contains a shortened region name
+    const apimConfigName = MockFactory.createTestApimConfig(true);
+    (serverless.service.provider as any).apim = apimConfigName;
+
+    const service = new ApimService(serverless);
+    const expectedRegionName = Utils.createShortAzureRegionName(service.getRegion());
+    expect(apimConfigName.name.includes(expectedRegionName)).toBeTruthy();
   });
 
   describe("Get service reference", () => {

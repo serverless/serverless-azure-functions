@@ -267,9 +267,9 @@ export class MockFactory {
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestApimConfig(): ApiManagementConfig {
+  public static createTestApimConfig(generateName: boolean = false): ApiManagementConfig {
     return {
-      name: "test-apim-resource",
+      name: generateName ? null : "test-apim-resource",
       api: {
         name: "test-apim-api1",
         subscriptionRequired: false,
