@@ -162,6 +162,7 @@ describe("utils", () => {
     const actual = Utils.getNormalizedRegionName(expected);
     expect(actual).toEqual(expected);
   });
+
   it("should get a timestamp from a name", () => {
     expect(Utils.getTimestampFromName("myDeployment-t12345")).toEqual("12345");
     expect(Utils.getTimestampFromName("myDeployment-t678987645")).toEqual("678987645");
@@ -169,5 +170,23 @@ describe("utils", () => {
 
     expect(Utils.getTimestampFromName("myDeployment-t")).toEqual(null);
     expect(Utils.getTimestampFromName("")).toEqual(null);
-  })
+  });
+
+  it("should get incoming binding", () => {
+    expect(Utils.getIncomingBindingConfig(MockFactory.createTestAzureFunctionConfig())).toEqual(
+      {
+        http: true,
+        "x-azure-settings": MockFactory.createTestHttpBinding("in", "myRoute"),
+      }
+    );
+  });
+
+  it("should get outgoing binding", () => {
+    expect(Utils.getOutgoingBinding(MockFactory.createTestAzureFunctionConfig())).toEqual(
+      {
+        http: true,
+        "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+      }
+    );
+  });
 });

@@ -13,8 +13,10 @@ describe("Package Service", () => {
   beforeEach(() => {
     sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
-
-    packageService = new PackageService(sls);
+    sls.service["functions"] = {
+      hello: MockFactory.createTestAzureFunctionConfig(),
+    }
+    packageService = new PackageService(sls, MockFactory.createTestServerlessOptions());
   });
 
   afterEach(() => {
@@ -71,10 +73,10 @@ describe("Package Service", () => {
   });
 
   it("createBinding writes function.json files into function folder", async () => {
-    const functionName = "helloWorld";
+    const functionName = "hello";
     const functionMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "src/handlers/hello.js",
+      handlerPath: "src/handlers/hello",
       params: {
         functionsJson: {},
       },
@@ -82,6 +84,11 @@ describe("Package Service", () => {
 
     const expectedFolderPath = path.join(sls.config.servicePath, functionName);
     const expectedFilePath = path.join(expectedFolderPath, "function.json");
+    const expectedFunctionJson = {
+      entryPoint: "handler",
+      scriptFile: "src/handlers/hello",
+      route: "myRoute",
+    }
 
     mockFs({});
 
@@ -91,17 +98,17 @@ describe("Package Service", () => {
     await packageService.createBinding(functionName, functionMetadata);
 
     expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
-    expect(writeFileSpy).toBeCalledWith(expectedFilePath, expect.any(String));
+    expect(writeFileSpy).toBeCalledWith(expectedFilePath, JSON.stringify(expectedFunctionJson, null, 2));
 
     mkdirSpy.mockRestore();
     writeFileSpy.mockRestore();
   });
 
   it("createBinding does not need to create directory if function folder already exists", async () => {
-    const functionName = "helloWorld";
+    const functionName = "hello";
     const functionMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "src/handlers/hello.js",
+      handlerPath: "src/handlers/hello",
       params: {
         functionsJson: {},
       },
@@ -111,7 +118,7 @@ describe("Package Service", () => {
     const expectedFilePath = path.join(expectedFolderPath, "function.json");
 
     mockFs({
-      "helloWorld": {
+      "hello": {
         "index.js": "contents",
       },
     });
