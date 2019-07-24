@@ -94,3 +94,9 @@ export interface ServerlessCommandMap {
 export interface ServerlessAzureOptions extends Serverless.Options {
   resourceGroup?: string;
 }
+
+export interface ServerlessLogOptions {
+  underline?: boolean;
+  bold?: boolean;
+  color?: string;
+}

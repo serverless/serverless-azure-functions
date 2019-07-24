@@ -76,6 +76,7 @@
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
     "mock-fs": "^4.10.0",
+    "mock-spawn": "^0.2.6",
     "serverless": "^1.44.1",
     "shx": "^0.3.2",
     "typescript": "^3.4.5"

@@ -44,7 +44,11 @@ describe("Azure Func Plugin", () => {
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:add:add");
 
-      expect(sls.cli.log).toBeCalledWith("Need to provide a name of function to add")
+      expect(sls.cli.log).toBeCalledWith(
+        "Need to provide a name of function to add",
+        undefined,
+        undefined
+      )
     });
 
     it("returns with pre-existing function", async () => {
@@ -98,7 +102,11 @@ describe("Azure Func Plugin", () => {
       const options = MockFactory.createTestServerlessOptions();
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:remove:remove");
-      expect(sls.cli.log).toBeCalledWith("Need to provide a name of function to remove")
+      expect(sls.cli.log).toBeCalledWith(
+        "Need to provide a name of function to remove",
+        undefined,
+        undefined
+      )
     });
 
     it("returns with non-existing function", async () => {
@@ -107,7 +115,11 @@ describe("Azure Func Plugin", () => {
       options["name"] = "myNonExistingFunction";
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:remove:remove");
-      expect(sls.cli.log).toBeCalledWith("Function myNonExistingFunction does not exist");
+      expect(sls.cli.log).toBeCalledWith(
+        "Function myNonExistingFunction does not exist",
+        undefined,
+        undefined
+      );
     });
 
     it("deletes directory and updates serverless.yml", async () => {

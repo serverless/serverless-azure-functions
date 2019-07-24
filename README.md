@@ -34,17 +34,27 @@ $ npm i azure-functions-core-tools -g
 Then, at the root of your project directory, run:
 
 ```bash
-# Builds necessary function bindings files
+# Builds necessary function bindings files and starts the function app
 $ sls offline
-# Starts the function app
-$ npm start
 ```
 
 The `offline` process will generate a directory for each of your functions, which will contain a file titled `function.json`. This will contain a relative reference to your handler file & exported function from that file as long as they are referenced correctly in `serverless.yml`.
 
-The `npm start` script just runs `func host start`, but we included the `npm` script for ease of use.
+After the necessary files are generated, it will start the function app from within the same shell. For HTTP functions, the local URLs will be displayed in the console when the function app is initialized.
 
-To clean up files generated from the build, you can simply run:
+To simply start the function app *without* building the files, run:
+
+```bash
+$ sls offline start
+```
+
+To build the files *without* spawning the process to start the function app, run:
+
+```bash
+$ sls offline build
+```
+
+To clean up files generated from the build, run:
 
 ```bash
 sls offline cleanup
