@@ -3,6 +3,7 @@ import Serverless from "serverless";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 import { Guard } from "./guard";
+import { ServerlessAzureFunctionConfig } from "../models/serverless";
 
 export interface FunctionMetadata {
   entryPoint: any;
@@ -211,5 +212,19 @@ export class Utils {
       return null;
     }
     return match[1];
+  }
+
+  public static getIncomingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
+    return functionConfig.events.find((event) => {
+      const settings = event["x-azure-settings"]
+      return settings && (!settings.direction || settings.direction === "in");
+    });
+  }
+
+  public static getOutgoingBinding(functionConfig: ServerlessAzureFunctionConfig) {
+    return functionConfig.events.find((event) => {
+      const settings = event["x-azure-settings"]
+      return settings && settings.direction === "out";
+    });
   }
 }

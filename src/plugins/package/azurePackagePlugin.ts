@@ -18,7 +18,7 @@ export class AzurePackagePlugin extends AzureBasePlugin {
       "after:package:finalize": this.finalize.bind(this),
     };
 
-    this.packageService = new PackageService(this.serverless);
+    this.packageService = new PackageService(this.serverless, this.options);
   }
 
   private async setupProviderConfiguration(): Promise<void> {

@@ -15,7 +15,7 @@ import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
 import { ArmDeployment, ArmResourceTemplate } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig } from "../models/serverless";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -394,18 +394,35 @@ export class MockFactory {
     return bindings;
   }
 
+  public static createTestAzureFunctionConfig(route?: string): ServerlessAzureFunctionConfig {
+    return {
+      events: [
+        {
+          http: true,
+          "x-azure-settings": MockFactory.createTestHttpBinding("in", route),
+        },
+        {
+          http: true,
+          "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+        }
+      ],
+      handler: "handler.js",
+    }
+  }
+
   public static createTestBinding() {
     // Only supporting HTTP for now, could support others
     return MockFactory.createTestHttpBinding();
   }
 
-  public static createTestHttpBinding(direction: string = "in") {
+  public static createTestHttpBinding(direction: string = "in", route?: string) {
     if (direction === "in") {
       return {
         authLevel: "anonymous",
         type: "httpTrigger",
         direction,
         name: "req",
+        route,
       }
     } else {
       return {

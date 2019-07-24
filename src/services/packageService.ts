@@ -2,12 +2,14 @@ import fs from "fs";
 import path from "path";
 import Serverless from "serverless";
 import { FunctionMetadata, Utils } from "../shared/utils";
+import { BaseService } from "./baseService";
 
 /**
  * Adds service packing support
  */
-export class PackageService {
-  public constructor(private serverless: Serverless) {
+export class PackageService extends BaseService {
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options, false);
   }
 
   /**
@@ -82,13 +84,23 @@ export class PackageService {
     const functionJSON = functionMetadata.params.functionsJson;
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
+    const functionObject = this.slsFunctions()[functionName];
+    const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
+    if (bindingAzureSettings.route) {
+      // Find incoming binding within functionJSON and set the route
+      const index = (functionJSON.bindings as any[])
+        .findIndex((binding) => (!binding.direction || binding.direction === "in"));
+      functionJSON.bindings[index].route = bindingAzureSettings.route;
+    }
 
     const functionDirPath = path.join(this.serverless.config.servicePath, functionName);
     if (!fs.existsSync(functionDirPath)) {
       fs.mkdirSync(functionDirPath);
     }
 
-    fs.writeFileSync(path.join(functionDirPath, "function.json"), JSON.stringify(functionJSON, null, 2));
+    const functionJsonString = JSON.stringify(functionJSON, null, 2);
+
+    fs.writeFileSync(path.join(functionDirPath, "function.json"), functionJsonString);
 
     return Promise.resolve();
   }

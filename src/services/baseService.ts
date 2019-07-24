@@ -2,7 +2,7 @@ import axios from "axios";
 import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
-import { ServerlessAzureOptions } from "../models/serverless";
+import { ServerlessAzureOptions, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
 import { configConstants } from "../config";
 import { DeploymentConfig, ServerlessAzureConfig } from "../models/serverless";
@@ -181,7 +181,7 @@ export abstract class BaseService {
   /**
    * Get function objects
    */
-  protected slsFunctions() {
+  protected slsFunctions(): { [functionName: string]: ServerlessAzureFunctionConfig } {
     return this.serverless.service["functions"];
   }
 
