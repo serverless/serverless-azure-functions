@@ -176,7 +176,7 @@ describe("utils", () => {
     expect(Utils.getIncomingBindingConfig(MockFactory.createTestAzureFunctionConfig())).toEqual(
       {
         http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("in", "myRoute"),
+        "x-azure-settings": MockFactory.createTestHttpBinding("in"),
       }
     );
   });

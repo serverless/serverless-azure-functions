@@ -394,12 +394,12 @@ export class MockFactory {
     return bindings;
   }
 
-  public static createTestAzureFunctionConfig(): ServerlessAzureFunctionConfig {
+  public static createTestAzureFunctionConfig(route?: string): ServerlessAzureFunctionConfig {
     return {
       events: [
         {
           http: true,
-          "x-azure-settings": MockFactory.createTestHttpBinding("in", "myRoute"),
+          "x-azure-settings": MockFactory.createTestHttpBinding("in", route),
         },
         {
           http: true,

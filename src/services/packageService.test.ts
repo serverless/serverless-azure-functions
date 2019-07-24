@@ -9,12 +9,13 @@ import { FunctionMetadata } from "../shared/utils";
 describe("Package Service", () => {
   let sls: Serverless;
   let packageService: PackageService;
+  const functionRoute = "myRoute";
 
   beforeEach(() => {
     sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
     sls.service["functions"] = {
-      hello: MockFactory.createTestAzureFunctionConfig(),
+      hello: MockFactory.createTestAzureFunctionConfig(functionRoute),
     }
     packageService = new PackageService(sls, MockFactory.createTestServerlessOptions());
   });
@@ -78,7 +79,12 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {},
+        functionsJson: {
+          bindings: [
+            MockFactory.createTestHttpBinding("out"),
+            MockFactory.createTestHttpBinding("in"),
+          ]
+        }
       },
     };
 
@@ -87,7 +93,14 @@ describe("Package Service", () => {
     const expectedFunctionJson = {
       entryPoint: "handler",
       scriptFile: "src/handlers/hello",
-      route: "myRoute",
+      bindings: [
+        MockFactory.createTestHttpBinding("out"),
+        {
+          ...MockFactory.createTestHttpBinding("in"),
+          route: functionRoute
+        }
+      ]
+
     }
 
     mockFs({});
@@ -98,7 +111,9 @@ describe("Package Service", () => {
     await packageService.createBinding(functionName, functionMetadata);
 
     expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
-    expect(writeFileSpy).toBeCalledWith(expectedFilePath, JSON.stringify(expectedFunctionJson, null, 2));
+    const call = writeFileSpy.mock.calls[0];
+    expect(call[0]).toEqual(expectedFilePath);
+    expect(JSON.parse(call[1])).toEqual(expectedFunctionJson);
 
     mkdirSpy.mockRestore();
     writeFileSpy.mockRestore();
@@ -110,7 +125,12 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {},
+        functionsJson: {
+          bindings: [
+            MockFactory.createTestHttpBinding("out"),
+            MockFactory.createTestHttpBinding("in"),
+          ]
+        },
       },
     };
 

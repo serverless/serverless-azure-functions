@@ -84,11 +84,13 @@ export class PackageService extends BaseService {
     const functionJSON = functionMetadata.params.functionsJson;
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
-    this.log(JSON.stringify(functionMetadata, null, 2));
     const functionObject = this.slsFunctions()[functionName];
     const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
     if (bindingAzureSettings.route) {
-      functionJSON.route = bindingAzureSettings.route;
+      // Find incoming binding within functionJSON and set the route
+      const index = (functionJSON.bindings as any[])
+        .findIndex((binding) => (!binding.direction || binding.direction === "in"));
+      functionJSON.bindings[index].route = bindingAzureSettings.route;
     }
 
     const functionDirPath = path.join(this.serverless.config.servicePath, functionName);
