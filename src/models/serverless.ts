@@ -58,6 +58,23 @@ export interface ServerlessAzureConfig {
   functions: any;
 }
 
+export interface ServerlessAzureFunctionConfig {
+  handler: string;
+  events: ServerlessAzureFunctionBindingConfig[];
+}
+
+export interface ServerlessAzureFunctionBindingConfig {
+  http?: boolean;
+  "x-azure-settings": ServerlessExtraAzureSettingsConfig;
+}
+
+export interface ServerlessExtraAzureSettingsConfig {
+  direction?: string;
+  route?: string;
+  name?: string;
+  authLevel?: string;
+}
+
 export interface ServerlessCommand {
   usage: string;
   lifecycleEvents: string[];
@@ -73,6 +90,7 @@ export interface ServerlessCommand {
 export interface ServerlessCommandMap {
   [command: string]: ServerlessCommand;
 }
+
 export interface ServerlessAzureOptions extends Serverless.Options {
   resourceGroup?: string;
 }

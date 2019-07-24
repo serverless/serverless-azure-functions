@@ -9,12 +9,15 @@ import { FunctionMetadata } from "../shared/utils";
 describe("Package Service", () => {
   let sls: Serverless;
   let packageService: PackageService;
+  const functionRoute = "myRoute";
 
   beforeEach(() => {
     sls = MockFactory.createTestServerless();
     sls.config.servicePath = process.cwd();
-
-    packageService = new PackageService(sls);
+    sls.service["functions"] = {
+      hello: MockFactory.createTestAzureFunctionConfig(functionRoute),
+    }
+    packageService = new PackageService(sls, MockFactory.createTestServerlessOptions());
   });
 
   afterEach(() => {
@@ -71,17 +74,34 @@ describe("Package Service", () => {
   });
 
   it("createBinding writes function.json files into function folder", async () => {
-    const functionName = "helloWorld";
+    const functionName = "hello";
     const functionMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "src/handlers/hello.js",
+      handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {},
+        functionsJson: {
+          bindings: [
+            MockFactory.createTestHttpBinding("out"),
+            MockFactory.createTestHttpBinding("in"),
+          ]
+        }
       },
     };
 
     const expectedFolderPath = path.join(sls.config.servicePath, functionName);
     const expectedFilePath = path.join(expectedFolderPath, "function.json");
+    const expectedFunctionJson = {
+      entryPoint: "handler",
+      scriptFile: "src/handlers/hello",
+      bindings: [
+        MockFactory.createTestHttpBinding("out"),
+        {
+          ...MockFactory.createTestHttpBinding("in"),
+          route: functionRoute
+        }
+      ]
+
+    }
 
     mockFs({});
 
@@ -91,19 +111,26 @@ describe("Package Service", () => {
     await packageService.createBinding(functionName, functionMetadata);
 
     expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
-    expect(writeFileSpy).toBeCalledWith(expectedFilePath, expect.any(String));
+    const call = writeFileSpy.mock.calls[0];
+    expect(call[0]).toEqual(expectedFilePath);
+    expect(JSON.parse(call[1])).toEqual(expectedFunctionJson);
 
     mkdirSpy.mockRestore();
     writeFileSpy.mockRestore();
   });
 
   it("createBinding does not need to create directory if function folder already exists", async () => {
-    const functionName = "helloWorld";
+    const functionName = "hello";
     const functionMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: "src/handlers/hello.js",
+      handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {},
+        functionsJson: {
+          bindings: [
+            MockFactory.createTestHttpBinding("out"),
+            MockFactory.createTestHttpBinding("in"),
+          ]
+        },
       },
     };
 
@@ -111,7 +138,7 @@ describe("Package Service", () => {
     const expectedFilePath = path.join(expectedFolderPath, "function.json");
 
     mockFs({
-      "helloWorld": {
+      "hello": {
         "index.js": "contents",
       },
     });

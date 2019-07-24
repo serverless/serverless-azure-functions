@@ -16,10 +16,10 @@ export class OfflineService extends BaseService {
       }
     }),
   }
-  
+
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options, false);
-    this.packageService = new PackageService(serverless);
+    this.packageService = new PackageService(serverless, options);
   }
 
   public async build() {
