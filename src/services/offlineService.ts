@@ -1,5 +1,7 @@
-import Serverless from "serverless";
+import { spawn } from "child_process";
 import fs from "fs";
+import Serverless from "serverless";
+import configConstants from "../config";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
 
@@ -50,9 +52,70 @@ export class OfflineService extends BaseService {
     this.log("Finished cleaning up offline files");
   }
 
-  public start() {
-    this.log("Run 'npm start' or 'func host start' to run service locally");
-    this.log("Make sure you have Azure Functions Core Tools installed");
-    this.log("If not installed run 'npm i azure-functions-core-tools -g")
+  /**
+   * Spawn `func host start` from core func tools
+   */
+  public async start() {
+    await this.spawn(configConstants.funcCoreTools, configConstants.funcCoreToolsArgs);
+  }
+
+  /**
+   * Spawn a Node child process with predefined environment variables
+   * @param command CLI Command - NO ARGS
+   * @param args Array of arguments for CLI command
+   * @param env Additional environment variables to be set in addition to
+   * predefined variables in `serverless.yml`
+   */
+  private spawn(command: string, args?: string[], env?: any): Promise<void> {
+    env = {
+      ...this.serverless.service.provider["environment"],
+      ...env
+    }
+    this.log(`Spawning process '${command} ${args.join(" ")}'`);
+    return new Promise((resolve, reject) => {
+      const childProcess = spawn(command, args, {env});
+
+      childProcess.stdout.on("data", (data) => {
+        this.log(data, {
+          color: configConstants.funcConsoleColor,
+        }, command);
+      });
+
+      childProcess.stderr.on("data", (data) => {
+        this.log(data, {
+          color: "red",
+        }, command);
+      })
+
+      childProcess.on("message", (message) => {
+        this.log(message, {
+          color: configConstants.funcConsoleColor,
+        }, command);
+      });
+
+      childProcess.on("error", (err) => {
+        this.log(`${err}`, {
+          color: "red"
+        }, command);
+        reject(err);
+      });
+
+      childProcess.on("exit", (code) => {
+        this.log(`Exited with code: ${code}`, {
+          color: (code === 0) ? "green" : "red",
+        }, command);
+      });
+
+      childProcess.on("close", (code) => {
+        this.log(`Closed with code: ${code}`, {
+          color: (code === 0) ? "green" : "red",
+        }, command);
+        resolve();
+      });
+
+      childProcess.on("disconnect", () => {
+        this.log("Process disconnected");
+      });
+    });
   }
 }

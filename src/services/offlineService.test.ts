@@ -1,11 +1,16 @@
 import fs from "fs";
 import mockFs from "mock-fs";
+import mockSpawn from "mock-spawn";
 import path from "path";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { OfflineService } from "./offlineService";
 
 describe("Offline Service", () => {
+
+  const mySpawn = mockSpawn();
+  require("child_process").spawn = mySpawn;
+  mySpawn.setDefault(mySpawn.simple(0, "Exit code"));
 
   function createService(sls?: Serverless): OfflineService {
     return new OfflineService(
@@ -112,9 +117,10 @@ describe("Offline Service", () => {
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     await service.start();
-    // Trivial test for now. In the future, this process
-    // may spawn the start process itself rather than telling
-    // the user how to do it.
-    expect(sls.cli.log).toBeCalledTimes(3);
+    const calls = mySpawn.calls;
+    expect(calls).toHaveLength(1);
+    const call = calls[0];
+    expect(call.command).toEqual("func");
+    expect(call.args).toEqual(["host", "start"]);
   });
 });

@@ -15,6 +15,7 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
       "before:offline:offline": this.azureOfflineBuild.bind(this),
       "offline:build:build": this.azureOfflineBuild.bind(this),
       "offline:offline": this.azureOfflineStart.bind(this),
+      "offline:start:start": this.azureOfflineStart.bind(this),
       "offline:cleanup:cleanup": this.azureOfflineCleanup.bind(this),
     };
 
@@ -25,6 +26,12 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
           "offline",
         ],
         commands: {
+          start: {
+            usage: "Start Azure Function app - assumes offline build has already occurred",
+            lifecycleEvents: [
+              "start"
+            ]
+          },
           build: {
             usage: "Build necessary files for running Azure Function App offline",
             lifecycleEvents: [
@@ -43,14 +50,14 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
   }
 
   private async azureOfflineBuild(){
-    this.offlineService.build();
+    await this.offlineService.build();
   }
 
   private async azureOfflineStart(){
-    this.offlineService.start();
+    await this.offlineService.start();
   }
 
   private async azureOfflineCleanup(){
-    this.offlineService.cleanup();
+    await this.offlineService.cleanup();
   }
 }
