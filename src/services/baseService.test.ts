@@ -1,14 +1,16 @@
-import Serverless from "serverless";
-jest.mock("axios", () => jest.fn());
-import axios from "axios";
-import mockFs from "mock-fs";
-import { MockFactory } from "../test/mockFactory";
-jest.mock("request", () => MockFactory.createTestMockRequestFactory());
-import request from "request";
 import fs from "fs";
-import { BaseService } from "./baseService";
+import mockFs from "mock-fs";
+import Serverless from "serverless";
 import { ServerlessAzureOptions } from "../models/serverless";
 import { Utils } from "../shared/utils";
+import { MockFactory } from "../test/mockFactory";
+import { BaseService } from "./baseService";
+
+jest.mock("axios", () => jest.fn());
+import axios from "axios";
+
+jest.mock("request", () => MockFactory.createTestMockRequestFactory());
+import request from "request";
 
 class MockService extends BaseService {
   public constructor(serverless: Serverless, options?: ServerlessAzureOptions) {

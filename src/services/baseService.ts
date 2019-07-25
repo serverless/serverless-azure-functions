@@ -1,13 +1,18 @@
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import axios from "axios";
 import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
-import { ServerlessAzureOptions, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
 import { configConstants } from "../config";
-import { DeploymentConfig, ServerlessAzureConfig } from "../models/serverless";
+import {
+  DeploymentConfig,
+  ServerlessAzureConfig,
+  ServerlessAzureFunctionConfig,
+  ServerlessAzureOptions,
+  ServerlessLogOptions
+} from "../models/serverless";
 import { Guard } from "../shared/guard";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { Utils } from "../shared/utils";
 
 export abstract class BaseService {
@@ -174,8 +179,8 @@ export abstract class BaseService {
    * Log message to Serverless CLI
    * @param message Message to log
    */
-  protected log(message: string) {
-    this.serverless.cli.log(message);
+  protected log(message: string, options?: ServerlessLogOptions, entity?: string,) {
+    (this.serverless.cli.log as any)(message, entity, options);
   }
 
   /**

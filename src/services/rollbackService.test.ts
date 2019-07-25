@@ -74,7 +74,11 @@ describe("Rollback Service", () => {
     const options = {} as any;
     const service = createService(sls, options);
     await service.rollback();
-    expect(sls.cli.log).lastCalledWith(deploymentString);
+    expect(sls.cli.log).lastCalledWith(
+      deploymentString,
+      undefined,
+      undefined
+    );
   });
 
   it("should return early with invalid timestamp", async () => {
