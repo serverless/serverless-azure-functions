@@ -10,6 +10,7 @@ import { Guard } from "../shared/guard";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
+import { Utils } from "../shared/utils";
 
 export class FunctionAppService extends BaseService {
   private webClient: WebSiteManagementClient;
@@ -90,27 +91,53 @@ export class FunctionAppService extends BaseService {
     Guard.null(functionApp);
 
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
-    const response = await this.sendApiRequest("GET", getTokenUrl);
+    try {
+      const response = await Utils.runWithRetry(async () => {
+        const listFunctionsResponse = await this.sendApiRequest("GET", getTokenUrl);
 
-    if (response.status !== 200) {
+        if (listFunctionsResponse.status !== 200 || listFunctionsResponse.data.value.length === 0) {
+          this.log("-> Function App not ready. Retrying...");
+          throw new Error(listFunctionsResponse.data);
+        }
+
+        return listFunctionsResponse;
+      }, 10, 5000);
+
+      return response.data.value.map((functionConfig) => functionConfig.properties);
+    }
+    catch (e) {
+      this.log("Unable to retrieve function app list");
       return [];
     }
-
-    return response.data.value.map((functionConfig) => functionConfig.properties);
   }
 
+  /**
+   * Gets the configuration of the specified function within the function app
+   * @param functionApp The parent function app
+   * @param functionName The name of hte function
+   */
   public async getFunction(functionApp: Site, functionName: string): Promise<FunctionEnvelope> {
     Guard.null(functionApp);
     Guard.empty(functionName);
 
     const getFunctionUrl = `${this.baseUrl}${functionApp.id}/functions/${functionName}?api-version=2016-08-01`;
-    const response = await this.sendApiRequest("GET", getFunctionUrl);
 
-    if (response.status !== 200) {
+    try {
+      const response = await Utils.runWithRetry(async () => {
+        const getFunctionResponse = await this.sendApiRequest("GET", getFunctionUrl);
+
+        if (getFunctionResponse.status !== 200) {
+          this.log("-> Function app not ready. Retrying...")
+          throw new Error(response.data);
+        }
+
+        return getFunctionResponse;
+      }, 10, 5000);
+
+      return response.data.properties;
+    } catch (e) {
       return null;
     }
-
-    return response.data.properties;
   }
 
   public async uploadFunctions(functionApp: Site): Promise<any> {
@@ -122,6 +149,23 @@ export class FunctionAppService extends BaseService {
     const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
     const uploadBlobStorage = this.uploadZippedArtifactToBlobStorage(functionZipFile);
     await Promise.all([uploadFunctionApp, uploadBlobStorage]);
+
+
+    this.log("Deployed serverless functions:")
+    const serverlessFunctions = this.serverless.service.getAllFunctions();
+    const deployedFunctions = await this.listFunctions(functionApp);
+
+    // List functions that are part of the serverless yaml config
+    deployedFunctions.forEach((functionConfig) => {
+      if (serverlessFunctions.includes(functionConfig.name)) {
+        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
+
+        if (httpConfig) {
+          const method = httpConfig.methods[0].toUpperCase();
+          this.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+        }
+      }
+    });
   }
 
   /**
@@ -166,23 +210,7 @@ export class FunctionAppService extends BaseService {
     };
 
     await this.sendFile(requestOptions, functionZipFile);
-
     this.log("-> Function package uploaded successfully");
-    const serverlessFunctions = this.serverless.service.getAllFunctions();
-    const deployedFunctions = await this.listFunctions(functionApp);
-
-    this.log("Deployed serverless functions:")
-    deployedFunctions.forEach((functionConfig) => {
-      // List functions that are part of the serverless yaml config
-      if (serverlessFunctions.includes(functionConfig.name)) {
-        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
-
-        if (httpConfig) {
-          const method = httpConfig.methods[0].toUpperCase();
-          this.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
-        }
-      }
-    });
   }
 
   /**

@@ -105,4 +105,67 @@ describe("utils", () => {
       }
     );
   });
+
+  describe("runWithRetry", () => {
+    it("returns values after 1st run", async () => {
+      const expected = "success";
+      let lastRetry = 0;
+
+      const result = await Utils.runWithRetry((retry) => {
+        lastRetry = retry;
+        return Promise.resolve(expected);
+      });
+
+      expect(lastRetry).toEqual(1);
+      expect(result).toEqual(expected);
+    });
+
+    it("returns values after successfully retry (reject promise)", async () => {
+      const expected = "success";
+      let lastRetry = 0;
+
+      const result = await Utils.runWithRetry((retry) => {
+        lastRetry = retry;
+        if (retry === 1) {
+          return Promise.reject("rejected");
+        }
+
+        return Promise.resolve(expected);
+      });
+
+      expect(lastRetry).toEqual(2);
+      expect(result).toEqual(expected);
+    });
+
+    it("returns values after successfully retry (throw error)", async () => {
+      const expected = "success";
+      let lastRetry = 0;
+
+      const result = await Utils.runWithRetry((retry) => {
+        lastRetry = retry;
+        if (retry === 1) {
+          throw new Error("Ooops!")
+        }
+
+        return Promise.resolve(expected);
+      });
+
+      expect(lastRetry).toEqual(2);
+      expect(result).toEqual(expected);
+    });
+    it("throws error after reties", async () => {
+      const maxRetries = 5;
+      let lastRetry = 0;
+
+      const test = async () => {
+        await Utils.runWithRetry((retry) => {
+          lastRetry = retry;
+          return Promise.reject("rejected");
+        }, maxRetries, 100);
+      };
+
+      await expect(test()).rejects.toEqual("rejected");
+      expect(lastRetry).toEqual(maxRetries);
+    });
+  });
 });
