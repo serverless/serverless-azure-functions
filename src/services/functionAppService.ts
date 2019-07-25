@@ -106,7 +106,7 @@ export class FunctionAppService extends BaseService {
       return response.data.value.map((functionConfig) => functionConfig.properties);
     }
     catch (e) {
-      this.log("Unable to retrieve function app list");
+      this.log("-> Unable to retrieve function app list");
       return [];
     }
   }
