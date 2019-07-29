@@ -1,13 +1,11 @@
-import { ServerlessAzureConfig } from "../../models/serverless";
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
 import { ApiManagementConfig } from "../../models/apiManagement";
-import { Utils } from "../../shared/utils";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmResourceType } from "../../models/armTemplates";
+import { ServerlessAzureConfig } from "../../models/serverless";
 
 export class ApimResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.apim && config.provider.apim.name
-      ? config.provider.apim.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-apim`;
+
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.Apim;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -63,14 +61,14 @@ export class ApimResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig) {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string) {
     const apimConfig: ApiManagementConfig = {
       sku: {},
       ...config.provider.apim,
     };
 
     return {
-      apiManagementName: ApimResource.getResourceName(config),
+      apiManagementName: namer(this.getArmResourceType()),
       apimSkuName: apimConfig.sku.name,
       apimSkuCapacity: apimConfig.sku.capacity,
       apimPublisherEmail: apimConfig.publisherEmail,

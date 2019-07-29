@@ -1,20 +1,23 @@
 import mockFs from "mock-fs";
+import { ArmResourceType } from "../models/armTemplates";
 import { MockFactory } from "../test/mockFactory";
 import { AzureBlobStorageService, AzureStorageAuthType } from "./azureBlobStorageService";
+import { AzureNamingService } from "./azureNamingService";
 
 jest.mock("@azure/storage-blob");
-jest.genMockFromModule("@azure/storage-blob")
-import { Aborter, BlockBlobURL, ContainerURL, ServiceURL, uploadFileToBlockBlob, TokenCredential, SharedKeyCredential, downloadBlobToBuffer, generateBlobSASQueryParameters, BlobSASPermissions } from "@azure/storage-blob";
+jest.genMockFromModule("@azure/storage-blob");
+import { Aborter, BlobSASPermissions, BlockBlobURL,
+  ContainerURL, downloadBlobToBuffer, generateBlobSASQueryParameters,
+  ServiceURL, SharedKeyCredential, TokenCredential, uploadFileToBlockBlob } from "@azure/storage-blob";
 
-jest.mock("@azure/arm-storage")
+jest.mock("@azure/arm-storage");
 jest.genMockFromModule("@azure/arm-storage");
-import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-storage"
+import { StorageAccounts, StorageManagementClientContext } from "@azure/arm-storage";
 
 jest.mock("./loginService");
-import { AzureLoginService } from "./loginService"
-import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
+import { AzureLoginService } from "./loginService";
 
-jest.mock("fs")
+jest.mock("fs");
 import fs from "fs";
 
 describe("Azure Blob Storage Service", () => {
@@ -25,7 +28,8 @@ describe("Azure Blob Storage Service", () => {
 
   const containers = MockFactory.createTestAzureContainers();
   const sls = MockFactory.createTestServerless();
-  const accountName = StorageAccountResource.getResourceName(sls.service as any);
+  const namingService = new AzureNamingService(sls, MockFactory.createTestServerlessOptions());
+  const accountName = namingService.getResourceName(ArmResourceType.StorageAccount);
   const options = MockFactory.createTestServerlessOptions();
   const blobContent = "testContent";
   const blockBlobUrl = MockFactory.createTestBlockBlobUrl(containerName, filePath, blobContent);
@@ -142,7 +146,7 @@ describe("Azure Blob Storage Service", () => {
     expect(ContainerURL.fromServiceURL).not.toBeCalled();
     expect(ContainerURL.prototype.create).not.toBeCalled
   })
-  
+
   it("should delete a container", async () => {
     const containerToDelete = "delete container";
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));

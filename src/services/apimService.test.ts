@@ -20,10 +20,12 @@ import {
   ApiPolicyCreateOrUpdateResponse,
 } from "@azure/arm-apimanagement/esm/models";
 import { Utils } from "../shared/utils";
+import { AzureNamingService } from "./azureNamingService";
 
 describe("APIM Service", () => {
   const apimConfig = MockFactory.createTestApimConfig();
   let serverless: Serverless;
+  let namingService: AzureNamingService;
 
   beforeEach(() => {
     const slsConfig: any = {
@@ -41,12 +43,15 @@ describe("APIM Service", () => {
       service: slsConfig
     });
 
+    namingService = new AzureNamingService(serverless, MockFactory.createTestServerlessOptions());
+
     serverless.variables = {
       ...serverless.variables,
       azureCredentials: MockFactory.createTestAzureCredentials(),
       subscriptionId: "ABC123",
     };
   });
+
   it("is defined", () => {
     expect(ApimService).toBeDefined();
   });
@@ -61,8 +66,8 @@ describe("APIM Service", () => {
     const apimConfigName = MockFactory.createTestApimConfig(true);
     (serverless.service.provider as any).apim = apimConfigName;
 
-    const service = new ApimService(serverless);
-    const expectedRegionName = Utils.createShortAzureRegionName(service.getRegion());
+    new ApimService(serverless);
+    const expectedRegionName = Utils.createShortAzureRegionName(namingService.getRegion());
     expect(apimConfigName.name.includes(expectedRegionName)).toBeTruthy();
   });
 

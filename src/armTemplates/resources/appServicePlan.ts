@@ -1,12 +1,10 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
-import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmResourceType } from "../../models/armTemplates";
+import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.appServicePlan && config.provider.appServicePlan.name
-      ? config.provider.appServicePlan.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-asp`;
+
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.AppServicePlan;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -54,14 +52,14 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string): any {
     const resourceConfig: ResourceConfig = {
       sku: {},
       ...config.provider.storageAccount,
     };
 
     return {
-      appServicePlanName: AppServicePlanResource.getResourceName(config),
+      appServicePlanName: namer(this.getArmResourceType()),
       appServicePlanSkuName: resourceConfig.sku.name,
       appServicePlanSkuTier: resourceConfig.sku.tier,
     }

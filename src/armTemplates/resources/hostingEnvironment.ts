@@ -1,12 +1,10 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmResourceType } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
 
 export class HostingEnvironmentResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.hostingEnvironment && config.provider.hostingEnvironment.name
-      ? config.provider.hostingEnvironment.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-ase`;
+
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.HostingEnvironment;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -62,9 +60,9 @@ export class HostingEnvironmentResource implements ArmResourceTemplateGenerator 
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string): any {
     return {
-      hostingEnvironmentName: HostingEnvironmentResource.getResourceName(config)
+      hostingEnvironmentName: namer(this.getArmResourceType()),
     }
   }
 }

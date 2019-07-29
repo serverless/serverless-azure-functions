@@ -40,7 +40,7 @@ export class RollbackService extends BaseService {
       return;
     }
     // Name of artifact in blob storage
-    const artifactName = this.getArtifactName(deployment.name);
+    const artifactName = this.namingService.getArtifactName(deployment.name);
     // Redeploy resource group (includes SAS token URL if running from blob URL)
     await this.redeployDeployment(deployment, artifactName);
   }

@@ -1,11 +1,23 @@
 import { ServerlessAzureConfig } from "./serverless";
 
+export enum ArmResourceType {
+  Apim,
+  AppInsights,
+  AppServicePlan,
+  FunctionApp,
+  HostingEnvironment,
+  StorageAccount,
+  VirtualNetwork,
+  Composite
+}
+
 /**
  * ARM Resource Template Generator
  */
 export interface ArmResourceTemplateGenerator {
+  getArmResourceType(): ArmResourceType;
   getTemplate(): ArmResourceTemplate;
-  getParameters(config: ServerlessAzureConfig): any;
+  getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string): any;
 }
 
 /**

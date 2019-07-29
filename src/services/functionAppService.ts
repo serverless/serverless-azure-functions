@@ -3,8 +3,7 @@ import { FunctionEnvelope, Site } from "@azure/arm-appservice/esm/models";
 import fs from "fs";
 import path from "path";
 import Serverless from "serverless";
-import { FunctionAppResource } from "../armTemplates/resources/functionApp";
-import { ArmDeployment } from "../models/armTemplates";
+import { ArmDeployment, ArmResourceType } from "../models/armTemplates";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Guard } from "../shared/guard";
 import { ArmService } from "./armService";
@@ -23,10 +22,11 @@ export class FunctionAppService extends BaseService {
   }
 
   public async get(): Promise<Site> {
-    const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
+    const resourceName = this.namingService.getResourceName(ArmResourceType.FunctionApp);
+    const response: any = await this.webClient.webApps.get(this.resourceGroup, resourceName);
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       this.serverless.cli.log(this.resourceGroup);
-      this.serverless.cli.log(FunctionAppResource.getResourceName(this.config));
+      this.serverless.cli.log(resourceName);
       this.serverless.cli.log(JSON.stringify(response));
       return null;
     }
@@ -205,16 +205,8 @@ export class FunctionAppService extends BaseService {
     await this.blobService.uploadFile(
       functionZipFile,
       this.deploymentConfig.container,
-      this.getArtifactName(this.deploymentName),
+      this.namingService.getArtifactName(this.deploymentName),
     );
-  }
-
-  /**
-   * Get rollback-configured artifact name. Contains `-t{timestamp}`
-   * if rollback is configured
-   */
-  public getArtifactName(deploymentName: string): string {
-    return `${deploymentName.replace("rg-deployment", "artifact")}.zip`;
   }
 
   public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {

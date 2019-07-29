@@ -1,12 +1,10 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmResourceType } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
 
 export class VirtualNetworkResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.virtualNetwork && config.provider.virtualNetwork.name
-      ? config.provider.virtualNetwork.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-vnet`;
+
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.VirtualNetwork;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -80,9 +78,9 @@ export class VirtualNetworkResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string): any {
     return {
-      virtualNetworkName: VirtualNetworkResource.getResourceName(config),
+      virtualNetworkName: namer(this.getArmResourceType()),
     }
   }
 }

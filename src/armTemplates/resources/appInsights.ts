@@ -1,12 +1,10 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmResourceType } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
 
 export class AppInsightsResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.appInsights && config.provider.appInsights.name
-      ? config.provider.appInsights.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-appinsights`;
+
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.AppInsights;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -40,9 +38,9 @@ export class AppInsightsResource implements ArmResourceTemplateGenerator {
     }
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string): any {
     return {
-      appInsightsName: AppInsightsResource.getResourceName(config),
+      appInsightsName: namer(this.getArmResourceType()),
     };
   }
 }

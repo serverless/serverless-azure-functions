@@ -3,19 +3,19 @@ import MockAdapter from "axios-mock-adapter";
 import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
-import { MockFactory } from "../test/mockFactory";
-import { FunctionAppService } from "./functionAppService";
-import { ArmService } from "./armService";
-import { FunctionAppResource } from "../armTemplates/resources/functionApp";
-
-jest.mock("@azure/arm-appservice")
-import { WebSiteManagementClient } from "@azure/arm-appservice";
+import configConstants from "../config";
 import { ArmDeployment, ArmTemplateType } from "../models/armTemplates";
+import { MockFactory } from "../test/mockFactory";
+import { ArmService } from "./armService";
+import { FunctionAppService } from "./functionAppService";
+
+jest.mock("@azure/arm-appservice");
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+
 jest.mock("@azure/arm-resources");
 
 jest.mock("./azureBlobStorageService");
-import { AzureBlobStorageService } from "./azureBlobStorageService"
-import configConstants from "../config";
+import { AzureBlobStorageService } from "./azureBlobStorageService";
 
 
 describe("Function App Service", () => {
@@ -92,7 +92,7 @@ describe("Function App Service", () => {
     const service = createService();
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(provider.resourceGroup, FunctionAppResource.getResourceName(slsService as any));
+      .toBeCalledWith(provider.resourceGroup, "sls-eus2-dev-serviceName");
     expect(result).toEqual(app)
   });
 
@@ -104,7 +104,7 @@ describe("Function App Service", () => {
     } as any;
     const result = await service.get();
     expect(WebSiteManagementClient.prototype.webApps.get)
-      .toBeCalledWith(provider.resourceGroup, FunctionAppResource.getResourceName(slsService as any));
+      .toBeCalledWith(provider.resourceGroup, "sls-eus2-dev-serviceName");
     expect(result).toBeNull();
   });
 
@@ -216,14 +216,11 @@ describe("Function App Service", () => {
         ContentType: "application/octet-stream",
       }
     }, slsService["artifact"]);
-    const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
-    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
-      slsService["artifact"],
-      configConstants.deploymentConfig.container,
-      `${expectedArtifactName}.zip`,
-    )
+
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
-    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
+    expect(uploadCall[0]).toEqual(slsService["artifact"]);
+    expect(uploadCall[1]).toEqual(configConstants.deploymentConfig.container)
+    expect(uploadCall[2]).toMatch(/myDeploymentName-t([0-9]+)/)
   });
 
   it("uploads functions to function app and blob storage with default naming convention", async () => {
@@ -247,14 +244,11 @@ describe("Function App Service", () => {
         ContentType: "application/octet-stream",
       }
     }, defaultArtifact);
-    const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
-    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
-      defaultArtifact,
-      configConstants.deploymentConfig.container,
-      `${expectedArtifactName}.zip`,
-    )
+
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
-    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
+    expect(uploadCall[0]).toEqual(defaultArtifact);
+    expect(uploadCall[1]).toEqual(configConstants.deploymentConfig.container);
+    expect(uploadCall[2]).toMatch(/myDeploymentName-t([0-9]+)/)
   });
 
   it("uploads functions with custom SCM domain (aka App service environments)", async () => {

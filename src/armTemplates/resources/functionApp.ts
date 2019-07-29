@@ -1,14 +1,10 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
-import { ServerlessAzureConfig, FunctionAppConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmResourceType } from "../../models/armTemplates";
+import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
-    const safeServiceName = config.service.replace(/\s/g, "-");
 
-    return config.provider.functionApp && config.provider.functionApp.name
-      ? config.provider.functionApp.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-${safeServiceName}`;
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.FunctionApp;
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -107,13 +103,13 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string): any {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
     };
 
     return {
-      functionAppName: FunctionAppResource.getResourceName(config),
+      functionAppName: namer(this.getArmResourceType()),
       functionAppNodeVersion: resourceConfig.nodeVersion,
       functionAppWorkerRuntime: resourceConfig.workerRuntime,
       functionAppExtensionVersion: resourceConfig.extensionVersion,

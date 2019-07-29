@@ -1,16 +1,14 @@
+import { ApiManagementClient } from "@azure/arm-apimanagement";
+import { ApiContract, ApiManagementServiceResource, BackendContract,
+  OperationContract, PropertyContract } from "@azure/arm-apimanagement/esm/models";
+import { Site } from "@azure/arm-appservice/esm/models";
 import Serverless from "serverless";
 import xml from "xml";
-import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { FunctionAppService } from "./functionAppService";
-import { BaseService } from "./baseService";
-import { ApiManagementConfig, ApiOperationOptions, ApiCorsPolicy } from "../models/apiManagement";
-import {
-  ApiContract, BackendContract, OperationContract,
-  PropertyContract, ApiManagementServiceResource,
-} from "@azure/arm-apimanagement/esm/models";
-import { Site } from "@azure/arm-appservice/esm/models";
+import { ApiCorsPolicy, ApiManagementConfig, ApiOperationOptions } from "../models/apiManagement";
+import { ArmResourceType } from "../models/armTemplates";
 import { Guard } from "../shared/guard";
-import { ApimResource } from "../armTemplates/resources/apim";
+import { BaseService } from "./baseService";
+import { FunctionAppService } from "./functionAppService";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -29,7 +27,7 @@ export class ApimService extends BaseService {
     }
 
     if (!this.apimConfig.name) {
-      this.apimConfig.name = ApimResource.getResourceName(this.config);
+      this.apimConfig.name = this.namingService.getResourceName(ArmResourceType.Apim);
     }
 
     if (!this.apimConfig.backend) {

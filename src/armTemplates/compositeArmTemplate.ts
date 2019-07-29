@@ -1,12 +1,18 @@
 import {
   ArmResourceTemplateGenerator,
-  ArmResourceTemplate
+  ArmResourceTemplate,
+  ArmResourceType
 } from "../models/armTemplates";
 import { Guard } from "../shared/guard";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { Utils } from "../shared/utils";
 
 export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
+
+  public getArmResourceType(): ArmResourceType {
+    return ArmResourceType.Composite;
+  }
+
   public constructor(private childTemplates: ArmResourceTemplateGenerator[]) {
     Guard.null(childTemplates);
   }
@@ -36,13 +42,13 @@ export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
     return template;
   }
 
-  public getParameters(config: ServerlessAzureConfig) {
+  public getParameters(config: ServerlessAzureConfig, namer: (resource: ArmResourceType) => string) {
     let parameters = {};
 
     this.childTemplates.forEach(resource => {
       parameters = {
         ...parameters,
-        ...resource.getParameters(config),
+        ...resource.getParameters(config, namer),
         location: Utils.getNormalizedRegionName(config.provider.region)
       };
     });

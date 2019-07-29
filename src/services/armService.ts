@@ -4,7 +4,7 @@ import fs from "fs";
 import jsonpath from "jsonpath";
 import path from "path";
 import Serverless from "serverless";
-import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
+import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType, ArmResourceType } from "../models/armTemplates";
 import { ArmTemplateConfig, ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
@@ -39,11 +39,11 @@ export class ArmService extends BaseService {
     const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
 
     const mergedTemplate = template.getTemplate();
-    let parameters = template.getParameters(azureConfig);
+    let parameters = template.getParameters(azureConfig, (resource: ArmResourceType) => this.namingService.getResourceName(resource));
 
     if (this.config.provider.apim) {
       const apimTemplate = apimResource.getTemplate();
-      const apimParameters = apimResource.getParameters(azureConfig);
+      const apimParameters = apimResource.getParameters(azureConfig, (resource: ArmResourceType) => this.namingService.getResourceName(resource));
 
       mergedTemplate.parameters = {
         ...mergedTemplate.parameters,
