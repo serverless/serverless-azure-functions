@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawn, SpawnOptions } from "child_process";
 import fs from "fs";
 import Serverless from "serverless";
 import configConstants from "../config";
@@ -62,18 +62,19 @@ export class OfflineService extends BaseService {
   /**
    * Spawn a Node child process with predefined environment variables
    * @param command CLI Command - NO ARGS
-   * @param args Array of arguments for CLI command
-   * @param env Additional environment variables to be set in addition to
-   * predefined variables in `serverless.yml`
+   * @param spawnArgs Array of arguments for CLI command
    */
-  private spawn(command: string, args?: string[], env?: any): Promise<void> {
-    env = {
+  private spawn(command: string, spawnArgs?: string[]): Promise<void> {
+    const env = {
+      // Inherit environment from current process, most importantly, the PATH
+      ...process.env,
+      // Override any custom environment variables from serverless configuration
       ...this.serverless.service.provider["environment"],
-      ...env
     }
-    this.log(`Spawning process '${command} ${args.join(" ")}'`);
+    this.log(`Spawning process '${command} ${spawnArgs.join(" ")}'`);
     return new Promise((resolve, reject) => {
-      const childProcess = spawn(command, args, {env});
+      const spawnOptions: SpawnOptions = { env };
+      const childProcess = spawn(command, spawnArgs, spawnOptions);
 
       childProcess.stdout.on("data", (data) => {
         this.log(data, {
@@ -94,7 +95,12 @@ export class OfflineService extends BaseService {
       });
 
       childProcess.on("error", (err) => {
-        this.log(`${err}`, {
+        this.log(`${err}\n
+        Command: ${command}
+        Arguments: "${spawnArgs.join(" ")}"
+        Options: ${JSON.stringify(spawnOptions, null, 2)}\n
+        Make sure you've installed azure-func-core-tools. Run:\n
+        npm i azure-func-core-tools -g`, {
           color: "red"
         }, command);
         reject(err);
