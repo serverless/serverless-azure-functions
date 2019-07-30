@@ -8,6 +8,7 @@ import { Utils } from "../shared/utils";
 export class AzureNamingService {
 
   private config: ServerlessAzureConfig;
+  private nonAlphaNumerics = /[-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/\W]/
 
   public constructor(
     private serverless: Serverless,
@@ -61,8 +62,29 @@ export class AzureNamingService {
    * Name of current ARM deployment
    */
   public getDeploymentName(): string {
-    const name = this.config.provider.deploymentName || `${this.getResourceGroupName()}-deployment`;
-    return this.rollbackConfiguredName(name);
+    const timestampString = `t${this.getTimestamp()}`
+
+    const { deploymentName } = this.config.provider;
+    if (deploymentName) {
+      return `${deploymentName}-${timestampString}`;
+    }
+
+    const maxLength = configConstants.nameMaxLengths.deployment;
+    const suffix = "deployment";
+
+    const nameArray = (this.getDeploymentConfig().rollback)
+      ?
+      [
+        this.generateSafeName(maxLength - timestampString.length - suffix.length - 2, "-"),
+        suffix,
+        timestampString
+      ]
+      :
+      [
+        this.generateSafeName(maxLength - suffix.length - 1, "-"),
+        suffix
+      ]
+    return nameArray.join("-");
   }
 
   /**
@@ -75,7 +97,10 @@ export class AzureNamingService {
   }
 
   /**
-   * Get name of Azure resource
+   * Get name of Azure resource. If name for resource is not
+   * specified in the serverless configuration, the name will be
+   * generated with the service prefix, region, stage and a
+   * suffix specific to the service
    * @param resource ARM Resource to name
    */
   public getResourceName(resource: ArmResourceType): string {
@@ -94,68 +119,108 @@ export class AzureNamingService {
         return this.getStorageAccountName();
       case ArmResourceType.VirtualNetwork:
         return this.getVirtualNetworkName();
+      default:
+        throw new Error(`No naming convention for resource type: ${resource}`)
     }
   }
 
-  private getConfiguredName(resource: { name?: string }, suffix: string) {
-    return resource && resource.name
-      ? resource.name
-      : this.config.provider.prefix +
-        "-" +
-        Utils.createShortAzureRegionName(this.config.provider.region) +
-        "-" +
-        Utils.createShortStageName(this.config.provider.stage) +
-        "-" +
-        suffix;
-  }
-
+  /**
+   * Configured or generated APIM name
+   */
   private getApimName(): string {
     return this.getConfiguredName(this.config.provider.apim, "apim");
   }
 
+  /**
+   * Configured or generated App Insights name
+   */
   private getAppInsightsName(): string {
     return this.getConfiguredName(this.config.provider.appInsights, "appinsights");
   }
 
+  /**
+   * Configured or generated App Service Plan name
+   */
   private getAppServicePlanName(): string {
     return this.getConfiguredName(this.config.provider.appServicePlan, "asp");
   }
 
+  /**
+   * Configured or generated Function App Name
+   */
   private getFunctionAppName(): string {
     const safeServiceName = this.config.service.replace(/\s/g, "-");
     return this.getConfiguredName(this.config.provider.functionApp, safeServiceName);
   }
 
+  /**
+   * Configured or generated Hosting Environment Name
+   */
   private getHostingEnvironmentName(): string {
     return this.getConfiguredName(this.config.provider.hostingEnvironment, "ase");
   }
 
+  /**
+   * Configured or generated Storage Account Name
+   */
   private getStorageAccountName(): string {
     return this.config.provider.storageAccount && this.config.provider.storageAccount.name
       ? this.config.provider.storageAccount.name
-      : this.getDefaultStorageAccountName()
+      : this.generateSafeName(configConstants.nameMaxLengths.storageAccount, "", this.nonAlphaNumerics)
   }
 
+  /**
+   * Configured or generated Virtual Network Name
+   */
   private getVirtualNetworkName(): string {
     return this.getConfiguredName(this.config.provider.virtualNetwork, "vnet");
   }
 
   /**
-   * Gets a default storage account name.
-   * Storage account names can have at most 24 characters and can have only alpha-numerics
-   * @param this.config Serverless Azure this.config
+   * Generates name based on options from provider config.
+   * Naming convention:
+   *
+   * {prefix}-{shortRegion}-{shortStage}-{suffix}
+   *
+   * @param resource Azure resource specified in provider config
+   * @param suffix Append to end of configured name
    */
-  private getDefaultStorageAccountName(): string {
-    const maxAccountNameLength = 24;
-    const nameHash = md5(this.config.service);
-    const replacer = /\W+/g;
+  private getConfiguredName(resource: { name?: string }, suffix: string) {
+    const { prefix, region, stage } = this.config.provider;
+    return resource && resource.name
+      ? resource.name
+      : [
+        prefix,
+        Utils.createShortAzureRegionName(region),
+        Utils.createShortStageName(stage),
+        suffix
+      ].join("-");
+  }
 
-    let safePrefix = this.config.provider.prefix.replace(replacer, "");
-    const safeRegion = Utils.createShortAzureRegionName(this.config.provider.region);
-    let safeStage = Utils.createShortStageName(this.config.provider.stage);
+  /**
+   * Generates a safe name for an Azure resource
+   * Naming convention:
+   *
+   * {safePrefix}{delimiter}{safeRegion}{delimiter}{safeStage}{delimiter}{safeNameHash}
+   *
+   * @param maxLength Maximum length of name
+   * @param delimiter String in between prefix, region, stage and name hash. Defaults to empty string
+   * @param remove Regex of characters to remove from name. Defaults to whitespace
+   */
+  private generateSafeName(maxLength: number, delimiter = "", remove = /\W+/g) {
+    const nameHash = md5(this.config.service);
+
+    // Account for delimiters in between prefix, region, stage and safe name hash, 3 total
+    maxLength = maxLength - (delimiter.length * 3);
+
+    const { prefix, region, stage } = this.config.provider;
+
+    let safePrefix = prefix.replace(remove, "");
+    const safeRegion = Utils.createShortAzureRegionName(region);
+    let safeStage = Utils.createShortStageName(stage);
     let safeNameHash = nameHash.substr(0, 6);
 
-    const remaining = maxAccountNameLength - (safePrefix.length + safeRegion.length + safeStage.length + safeNameHash.length);
+    const remaining = maxLength - (safePrefix.length + safeRegion.length + safeStage.length + safeNameHash.length);
 
     // Dynamically adjust the substring based on space needed
     if (remaining < 0) {
@@ -166,18 +231,8 @@ export class AzureNamingService {
     }
 
     return [safePrefix, safeRegion, safeStage, safeNameHash]
-      .join("")
+      .join(delimiter)
       .toLocaleLowerCase();
-  }
-
-  /**
-   * Add `-t{timestamp}` if rollback is enabled
-   * @param name Original name
-   */
-  private rollbackConfiguredName(name: string) {
-    return this.getDeploymentConfig().rollback
-      ? `${name}-t${this.getTimestamp()}`
-      : name;
   }
 
   /**

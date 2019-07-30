@@ -126,6 +126,26 @@ describe("Azure Naming Service", () => {
     expect(service.getPrefix()).toEqual("hello");
   });
 
+  it("generates safe deployment names", () => {
+    const serviceName = "thisismysuperlongservicenamethatnevereverevereverends";
+    const prefix = "thisismysuperlongprefixthatnevereverevereverends";
+    service = getService({
+      ...azureConfig,
+      provider: {
+        name: "azure",
+        region: "West US 2",
+        stage: "prod",
+        prefix,
+      },
+      service: serviceName
+    });
+
+    const nameHash = md5(serviceName)
+    const pattern = `${prefix.substr(0, 8)}-wus2-pro-${nameHash.substr(0, 6)}-deployment-t([0-9]+)`;
+
+    expect(service.getDeploymentName()).toMatch(new RegExp(pattern, "g"))
+  });
+
   describe("Resource names", () => {
 
     function assertValidStorageAccountName(config: ServerlessAzureConfig, value: string) {
@@ -162,7 +182,7 @@ describe("Azure Naming Service", () => {
 
       const result = service.getResourceName(ArmResourceType.StorageAccount)
       assertValidStorageAccountName(testConfig, result);
-      expect(result.startsWith("mylaussedev")).toBe(true);
+      expect(result.startsWith("myloaussedev")).toBe(true);
     });
 
     it("Generating a storage account name is idempotent", () => {
