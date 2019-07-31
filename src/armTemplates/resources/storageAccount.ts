@@ -1,13 +1,15 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
-import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
-import md5 from "md5";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
+import { AzureNamingService } from "../../services/namingService";
+import configConstants from "../../config";
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.storageAccount && config.provider.storageAccount.name
-      ? config.provider.storageAccount.name
-      : StorageAccountResource.getDefaultStorageAccountName(config)
+    return AzureNamingService.getSafeResourceName(
+      config,
+      configConstants.naming.maxLength.storageAccount,
+      config.provider.storageAccount
+    );
   }
 
   public getTemplate(): ArmResourceTemplate {
@@ -63,35 +65,5 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
       storageAccountSkuName: resourceConfig.sku.name,
       storageAccoutSkuTier: resourceConfig.sku.tier,
     };
-  }
-
-  /**
-   * Gets a default storage account name.
-   * Storage account names can have at most 24 characters and can have only alpha-numerics
-   * @param config Serverless Azure Config
-   */
-  private static getDefaultStorageAccountName(config: ServerlessAzureConfig): string {
-    const maxAccountNameLength = 24;
-    const nameHash = md5(config.service);
-    const replacer = /\W+/g;
-
-    let safePrefix = config.provider.prefix.replace(replacer, "");
-    const safeRegion = Utils.createShortAzureRegionName(config.provider.region);
-    let safeStage = Utils.createShortStageName(config.provider.stage);
-    let safeNameHash = nameHash.substr(0, 6);
-
-    const remaining = maxAccountNameLength - (safePrefix.length + safeRegion.length + safeStage.length + safeNameHash.length);
-
-    // Dynamically adjust the substring based on space needed
-    if (remaining < 0) {
-      const partLength = Math.floor(Math.abs(remaining) / 3);
-      safePrefix = safePrefix.substr(0, partLength);
-      safeStage = safeStage.substr(0, partLength);
-      safeNameHash = safeNameHash.substr(0, partLength);
-    }
-
-    return [safePrefix, safeRegion, safeStage, safeNameHash]
-      .join("")
-      .toLocaleLowerCase();
   }
 }

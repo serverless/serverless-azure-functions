@@ -1,14 +1,15 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
-import { ServerlessAzureConfig, FunctionAppConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
+import { AzureNamingService } from "../../services/namingService";
 
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const safeServiceName = config.service.replace(/\s/g, "-");
-
-    return config.provider.functionApp && config.provider.functionApp.name
-      ? config.provider.functionApp.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-${safeServiceName}`;
+    return AzureNamingService.getResourceName(
+      config,
+      config.provider.appInsights,
+      safeServiceName
+    );
   }
 
   public getTemplate(): ArmResourceTemplate {

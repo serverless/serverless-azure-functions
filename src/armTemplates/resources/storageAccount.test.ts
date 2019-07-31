@@ -1,7 +1,7 @@
 import md5 from "md5";
-import { StorageAccountResource } from "./storageAccount";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
+import { AzureNamingService } from "../../services/namingService";
+import { StorageAccountResource } from "./storageAccount";
 
 describe("Storage Account Resource", () => {
   const config: ServerlessAzureConfig = {
@@ -142,7 +142,7 @@ describe("Storage Account Resource", () => {
   function assertValidStorageAccountName(config: ServerlessAzureConfig, value: string) {
     expect(value.length).toBeLessThanOrEqual(24);
     expect(value.match(/[a-z0-9]/g).length).toEqual(value.length);
-    expect(value).toContain(Utils.createShortAzureRegionName(config.provider.region));
+    expect(value).toContain(AzureNamingService.createShortAzureRegionName(config.provider.region));
     expect(value).toContain(createSafeString(config.provider.prefix));
     expect(value).toContain(createSafeString(config.provider.stage));
     expect(value).toContain(md5(config.service).substr(0, 3));

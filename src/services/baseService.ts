@@ -14,6 +14,7 @@ import {
 } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
+import { AzureNamingService } from "./namingService";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -43,7 +44,7 @@ export abstract class BaseService {
     this.deploymentConfig = this.getDeploymentConfig();
     this.deploymentName = this.getDeploymentName();
     this.storageAccountName = StorageAccountResource.getResourceName(
-      serverless.service as any
+      this.config
     );
 
     if (!this.credentials && authenticate) {
@@ -75,12 +76,9 @@ export abstract class BaseService {
    * Name of current resource group
    */
   public getResourceGroupName(): string {
-    const regionName = Utils.createShortAzureRegionName(this.getRegion());
-    const stageName = Utils.createShortStageName(this.getStage());
-
     return this.options.resourceGroup
       || this.config.provider.resourceGroup
-      || `${this.getPrefix()}-${regionName}-${stageName}-${this.serviceName}-rg`;
+      || AzureNamingService.getResourceName(this.config, null, `${this.serviceName}-rg`);
   }
 
   /**
@@ -96,11 +94,20 @@ export abstract class BaseService {
   }
 
   /**
-   * Name of current ARM deployment
+   * Name of current ARM deployment.
+   *
+   * Naming convention:
+   *
+   * {safeName (see naming service)}--{serviceName}(if rollback enabled: -t{timestamp})
+   *
+   * The string is guaranteed to be less than 64 characters, since that is the limit
+   * imposed by Azure deployment names. If a trim is needed, the service name will be trimmed
    */
   public getDeploymentName(): string {
-    const name = this.config.provider.deploymentName || `${this.resourceGroup}-deployment`;
-    return this.rollbackConfiguredName(name);
+    return AzureNamingService.getDeploymentName(
+      this.config,
+      (this.deploymentConfig.rollback) ? `t${this.getTimestamp()}` : null
+    )
   }
 
   /**
@@ -116,8 +123,8 @@ export abstract class BaseService {
    */
   protected getArtifactName(deploymentName: string): string {
     return `${deploymentName
-      .replace("rg-deployment", "artifact")
-      .replace("deployment", "artifact")}.zip`;
+      .replace(`rg-${configConstants.naming.suffix.deployment}`, configConstants.naming.suffix.artifact)
+      .replace(configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact)}`
   }
 
   /**
@@ -216,16 +223,6 @@ export abstract class BaseService {
     if (!this.serverless.service.provider["prefix"]) {
       this.serverless.service.provider["prefix"] = "sls";
     }
-  }
-
-  /**
-   * Add `-t{timestamp}` if rollback is enabled
-   * @param name Original name
-   */
-  private rollbackConfiguredName(name: string) {
-    return this.deploymentConfig.rollback
-      ? `${name}-t${this.getTimestamp()}`
-      : name;
   }
 
   /**
