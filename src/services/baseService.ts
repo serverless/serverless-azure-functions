@@ -14,6 +14,7 @@ import {
 } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
+import { SimpleFileTokenCache } from "../plugins/login/utils/simpleFileTokenCache";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -124,7 +125,7 @@ export abstract class BaseService {
    * Get the access token from credentials token cache
    */
   protected getAccessToken(): string {
-    return (this.credentials.tokenCache as any)._entries[0].accessToken;
+    return (this.credentials.tokenCache as SimpleFileTokenCache).first().accessToken;
   }
 
   /**
