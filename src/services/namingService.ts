@@ -27,7 +27,7 @@ export class AzureNamingService {
     if (suffix) {
       name += `-${suffix}`;
     }
-    return name;
+    return name.toLocaleLowerCase();
   }
 
   /**

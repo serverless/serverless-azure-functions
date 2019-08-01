@@ -8,7 +8,7 @@ describe("utils", () => {
 
   beforeEach(() => {
     const slsConfig = {
-      service: "My test service",
+      service: "my test service",
       provider: "azure",
       functions: MockFactory.createTestSlsFunctionConfig(),
     };

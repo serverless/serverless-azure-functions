@@ -43,9 +43,7 @@ export abstract class BaseService {
     this.resourceGroup = this.getResourceGroupName();
     this.deploymentConfig = this.getDeploymentConfig();
     this.deploymentName = this.getDeploymentName();
-    this.storageAccountName = StorageAccountResource.getResourceName(
-      this.config
-    );
+    this.storageAccountName = StorageAccountResource.getResourceName(this.config);
 
     if (!this.credentials && authenticate) {
       throw new Error(
@@ -122,9 +120,10 @@ export abstract class BaseService {
    * Takes name of deployment and replaces `rg-deployment` or `deployment` with `artifact`
    */
   protected getArtifactName(deploymentName: string): string {
+    const { deployment, artifact } = configConstants.naming.suffix;
     return `${deploymentName
-      .replace(`rg-${configConstants.naming.suffix.deployment}`, configConstants.naming.suffix.artifact)
-      .replace(configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact)}`
+      .replace(`rg-${deployment}`, artifact)
+      .replace(deployment, artifact)}`
   }
 
   /**

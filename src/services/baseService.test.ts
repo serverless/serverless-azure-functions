@@ -42,7 +42,7 @@ describe("Base Service", () => {
   let sls: Serverless;
 
   const slsConfig = {
-    service: "My custom service",
+    service: "my custom service",
     provider: {
       resourceGroup: "My-Resource-Group",
       deploymentName: "My-Deployment",
