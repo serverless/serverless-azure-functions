@@ -7,10 +7,7 @@ import { MockFactory } from "../test/mockFactory";
 import { OfflineService } from "./offlineService";
 
 describe("Offline Service", () => {
-
-  const mySpawn = mockSpawn();
-  require("child_process").spawn = mySpawn;
-  mySpawn.setDefault(mySpawn.simple(0, "Exit code"));
+  let mySpawn;
 
   function createService(sls?: Serverless): OfflineService {
     return new OfflineService(
@@ -21,12 +18,16 @@ describe("Offline Service", () => {
 
   beforeEach(() => {
     // Mocking the file system so that files are not created in project directory
-    mockFs({})
+    mockFs({});
+
+    mySpawn = mockSpawn();
+    require("child_process").spawn = mySpawn;
+    mySpawn.setDefault(mySpawn.simple(0, "Exit code"));
   });
 
   afterEach(() => {
     mockFs.restore();
-  })
+  });
 
   it("builds required files for offline execution", async () => {
     const sls = MockFactory.createTestServerless();
@@ -113,7 +114,12 @@ describe("Offline Service", () => {
     rmdirSpy.mockRestore();
   });
 
-  it("instructs users how to run locally", async () => {
+  it("calls func host start on Mac OS", async () => {
+    Object.defineProperty(process, "platform", {
+      value: "darwin",
+      writable: true,
+    });
+
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     await service.start();
@@ -121,6 +127,22 @@ describe("Offline Service", () => {
     expect(calls).toHaveLength(1);
     const call = calls[0];
     expect(call.command).toEqual("func");
+    expect(call.args).toEqual(["host", "start"]);
+  });
+
+  it("calls func host start on windows", async () => {
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+      writable: true,
+    });
+
+    const sls = MockFactory.createTestServerless();
+    const service = createService(sls);
+    await service.start();
+    const calls = mySpawn.calls;
+    expect(calls).toHaveLength(1);
+    const call = calls[0];
+    expect(call.command).toEqual("func.cmd");
     expect(call.args).toEqual(["host", "start"]);
   });
 });
