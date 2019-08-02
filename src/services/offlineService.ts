@@ -80,18 +80,6 @@ export class OfflineService extends BaseService {
       const spawnOptions: SpawnOptions = { env, stdio: "inherit" };
       const childProcess = spawn(command, spawnArgs, spawnOptions);
 
-      childProcess.on("error", (err) => {
-        this.log(`${err}\n
-        Command: ${command}
-        Arguments: "${spawnArgs.join(" ")}"
-        Options: ${JSON.stringify(spawnOptions, null, 2)}\n
-        Make sure you've installed azure-func-core-tools. Run:\n
-        npm i azure-func-core-tools -g`, {
-          color: "red"
-        }, command);
-        reject(err);
-      });
-
       childProcess.on("exit", (code) => {
         if (code === 0) {
           resolve();
