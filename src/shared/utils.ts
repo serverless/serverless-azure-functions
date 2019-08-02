@@ -160,4 +160,39 @@ export class Utils {
       return settings && settings.direction === "out";
     });
   }
+
+  /**
+   * Runs an operation with auto retry policy
+   * @param operation The operation to run
+   * @param maxRetries The max number or retreis
+   * @param retryWaitInterval The time to wait between retries
+   */
+  public static async runWithRetry<T>(operation: (retry?: number) => Promise<T>, maxRetries: number = 3, retryWaitInterval: number = 1000) {
+    let retry = 0;
+    let error = null;
+
+    while (retry < maxRetries) {
+      try {
+        retry++;
+        return await operation(retry);
+      }
+      catch (e) {
+        error = e;
+      }
+
+      await Utils.wait(retryWaitInterval);
+    }
+
+    return Promise.reject(error);
+  }
+
+  /**
+   * Waits for the specified amount of time.
+   * @param time The amount of time to wait (default = 1000ms)
+   */
+  public static wait(time: number = 1000) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, time);
+    });
+  }
 }
