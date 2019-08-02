@@ -1,10 +1,7 @@
-import {
-  ArmResourceTemplateGenerator,
-  ArmResourceTemplate
-} from "../models/armTemplates";
-import { Guard } from "../shared/guard";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../models/armTemplates";
 import { ServerlessAzureConfig } from "../models/serverless";
-import { Utils } from "../shared/utils";
+import { AzureNamingService } from "../services/namingService";
+import { Guard } from "../shared/guard";
 
 export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
   public constructor(private childTemplates: ArmResourceTemplateGenerator[]) {
@@ -43,7 +40,7 @@ export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
       parameters = {
         ...parameters,
         ...resource.getParameters(config),
-        location: Utils.getNormalizedRegionName(config.provider.region)
+        location: AzureNamingService.getNormalizedRegionName(config.provider.region)
       };
     });
 

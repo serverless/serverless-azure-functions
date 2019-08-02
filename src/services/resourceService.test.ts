@@ -1,10 +1,10 @@
+import { ResourceManagementClient } from "@azure/arm-resources";
 import { DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
-import { Utils } from "../shared/utils";
 import { MockFactory } from "../test/mockFactory";
+import { AzureNamingService } from "./namingService";
 import { ResourceService } from "./resourceService";
 
 jest.mock("@azure/arm-resources")
-import { ResourceManagementClient } from "@azure/arm-resources";
 
 describe("Resource Service", () => {
   let deployments: DeploymentsListByResourceGroupResponse;
@@ -41,7 +41,7 @@ describe("Resource Service", () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup"
     const location = "West Us";
-    const expectedLocation = Utils.getNormalizedRegionName(location);
+    const expectedLocation = AzureNamingService.getNormalizedRegionName(location);
     sls.service.provider["resourceGroup"] = resourceGroup
     sls.service.provider.region = location;
     sls.variables["azureCredentials"] = "fake credentials"

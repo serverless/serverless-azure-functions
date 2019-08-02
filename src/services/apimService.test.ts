@@ -19,7 +19,7 @@ import {
   OperationContract,
   ApiPolicyCreateOrUpdateResponse,
 } from "@azure/arm-apimanagement/esm/models";
-import { Utils } from "../shared/utils";
+import { AzureNamingService } from "./namingService";
 
 describe("APIM Service", () => {
   const apimConfig = MockFactory.createTestApimConfig();
@@ -62,7 +62,7 @@ describe("APIM Service", () => {
     (serverless.service.provider as any).apim = apimConfigName;
 
     const service = new ApimService(serverless);
-    const expectedRegionName = Utils.createShortAzureRegionName(service.getRegion());
+    const expectedRegionName = AzureNamingService.createShortAzureRegionName(service.getRegion());
     expect(apimConfigName.name.includes(expectedRegionName)).toBeTruthy();
   });
 

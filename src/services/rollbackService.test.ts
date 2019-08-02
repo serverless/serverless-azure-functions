@@ -17,6 +17,7 @@ import { FunctionAppService } from "./functionAppService";
 
 jest.mock("./armService");
 import { ArmService } from "./armService";
+import configConstants from "../config";
 
 describe("Rollback Service", () => {
 
@@ -28,7 +29,8 @@ describe("Rollback Service", () => {
   const appStub = "appStub";
   const sasURL = "sasURL";
   const containerName = "deployment-artifacts";
-  const artifactName = MockFactory.createTestDeployment().name.replace("deployment", "artifact") + ".zip";
+  const artifactName = MockFactory.createTestDeployment().name.replace(
+    configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact);
   const artifactPath = `.serverless${path.sep}${artifactName}`
   const armDeployment: ArmDeployment = { template, parameters };
   const deploymentString = "deployments";
