@@ -216,7 +216,9 @@ export class ApimService extends BaseService {
         responses: options.operation.responses || [],
       };
 
-      const operationUrl = `${service.gatewayUrl}/${api.path}${operationConfig.urlTemplate}`;
+      // Ensure a single path seperator in the operation path
+      const operationPath = `/${api.path}/${operationConfig.urlTemplate}`.replace(/\/+/g, "/");
+      const operationUrl = `${service.gatewayUrl}${operationPath}`;
       this.log(`--> Deploying API operation ${options.function}: ${operationConfig.method.toUpperCase()} ${operationUrl}`);
 
       const operation = await client.apiOperation.createOrUpdate(
