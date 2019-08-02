@@ -1,4 +1,4 @@
-import { spawn } from "child_process";
+import { spawn, SpawnOptions } from "child_process";
 import fs from "fs";
 import Serverless from "serverless";
 import configConstants from "../config";
@@ -29,7 +29,7 @@ export class OfflineService extends BaseService {
     await this.packageService.createBindings();
     const filenames = Object.keys(this.localFiles);
     for (const filename of filenames) {
-      if (!fs.existsSync(filename)){
+      if (!fs.existsSync(filename)) {
         fs.writeFileSync(
           filename,
           this.localFiles[filename]
@@ -44,7 +44,7 @@ export class OfflineService extends BaseService {
     await this.packageService.cleanUp();
     const filenames = Object.keys(this.localFiles);
     for (const filename of filenames) {
-      if (fs.existsSync(filename)){
+      if (fs.existsSync(filename)) {
         this.log(`Removing file '${filename}'`);
         fs.unlinkSync(filename)
       }
@@ -62,59 +62,30 @@ export class OfflineService extends BaseService {
   /**
    * Spawn a Node child process with predefined environment variables
    * @param command CLI Command - NO ARGS
-   * @param args Array of arguments for CLI command
-   * @param env Additional environment variables to be set in addition to
-   * predefined variables in `serverless.yml`
+   * @param spawnArgs Array of arguments for CLI command
    */
-  private spawn(command: string, args?: string[], env?: any): Promise<void> {
-    env = {
-      ...this.serverless.service.provider["environment"],
-      ...env
+  private spawn(command: string, spawnArgs?: string[]): Promise<void> {
+    if (process.platform === "win32") {
+      command += ".cmd";
     }
-    this.log(`Spawning process '${command} ${args.join(" ")}'`);
+
+    const env = {
+      // Inherit environment from current process, most importantly, the PATH
+      ...process.env,
+      // Environment variables from serverless config are king
+      ...this.serverless.service.provider["environment"],
+    }
+    this.log(`Spawning process '${command} ${spawnArgs.join(" ")}'`);
     return new Promise((resolve, reject) => {
-      const childProcess = spawn(command, args, {env});
-
-      childProcess.stdout.on("data", (data) => {
-        this.log(data, {
-          color: configConstants.funcConsoleColor,
-        }, command);
-      });
-
-      childProcess.stderr.on("data", (data) => {
-        this.log(data, {
-          color: "red",
-        }, command);
-      })
-
-      childProcess.on("message", (message) => {
-        this.log(message, {
-          color: configConstants.funcConsoleColor,
-        }, command);
-      });
-
-      childProcess.on("error", (err) => {
-        this.log(`${err}`, {
-          color: "red"
-        }, command);
-        reject(err);
-      });
+      const spawnOptions: SpawnOptions = { env, stdio: "inherit" };
+      const childProcess = spawn(command, spawnArgs, spawnOptions);
 
       childProcess.on("exit", (code) => {
-        this.log(`Exited with code: ${code}`, {
-          color: (code === 0) ? "green" : "red",
-        }, command);
-      });
-
-      childProcess.on("close", (code) => {
-        this.log(`Closed with code: ${code}`, {
-          color: (code === 0) ? "green" : "red",
-        }, command);
-        resolve();
-      });
-
-      childProcess.on("disconnect", () => {
-        this.log("Process disconnected");
+        if (code === 0) {
+          resolve();
+        } else {
+          reject();
+        }
       });
     });
   }
