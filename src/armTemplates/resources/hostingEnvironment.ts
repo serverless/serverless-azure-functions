@@ -1,12 +1,14 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
+import { AzureNamingService } from "../../services/namingService";
 
 export class HostingEnvironmentResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.hostingEnvironment && config.provider.hostingEnvironment.name
-      ? config.provider.hostingEnvironment.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-ase`;
+    return AzureNamingService.getResourceName(
+      config,
+      config.provider.hostingEnvironment,
+      "ase"
+    );
   }
 
   public getTemplate(): ArmResourceTemplate {

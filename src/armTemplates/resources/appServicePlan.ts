@@ -1,12 +1,14 @@
-import { ArmResourceTemplateGenerator, ArmResourceTemplate } from "../../models/armTemplates";
-import { ServerlessAzureConfig, ResourceConfig } from "../../models/serverless";
-import { Utils } from "../../shared/utils";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
+import { AzureNamingService } from "../../services/namingService";
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return config.provider.appServicePlan && config.provider.appServicePlan.name
-      ? config.provider.appServicePlan.name
-      : `${config.provider.prefix}-${Utils.createShortAzureRegionName(config.provider.region)}-${Utils.createShortStageName(config.provider.stage)}-asp`;
+    return AzureNamingService.getResourceName(
+      config,
+      config.provider.appInsights,
+      "asp"
+    );
   }
 
   public getTemplate(): ArmResourceTemplate {

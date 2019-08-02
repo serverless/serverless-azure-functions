@@ -2,9 +2,9 @@ import fs from "fs";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
 import { ServerlessAzureOptions } from "../models/serverless";
-import { Utils } from "../shared/utils";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
+import { AzureNamingService } from "./namingService";
 
 jest.mock("axios", () => jest.fn());
 import axios from "axios";
@@ -42,7 +42,7 @@ describe("Base Service", () => {
   let sls: Serverless;
 
   const slsConfig = {
-    service: "My custom service",
+    service: "my custom service",
     provider: {
       resourceGroup: "My-Resource-Group",
       deploymentName: "My-Deployment",
@@ -121,8 +121,8 @@ describe("Base Service", () => {
     sls.service.provider["resourceGroup"] = null;
     const mockService = new MockService(sls);
     const actualResourceGroupName = mockService.getResourceGroupName();
-    const expectedRegion = Utils.createShortAzureRegionName(mockService.getRegion());
-    const expectedStage = Utils.createShortStageName(mockService.getStage());
+    const expectedRegion = AzureNamingService.createShortAzureRegionName(mockService.getRegion());
+    const expectedStage = AzureNamingService.createShortStageName(mockService.getStage());
     const expectedResourceGroupName = `sls-${expectedRegion}-${expectedStage}-${sls.service["service"]}-rg`;
 
     expect(actualResourceGroupName).toEqual(expectedResourceGroupName);

@@ -5,6 +5,16 @@ export const configConstants = {
     rollback: true,
     runFromBlobUrl: false,
   },
+  naming: {
+    maxLength: {
+      storageAccount: 24,
+      deploymentName: 64,
+    },
+    suffix: {
+      deployment: "DEPLOYMENT",
+      artifact: "ARTIFACT",
+    }
+  },
   functionAppApiPath: "/api/",
   functionAppDomain: ".azurewebsites.net",
   functionsAdminApiPath: "/admin/functions/",
