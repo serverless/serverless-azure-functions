@@ -1,0 +1,19 @@
+# CI should only run when PRs are opened against dev/master.
+pr:
+  - master
+  - dev
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: 10.x
+
+- task: Bash@3
+  displayName: 'Build serverless-azure-functions'
+  inputs:
+    targetType: filePath
+    filePath: ./scripts/build.sh
