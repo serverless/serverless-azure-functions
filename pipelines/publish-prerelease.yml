@@ -1,7 +1,7 @@
 trigger:
-  # Semantic version tags with beta version at end
-  # Example: 1.2.3-4
-  - refs/tags/[0-9]+\.[0-9]+\.[0-9]+-[0-9]+
+  branches:
+    include:
+    - dev
 pr: none
 
 pool:
@@ -17,6 +17,17 @@ steps:
   clean: true
   persistCredentials: true
   fetchDepth: 1
+
+- task: Bash@3
+  name: BumpNpmVersion
+  displayName: Bump NPM Prerelease Version
+  inputs:
+    targetType: filePath
+    filePath: ./scripts/version.sh
+    arguments: 'serverless/serverless-azure-functions'
+  env:
+    NPM_TOKEN: $(NPM_TOKEN)
+    SOURCE_BRANCH: $(Build.SourceBranch)
 
 - task: Bash@3
   displayName: 'Publish serverless-azure-functions to NPM'
