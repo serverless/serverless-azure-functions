@@ -1,0 +1,26 @@
+trigger:
+  # Semantic version tags
+  # Example: 1.2.3
+  - refs/tags/[0-9]+\.[0-9]+\.[0-9]+
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: 10.x
+
+- checkout: self
+  clean: true
+  persistCredentials: true
+  fetchDepth: 1
+
+- task: Bash@3
+  displayName: 'Publish serverless-azure-functions to NPM'
+  inputs:
+    targetType: filePath
+    filePath: ./scripts/publish.sh
+  env:
+    NPM_TOKEN: $(NPM_TOKEN)
