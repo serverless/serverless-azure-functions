@@ -107,7 +107,7 @@ export class FunctionAppService extends BaseService {
     }
     catch (e) {
       this.log("-> Unable to retrieve function app list");
-      return [];
+      throw e;
     }
   }
 
