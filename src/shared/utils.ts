@@ -190,7 +190,7 @@ export class Utils {
    * Waits for the specified amount of time.
    * @param time The amount of time to wait (default = 1000ms)
    */
-  private static wait(time: number = 1000) {
+  public static wait(time: number = 1000) {
     return new Promise((resolve) => {
       setTimeout(resolve, time);
     });

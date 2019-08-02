@@ -168,4 +168,24 @@ describe("utils", () => {
       expect(lastRetry).toEqual(maxRetries);
     });
   });
+
+  describe("wait", () => {
+    const setTimeoutMock = jest.fn((resolve) => resolve());
+
+    beforeEach(() => {
+      global.setTimeout = setTimeoutMock;
+    });
+
+    it("waits 1000 by default", async () => {
+      await Utils.wait();
+
+      expect(setTimeoutMock).toBeCalledWith(expect.any(Function), 1000);
+    });
+
+    it("waits specified time", async () => {
+      await Utils.wait(2000);
+
+      expect(setTimeoutMock).toBeCalledWith(expect.any(Function), 2000);
+    });
+  });
 });
