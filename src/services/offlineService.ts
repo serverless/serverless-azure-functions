@@ -72,13 +72,25 @@ export class OfflineService extends BaseService {
     const env = {
       // Inherit environment from current process, most importantly, the PATH
       ...process.env,
-      // Override any custom environment variables from serverless configuration
+      // Environment variables from serverless config are king
       ...this.serverless.service.provider["environment"],
     }
     this.log(`Spawning process '${command} ${spawnArgs.join(" ")}'`);
     return new Promise((resolve, reject) => {
       const spawnOptions: SpawnOptions = { env, stdio: "inherit" };
       const childProcess = spawn(command, spawnArgs, spawnOptions);
+
+      childProcess.on("error", (err) => {
+        this.log(`${err}\n
+        Command: ${command}
+        Arguments: "${spawnArgs.join(" ")}"
+        Options: ${JSON.stringify(spawnOptions, null, 2)}\n
+        Make sure you've installed azure-func-core-tools. Run:\n
+        npm i azure-func-core-tools -g`, {
+          color: "red"
+        }, command);
+        reject(err);
+      });
 
       childProcess.on("exit", (code) => {
         if (code === 0) {
