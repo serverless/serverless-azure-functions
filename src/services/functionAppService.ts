@@ -13,6 +13,8 @@ import { BaseService } from "./baseService";
 import { Utils } from "../shared/utils";
 
 export class FunctionAppService extends BaseService {
+  private static readonly retryCount: number = 10;
+  private static readonly retryInterval: number = 5000;
   private webClient: WebSiteManagementClient;
   private blobService: AzureBlobStorageService;
 
@@ -101,7 +103,7 @@ export class FunctionAppService extends BaseService {
         }
 
         return listFunctionsResponse;
-      }, 10, 5000);
+      }, FunctionAppService.retryCount, FunctionAppService.retryInterval);
 
       return response.data.value.map((functionConfig) => functionConfig.properties);
     }
@@ -132,7 +134,7 @@ export class FunctionAppService extends BaseService {
         }
 
         return getFunctionResponse;
-      }, 10, 5000);
+      }, FunctionAppService.retryCount, FunctionAppService.retryInterval);
 
       return response.data.properties;
     } catch (e) {
