@@ -159,7 +159,7 @@ export class FunctionAppService extends BaseService {
       uri: `https://${scmDomain}/api/zipdeploy/`,
       json: true,
       headers: {
-        Authorization: `Bearer ${this.getAccessToken()}`,
+        Authorization: `Bearer ${await this.getAccessToken()}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }

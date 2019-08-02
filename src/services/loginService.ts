@@ -15,7 +15,6 @@ export interface AzureLoginOptions extends Serverless.Options {
 }
 
 export class AzureLoginService {
-
   /**
    * Logs in via service principal login if environment variables are
    * set or via interactive login if environment variables are not set
@@ -35,23 +34,20 @@ export class AzureLoginService {
   }
 
   public static async interactiveLogin(options?: InteractiveLoginOptions): Promise<AuthResponse> {
-    // await open("https://microsoft.com/devicelogin");
-    // return await interactiveLoginWithAuthResponse(options);
-    var authResp: AuthResponse = {credentials: undefined, subscriptions: []};
-    if(!(options.tokenCache as SimpleFileTokenCache).empty()){
-      console.log("exisitng token");
-      var devOptions = {
-        tokenCache: options.tokenCache as SimpleFileTokenCache
-      }
-      // I don't think DeviceTokenCredentials is what we want... maybe MSITokenCredentials?
-      authResp.credentials = new DeviceTokenCredentials(undefined, undefined, devOptions.tokenCache.first().userId, undefined, undefined, options.tokenCache);
-      authResp.subscriptions = devOptions.tokenCache.listSubscriptions();
+    let authResp: AuthResponse = {credentials: undefined, subscriptions: []};
+    const fileTokenCache = new SimpleFileTokenCache();
+    if(!fileTokenCache.isEmpty()){
+      console.log("not empty");
+      authResp.credentials = new DeviceTokenCredentials(undefined, undefined, fileTokenCache.first().userId, undefined, undefined, fileTokenCache);
+      authResp.subscriptions = fileTokenCache.listSubscriptions();
     } else {
       console.log("need to do interactive login now");
       await open("https://microsoft.com/devicelogin");
-      authResp = await interactiveLoginWithAuthResponse(options); 
+      authResp = await interactiveLoginWithAuthResponse({...options, tokenCache: fileTokenCache});
+      fileTokenCache.addSubs(authResp.subscriptions);
     }
-    return authResp;//iOptions ? interactiveLoginWithAuthResponse(iOptions) : interactiveLoginWithAuthResponse();
+
+    return authResp;
 
   }
 
