@@ -32,7 +32,7 @@ describe("Login Service", () => {
     expect(SimpleFileTokenCache.prototype.addSubs).toBeCalledWith(emptyObj.subscriptions);
   });
 
-  it("logs in interactively with a cached login", async () => {
+  it("logs in with a cached login", async () => {
     // Ensure env variables are not set
     delete process.env.azureSubId;
     delete process.env.azureServicePrincipalClientId;
