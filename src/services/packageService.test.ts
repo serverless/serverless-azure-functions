@@ -16,7 +16,9 @@ describe("Package Service", () => {
     sls.config.servicePath = process.cwd();
     sls.service["functions"] = {
       hello: MockFactory.createTestAzureFunctionConfig(functionRoute),
+      eventhubHandler: MockFactory.createTestEventHubFunctionConfig(),
     }
+
     packageService = new PackageService(sls, MockFactory.createTestServerlessOptions());
   });
 
@@ -99,6 +101,47 @@ describe("Package Service", () => {
           ...MockFactory.createTestHttpBinding("in"),
           route: functionRoute
         }
+      ]
+
+    }
+
+    mockFs({});
+
+    const mkdirSpy = jest.spyOn(fs, "mkdirSync");
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+
+    await packageService.createBinding(functionName, functionMetadata);
+
+    expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
+    const call = writeFileSpy.mock.calls[0];
+    expect(call[0]).toEqual(expectedFilePath);
+    expect(JSON.parse(call[1])).toEqual(expectedFunctionJson);
+
+    mkdirSpy.mockRestore();
+    writeFileSpy.mockRestore();
+  });
+
+  it("Creates Event Hub Handler bindings and function.json ", async () => {
+    const functionName = "eventhubHandler";
+    const functionMetadata: FunctionMetadata = {
+      entryPoint: "handler",
+      handlerPath: "src/handlers/eventhubHandler",
+      params: {
+        functionsJson: {
+          bindings: [
+            MockFactory.createTestEventHubBinding("in"),
+          ]
+        }
+      },
+    };
+
+    const expectedFolderPath = path.join(sls.config.servicePath, functionName);
+    const expectedFilePath = path.join(expectedFolderPath, "function.json");
+    const expectedFunctionJson = {
+      entryPoint: "handler",
+      scriptFile: "src/handlers/eventhubHandler",
+      bindings: [
+        MockFactory.createTestEventHubBinding("in"),
       ]
 
     }
