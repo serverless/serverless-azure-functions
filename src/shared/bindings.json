@@ -900,7 +900,7 @@
                     "name": "queueName",
                     "value": "string",
                     "defaultValue": "mysbqueue",
-                    "required": true,
+                    "required": false,
                     "label": "$serviceBusTrigger_queueName_label",
                     "help": "$serviceBusTrigger_queueName_help",
                     "validators": [
@@ -914,7 +914,7 @@
                     "name": "topicName",
                     "value": "string",
                     "defaultValue": "mysbtopic",
-                    "required": true,
+                    "required": false,
                     "label": "$serviceBusTrigger_topicName_label",
                     "help": "$serviceBusTrigger_topicName_help",
                     "validators": [
@@ -928,7 +928,7 @@
                     "name": "subscriptionName",
                     "value": "string",
                     "defaultValue": "mysubscription",
-                    "required": true,
+                    "required": false,
                     "label": "$serviceBusTrigger_subscriptionName_label",
                     "help": "$serviceBusTrigger_subscriptionName_help",
                     "validators": [
