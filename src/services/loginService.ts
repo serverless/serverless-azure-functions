@@ -37,11 +37,9 @@ export class AzureLoginService {
     let authResp: AuthResponse = {credentials: undefined, subscriptions: []};
     const fileTokenCache = new SimpleFileTokenCache();
     if(!fileTokenCache.isEmpty()){
-      console.log("not empty");
       authResp.credentials = new DeviceTokenCredentials(undefined, undefined, fileTokenCache.first().userId, undefined, undefined, fileTokenCache);
       authResp.subscriptions = fileTokenCache.listSubscriptions();
     } else {
-      console.log("need to do interactive login now");
       await open("https://microsoft.com/devicelogin");
       authResp = await interactiveLoginWithAuthResponse({...options, tokenCache: fileTokenCache});
       fileTokenCache.addSubs(authResp.subscriptions);

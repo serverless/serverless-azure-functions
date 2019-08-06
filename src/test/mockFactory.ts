@@ -138,10 +138,21 @@ export class MockFactory {
 
     // TODO: Reduce usage on tokenCache._entries[0]
     credentials["tokenCache"] = {
-      _entries: [{ accessToken: "ABC123" }]
+      _entries: [this.createTestTokenCacheEntries()]
     };
 
     return credentials;
+  }
+
+  public static createTestTokenCacheEntries(count: number = 1): any[] {
+    const token: TokenResponse = {
+      tokenType: "Bearer",
+      accessToken: "ABC123",
+      userId: "example@user.com",
+    };
+    const result = Array(count).fill(token);
+
+    return result;
   }
 
   public static createTestTimestamp(): string {

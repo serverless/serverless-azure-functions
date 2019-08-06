@@ -139,7 +139,7 @@ export abstract class BaseService {
     options: any = {}
   ) {
     const defaultHeaders = {
-      Authorization: `Bearer ${this.getAccessToken()}`
+      Authorization: `Bearer ${await this.getAccessToken()}`
     };
 
     const allHeaders = {
