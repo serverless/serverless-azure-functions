@@ -80,7 +80,7 @@ export class Utils {
     if (bindingType === constants.httpTrigger) {
       bindings.push(BindingUtils.getHttpOutBinding(bindingUserSettings));
     }
-
+ 
     functionsJson.bindings = bindings;
     params.functionsJson = functionsJson;
 

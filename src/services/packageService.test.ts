@@ -189,4 +189,21 @@ describe("Package Service", () => {
     mkDirSpy.mockRestore();
     copyFileSpy.mockRestore();
   });
+
+  it("checks for Event Hub trigger", async () => {
+    const functionName = "hello";
+    const functionMetadata: FunctionMetadata = {
+      entryPoint: "handler",
+      handlerPath: "src/handlers/hello",
+      params: {
+        functionsJson: {
+          bindings: [
+            MockFactory.createTestEventHubBinding("in"),
+          ]
+        }
+      },
+    };
+    const expectedFolderPath = path.join(sls.config.servicePath, functionName);
+    const expectedFilePath = path.join(expectedFolderPath, "function.json");
+  });
 });

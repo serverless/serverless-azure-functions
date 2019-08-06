@@ -70,6 +70,7 @@ export class BindingUtils {
     return binding;
   }
 
+
   public static getBinding(bindingType, bindingSettings, bindingUserSettings) {
     const binding = {};
 
