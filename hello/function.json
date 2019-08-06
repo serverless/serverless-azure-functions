@@ -1,0 +1,14 @@
+{
+  "bindings": [
+    {
+      "type": "eventHubTrigger",
+      "direction": "in",
+      "name": "item",
+      "path": "hello",
+      "consumerGroup": "$Default",
+      "route": "myRoute"
+    }
+  ],
+  "entryPoint": "handler",
+  "scriptFile": "src/handlers/hello"
+}

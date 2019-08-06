@@ -78,7 +78,7 @@
                     ]
                 },
                 {
-                    "name": "path",
+                    "name": "eventhubname",
                     "value": "string",
                     "defaultValue": "myeventhub",
                     "required": true,

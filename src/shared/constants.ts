@@ -21,5 +21,4 @@ export const constants = {
   queueName: "queueName",
   xAzureSettings: "x-azure-settings",
   entryPoint: "entryPoint",
-  eventHubTrigger: "eventHubTrigger",
 }

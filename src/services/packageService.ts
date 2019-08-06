@@ -92,10 +92,7 @@ export class PackageService extends BaseService {
         .findIndex((binding) => (!binding.direction || binding.direction === "in"));
       functionJSON.bindings[index].route = bindingAzureSettings.route;
     }
-
-    if(functionJSON.bindings[0].type == "eventHubTrigger"){
-      functionJSON.bindings[0].eventhubname = bindingAzureSettings["eventhubname"];
-    }
+    
     const functionDirPath = path.join(this.serverless.config.servicePath, functionName);
     if (!fs.existsSync(functionDirPath)) {
       fs.mkdirSync(functionDirPath);

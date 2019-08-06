@@ -432,18 +432,7 @@ export class MockFactory {
       }
     }
   }
-
-  public static createTestEventHubBinding(direction: string = "in"){
-    return {
-      type: "eventHubTrigger",
-      direction,
-      name: "item",
-      path: "hello",
-      consumerGroup: "$Default",
-      eventhubname: "hello"
-    }
-  }
-
+  
   public static createTestBindingsObject(name: string = "index.js") {
     return {
       scriptFile: name,
