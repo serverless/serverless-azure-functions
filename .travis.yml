@@ -32,16 +32,13 @@ jobs:
       script:
         - npm run compile
         - npm run test:ci
-      after_success:
-        - npm run test:coverage
-        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
     - name: "Compile & Unit Tests on Node 10"
       node_js: "10"
 
     - stage: publish
       name: "NPM release for dev" # rename before merge to master
       node_js: "8"
-      before_deploy: 
+      before_deploy:
         - npm run build
       deploy:
         - provider: npm

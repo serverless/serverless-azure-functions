@@ -1,4 +1,5 @@
 # CI should only run when PRs are opened against dev/master.
+trigger: none
 pr:
   - master
   - dev
@@ -17,3 +18,9 @@ steps:
   inputs:
     targetType: filePath
     filePath: ./scripts/build.sh
+
+- task: Bash@3
+  displayName: 'Run coverage'
+  script: |
+    npm run test:coverage
+    cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
