@@ -18,7 +18,6 @@ describe("Package Service", () => {
       hello: MockFactory.createTestAzureFunctionConfig(functionRoute),
       eventhubHandler: MockFactory.createTestEventHubFunctionConfig(),
     }
-
     packageService = new PackageService(sls, MockFactory.createTestServerlessOptions());
   });
 
@@ -143,7 +142,6 @@ describe("Package Service", () => {
       bindings: [
         MockFactory.createTestEventHubBinding("in"),
       ]
-
     }
 
     mockFs({});
