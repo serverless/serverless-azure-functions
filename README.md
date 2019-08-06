@@ -200,6 +200,9 @@ The getting started walkthrough illustrates the interactive login experience, wh
     $env:azureServicePrincipalPassword='<password>'
     ```
 
+### Example Usage
+- [Configuring API Management](docs/examples/apim.md) that sits in front of function app
+
 ### Contributing
 
 Please create issues in this repo for any problems or questions you find. Before sending a PR for any major changes, please create an issue to discuss.
