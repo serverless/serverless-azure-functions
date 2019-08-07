@@ -410,6 +410,18 @@ export class MockFactory {
     }
   }
 
+  public static createTestEventHubFunctionConfig(): ServerlessAzureFunctionConfig {
+    return {
+      events: [
+        {
+          http: true,
+          "x-azure-settings": MockFactory.createTestEventHubBinding("in"),
+        }
+      ],
+      handler: "handler.js",
+    }
+  }
+  
   public static createTestBinding() {
     // Only supporting HTTP for now, could support others
     return MockFactory.createTestHttpBinding();
@@ -433,6 +445,16 @@ export class MockFactory {
     }
   }
 
+  public static createTestEventHubBinding(direction: string = "in") {
+    return {
+      event: "eventHubTrigger",
+      direction,
+      name: "item",
+      eventhubname: "hello",
+      consumerGroup: "$Default",
+      connection: "EventHubsConnection"        
+    }
+  }
   public static createTestBindingsObject(name: string = "index.js") {
     return {
       scriptFile: name,
