@@ -4,12 +4,14 @@ import os from "os";
 import * as adal from "adal-node";
 
 const CONFIG_DIRECTORY = path.join(os.homedir(), ".azure");
-const SLS_TOKEN_FILE = path.join(CONFIG_DIRECTORY, "slsTokenCache.json");
+const DEFAULT_SLS_TOKEN_FILE = path.join(CONFIG_DIRECTORY, "slsTokenCache.json");
 
 export class SimpleFileTokenCache implements adal.TokenCache{
   private _entries: any[] = [];
   private subscriptions: any[] = [];
-  public constructor() {
+  private tokePath: string;
+  public constructor(tokenPath: string = DEFAULT_SLS_TOKEN_FILE) {
+    this.tokePath = tokenPath;
     this.load();
   }
 
@@ -75,17 +77,18 @@ export class SimpleFileTokenCache implements adal.TokenCache{
   }
   
   private load() {
-    try {
-      let savedCache = JSON.parse(fs.readFileSync(SLS_TOKEN_FILE).toString());
+    if(fs.existsSync(this.tokePath)){
+      let savedCache = JSON.parse(fs.readFileSync(this.tokePath).toString());
       this._entries = savedCache._entries;
       this._entries.map(t => t.expiresOn = new Date(t.expiresOn))
       this.subscriptions = savedCache.subscriptions;
-    } catch (e) {
-      console.log("Error Loading");
+    } else {
+      // console.log("No saved cache to load, creating new file cache");
+      this.save();
     }
   }
 
   public save() {
-    fs.writeFileSync(SLS_TOKEN_FILE, JSON.stringify({_entries: this._entries, subscriptions: this.subscriptions}));
+    fs.writeFileSync(this.tokePath, JSON.stringify({_entries: this._entries, subscriptions: this.subscriptions}));
   }
 }

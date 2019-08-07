@@ -155,6 +155,20 @@ export class MockFactory {
     return result;
   }
 
+  public static createTestSubscriptions(count: number = 1): any[] {
+    const sub = {
+      id: "abc-1234-5678",
+      state: "Enabled",
+      authorizationSource: "RoleBased",
+      user: { name: "example@user.com", type: "user" },
+      environmentName: "AzureCloud",
+      name: "Test Sub"
+    };
+    const result = Array(count).fill(sub);
+
+    return result;
+  }
+
   public static createTestTimestamp(): string {
     return "1562184492";
   }
