@@ -69,22 +69,25 @@ then user try to deploy
 ```yml
 service: my-app
 provider:
-  ...
+  deployment:
+    # Rollback enabled, deploying to blob storage
+    # Default is true
+    # If false, deploys directly to function app
+    rollback: true
+    # Container in blob storage containing deployed packages
+    # Default is DEPLOYMENT_ARTIFACTS
+    container: MY_CONTAINER_NAME
+    # Sets the WEBSITE_RUN_FROM_PACKAGE setting of function app
+    # to the SAS url of the artifact sitting in blob storage
+    # Recommended when using linux, not recommended when using windows
+    # Default is false
+    runFromBlobUrl: true
 
 plugins:
   - serverless-azure-functions
 
 package:
   ...
-
-deploy:
-  # Rollback enabled, deploying to blob storage
-  # Default is true
-  # If false, deploys directly to function app
-  rollback: true
-  # Container in blob storage containing deployed packages
-  # Default is DEPLOYMENT_ARTIFACTS
-  container: MY_CONTAINER_NAME
 
 functions:
   ...

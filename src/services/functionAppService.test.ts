@@ -17,7 +17,6 @@ jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService"
 import configConstants from "../config";
 
-
 describe("Function App Service", () => {
   const app = MockFactory.createTestSite();
   const slsService = MockFactory.createTestService();
@@ -182,6 +181,63 @@ describe("Function App Service", () => {
       expect(site).toEqual(expectedSite);
       expect(ArmService.prototype.createDeploymentFromConfig).not.toBeCalled();
       expect(ArmService.prototype.createDeploymentFromType).toBeCalledWith(ArmTemplateType.Consumption);
+      expect(ArmService.prototype.deployTemplate).toBeCalledWith(expectedDeployment);
+    });
+
+    it("deploys ARM template with SAS URL if running from blob URL", async() => {
+      const sasUrl = "sasUrl";
+      AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => Promise.resolve(sasUrl));
+
+      const newSlsService = MockFactory.createTestService();
+      newSlsService.provider["armTemplate"] = null;
+      newSlsService.provider["deployment"] = {
+        runFromBlobUrl: true,
+      }
+
+      const service = createService(MockFactory.createTestServerless({
+        service: newSlsService,
+      }));
+
+      const site = await service.deploy();
+
+      // Deploy should upload to blob FIRST and then set the SAS URL
+      // as the WEBSITE_RUN_FROM_PACKAGE setting in the template
+      const uploadFileCalls = (AzureBlobStorageService.prototype.uploadFile as any).mock.calls;
+      expect(uploadFileCalls).toHaveLength(1);
+      const call = uploadFileCalls[0];
+      expect(call[0]).toEqual("app.zip");
+      expect(call[1]).toEqual("deployment-artifacts");
+      expect(call[2]).toMatch(/myDeploymentName-t([0-9])+.zip/);
+
+      expect(site).toEqual(expectedSite);
+      expect(ArmService.prototype.createDeploymentFromConfig).not.toBeCalled();
+      expect(ArmService.prototype.createDeploymentFromType).toBeCalledWith(ArmTemplateType.Consumption);
+      // Should set parameter of arm template to include SAS URL
+      expect(ArmService.prototype.deployTemplate).toBeCalledWith({
+        ...expectedDeployment,
+        parameters: {
+          ...expectedDeployment.parameters,
+          functionAppRunFromPackage: sasUrl,
+        }
+      });
+    });
+
+    it("does not generate SAS URL if not configured", async() => {
+      AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn();
+
+      const newSlsService = MockFactory.createTestService();
+      newSlsService.provider["armTemplate"] = null;
+      newSlsService.provider["deployment"] = {
+        runFromBlobUrl: false,
+      }
+
+      const service = createService(MockFactory.createTestServerless({
+        service: newSlsService,
+      }));
+
+      await service.deploy();
+
+      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
       expect(ArmService.prototype.deployTemplate).toBeCalledWith(expectedDeployment);
     });
 

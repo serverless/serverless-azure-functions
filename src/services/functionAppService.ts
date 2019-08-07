@@ -7,10 +7,10 @@ import { FunctionAppResource } from "../armTemplates/resources/functionApp";
 import { ArmDeployment } from "../models/armTemplates";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Guard } from "../shared/guard";
+import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
-import { Utils } from "../shared/utils";
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 10;
@@ -149,7 +149,13 @@ export class FunctionAppService extends BaseService {
 
     const functionZipFile = this.getFunctionZipFile();
     const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
-    const uploadBlobStorage = this.uploadZippedArtifactToBlobStorage(functionZipFile);
+    // If `runFromBlobUrl` is configured, the artifact will have already been uploaded
+    const uploadBlobStorage = (this.deploymentConfig.runFromBlobUrl)
+      ?
+      Promise.resolve()
+      :
+      this.uploadZippedArtifactToBlobStorage(functionZipFile)
+
     await Promise.all([uploadFunctionApp, uploadBlobStorage]);
 
 
@@ -178,10 +184,18 @@ export class FunctionAppService extends BaseService {
     this.log(`Creating function app: ${this.serviceName}`);
 
     const armService = new ArmService(this.serverless, this.options);
-    let deployment: ArmDeployment = this.config.provider.armTemplate
-      ? await armService.createDeploymentFromConfig(this.config.provider.armTemplate)
-      : await armService.createDeploymentFromType(this.config.provider.type || "consumption");
+    const { armTemplate, type } = this.config.provider;
+    let deployment: ArmDeployment = armTemplate
+      ? await armService.createDeploymentFromConfig(armTemplate)
+      : await armService.createDeploymentFromType(type || "consumption");
 
+    if (this.deploymentConfig.runFromBlobUrl) {
+      await this.uploadZippedArtifactToBlobStorage(this.getFunctionZipFile());
+      deployment.parameters.functionAppRunFromPackage = await this.blobService.generateBlobSasTokenUrl(
+        this.deploymentConfig.container,
+        this.artifactName
+      )
+    }
     await armService.deployTemplate(deployment);
 
     // Return function app
@@ -235,16 +249,8 @@ export class FunctionAppService extends BaseService {
     await this.blobService.uploadFile(
       functionZipFile,
       this.deploymentConfig.container,
-      this.getArtifactName(this.deploymentName),
+      this.artifactName,
     );
-  }
-
-  /**
-   * Get rollback-configured artifact name. Contains `-t{timestamp}`
-   * if rollback is configured
-   */
-  public getArtifactName(deploymentName: string): string {
-    return `${deploymentName.replace("rg-deployment", "artifact")}.zip`;
   }
 
   public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
