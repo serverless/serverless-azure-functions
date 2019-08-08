@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import fs from "fs";
 import path from "path";
 import os from "os";
 import * as adal from "adal-node";
@@ -6,35 +6,34 @@ import * as adal from "adal-node";
 const CONFIG_DIRECTORY = path.join(os.homedir(), ".azure");
 const DEFAULT_SLS_TOKEN_FILE = path.join(CONFIG_DIRECTORY, "slsTokenCache.json");
 
-export class SimpleFileTokenCache implements adal.TokenCache{
-  private _entries: any[] = [];
+export class SimpleFileTokenCache implements adal.TokenCache {
+  private entries: any[] = [];
   private subscriptions: any[] = [];
-  private tokePath: string;
-  public constructor(tokenPath: string = DEFAULT_SLS_TOKEN_FILE) {
-    this.tokePath = tokenPath;
+
+  public constructor(private tokenPath: string = DEFAULT_SLS_TOKEN_FILE) {
     this.load();
   }
 
   public add(entries: any, cb?: any) {
-    this._entries.push(...entries);
+    this.entries.push(...entries);
     this.save();
-    if(cb) {
+    if (cb) {
       cb();
     }
   }
 
   public remove(entries: any, cb?: any) {
-    this._entries = this._entries.filter(e => {
+    this.entries = this.entries.filter(e => {
       return !Object.keys(entries[0]).every(key => e[key] === entries[0][key]);
     });
     this.save();
-    if(cb) {
+    if (cb) {
       cb();
     }
   }
 
   public find(query: any, cb?: any) {
-    let result = this._entries.filter(e => {
+    let result = this.entries.filter(e => {
       return Object.keys(query).every(key => e[key] === query[key]);
     });
     cb(null, result);
@@ -58,37 +57,36 @@ export class SimpleFileTokenCache implements adal.TokenCache{
 
 
   public clear(cb: any) {
-    this._entries = [];
+    this.entries = [];
     this.subscriptions = [];
     this.save();
     cb();
   }
 
   public isEmpty() {
-    return this._entries.length === 0;
+    return this.entries.length === 0;
   }
 
   public first() {
-    return this._entries[0];
+    return this.entries[0];
   }
 
   public listSubscriptions() {
     return this.subscriptions;
   }
-  
+
   private load() {
-    if(fs.existsSync(this.tokePath)){
-      let savedCache = JSON.parse(fs.readFileSync(this.tokePath).toString());
-      this._entries = savedCache._entries;
-      this._entries.map(t => t.expiresOn = new Date(t.expiresOn))
+    if (fs.existsSync(this.tokenPath)) {
+      let savedCache = JSON.parse(fs.readFileSync(this.tokenPath).toString());
+      this.entries = savedCache.entries;
+      this.entries.map(t => t.expiresOn = new Date(t.expiresOn))
       this.subscriptions = savedCache.subscriptions;
     } else {
-      // console.log("No saved cache to load, creating new file cache");
       this.save();
     }
   }
 
   public save() {
-    fs.writeFileSync(this.tokePath, JSON.stringify({_entries: this._entries, subscriptions: this.subscriptions}));
+    fs.writeFileSync(this.tokenPath, JSON.stringify({ entries: this.entries, subscriptions: this.subscriptions }));
   }
 }

@@ -1,85 +1,82 @@
 import fs from "fs";
 import mockFs from "mock-fs";
-import path from "path";
-import os from "os";
 import { MockFactory } from "../../../test/mockFactory";
 import { SimpleFileTokenCache } from "./simpleFileTokenCache";
 
 describe("Simple File Token Cache", () => {
+  const tokenFilePath = "slsTokenCache.json";
+
   let fileContent = {
-    _entries: [],
+    entries: [],
     subscriptions: [],
   };
-  
-  beforeEach(() => {
-    fileContent = {
-      _entries: [],
-      subscriptions: [],
-    };
-  });
-  
-  beforeAll(() => {
-    // const fakeFs = {};
-    // fakeFs[SLS_TOKEN_FILE] = fileContent;
-    // mockFs(fakeFs, { createCwd: true, createTmp: true });
-    // mockFs({});
-  });
 
   afterEach(() => {
     mockFs.restore();
-    jest.resetAllMocks();
   });
 
   it("Creates a load file on creation if none", () => {
-    mockFs({});
-    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
-    // const calls = readFileSpy.mock.calls;
-    const testFileCache = new SimpleFileTokenCache("./slsTokenCache.json");
+    mockFs();
 
-    expect(writeFileSpy).toBeCalledTimes(1);
-    // expect(calls).toHaveLength(1);
-    // expect([calls[0][0], calls[0][1]]).toEqual([SLS_TOKEN_FILE, {_entries: testEntries, subscriptions: []}]);
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+    new SimpleFileTokenCache(tokenFilePath);
+
+    const expected = {
+      entries: [],
+      subscriptions: [],
+    };
+
+    expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
+    writeFileSpy.mockRestore();
   });
 
   it("Load file on creation if available", () => {
-    const fakeFs = {};
-    fileContent._entries = MockFactory.createTestTokenCacheEntries();
-    fakeFs["./slsTokenCache.json"] = fileContent;
-    mockFs(fakeFs, { createCwd: true, createTmp: true });
-    const readFileSpy = jest.spyOn(fs, "readFileSync");
-    const calls = readFileSpy.mock.calls;
-    const testFileCache = new SimpleFileTokenCache("./slsTokenCache.json");
+    fileContent.entries = MockFactory.createTestTokenCacheEntries();
 
-    expect(readFileSpy).toBeCalledTimes(1);
-    // expect(calls).toHaveLength(1);
-    // expect([calls[0][0], calls[0][1]]).toEqual([SLS_TOKEN_FILE, {_entries: testEntries, subscriptions: []}]);
+    mockFs({
+      "slsTokenCache.json": JSON.stringify(fileContent),
+    });
+
+    const readFileSpy = jest.spyOn(fs, "readFileSync");
+    const tokenCache = new SimpleFileTokenCache(tokenFilePath);
+
+    expect(readFileSpy).toBeCalled();
+    expect(tokenCache.first()).not.toBeNull();
+    readFileSpy.mockRestore();
   })
 
   it("Saves to file after token is added", () => {
+    mockFs();
+
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
-    const calls = writeFileSpy.mock.calls;
-    const testFileCache = new SimpleFileTokenCache("./");
+    const tokenCache = new SimpleFileTokenCache(tokenFilePath);
     const testEntries = MockFactory.createTestTokenCacheEntries();
 
-    testFileCache.add(testEntries);
+    tokenCache.add(testEntries);
 
-    expect(testFileCache.isEmpty()).toBe(false);
-    expect(writeFileSpy).toBeCalledTimes(1);
-    // expect(calls).toHaveLength(1);
-    // expect([calls[0][0], calls[0][1]]).toEqual([SLS_TOKEN_FILE, {_entries: testEntries, subscriptions: []}]);
+    const expected = {
+      entries: testEntries,
+      subscriptions: [],
+    };
+
+    expect(tokenCache.isEmpty()).toBe(false);
+    expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
   });
 
   it("Saves to file after subscription is added", () => {
-    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
-    const calls = writeFileSpy.mock.calls;
-    const testFileCache = new SimpleFileTokenCache("./");
-    const testSubs = MockFactory.createTestSubscriptions();
+    mockFs();
 
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+    const testFileCache = new SimpleFileTokenCache(tokenFilePath);
+    const testSubs = MockFactory.createTestSubscriptions();
 
     testFileCache.addSubs(testSubs);
 
-    expect(writeFileSpy).toBeCalledTimes(1);
-    // expect(calls).toHaveLength(1);
-    // expect([calls[0][0], calls[0][1]]).toEqual([SLS_TOKEN_FILE, {_entries: testEntries, subscriptions: []}]);
+    const expected = {
+      entries: [],
+      subscriptions: testSubs,
+    };
+
+    expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
   });
 });
