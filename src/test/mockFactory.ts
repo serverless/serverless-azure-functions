@@ -376,15 +376,7 @@ export class MockFactory {
 
   public static createTestVariables() {
     return {
-      azureCredentials: {
-        tokenCache: {
-          _entries: [
-            {
-              accessToken: "token"
-            }
-          ]
-        }
-      },
+      azureCredentials: this.createTestAzureCredentials(),
       subscriptionId: "azureSubId",
     }
   }
