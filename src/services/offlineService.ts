@@ -81,14 +81,16 @@ export class OfflineService extends BaseService {
       const childProcess = spawn(command, spawnArgs, spawnOptions);
 
       process.on("SIGINT", async () => {
-        if (this.getOption("nocleanup")) {
-          this.log("Skipping offline file cleanup...");
+        try {
+          if (this.getOption("nocleanup")) {
+            this.log("Skipping offline file cleanup...");
+          } else {
+            await this.cleanup();
+          }
+        } catch {
+        } finally {
           process.exit();
         }
-        try {
-          await this.cleanup();
-        } catch(e) {}
-        process.exit();
       });
 
       childProcess.on("exit", (code) => {
