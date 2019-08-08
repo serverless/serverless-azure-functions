@@ -94,7 +94,7 @@ If rollback is enabled, the name of the created package will include the UTC tim
 
 ##### Sequence diagram for deployment to blob storage
 
-![alt text](./sequenceDiagrams/deployBlob.png)
+![alt text](./sequenceDiagrams/deployExternal.png)
 
 ##### Sub-Commands
 
