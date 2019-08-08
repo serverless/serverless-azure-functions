@@ -100,15 +100,10 @@ describe("Naming Service", () => {
       service: "test-api"
     };
 
-    const timestamp = Date.now().toString();
-
+    const timestamp = Date.now();
     const deploymentName = AzureNamingService.getDeploymentName(config, `t${timestamp}`);
-    expect(deploymentName.length).toBeLessThanOrEqual(64);
-    expect(deploymentName).toContain(timestamp);
-    expect(deploymentName).toContain(AzureNamingService.createShortAzureRegionName(config.provider.region));
-    expect(deploymentName).toContain(createSafeString(config.provider.prefix));
-    expect(deploymentName).toContain(createSafeString(config.provider.stage));
-    expect(deploymentName).toContain(createSafeString(config.service));
+
+    assertValidDeploymentName(config, deploymentName, timestamp);
   });
 
   it("deployment name with long suffix or service name generated correctly", () => {
@@ -125,8 +120,8 @@ describe("Naming Service", () => {
     };
 
     const timestamp = Date.now();
-
     const deploymentName = AzureNamingService.getDeploymentName(config, `t${timestamp}`);
+
     assertValidDeploymentName(config, deploymentName, timestamp);
   });
 
