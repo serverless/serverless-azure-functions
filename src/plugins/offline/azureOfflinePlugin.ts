@@ -30,7 +30,13 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
             usage: "Start Azure Function app - assumes offline build has already occurred",
             lifecycleEvents: [
               "start"
-            ]
+            ],
+            options: {
+              nocleanup: {
+                usage: "Do not clean up offline files after finishing process",
+                shortcut: "n",
+              }
+            }
           },
           build: {
             usage: "Build necessary files for running Azure Function App offline",
@@ -43,6 +49,12 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
             lifecycleEvents: [
               "cleanup"
             ]
+          }
+        },
+        options: {
+          nocleanup: {
+            usage: "Do not clean up offline files after finishing process",
+            shortcut: "n",
           }
         }
       }

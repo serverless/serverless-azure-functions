@@ -76,9 +76,20 @@ export class OfflineService extends BaseService {
       ...this.serverless.service.provider["environment"],
     }
     this.log(`Spawning process '${command} ${spawnArgs.join(" ")}'`);
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const spawnOptions: SpawnOptions = { env, stdio: "inherit" };
       const childProcess = spawn(command, spawnArgs, spawnOptions);
+
+      process.on("SIGINT", async () => {
+        if (this.getOption("nocleanup")) {
+          this.log("Skipping offline file cleanup...");
+          process.exit();
+        }
+        try {
+          await this.cleanup();
+        } catch(e) {}
+        process.exit();
+      });
 
       childProcess.on("exit", (code) => {
         if (code === 0) {
