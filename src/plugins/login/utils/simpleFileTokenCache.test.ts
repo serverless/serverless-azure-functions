@@ -61,6 +61,7 @@ describe("Simple File Token Cache", () => {
 
     expect(tokenCache.isEmpty()).toBe(false);
     expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
+    writeFileSpy.mockRestore();
   });
 
   it("Saves to file after subscription is added", () => {
@@ -78,5 +79,6 @@ describe("Simple File Token Cache", () => {
     };
 
     expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
+    writeFileSpy.mockRestore();
   });
 });
