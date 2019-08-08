@@ -4,11 +4,7 @@ import { AzureNamingService } from "../../services/namingService";
 
 export class HostingEnvironmentResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getResourceName(
-      config,
-      config.provider.hostingEnvironment,
-      "ase"
-    );
+    return AzureNamingService.getResourceName(config, config.provider.hostingEnvironment, "ase");
   }
 
   public getTemplate(): ArmResourceTemplate {

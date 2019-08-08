@@ -5,11 +5,7 @@ import { AzureNamingService } from "../../services/namingService";
 
 export class ApimResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getResourceName(
-      config,
-      config.provider.apim,
-      "apim"
-    );
+    return AzureNamingService.getResourceName(config, config.provider.apim, "apim");
   }
 
   public getTemplate(): ArmResourceTemplate {
