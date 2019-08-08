@@ -9,10 +9,10 @@ import { OfflineService } from "./offlineService";
 describe("Offline Service", () => {
   let mySpawn;
 
-  function createService(sls?: Serverless): OfflineService {
+  function createService(sls?: Serverless, options?: any): OfflineService {
     return new OfflineService(
       sls || MockFactory.createTestServerless(),
-      MockFactory.createTestServerlessOptions(),
+      MockFactory.createTestServerlessOptions(options),
     )
   }
 
@@ -27,6 +27,7 @@ describe("Offline Service", () => {
 
   afterEach(() => {
     mockFs.restore();
+    jest.resetAllMocks();
   });
 
   it("builds required files for offline execution", async () => {
@@ -144,5 +145,115 @@ describe("Offline Service", () => {
     const call = calls[0];
     expect(call.command).toEqual("func.cmd");
     expect(call.args).toEqual(["host", "start"]);
+  });
+
+  it("cleans up after offline call as default behavior", async () => {
+    mockFs({
+      hello: {
+        "function.json": "contents"
+      },
+      goodbye: {
+        "function.json": "contents"
+      },
+      "local.settings.json": "contents",
+    });
+
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+      writable: true,
+    });
+
+    const sls = MockFactory.createTestServerless();
+    const processOnSpy = jest.spyOn(process, "on");
+    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync")
+
+    const service = createService(sls);
+
+    await service.start();
+
+    const calls = mySpawn.calls;
+    expect(calls).toHaveLength(1);
+    const call = calls[0];
+    expect(call.command).toEqual("func.cmd");
+    expect(call.args).toEqual(["host", "start"]);
+
+    const processOnCalls = processOnSpy.mock.calls;
+    expect(processOnCalls).toHaveLength(1);
+    expect(processOnCalls[0][0]).toEqual("SIGINT");
+    expect(processOnCalls[0][1]).toBeInstanceOf(Function);
+
+    // SIGINT handler function
+    const sigintCallback = processOnCalls[0][1] as any;
+
+    process.exit = jest.fn() as any;
+    await sigintCallback();
+
+    /* Offline Cleanup assertions*/
+
+    const unlinkCalls = unlinkSpy.mock.calls;
+
+    expect(unlinkCalls).toHaveLength(3);
+    expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
+    expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
+    expect(unlinkCalls[2][0]).toBe("local.settings.json");
+
+    const rmdirCalls = rmdirSpy.mock.calls;
+
+    expect(rmdirCalls[0][0]).toBe("hello");
+    expect(rmdirCalls[1][0]).toBe("goodbye");
+
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
+
+    expect(process.exit).toBeCalledTimes(1);
+  });
+
+  it("does not clean up after offline call if specified in options", async () => {
+
+    Object.defineProperty(process, "platform", {
+      value: "win32",
+      writable: true,
+    });
+
+    const processOnSpy = jest.spyOn(process, "on");
+    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
+
+    const sls = MockFactory.createTestServerless();
+
+
+    const service = createService(sls, {
+      "nocleanup": ""
+    });
+
+    await service.start();
+
+    const calls = mySpawn.calls;
+    expect(calls).toHaveLength(1);
+    const call = calls[0];
+    expect(call.command).toEqual("func.cmd");
+    expect(call.args).toEqual(["host", "start"]);
+
+    const processOnCalls = processOnSpy.mock.calls;
+    expect(processOnCalls).toHaveLength(1);
+    expect(processOnCalls[0][0]).toEqual("SIGINT");
+    expect(processOnCalls[0][1]).toBeInstanceOf(Function);
+
+    // SIGINT handler function
+    const sigintCallback = processOnCalls[0][1] as any;
+
+    process.exit = jest.fn() as any;
+    await sigintCallback();
+
+    /* Offline Cleanup assertions*/
+
+    expect(unlinkSpy).not.toBeCalled();
+    expect(rmdirSpy).not.toBeCalled();
+
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
+
+    expect(process.exit).toBeCalledTimes(1);
   });
 });
