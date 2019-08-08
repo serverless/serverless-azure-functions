@@ -76,9 +76,24 @@ export class OfflineService extends BaseService {
       ...this.serverless.service.provider["environment"],
     }
     this.log(`Spawning process '${command} ${spawnArgs.join(" ")}'`);
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       const spawnOptions: SpawnOptions = { env, stdio: "inherit" };
       const childProcess = spawn(command, spawnArgs, spawnOptions);
+
+      process.on("SIGINT", async () => {
+        try {
+          if (this.getOption("nocleanup")) {
+            this.log("Skipping offline file cleanup...");
+          } else {
+            await this.cleanup();
+          }
+        } catch {
+          // Swallowing `scandir` error that gets thrown after
+          // trying to remove the same directory twice
+        } finally {
+          process.exit();
+        }
+      });
 
       childProcess.on("exit", (code) => {
         if (code === 0) {
