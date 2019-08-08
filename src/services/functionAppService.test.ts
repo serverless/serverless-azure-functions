@@ -211,7 +211,7 @@ describe("Function App Service", () => {
       uri: expectedUploadUrl,
       json: true,
       headers: {
-        Authorization: `Bearer ${variables["azureCredentials"].tokenCache._entries[0].accessToken}`,
+        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }
@@ -242,7 +242,7 @@ describe("Function App Service", () => {
       uri: expectedUploadUrl,
       json: true,
       headers: {
-        Authorization: `Bearer ${variables["azureCredentials"].tokenCache._entries[0].accessToken}`,
+        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }
@@ -276,7 +276,7 @@ describe("Function App Service", () => {
       uri: expectedUploadUrl,
       json: true,
       headers: {
-        Authorization: `Bearer ${variables["azureCredentials"].tokenCache._entries[0].accessToken}`,
+        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
       }

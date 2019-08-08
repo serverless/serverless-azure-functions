@@ -126,22 +126,39 @@ export class MockFactory {
   public static createTestAzureCredentials(): TokenClientCredentials {
     const credentials = {
       getToken: jest.fn(() => {
-        const token: TokenResponse = {
-          tokenType: "Bearer",
-          accessToken: "ABC123",
-        };
+        const token: TokenResponse = this.createTestTokenCacheEntries()[0];
 
         return Promise.resolve(token);
       }),
       signRequest: jest.fn((resource) => Promise.resolve(resource)),
     };
 
-    // TODO: Reduce usage on tokenCache._entries[0]
-    credentials["tokenCache"] = {
-      _entries: [{ accessToken: "ABC123" }]
-    };
-
     return credentials;
+  }
+
+  public static createTestTokenCacheEntries(count: number = 1): TokenResponse[] {
+    const token: TokenResponse = {
+      tokenType: "Bearer",
+      accessToken: "ABC123",
+      userId: "example@user.com",
+    };
+    const result = Array(count).fill(token);
+
+    return result;
+  }
+
+  public static createTestSubscriptions(count: number = 1): any[] {
+    const sub = {
+      id: "abc-1234-5678",
+      state: "Enabled",
+      authorizationSource: "RoleBased",
+      user: { name: "example@user.com", type: "user" },
+      environmentName: "AzureCloud",
+      name: "Test Sub"
+    };
+    const result = Array(count).fill(sub);
+
+    return result;
   }
 
   public static createTestTimestamp(): string {
@@ -351,15 +368,7 @@ export class MockFactory {
 
   public static createTestVariables() {
     return {
-      azureCredentials: {
-        tokenCache: {
-          _entries: [
-            {
-              accessToken: "token"
-            }
-          ]
-        }
-      },
+      azureCredentials: this.createTestAzureCredentials(),
       subscriptionId: "azureSubId",
     }
   }

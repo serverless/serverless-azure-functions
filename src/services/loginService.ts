@@ -5,15 +5,16 @@ import {
   loginWithServicePrincipalSecretWithAuthResponse,
   AuthResponse,
   AzureTokenCredentialsOptions,
-  InteractiveLoginOptions,  
+  InteractiveLoginOptions,
+  DeviceTokenCredentials,  
 } from "@azure/ms-rest-nodeauth";
+import { SimpleFileTokenCache } from "../plugins/login/utils/simpleFileTokenCache";
 
 export interface AzureLoginOptions extends Serverless.Options {
   subscriptionId?: string;
 }
 
 export class AzureLoginService {
-
   /**
    * Logs in via service principal login if environment variables are
    * set or via interactive login if environment variables are not set
@@ -32,9 +33,20 @@ export class AzureLoginService {
     }
   }
 
-  public static async interactiveLogin(options: InteractiveLoginOptions): Promise<AuthResponse> {
-    await open("https://microsoft.com/devicelogin");
-    return await interactiveLoginWithAuthResponse(options);
+  public static async interactiveLogin(options?: InteractiveLoginOptions): Promise<AuthResponse> {
+    let authResp: AuthResponse = {credentials: undefined, subscriptions: []};
+    const fileTokenCache = new SimpleFileTokenCache();
+    if(fileTokenCache.isEmpty()){
+      await open("https://microsoft.com/devicelogin");
+      authResp = await interactiveLoginWithAuthResponse({...options, tokenCache: fileTokenCache});
+      fileTokenCache.addSubs(authResp.subscriptions);
+    } else {
+      authResp.credentials = new DeviceTokenCredentials(undefined, undefined, fileTokenCache.first().userId, undefined, undefined, fileTokenCache);
+      authResp.subscriptions = fileTokenCache.listSubscriptions();
+    }
+
+    return authResp;
+
   }
 
   public static async servicePrincipalLogin(clientId: string, secret: string, tenantId: string, options: AzureTokenCredentialsOptions): Promise<AuthResponse> {
