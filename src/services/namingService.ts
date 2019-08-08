@@ -10,8 +10,8 @@ export class AzureNamingService {
    * {prefix}-{shortRegionName}-{shortStageName}(optionally: -{suffix})
    *
    * @param config Serverless Azure Config for service (serverless.service)
-   * @param resourceConfig
-   * @param suffix
+   * @param resourceConfig The serverless resource configuration
+   * @param suffix Optional suffix to append on the end of the generated name
    */
   public static getResourceName(config: ServerlessAzureConfig, resourceConfig?: ResourceConfig, suffix?: string) {
     if (resourceConfig && resourceConfig.name) {
@@ -40,7 +40,8 @@ export class AzureNamingService {
    *
    * @param config Serverless Azure Config for service (serverless.service)
    * @param maxLength Maximum length of name for resource
-   * @param resourceConfig Configuration for resource from serverless configuration
+   * @param resourceConfig The serverless resource configuration
+   * @param suffix Optional suffix to append on the end of the generated name
    * @param forbidden Regex for characters to remove from name. Defaults to non-alpha-numerics
    * @param replaceWith String to replace forbidden characters. Defaults to empty string
    */
@@ -81,6 +82,11 @@ export class AzureNamingService {
       .toLowerCase();
   }
 
+  /**
+   * Creates a deployment name from the serverless configuration
+   * @param config The serverless azure config
+   * @param timestamp The timestamp of the deployment
+   */
   public static getDeploymentName(config: ServerlessAzureConfig, timestamp?: string) {
     let maxLength = configConstants.naming.maxLength.deploymentName;
     const suffix = configConstants.naming.suffix.deployment;
