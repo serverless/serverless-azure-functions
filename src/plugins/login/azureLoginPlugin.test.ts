@@ -68,7 +68,7 @@ describe("Login Plugin", () => {
       undefined // would be options
     )
     expect(AzureLoginService.interactiveLogin).not.toBeCalled();
-    expect(sls.variables["azureCredentials"]).toEqual(credentials);
+    expect(JSON.stringify(sls.variables["azureCredentials"])).toEqual(JSON.stringify(credentials));
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
   });
 
@@ -78,7 +78,7 @@ describe("Login Plugin", () => {
     await invokeLoginHook(false, sls);
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
     expect(AzureLoginService.interactiveLogin).toBeCalled();
-    expect(sls.variables["azureCredentials"]).toEqual(credentials);
+    expect(JSON.stringify(sls.variables["azureCredentials"])).toEqual(JSON.stringify(credentials));
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
   });
 
