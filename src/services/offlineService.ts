@@ -88,6 +88,8 @@ export class OfflineService extends BaseService {
             await this.cleanup();
           }
         } catch {
+          // Swallowing `scandir` error that gets thrown after
+          // trying to remove the same directory twice
         } finally {
           process.exit();
         }
