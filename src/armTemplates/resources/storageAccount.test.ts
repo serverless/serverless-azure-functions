@@ -1,4 +1,3 @@
-import md5 from "md5";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 import { StorageAccountResource } from "./storageAccount";
@@ -35,8 +34,7 @@ describe("Storage Account Resource", () => {
         prefix: "my-long-test-prefix-name",
         region: "Australia Southeast",
         stage: "development"
-      },
-      service: "my-long-test-api",
+      }
     };
 
     const result = StorageAccountResource.getResourceName(testConfig);
@@ -145,10 +143,9 @@ describe("Storage Account Resource", () => {
     expect(value).toContain(AzureNamingService.createShortAzureRegionName(config.provider.region));
     expect(value).toContain(createSafeString(config.provider.prefix));
     expect(value).toContain(createSafeString(config.provider.stage));
-    expect(value).toContain(md5(config.service).substr(0, 3));
   }
 
   function createSafeString(value: string) {
-    return value.replace(/\W+/g, "").toLocaleLowerCase().substr(0, 3);
+    return value.replace(/\W+/g, "").toLowerCase().substr(0, 3);
   };
 });
