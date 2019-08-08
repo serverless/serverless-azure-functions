@@ -132,7 +132,7 @@ export abstract class BaseService {
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
    * @param relativeUrl The relative url
-   * @param options Additional HTTP options including headers, etc
+   * @param options Additional HTTP options including headers, etc.
    */
   protected async sendApiRequest(
     method: string,
