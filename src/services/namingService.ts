@@ -53,24 +53,23 @@ export class AzureNamingService {
 
     const { prefix, region, stage } = config.provider;
 
-    const nameHash = md5(config.service);
-
     let safePrefix = prefix.replace(forbidden, replaceWith);
     const safeRegion = this.createShortAzureRegionName(region);
     let safeStage = this.createShortStageName(stage);
-    let safeNameHash = nameHash.substr(0, 6);
 
-    const remaining = maxLength - (safePrefix.length + safeRegion.length + safeStage.length + safeNameHash.length);
+    const remaining = maxLength - (safePrefix.length + safeRegion.length + safeStage.length);
 
     // Dynamically adjust the substring based on space needed
     if (remaining < 0) {
-      const partLength = Math.floor(Math.abs(remaining) / 3);
+      let partLength = Math.floor(Math.abs(remaining) / 2);
+      if (partLength < 3) {
+        partLength = 3;
+      }
       safePrefix = safePrefix.substr(0, partLength);
       safeStage = safeStage.substr(0, partLength);
-      safeNameHash = safeNameHash.substr(0, partLength);
     }
 
-    return [safePrefix, safeRegion, safeStage, safeNameHash]
+    return [safePrefix, safeRegion, safeStage]
       .join("")
       .toLocaleLowerCase();
   }
@@ -85,8 +84,8 @@ export class AzureNamingService {
       maxLength -= timestamp.length + suffix.length;;
 
       const name = (deploymentName) ? deploymentName.substr(0, maxLength)
-        : [ AzureNamingService.getSafeResourceName(config, maxLength), suffix ].join("-");
-      return [ name, timestamp ].join("-");
+        : [AzureNamingService.getSafeResourceName(config, maxLength), suffix].join("-");
+      return [name, timestamp].join("-");
     }
 
     return deploymentName.substr(0, maxLength);
