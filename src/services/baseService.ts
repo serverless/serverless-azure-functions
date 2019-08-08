@@ -124,7 +124,8 @@ export abstract class BaseService {
    * Get the access token from credentials token cache
    */
   protected async getAccessToken(): Promise<string> {
-    return this.credentials.getToken().then((result) => result.accessToken);
+    const token = await this.credentials.getToken();
+    return token ? token.accessToken : null;
   }
 
   /**

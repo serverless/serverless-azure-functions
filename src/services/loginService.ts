@@ -36,13 +36,13 @@ export class AzureLoginService {
   public static async interactiveLogin(options?: InteractiveLoginOptions): Promise<AuthResponse> {
     let authResp: AuthResponse = {credentials: undefined, subscriptions: []};
     const fileTokenCache = new SimpleFileTokenCache();
-    if(!fileTokenCache.isEmpty()){
-      authResp.credentials = new DeviceTokenCredentials(undefined, undefined, fileTokenCache.first().userId, undefined, undefined, fileTokenCache);
-      authResp.subscriptions = fileTokenCache.listSubscriptions();
-    } else {
+    if(fileTokenCache.isEmpty()){
       await open("https://microsoft.com/devicelogin");
       authResp = await interactiveLoginWithAuthResponse({...options, tokenCache: fileTokenCache});
       fileTokenCache.addSubs(authResp.subscriptions);
+    } else {
+      authResp.credentials = new DeviceTokenCredentials(undefined, undefined, fileTokenCache.first().userId, undefined, undefined, fileTokenCache);
+      authResp.subscriptions = fileTokenCache.listSubscriptions();
     }
 
     return authResp;

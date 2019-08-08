@@ -126,25 +126,17 @@ export class MockFactory {
   public static createTestAzureCredentials(): TokenClientCredentials {
     const credentials = {
       getToken: jest.fn(() => {
-        const token: TokenResponse = {
-          tokenType: "Bearer",
-          accessToken: "ABC123",
-        };
+        const token: TokenResponse = this.createTestTokenCacheEntries()[0];
 
         return Promise.resolve(token);
       }),
       signRequest: jest.fn((resource) => Promise.resolve(resource)),
     };
 
-    // TODO: Reduce usage on tokenCache._entries[0]
-    credentials["tokenCache"] = {
-      _entries: [this.createTestTokenCacheEntries()]
-    };
-
     return credentials;
   }
 
-  public static createTestTokenCacheEntries(count: number = 1): any[] {
+  public static createTestTokenCacheEntries(count: number = 1): TokenResponse[] {
     const token: TokenResponse = {
       tokenType: "Bearer",
       accessToken: "ABC123",
