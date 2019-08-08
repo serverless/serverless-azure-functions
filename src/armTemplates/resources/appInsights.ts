@@ -4,11 +4,7 @@ import { AzureNamingService } from "../../services/namingService";
 
 export class AppInsightsResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getResourceName(
-      config,
-      config.provider.appInsights,
-      "appinsights"
-    );
+    return AzureNamingService.getResourceName(config, config.provider.appInsights, "appinsights");
   }
 
   public getTemplate(): ArmResourceTemplate {

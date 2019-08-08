@@ -5,11 +5,8 @@ import { AzureNamingService } from "../../services/namingService";
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const safeServiceName = config.service.replace(/\s/g, "-");
-    return AzureNamingService.getResourceName(
-      config,
-      config.provider.appInsights,
-      safeServiceName
-    );
+
+    return AzureNamingService.getResourceName(config, config.provider.appInsights, safeServiceName);
   }
 
   public getTemplate(): ArmResourceTemplate {
