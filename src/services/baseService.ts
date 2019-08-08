@@ -129,15 +129,16 @@ export abstract class BaseService {
   /**
    * Get the access token from credentials token cache
    */
-  protected getAccessToken(): string {
-    return (this.credentials.tokenCache as any)._entries[0].accessToken;
+  protected async getAccessToken(): Promise<string> {
+    const token = await this.credentials.getToken();
+    return token ? token.accessToken : null;
   }
 
   /**
    * Sends an API request using axios HTTP library
    * @param method The HTTP method
    * @param relativeUrl The relative url
-   * @param options Additional HTTP options including headers, etc
+   * @param options Additional HTTP options including headers, etc.
    */
   protected async sendApiRequest(
     method: string,
@@ -145,7 +146,7 @@ export abstract class BaseService {
     options: any = {}
   ) {
     const defaultHeaders = {
-      Authorization: `Bearer ${this.getAccessToken()}`
+      Authorization: `Bearer ${await this.getAccessToken()}`
     };
 
     const allHeaders = {
