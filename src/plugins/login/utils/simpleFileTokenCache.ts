@@ -14,53 +14,53 @@ export class SimpleFileTokenCache implements adal.TokenCache {
     this.load();
   }
 
-  public add(entries: any, cb?: any) {
+  public add(entries: any[], callback?: (err?: Error, result?: boolean) => void) {
     this.entries.push(...entries);
     this.save();
-    if (cb) {
-      cb();
+    if (callback) {
+      callback();
     }
   }
 
-  public remove(entries: any, cb?: any) {
+  public remove(entries: any[], callback?: (err?: Error, result?: null) => void) {
     this.entries = this.entries.filter(e => {
       return !Object.keys(entries[0]).every(key => e[key] === entries[0][key]);
     });
     this.save();
-    if (cb) {
-      cb();
+    if (callback) {
+      callback();
     }
   }
 
-  public find(query: any, cb?: any) {
+  public find(query: any, callback: (err?: Error, result?: any[]) => void) {
     let result = this.entries.filter(e => {
       return Object.keys(query).every(key => e[key] === query[key]);
     });
-    cb(null, result);
+    callback(null, result);
     return result;
   }
 
   //-------- File toke cache specific methods
 
-  public addSubs(entries: any) {
-    this.subscriptions.push(...entries);
-    this.subscriptions = this.subscriptions.reduce((acc, current) => {
-      const x = acc.find(item => item.id === current.id);
+  public addSubs(subscriptions: any) {
+    this.subscriptions.push(...subscriptions);
+    this.subscriptions = this.subscriptions.reduce((accumulator , current) => {
+      const x = accumulator .find(item => item.id === current.id);
       if (!x) {
-        return acc.concat([current]);
+        return accumulator .concat([current]);
       } else {
-        return acc;
+        return accumulator ;
       }
     }, []);
     this.save();
   }
 
 
-  public clear(cb: any) {
+  public clear(callback: any) {
     this.entries = [];
     this.subscriptions = [];
     this.save();
-    cb();
+    callback();
   }
 
   public isEmpty() {
