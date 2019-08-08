@@ -103,6 +103,7 @@ describe("Naming Service", () => {
     const timestamp = Date.now();
     const deploymentName = AzureNamingService.getDeploymentName(config, `t${timestamp}`);
 
+    expect(deploymentName).toEqual(`slswusdevtestapi-DEPLOYMENT-t${timestamp}`);
     assertValidDeploymentName(config, deploymentName, timestamp);
   });
 
@@ -122,6 +123,7 @@ describe("Naming Service", () => {
     const timestamp = Date.now();
     const deploymentName = AzureNamingService.getDeploymentName(config, `t${timestamp}`);
 
+    expect(deploymentName).toEqual(`slswusmulext-DEPLOYMENT-t${timestamp}`);
     assertValidDeploymentName(config, deploymentName, timestamp);
   });
 
