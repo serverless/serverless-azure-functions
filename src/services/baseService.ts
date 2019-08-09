@@ -190,6 +190,10 @@ export abstract class BaseService {
     (this.serverless.cli.log as any)(message, entity, options);
   }
 
+  protected prettyPrint(object: any) {
+    this.log(JSON.stringify(object, null, 2));
+  }
+
   /**
    * Get function objects
    */

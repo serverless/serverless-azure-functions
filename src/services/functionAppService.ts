@@ -11,9 +11,10 @@ import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
+import configConstants from "../config";
 
 export class FunctionAppService extends BaseService {
-  private static readonly retryCount: number = 10;
+  private static readonly retryCount: number = 30;
   private static readonly retryInterval: number = 5000;
   private webClient: WebSiteManagementClient;
   private blobService: AzureBlobStorageService;
@@ -99,7 +100,7 @@ export class FunctionAppService extends BaseService {
 
         if (listFunctionsResponse.status !== 200 || listFunctionsResponse.data.value.length === 0) {
           this.log("-> Function App not ready. Retrying...");
-          throw new Error(listFunctionsResponse.data);
+          throw new Error(JSON.stringify(listFunctionsResponse.data, null, 2));
         }
 
         return listFunctionsResponse;
@@ -130,7 +131,7 @@ export class FunctionAppService extends BaseService {
 
         if (getFunctionResponse.status !== 200) {
           this.log("-> Function app not ready. Retrying...")
-          throw new Error(response.data);
+          throw new Error(JSON.stringify(response.data, null, 2));
         }
 
         return getFunctionResponse;
@@ -149,15 +150,22 @@ export class FunctionAppService extends BaseService {
 
     const functionZipFile = this.getFunctionZipFile();
     const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
-    // If `runFromBlobUrl` is configured, the artifact will have already been uploaded
-    const uploadBlobStorage = (this.deploymentConfig.runFromBlobUrl)
-      ?
-      Promise.resolve()
-      :
-      this.uploadZippedArtifactToBlobStorage(functionZipFile)
+    const uploadBlobStorage = this.uploadZippedArtifactToBlobStorage(functionZipFile);
 
     await Promise.all([uploadFunctionApp, uploadBlobStorage]);
 
+    if (this.deploymentConfig.runFromBlobUrl) {
+      this.log("Updating function app setting to run from external package...");
+      const sasUrl = await this.blobService.generateBlobSasTokenUrl(
+        this.deploymentConfig.container,
+        this.artifactName
+      )
+      await this.updateFunctionAppSetting(
+        functionApp,
+        configConstants.runFromPackageSetting,
+        sasUrl
+      )
+    }
 
     this.log("Deployed serverless functions:")
     const serverlessFunctions = this.serverless.service.getAllFunctions();
@@ -189,13 +197,6 @@ export class FunctionAppService extends BaseService {
       ? await armService.createDeploymentFromConfig(armTemplate)
       : await armService.createDeploymentFromType(type || "consumption");
 
-    if (this.deploymentConfig.runFromBlobUrl) {
-      await this.uploadZippedArtifactToBlobStorage(this.getFunctionZipFile());
-      deployment.parameters.functionAppRunFromPackage = await this.blobService.generateBlobSasTokenUrl(
-        this.deploymentConfig.container,
-        this.artifactName
-      )
-    }
     await armService.deployTemplate(deployment);
 
     // Return function app
@@ -238,6 +239,12 @@ export class FunctionAppService extends BaseService {
       functionZipFile = path.join(this.serverless.config.servicePath, ".serverless", `${this.serverless.service.getServiceName()}.zip`);
     }
     return functionZipFile;
+  }
+
+  public async updateFunctionAppSetting(functionApp: Site, setting: string, value: string) {
+    const { properties } = await this.webClient.webApps.listApplicationSettings(this.resourceGroup, functionApp.name);
+    properties[setting] = value;
+    await this.webClient.webApps.updateApplicationSettings(this.resourceGroup, functionApp.name, properties);
   }
 
   /**
