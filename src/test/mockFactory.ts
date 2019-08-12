@@ -169,25 +169,29 @@ export class MockFactory {
     const result = [];
     const originalTimestamp = +MockFactory.createTestTimestamp();
     for (let i = 0; i < count; i++) {
+      const name = (includeTimestamp) ? `deployment${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
       result.push(
-        MockFactory.createTestDeployment((includeTimestamp) ? `deployment${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`)
+        MockFactory.createTestDeployment(name, i)
       )
     }
     return result as DeploymentsListByResourceGroupResponse
   }
 
-  public static createTestParameters() {
-    return {
+  public static createTestParameters(wrap = true) {
+    return (wrap) ? {
       param1: { value: "1", type: "String" },
       param2: { value: "2", type: "String" },
+    } : {
+      param1: "1",
+      param2: "2",
     }
   }
 
-  public static createTestDeployment(name?: string): DeploymentExtended {
+  public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
     return {
       name: name || `deployment1-t${MockFactory.createTestTimestamp()}`,
       properties: {
-        timestamp: new Date(),
+        timestamp: new Date(2019, 1, 1, 0, 0, second),
         parameters: MockFactory.createTestParameters(),
       }
     }
@@ -430,7 +434,7 @@ export class MockFactory {
       handler: "handler.js",
     }
   }
-  
+
   public static createTestBinding() {
     // Only supporting HTTP for now, could support others
     return MockFactory.createTestHttpBinding();
@@ -461,7 +465,7 @@ export class MockFactory {
       name: "item",
       eventhubname: "hello",
       consumerGroup: "$Default",
-      connection: "EventHubsConnection"        
+      connection: "EventHubsConnection"
     }
   }
   public static createTestBindingsObject(name: string = "index.js") {

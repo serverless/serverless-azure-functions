@@ -8,6 +8,8 @@ import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "..
 import { ArmTemplateConfig, ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
+import { ResourceService } from "./resourceService"
+import deepEqual from "deep-equal";
 
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -110,15 +112,54 @@ export class ArmService extends BaseService {
       }
     };
 
+    const resourceService = new ResourceService(this.serverless, this.options);
+    const latest = await resourceService.getLastDeploymentTemplate();
+
+    if (latest) {
+      const templateEqual = deepEqual(latest.template, deployment.template);
+      const mergedDefaultParameters = this.mergeDefaultParams(deploymentParameters, deployment.template.parameters);
+      const paramatersEqual = deepEqual(latest.parameters, mergedDefaultParameters);
+
+      if (templateEqual && paramatersEqual) {
+        this.log("Generated template same as previous. Skipping ARM deployment");
+        return;
+      }
+    }
+
     // Deploy ARM template
     this.log("-> Deploying ARM template...");
     this.log(`---> Resource Group: ${this.resourceGroup}`)
     this.log(`---> Deployment Name: ${this.deploymentName}`)
 
-    const result = await this.resourceClient.deployments.createOrUpdate(this.resourceGroup, this.deploymentName, armDeployment);
+    const result = await this.resourceClient.deployments.createOrUpdate(
+      this.resourceGroup,
+      this.deploymentName,
+      armDeployment
+    );
     this.log("-> ARM deployment complete");
 
     return result;
+  }
+
+  /**
+   * Merge parameters and default parameters for comparison with previously deployed template
+   * @param parameters Parameters with specified values
+   * @param defaultParameters Parameters with `type` and `defaultValue`
+   */
+  private mergeDefaultParams(parameters: any, defaultParameters: any) {
+    const mergedParams = {}
+    Object.keys(defaultParameters).forEach((key) => {
+      const defaultParam = defaultParameters[key];
+      mergedParams[key] = {
+        type: defaultParam.type,
+        value: (key in parameters)
+          ?
+          parameters[key].value
+          :
+          defaultParameters[key].defaultValue
+      }
+    });
+    return mergedParams;
   }
 
   /**

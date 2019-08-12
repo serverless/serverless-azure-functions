@@ -89,6 +89,7 @@ describe("Resource Service", () => {
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
     const deps = await service.getDeployments();
+    // Make sure deps are in correct order
     expect(deps).toEqual(deployments);
   });
 
