@@ -22,6 +22,7 @@ export const configConstants = {
   funcCoreTools: "func",
   funcCoreToolsArgs: ["host", "start"],
   funcConsoleColor: "blue",
+  runFromPackageSetting: "WEBSITE_RUN_FROM_PACKAGE",
   jsonContentType: "application/json",
   logInvocationsApiPath: "/azurejobs/api/functions/definitions/",
   logOutputApiPath: "/azurejobs/api/log/output/",
