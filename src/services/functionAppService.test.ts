@@ -17,7 +17,6 @@ jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService"
 import configConstants from "../config";
 
-
 describe("Function App Service", () => {
   const app = MockFactory.createTestSite();
   const slsService = MockFactory.createTestService();
@@ -36,6 +35,11 @@ describe("Function App Service", () => {
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const syncTriggersUrl = `${baseUrl}${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
+
+  const appSettings = {
+    setting1: "value1",
+    setting2: "value2",
+  }
 
   beforeAll(() => {
     const axiosMock = new MockAdapter(axios);
@@ -66,6 +70,8 @@ describe("Function App Service", () => {
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => app),
       deleteFunction: jest.fn(),
+      listApplicationSettings: jest.fn(() => Promise.resolve({ properties: { ...appSettings } })),
+      updateApplicationSettings: jest.fn(),
     } as any;
     (FunctionAppService.prototype as any).sendFile = jest.fn();
   });
@@ -156,10 +162,21 @@ describe("Function App Service", () => {
 
     beforeEach(() => {
       FunctionAppService.prototype.get = jest.fn(() => Promise.resolve(expectedSite));
+      (FunctionAppService.prototype as any).sendFile = jest.fn();
       ArmService.prototype.createDeploymentFromConfig = jest.fn(() => Promise.resolve(expectedDeployment));
       ArmService.prototype.createDeploymentFromType = jest.fn(() => Promise.resolve(expectedDeployment));
       ArmService.prototype.deployTemplate = jest.fn(() => Promise.resolve(null));
+      WebSiteManagementClient.prototype.webApps = {
+        get: jest.fn(() => app),
+        deleteFunction: jest.fn(),
+        listApplicationSettings: jest.fn(() => Promise.resolve({ properties: { ...appSettings } })),
+        updateApplicationSettings: jest.fn(),
+      } as any;
     });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    })
 
     it("deploys ARM templates with custom configuration", async () => {
       slsService.provider["armTemplate"] = {};
@@ -298,4 +315,75 @@ describe("Function App Service", () => {
     const service = createService(sls, options);
     expect(service.getFunctionZipFile()).toEqual("fake.zip")
   });
+
+  it("adds a new function app setting", async () => {
+    const service = createService();
+    const settingName = "TEST_SETTING";
+    const settingValue = "TEST_VALUE"
+    await service.updateFunctionAppSetting(app, settingName, settingValue);
+    expect(WebSiteManagementClient.prototype.webApps.updateApplicationSettings).toBeCalledWith(
+      "myResourceGroup",
+      "Test",
+      {
+        ...appSettings,
+        TEST_SETTING: settingValue
+      }
+    )
+  });
+
+  it("updates an existing function app setting", async () => {
+    const service = createService();
+    const settingName = "setting1";
+    const settingValue = "TEST_VALUE"
+    await service.updateFunctionAppSetting(app, settingName, settingValue);
+    expect(WebSiteManagementClient.prototype.webApps.updateApplicationSettings).toBeCalledWith(
+      "myResourceGroup",
+      "Test",
+      {
+        setting1: settingValue,
+        setting2: appSettings.setting2
+      }
+    );
+  });
+
+  describe("Updating Function App Settings", () => {
+
+    const sasUrl = "sasUrl"
+
+    beforeEach(() => {
+      FunctionAppService.prototype.updateFunctionAppSetting = jest.fn();
+      AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => Promise.resolve(sasUrl));
+    });
+
+    afterEach(() => {
+      (FunctionAppService.prototype.updateFunctionAppSetting as any).mockRestore();
+    });
+
+    it("updates WEBSITE_RUN_FROM_PACKAGE with SAS URL if configured to run from blob", async () => {
+      const newSlsService = MockFactory.createTestService();
+      newSlsService.provider["deployment"] = {
+        runFromBlobUrl: true,
+      }
+
+      const service = createService(MockFactory.createTestServerless({
+        service: newSlsService,
+      }));
+      await service.uploadFunctions(app);
+      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).toBeCalled();
+      expect(FunctionAppService.prototype.updateFunctionAppSetting).toBeCalledWith(
+        app,
+        "WEBSITE_RUN_FROM_PACKAGE",
+        sasUrl
+      );
+    });
+
+    it("does not generate SAS URL or update WEBSITE_RUN_FROM_PACKAGE if not configured to run from blob", async() => {
+      const service = createService();
+      await service.uploadFunctions(app);
+      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
+      expect(FunctionAppService.prototype.updateFunctionAppSetting).not.toBeCalled();
+    });
+  });
+
+
 });

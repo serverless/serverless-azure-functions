@@ -39,6 +39,7 @@ export interface ServerlessAzureProvider {
   environment?: {
     [key: string]: any;
   };
+  deployment?: DeploymentConfig;
   deploymentName?: string;
   resourceGroup?: string;
   apim?: ApiManagementConfig;

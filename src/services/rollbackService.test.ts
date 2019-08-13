@@ -30,7 +30,7 @@ describe("Rollback Service", () => {
   const sasURL = "sasURL";
   const containerName = "deployment-artifacts";
   const artifactName = MockFactory.createTestDeployment().name.replace(
-    configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact);
+    configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact) + ".zip";
   const artifactPath = `.serverless${path.sep}${artifactName}`
   const armDeployment: ArmDeployment = { template, parameters };
   const deploymentString = "deployments";
@@ -115,7 +115,7 @@ describe("Rollback Service", () => {
     const deploymentConfig: DeploymentConfig = {
       runFromBlobUrl: true
     }
-    sls["deploy"] = deploymentConfig;
+    sls.service.provider["deployment"] = deploymentConfig;
     const service = createService(sls);
     await service.rollback();
     expect(AzureBlobStorageService.prototype.initialize).toBeCalled();
