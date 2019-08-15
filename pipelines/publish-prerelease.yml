@@ -4,6 +4,9 @@ trigger:
     - dev
 pr: none
 
+variables:
+- group: npm-release-credentials
+
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -27,6 +30,7 @@ steps:
     arguments: 'serverless/serverless-azure-functions'
   env:
     NPM_TOKEN: $(NPM_TOKEN)
+    GITHUB_ACCESS_TOKEN: $(GITHUB_ACCESS_TOKEN)
     SOURCE_BRANCH: $(Build.SourceBranch)
 
 - task: Bash@3
