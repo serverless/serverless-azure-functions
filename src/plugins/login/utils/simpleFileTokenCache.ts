@@ -64,11 +64,11 @@ export class SimpleFileTokenCache implements adal.TokenCache {
   }
 
   public isEmpty() {
-    return this.entries.length === 0;
+    return !this.entries || this.entries.length === 0;
   }
 
   public first() {
-    return this.entries[0];
+    return (this.entries && this.entries.length) ? this.entries[0] : null;
   }
 
   public listSubscriptions() {
@@ -76,14 +76,19 @@ export class SimpleFileTokenCache implements adal.TokenCache {
   }
 
   private load() {
-    if (fs.existsSync(this.tokenPath)) {
-      let savedCache = JSON.parse(fs.readFileSync(this.tokenPath).toString());
-      this.entries = savedCache.entries;
-      this.entries.map(t => t.expiresOn = new Date(t.expiresOn))
-      this.subscriptions = savedCache.subscriptions;
-    } else {
+    if (!fs.existsSync(this.tokenPath)) {
       this.save();
+      return;
     }
+    const savedCache = JSON.parse(fs.readFileSync(this.tokenPath).toString());
+
+    if (!savedCache || !savedCache.entries) {
+      this.save();
+      return;
+    }
+    this.entries = savedCache.entries;
+    this.entries.map(t => t.expiresOn = new Date(t.expiresOn))
+    this.subscriptions = savedCache.subscriptions;
   }
 
   public save() {

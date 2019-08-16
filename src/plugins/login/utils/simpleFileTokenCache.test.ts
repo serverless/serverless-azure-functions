@@ -81,4 +81,24 @@ describe("Simple File Token Cache", () => {
     expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
     writeFileSpy.mockRestore();
   });
+
+  it("Doesn't fail if unable to parse JSON from file", () => {
+    mockFs({
+      "slsTokenCache.json": JSON.stringify(""),
+    });
+
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+    const testFileCache = new SimpleFileTokenCache(tokenFilePath);
+    const testSubs = MockFactory.createTestSubscriptions();
+
+    testFileCache.addSubs(testSubs);
+
+    const expected = {
+      entries: [],
+      subscriptions: testSubs,
+    };
+
+    expect(writeFileSpy).toBeCalledWith(tokenFilePath, JSON.stringify(expected));
+    writeFileSpy.mockRestore();
+  });
 });
