@@ -1,12 +1,13 @@
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ArmService } from "./armService";
-import { ArmResourceTemplate, ArmTemplateType } from "../models/armTemplates";
+import { ArmResourceTemplate, ArmTemplateType, ArmDeployment } from "../models/armTemplates";
 import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import mockFs from "mock-fs";
 import jsonpath from "jsonpath";
 import { Deployments } from "@azure/arm-resources";
 import { Deployment } from "@azure/arm-resources/esm/models";
+import { ResourceService } from "./resourceService";
 
 describe("Arm Service", () => {
   let sls: Serverless
@@ -29,6 +30,13 @@ describe("Arm Service", () => {
     };
 
     service = createService();
+    ResourceService.prototype.getDeployments = jest.fn(() => MockFactory.createTestDeployments()) as any;
+    ResourceService.prototype.getDeploymentTemplate = jest.fn(() => {
+      return {
+        template: MockFactory.createTestArmTemplate()
+      }
+    }) as any;
+
   })
 
   afterEach(() => {
@@ -149,6 +157,51 @@ describe("Arm Service", () => {
   describe("Deploying Templates", () => {
     beforeEach(() => {
       Deployments.prototype.createOrUpdate = jest.fn(() => Promise.resolve(null));
+    });
+
+    it("Does not deploy if previously deployed template is the same", async () => {
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(false),
+        template: MockFactory.createTestArmTemplate()
+      };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).not.toBeCalled()
+    });
+
+    it("Calls deploy if parameters have changed from deployed template", async () => {
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(false),
+        template: MockFactory.createTestArmTemplate()
+      };
+      deployment.parameters.param1 = "3"
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).toBeCalled();
+    });
+
+    it("Calls deploy if previously deployed template is different", async () => {
+      ResourceService.prototype.getDeploymentTemplate = jest.fn(() => {
+        return {
+          template: {}
+        }
+      }) as any;
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(false),
+        template: MockFactory.createTestArmTemplate()
+      };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).toBeCalled()
+    });
+
+    it("Calls deploy if running first deployment", async () => {
+      ResourceService.prototype.getDeployments = jest.fn(() => {
+        return []
+      }) as any;
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(false),
+        template: MockFactory.createTestArmTemplate()
+      };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).toBeCalled()
     });
 
     it("Appends environment variables into app settings of ARM template", async () => {
