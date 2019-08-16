@@ -3,7 +3,6 @@ import { ApimService } from "../../services/apimService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureApimServicePlugin extends AzureBasePlugin {
-  public hooks: { [eventName: string]: Promise<any> };
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);

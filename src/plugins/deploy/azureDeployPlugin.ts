@@ -6,7 +6,6 @@ import { ResourceService } from "../../services/resourceService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
-  public hooks: { [eventName: string]: Promise<any> };
   public commands: any;
 
   public constructor(serverless: Serverless, options: AzureLoginOptions) {
@@ -25,12 +24,38 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
             lifecycleEvents: [
               "list"
             ]
+          },
+          options: {
+            resourceGroup: {
+              usage: "Resource group for the service",
+              shortcut: "g",
+            },
+            stage: {
+              usage: "Stage of service",
+              shortcut: "s"
+            },
+            region: {
+              usage: "Region of service",
+              shortcut: "r"
+            },
+            subscriptionId: {
+              usage: "Sets the Azure subscription ID",
+              shortcut: "i",
+            },
           }
         },
         options: {
           resourceGroup: {
             usage: "Resource group for the service",
             shortcut: "g",
+          },
+          stage: {
+            usage: "Stage of service",
+            shortcut: "s"
+          },
+          region: {
+            usage: "Region of service",
+            shortcut: "r"
           },
           subscriptionId: {
             usage: "Sets the Azure subscription ID",

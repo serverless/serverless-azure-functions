@@ -1,14 +1,13 @@
+import fs from "fs";
 import { isAbsolute, join } from "path";
 import Serverless from "serverless";
 import { InvokeService } from "../../services/invokeService";
-import fs from "fs";
-import { ServerlessCommandMap } from "../../models/serverless";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureInvokePlugin extends AzureBasePlugin {
-  public hooks: { [eventName: string]: Promise<any> };
-  private commands: ServerlessCommandMap;
+
   private invokeService: InvokeService;
+
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     const path = this.options["path"];
@@ -31,6 +30,22 @@ export class AzureInvokePlugin extends AzureBasePlugin {
         usage: "Invoke command",
         lifecycleEvents: ["invoke"],
         options: {
+          resourceGroup: {
+            usage: "Resource group for the service",
+            shortcut: "g",
+          },
+          stage: {
+            usage: "Stage of service",
+            shortcut: "s"
+          },
+          region: {
+            usage: "Region of service",
+            shortcut: "r"
+          },
+          subscriptionId: {
+            usage: "Sets the Azure subscription ID",
+            shortcut: "i",
+          },
           function: {
             usage: "Function to call",
             shortcut: "f",

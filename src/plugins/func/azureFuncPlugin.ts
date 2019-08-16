@@ -3,8 +3,6 @@ import { FuncService } from "../../services/funcService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureFuncPlugin extends AzureBasePlugin {
-  public hooks: { [eventName: string]: Promise<any> };
-  public commands: any;
   private service: FuncService;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
