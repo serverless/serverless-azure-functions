@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+    - dev
+pr: none
+
+variables:
+- group: npm-release-credentials
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: 10.x
+
+- checkout: self
+  clean: true
+  persistCredentials: true
+  fetchDepth: 1
+
+- task: Bash@3
+  name: BumpNpmVersion
+  displayName: Bump NPM Prerelease Version
+  inputs:
+    targetType: filePath
+    filePath: ./scripts/version.sh
+    arguments: 'serverless/serverless-azure-functions'
+  env:
+    NPM_TOKEN: $(NPM_TOKEN)
+    GITHUB_ACCESS_TOKEN: $(GITHUB_ACCESS_TOKEN)
+    SOURCE_BRANCH: $(Build.SourceBranch)
+
+- task: Bash@3
+  displayName: 'Publish serverless-azure-functions to NPM'
+  inputs:
+    targetType: filePath
+    filePath: ./scripts/publish.sh
+    arguments: 'prerelease'
+  env:
+    NPM_TOKEN: $(NPM_TOKEN)
