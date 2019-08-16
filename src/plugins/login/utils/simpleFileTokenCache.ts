@@ -23,9 +23,13 @@ export class SimpleFileTokenCache implements adal.TokenCache {
   }
 
   public remove(entries: any[], callback?: (err?: Error, result?: null) => void) {
-    this.entries = this.entries.filter(e => {
-      return !Object.keys(entries[0]).every(key => e[key] === entries[0][key]);
-    });
+    this.entries = (this.entries)
+      ?
+      this.entries.filter(e => {
+        return !Object.keys(entries[0]).every(key => e[key] === entries[0][key]);
+      })
+      :
+      [];
     this.save();
     if (callback) {
       callback();
@@ -33,9 +37,13 @@ export class SimpleFileTokenCache implements adal.TokenCache {
   }
 
   public find(query: any, callback: (err?: Error, result?: any[]) => void) {
-    let result = this.entries.filter(e => {
-      return Object.keys(query).every(key => e[key] === query[key]);
-    });
+    let result = (this.entries)
+      ?
+      this.entries.filter(e => {
+        return Object.keys(query).every(key => e[key] === query[key]);
+      })
+      :
+      [];
     callback(null, result);
     return result;
   }
