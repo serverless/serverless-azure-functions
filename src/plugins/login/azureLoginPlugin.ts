@@ -33,8 +33,7 @@ export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
     }
     catch (e) {
       this.log("Error logging into azure");
-      this.log(`${e}`);
-      process.exit(0);
+      throw e; // Let Serverless Framework communicate the error
     }
   }
 }
