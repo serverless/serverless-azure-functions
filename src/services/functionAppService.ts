@@ -149,13 +149,11 @@ export class FunctionAppService extends BaseService {
     this.log("Deploying serverless functions...");
 
     const functionZipFile = this.getFunctionZipFile();
-    const uploadFunctionApp = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
-    const uploadBlobStorage = this.uploadZippedArtifactToBlobStorage(functionZipFile);
-
-    await Promise.all([uploadFunctionApp, uploadBlobStorage]);
+    const blobUpload = this.uploadZippedArtifactToBlobStorage(functionZipFile);
 
     if (this.deploymentConfig.runFromBlobUrl) {
       this.log("Updating function app setting to run from external package...");
+      await blobUpload;
       const sasUrl = await this.blobService.generateBlobSasTokenUrl(
         this.deploymentConfig.container,
         this.artifactName
@@ -165,6 +163,9 @@ export class FunctionAppService extends BaseService {
         configConstants.runFromPackageSetting,
         sasUrl
       )
+    } else {
+      const functionAppUpload = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
+      Promise.all([blobUpload, functionAppUpload]);
     }
 
     this.log("Deployed serverless functions:")
