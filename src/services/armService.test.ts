@@ -1,12 +1,12 @@
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ArmService } from "./armService";
-import { ArmResourceTemplate, ArmTemplateType, ArmDeployment } from "../models/armTemplates";
+import { ArmResourceTemplate, ArmTemplateType, ArmDeployment, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import mockFs from "mock-fs";
 import jsonpath from "jsonpath";
 import { Deployments } from "@azure/arm-resources";
-import { Deployment } from "@azure/arm-resources/esm/models";
+import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
 import { ResourceService } from "./resourceService";
 
 describe("Arm Service", () => {
@@ -30,7 +30,7 @@ describe("Arm Service", () => {
     };
 
     service = createService();
-    ResourceService.prototype.getDeployments = jest.fn(() => MockFactory.createTestDeployments()) as any;
+    ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(MockFactory.createTestDeployments())) as any;
     ResourceService.prototype.getDeploymentTemplate = jest.fn(() => {
       return {
         template: MockFactory.createTestArmTemplate()
@@ -166,6 +166,26 @@ describe("Arm Service", () => {
       };
       await service.deployTemplate(deployment);
       expect(Deployments.prototype.createOrUpdate).not.toBeCalled()
+    });
+
+    it("Calls deploy if previous template is the same but failed", async () => {
+      const deployments = MockFactory.createTestDeployments();
+      const failedDeployment: DeploymentExtended = {
+        ...deployments[0],
+        properties: {
+          ...deployments[0].properties,
+          provisioningState: ArmTemplateProvisioningState.Failed
+        }
+      }
+      deployments[0] = failedDeployment;
+      ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments))
+
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(false),
+        template: MockFactory.createTestArmTemplate()
+      };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).toBeCalled();
     });
 
     it("Calls deploy if parameters have changed from deployed template", async () => {
