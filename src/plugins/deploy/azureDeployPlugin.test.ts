@@ -64,4 +64,10 @@ describe("Deploy plugin", () => {
     expect(ResourceService.prototype.listDeployments).toBeCalled();
     expect(sls.cli.log).lastCalledWith(deploymentString);
   });
+	
+  it("crashes deploy if zip file is not found", async () => {
+    FunctionAppService.prototype.getFunctionZipFile = jest.fn(() => "notExisting.zip");
+    await expect(invokeHook(plugin, "deploy:deploy"))
+      .rejects.toThrow(/Function app zip file '.*' does not exist/)
+  });
 });
