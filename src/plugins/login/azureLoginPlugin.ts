@@ -4,7 +4,6 @@ import { AzureBasePlugin } from "../azureBasePlugin";
 import { loginHooks } from "./loginHooks";
 
 export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
-  public hooks: { [eventName: string]: Promise<any> };
 
   public constructor(serverless: Serverless, options: AzureLoginOptions) {
     super(serverless, options);

@@ -3,7 +3,6 @@ import AzureProvider from "../../provider/azureProvider";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureLogsPlugin extends AzureBasePlugin {
-  public hooks: { [eventName: string]: Promise<any> };
 
   private provider: AzureProvider;
 
