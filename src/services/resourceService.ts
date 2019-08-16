@@ -3,6 +3,8 @@ import { ResourceManagementClient } from "@azure/arm-resources";
 import { BaseService } from "./baseService";
 import { Utils } from "../shared/utils";
 import { AzureNamingService } from "./namingService";
+import { ArmDeployment } from "../models/armTemplates";
+import { DeploymentExtended } from "@azure/arm-resources/esm/models";
 
 export class ResourceService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -14,11 +16,40 @@ export class ResourceService extends BaseService {
   }
 
   /**
-   * Get all deployments for resource group
+   * Get all deployments for resource group sorted by timestamp (most recent first)
    */
   public async getDeployments() {
     this.log(`Listing deployments for resource group '${this.resourceGroup}':`);
-    return await this.resourceClient.deployments.listByResourceGroup(this.resourceGroup);
+    const deployments = await this.resourceClient.deployments.listByResourceGroup(this.resourceGroup);
+    return deployments.sort((a: DeploymentExtended, b: DeploymentExtended) => {
+      return (a.properties.timestamp > b.properties.timestamp) ? 1 : -1
+    });
+  }
+
+  /**
+   * Get the most recent resource group deployment
+   */
+  public async getLastDeployment() {
+    const deployments = await this.getDeployments();
+    if (deployments && deployments.length) {
+      return deployments[0];
+    }
+  }
+
+  /**
+   * Get template from last resource group deployment
+   */
+  public async getLastDeploymentTemplate(): Promise<ArmDeployment> {
+    const deployment = await this.getLastDeployment();
+    if (!deployment) {
+      return;
+    }
+    const { parameters } = deployment.properties;
+    const { template } = await this.getDeploymentTemplate(deployment.name);
+    return {
+      template,
+      parameters
+    }
   }
 
   /**

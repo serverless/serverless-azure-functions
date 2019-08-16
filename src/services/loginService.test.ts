@@ -22,7 +22,7 @@ describe("Login Service", () => {
     const emptyObj = { subscriptions: [] };
     Object.defineProperty(nodeauth,
       "interactiveLoginWithAuthResponse",
-      { value: jest.fn(_obj => emptyObj) }
+      { value: jest.fn(() => emptyObj) }
     );
 
     await AzureLoginService.login();
