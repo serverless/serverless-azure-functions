@@ -88,6 +88,10 @@ export interface ServerlessCommand {
   commands?: ServerlessCommandMap;
 }
 
+export interface ServerlessHookMap {
+  [eventName: string]: Promise<any>;
+}
+
 export interface ServerlessCommandMap {
   [command: string]: ServerlessCommand;
 }

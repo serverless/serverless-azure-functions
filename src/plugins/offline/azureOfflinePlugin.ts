@@ -3,8 +3,6 @@ import { OfflineService } from "../../services/offlineService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureOfflinePlugin extends AzureBasePlugin {
-  public hooks: { [eventName: string]: Promise<any> };
-  public commands: any;
   private offlineService: OfflineService;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
