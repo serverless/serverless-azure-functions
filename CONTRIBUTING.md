@@ -32,12 +32,69 @@ The easiest thing you can do to help us move forward and make an impact on our p
 
 You can do that by replying to [issues on Github](https://github.com/serverless/serverless-azure-functions/issues), chatting with other community members in [our Chat](http://chat.serverless.com) or helping with questions in [our Forum](http://forum.serverless.com).
 
+### Commit Message Format
+
+Each commit message consists of a **header**, a **body** and a **footer**.
+
+```text
+<type>: <short description>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+### Header
+
+#### Type
+
+Must be one of the following:
+
+* **build**: Changes that affect the build system or external dependencies
+* **ci**: Changes to our CI configuration files and scripts
+* **docs**: Documentation only changes
+* **feat**: A new feature
+* **fix**: A bug fix
+* **perf**: A code change that improves performance
+* **refactor**: A code change that neither fixes a bug nor adds a feature
+* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+* **test**: Adding missing tests or correcting existing tests
+
+#### Short Description
+
+Contains a succinct description of the change:
+
+* use the imperative, present tense: "change" not "changed" nor "changes"
+* don't capitalize the first letter
+* no dot (.) at the end
+
+### Body
+
+Just as in the **short description**, use the imperative, present tense: "change" not "changed" nor "changes".
+The body should include the motivation for the change and contrast this with previous behavior.
+
+### Footer
+
+The footer should contain any information about **breaking changes** and is also the place to
+reference Azure DevOps user stories/tasks or GitHub issues that this commit **closes**.
+
+### Commit Message Example
+
+```text
+fix: add debouncing to asset scroller to correct browser scroll position
+
+There is no debouncing when we store the asset container's scroll position.
+This results in erratic, jumpy scrolling and a poor user experience. Improve
+stability and usability with debouncing.
+
+AB#17056
+```
 
 ---
 
 # Code Style
 
-We aim for clean, consistent code style. We're using ESlint to check for codestyle issues using the Airbnb preset.
+We aim for clean, consistent code style. We're using ESlint to check for codestyle issues.
 
 ## Verifying linting style
 
@@ -55,7 +112,7 @@ To help reduce the effort of creating contributions with this style, an [.editor
 
 # Testing
 
-We aim for a (near) 100% test coverage, so make sure your tests cover as much of your code as possible.
+We aim for a (near) 80% test coverage, so make sure your tests cover as much of your code as possible.
 
 ## Test coverage
 
