@@ -174,7 +174,7 @@ describe("Arm Service", () => {
         ...deployments[0],
         properties: {
           ...deployments[0].properties,
-          provisioningState: ArmTemplateProvisioningState.Failed
+          provisioningState: ArmTemplateProvisioningState.FAILED
         }
       }
       deployments[0] = failedDeployment;

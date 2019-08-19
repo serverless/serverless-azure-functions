@@ -9,8 +9,8 @@ export interface ArmResourceTemplateGenerator {
 }
 
 export enum ArmTemplateProvisioningState {
-  Failed = "Failed",
-  Succeeded = "Succeeded",
+  FAILED = "Failed",
+  SUCCEEDED = "Succeeded",
 }
 
 /**

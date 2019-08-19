@@ -193,7 +193,7 @@ export class MockFactory {
       properties: {
         timestamp: new Date(2019, 1, 1, 0, 0, second),
         parameters: MockFactory.createTestParameters(),
-        provisioningState: ArmTemplateProvisioningState.Succeeded
+        provisioningState: ArmTemplateProvisioningState.SUCCEEDED
       }
     }
   }

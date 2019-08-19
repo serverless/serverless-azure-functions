@@ -41,7 +41,7 @@ export class ResourceService extends BaseService {
    */
   public async getLastDeploymentTemplate(): Promise<ArmDeployment> {
     const deployment = await this.getLastDeployment();
-    if (!deployment || deployment.properties.provisioningState !== ArmTemplateProvisioningState.Succeeded) {
+    if (!deployment || deployment.properties.provisioningState !== ArmTemplateProvisioningState.SUCCEEDED) {
       return;
     }
     const { parameters } = deployment.properties;
