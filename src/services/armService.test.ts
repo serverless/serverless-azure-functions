@@ -36,7 +36,6 @@ describe("Arm Service", () => {
         template: MockFactory.createTestArmTemplate()
       }
     }) as any;
-
   })
 
   afterEach(() => {
@@ -91,6 +90,11 @@ describe("Arm Service", () => {
 
     it("throws error when specified type is not found", async () => {
       await expect(service.createDeploymentFromType("not-found")).rejects.not.toBeNull();
+    });
+
+    it("throws error when invalid nodejs version in defined", async () => {
+      sls.service.provider["runtime"] = "10.6.1"; 
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid Node.js version");
     });
 
     it("Premium template includes correct resources", async () => {
@@ -212,7 +216,6 @@ describe("Arm Service", () => {
       };
 
       sls.service.provider["environment"] = environmentConfig
-
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
       await service.deployTemplate(deployment);
 

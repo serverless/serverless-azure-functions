@@ -108,6 +108,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
+      nodeVersion: config.provider.runtime 
     };
 
     return {

@@ -50,6 +50,7 @@ export interface ServerlessAzureProvider {
   hostingEnvironment?: ResourceConfig;
   virtualNetwork?: ResourceConfig;
   armTemplate?: ArmTemplateConfig;
+  runtime: string; 
 }
 
 export interface ServerlessAzureConfig {

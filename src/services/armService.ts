@@ -11,6 +11,8 @@ import { BaseService } from "./baseService";
 import { ResourceService } from "./resourceService"
 import deepEqual from "deep-equal";
 
+import nodeVersions from "./nodeVersion.json";
+
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
 
@@ -42,6 +44,12 @@ export class ArmService extends BaseService {
 
     const mergedTemplate = template.getTemplate();
     let parameters = template.getParameters(azureConfig);
+
+    if(this.config.provider["runtime"]){
+      if(!this.checkNodeVerion(this.config.provider["runtime"])){
+        throw new Error("Invalid Node.js version");
+      }
+    }
 
     if (this.config.provider.apim) {
       const apimTemplate = apimResource.getTemplate();
@@ -190,4 +198,13 @@ export class ArmService extends BaseService {
       });
     }
   }
+
+  private checkNodeVerion(version: string): boolean{ 
+    const object = nodeVersions["nodejs"]; 
+    for(const nodeVersion of object){ 
+      if(nodeVersion["version"] == version) 
+        return true; 
+    } 
+    return false; 
+  }  
 }
