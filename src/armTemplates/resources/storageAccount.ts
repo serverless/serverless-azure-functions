@@ -5,7 +5,13 @@ import configConstants from "../../config";
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getSafeResourceName(config, configConstants.naming.maxLength.storageAccount, config.provider.storageAccount);
+    return AzureNamingService.getSafeResourceName(
+      config,
+      configConstants.naming.maxLength.storageAccount,
+      config.provider.storageAccount,
+      "",
+      true
+    );
   }
 
   public getTemplate(): ArmResourceTemplate {

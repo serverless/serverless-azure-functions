@@ -2,6 +2,9 @@ import { AzureNamingService } from "./namingService"
 import { ServerlessAzureConfig } from "../models/serverless";
 
 describe("Naming Service", () => {
+
+  const resourceGroup = "myResourceGroup";
+
   it("Creates a short name for an azure region", () => {
     const expected = "ausse";
     const actual = AzureNamingService.createShortAzureRegionName("australiasoutheast");
@@ -96,6 +99,7 @@ describe("Naming Service", () => {
         name: "azure",
         region: "westus",
         stage: "dev",
+        resourceGroup,
       },
       service: "test-api"
     };
@@ -116,6 +120,7 @@ describe("Naming Service", () => {
         name: "azure",
         region: "westus",
         stage: "multicloud",
+        resourceGroup,
       },
       service: "extra-long-service-name"
     };

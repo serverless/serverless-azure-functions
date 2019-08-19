@@ -32,7 +32,8 @@ export const configConstants = {
   scmCommandApiPath: "/api/command",
   scmDomain: ".scm.azurewebsites.net",
   scmVfsPath: "/api/vfs/site/wwwroot/",
-  scmZipDeployApiPath: "/api/zipdeploy"
+  scmZipDeployApiPath: "/api/zipdeploy",
+  resourceGroupHashLength: 6,
 };
 
 export default configConstants;
