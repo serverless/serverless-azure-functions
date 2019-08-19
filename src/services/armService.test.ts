@@ -70,6 +70,7 @@ describe("Arm Service", () => {
     });
 
     it("Creates a custom ARM template from well-known type", async () => {
+      sls.service.provider.runtime = "10.14.1";
       const deployment = await service.createDeploymentFromType("premium");
 
       expect(deployment).not.toBeNull();
@@ -79,6 +80,7 @@ describe("Arm Service", () => {
 
     it("Creates a custom ARM template (with APIM support) from well-known type", async () => {
       sls.service.provider["apim"] = MockFactory.createTestApimConfig();
+      sls.service.provider.runtime = "10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Premium);
 
       expect(deployment).not.toBeNull();
@@ -100,8 +102,12 @@ describe("Arm Service", () => {
       sls.service.provider["runtime"] = "10.6.0"; 
       await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
     });
+    it("throws an error when no nodejs version in defined", async () => {
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Node.js runtime version not specified");
+    });
 
     it("Premium template includes correct resources", async () => {
+      sls.service.provider.runtime = "10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Premium);
 
       expect(deployment.template.parameters.appServicePlanSkuTier.defaultValue).toEqual("ElasticPremium");
@@ -124,6 +130,7 @@ describe("Arm Service", () => {
     });
 
     it("ASE template includes correct resources", async () => {
+      sls.service.provider.runtime = "10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.AppServiceEnvironment);
 
       expect(deployment.template.parameters.appServicePlanSkuTier.defaultValue).toEqual("Isolated");
@@ -149,6 +156,7 @@ describe("Arm Service", () => {
     });
 
     it("Consumption template includes correct resources", async () => {
+      sls.service.provider.runtime = "10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
 
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Web/hostingEnvironments")).toBeUndefined();
@@ -220,6 +228,7 @@ describe("Arm Service", () => {
       };
 
       sls.service.provider["environment"] = environmentConfig
+      sls.service.provider.runtime = "10.14.1";
 
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
       await service.deployTemplate(deployment);
@@ -231,6 +240,7 @@ describe("Arm Service", () => {
     });
 
     it("Deploys ARM template via resources REST API", async () => {
+      sls.service.provider.runtime = "10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
       const deploymentParameters = {};
       Object.keys(deployment.parameters).forEach((key) => {

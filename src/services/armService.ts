@@ -45,10 +45,12 @@ export class ArmService extends BaseService {
     const mergedTemplate = template.getTemplate();
     let parameters = template.getParameters(azureConfig);
 
-    if(this.config.provider["runtime"]){
-      if(!this.checkNodeVerion(this.config.provider["runtime"])){
-        throw new Error("Invalid Node.js version");
-      }
+    if(!this.config.provider.runtime){
+      throw new Error("Node.js runtime version not specified");
+    } 
+
+    if(!this.checkNodeVerion(this.config.provider.runtime)){
+      throw new Error("Invalid Node.js version");
     }
 
     if (this.config.provider.apim) {
