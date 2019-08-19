@@ -1,8 +1,12 @@
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 import { StorageAccountResource } from "./storageAccount";
+import md5 from "md5";
 
 describe("Storage Account Resource", () => {
+  const resourceGroup = "myResourceGroup";
+  const resourceGroupHash = md5(resourceGroup).substr(0, 6);
+
   const config: ServerlessAzureConfig = {
     functions: [],
     plugins: [],
@@ -11,6 +15,7 @@ describe("Storage Account Resource", () => {
       name: "azure",
       region: "westus",
       stage: "dev",
+      resourceGroup
     },
     service: "test-api"
   }
@@ -18,12 +23,16 @@ describe("Storage Account Resource", () => {
   it("Generates safe storage account name with short parts", () => {
     const testConfig: ServerlessAzureConfig = {
       ...config,
+      provider: {
+        ...config.provider,
+        resourceGroup
+      },
       service: "test-api",
     };
 
     const result = StorageAccountResource.getResourceName(testConfig);
     assertValidStorageAccountName(testConfig, result);
-    expect(result.startsWith("slswusdev")).toBe(true);
+    expect(result).toEqual(`slswusdev${resourceGroupHash}`);
   });
 
   it("Generates safe storage account names with long parts", () => {
@@ -33,13 +42,14 @@ describe("Storage Account Resource", () => {
         ...config.provider,
         prefix: "my-long-test-prefix-name",
         region: "Australia Southeast",
-        stage: "development"
+        stage: "development",
+        resourceGroup
       }
     };
 
     const result = StorageAccountResource.getResourceName(testConfig);
     assertValidStorageAccountName(testConfig, result);
-    expect(result.startsWith("mylaussedev")).toBe(true);
+    expect(result).toEqual(`mylaussedev${resourceGroupHash}`)
   });
 
   it("Generating a storage account name is idempotent", () => {
