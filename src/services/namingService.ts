@@ -83,7 +83,7 @@ export class AzureNamingService {
 
     const safeHash = md5(config.provider.resourceGroup).substr(0, hashLength);
 
-    const name = [safePrefix, safeRegion, safeStage, safeSuffix, safeHash]
+    const name = [safePrefix, safeRegion, safeStage, safeHash, safeSuffix]
       .join("")
       .toLowerCase();
 
