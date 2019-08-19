@@ -42,6 +42,7 @@ export abstract class BaseService {
     this.credentials = serverless.variables["azureCredentials"];
     this.subscriptionId = serverless.variables["subscriptionId"];
     this.resourceGroup = this.getResourceGroupName();
+    this.config.provider.resourceGroup = this.resourceGroup;
     this.deploymentConfig = this.getDeploymentConfig();
     this.deploymentName = this.getDeploymentName();
     this.artifactName = this.getArtifactName(this.deploymentName);

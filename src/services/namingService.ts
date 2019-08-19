@@ -1,6 +1,7 @@
 import { ServerlessAzureConfig, ResourceConfig } from "../models/serverless"
 import { Guard } from "../shared/guard"
 import configConstants from "../config";
+import md5 from "md5";
 
 export class AzureNamingService {
 
@@ -45,7 +46,9 @@ export class AzureNamingService {
    * @param forbidden Regex for characters to remove from name. Defaults to non-alpha-numerics
    * @param replaceWith String to replace forbidden characters. Defaults to empty string
    */
-  public static getSafeResourceName(config: ServerlessAzureConfig, maxLength: number, resourceConfig?: ResourceConfig, suffix: string = "", forbidden: RegExp = /\W+/g, replaceWith: string = "") {
+  public static getSafeResourceName(config: ServerlessAzureConfig, maxLength: number, resourceConfig?: ResourceConfig, suffix: string = "", includeHash = false) {
+    const nonAlphaNumeric = /\W+/g;
+
     if (resourceConfig && resourceConfig.name) {
       const { name } = resourceConfig;
 
@@ -53,17 +56,18 @@ export class AzureNamingService {
         throw new Error(`Name '${name}' invalid. Should be shorter than ${maxLength} characters`);
       }
 
-      return name.replace(forbidden, replaceWith);
+      return name.replace(nonAlphaNumeric, "");
     }
 
     const { prefix, region, stage } = config.provider;
 
-    let safePrefix = prefix.replace(forbidden, replaceWith);
+    let safePrefix = prefix.replace(nonAlphaNumeric, "");
     const safeRegion = this.createShortAzureRegionName(region);
     let safeStage = this.createShortStageName(stage);
-    let safeSuffix = suffix.replace(forbidden, replaceWith);
+    let safeSuffix = suffix.replace(nonAlphaNumeric, "");
 
-    const remaining = maxLength - (safePrefix.length + safeRegion.length + safeStage.length + safeSuffix.length);
+    const hashLength = (includeHash) ? configConstants.resourceGroupHashLength : 0;
+    const remaining = maxLength - (safePrefix.length + safeRegion.length + safeStage.length + safeSuffix.length + hashLength);
 
     // Dynamically adjust the substring based on space needed
     if (remaining < 0) {
@@ -77,9 +81,17 @@ export class AzureNamingService {
       safeSuffix = safeSuffix.substr(0, partLength);
     }
 
-    return [safePrefix, safeRegion, safeStage, safeSuffix]
+    const safeHash = md5(config.provider.resourceGroup).substr(0, hashLength);
+
+    const name = [safePrefix, safeRegion, safeStage, safeHash, safeSuffix]
       .join("")
       .toLowerCase();
+
+    if (name.length > maxLength) {
+      throw new Error(`Name ${name} is too long. Should be shorter than ${maxLength} characters`)
+    }
+
+    return name;
   }
 
   /**
