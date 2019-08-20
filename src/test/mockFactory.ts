@@ -12,7 +12,7 @@ import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
-import { ArmDeployment, ArmResourceTemplate } from "../models/armTemplates";
+import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
 import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig } from "../models/serverless";
@@ -193,6 +193,7 @@ export class MockFactory {
       properties: {
         timestamp: new Date(2019, 1, 1, 0, 0, second),
         parameters: MockFactory.createTestParameters(),
+        provisioningState: ArmTemplateProvisioningState.SUCCEEDED
       }
     }
   }

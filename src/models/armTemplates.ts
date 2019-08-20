@@ -8,6 +8,11 @@ export interface ArmResourceTemplateGenerator {
   getParameters(config: ServerlessAzureConfig): any;
 }
 
+export enum ArmTemplateProvisioningState {
+  FAILED = "Failed",
+  SUCCEEDED = "Succeeded",
+}
+
 /**
  * The well-known serverless Azure template types
  */

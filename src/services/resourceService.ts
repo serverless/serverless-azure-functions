@@ -3,7 +3,7 @@ import { ResourceManagementClient } from "@azure/arm-resources";
 import { BaseService } from "./baseService";
 import { Utils } from "../shared/utils";
 import { AzureNamingService } from "./namingService";
-import { ArmDeployment } from "../models/armTemplates";
+import { ArmDeployment, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { DeploymentExtended } from "@azure/arm-resources/esm/models";
 
 export class ResourceService extends BaseService {
@@ -41,7 +41,7 @@ export class ResourceService extends BaseService {
    */
   public async getLastDeploymentTemplate(): Promise<ArmDeployment> {
     const deployment = await this.getLastDeployment();
-    if (!deployment) {
+    if (!deployment || deployment.properties.provisioningState !== ArmTemplateProvisioningState.SUCCEEDED) {
       return;
     }
     const { parameters } = deployment.properties;
