@@ -46,11 +46,12 @@ export class ArmService extends BaseService {
     let parameters = template.getParameters(azureConfig);
 
     if(!this.config.provider.runtime){
-      throw new Error("Node.js runtime version not specified");
+      this.log("Using default Node.js runtime version: 10.14.1");
     } 
-
-    if(!this.checkNodeVerion(this.config.provider.runtime)){
-      throw new Error("Invalid Node.js version");
+    else{
+      if(!this.getNodeVersion(this.config.provider.runtime)){
+        throw new Error("Invalid Node.js version");
+      }
     }
 
     if (this.config.provider.apim) {
@@ -201,12 +202,12 @@ export class ArmService extends BaseService {
     }
   }
 
-  private checkNodeVerion(version: string): boolean{ 
+  private getNodeVersion(input: string): string{ 
     const object = nodeVersions["nodejs"]; 
     for(const nodeVersion of object){ 
-      if(nodeVersion["version"] == version) 
-        return true; 
+      if(nodeVersion["version"] == input || nodeVersion["type-latest"] == input) 
+        return nodeVersion["version"]; 
     } 
-    return false; 
+    return null; 
   }  
 }

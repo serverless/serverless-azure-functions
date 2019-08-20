@@ -95,15 +95,16 @@ describe("Arm Service", () => {
     });
 
     it("throws error when invalid nodejs version in defined", async () => {
-      sls.service.provider["runtime"] = "10.6.1"; 
+      sls.service.provider.runtime = "10.6.1"; 
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid Node.js version");
     });
     it("Does not throw an error when valid nodejs version in defined", async () => {
-      sls.service.provider["runtime"] = "10.6.0"; 
+      sls.service.provider.runtime = "nodejs10.x"; 
       await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
     });
     it("throws an error when no nodejs version in defined", async () => {
-      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Node.js runtime version not specified");
+      await service.createDeploymentFromType("premium");
+      expect(sls.cli.log).lastCalledWith("Using default Node.js runtime version: 10.14.1", undefined, undefined);
     });
 
     it("Premium template includes correct resources", async () => {
