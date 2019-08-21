@@ -129,7 +129,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     const nodeVersionObject = nodeVersions["nodejs"];
 
     for(const nodeVersion of nodeVersionObject){ 
-      if(runtime.includes(nodeVersion["version"])){
+      if(runtime.includes(nodeVersion["version"]) && semver.valid(nodeVersion["version"])){
         return nodeVersion["version"]; }
     } 
     
@@ -140,7 +140,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     
       for(const nodeVersion of nodeVersionObject){ 
         let runtimeMajorVersion = nodeVersion["version"].split(".", 1);
-        if(runtimeMajorVersion[0] == majorVersion){
+        if(runtimeMajorVersion[0] == majorVersion && semver.valid(nodeVersion["version"])){
           nodeVersionsArray.push(nodeVersion["version"]);
         }
       } 

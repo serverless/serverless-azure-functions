@@ -95,7 +95,7 @@ describe("Arm Service", () => {
     });
 
     it("throws error when invalid nodejs version in defined", async () => {
-      sls.service.provider.runtime = "nodejs10.5"; 
+      sls.service.provider.runtime = "nodejs10.6.1"; 
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid Node.js version");
     });
 
