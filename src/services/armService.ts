@@ -11,8 +11,6 @@ import { BaseService } from "./baseService";
 import { ResourceService } from "./resourceService"
 import deepEqual from "deep-equal";
 
-import nodeVersions from "./nodeVersion.json";
-
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
 
@@ -41,10 +39,10 @@ export class ArmService extends BaseService {
     }
 
     const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
-
+    /*
     this.config.provider.runtime = this.getNodeVersion(this.config.provider.runtime);
     this.log(`Using Node.js runtime version: ${this.config.provider.runtime}`);
- 
+    */
     const mergedTemplate = template.getTemplate();
     let parameters = template.getParameters(azureConfig);
 
@@ -195,45 +193,4 @@ export class ArmService extends BaseService {
       });
     }
   }
-
-  private getNodeVersion(runtime: string): string{ 
-    if(!runtime )
-      throw new Error("Node.js runtime version not specified in serverless.yml");
-
-    const nodeVersionObject = nodeVersions["nodejs"];
-
-    for(const nodeVersion of nodeVersionObject){ 
-      if(runtime.includes(nodeVersion["version"])){
-        return nodeVersion["version"]; }
-    } 
-    
-    //Searches for the latest verison
-    if(runtime.includes(".x")){
-      let majorVersion = this.getMajorVersion(runtime);
-      let nodeVersionsArray: string[] = [];
-    
-      for(const nodeVersion of nodeVersionObject){ 
-        let runtimeMajorVersion = nodeVersion["version"].split(".", 1);
-        if(runtimeMajorVersion[0] == majorVersion){
-          nodeVersionsArray.push(nodeVersion["version"]);
-        }
-      } 
-
-      if(nodeVersionsArray.length != 0)
-        return this.latestVersion(nodeVersionsArray);
-    }
-    throw new Error("Invalid Node.js version");
-  }  
-
-  private getMajorVersion(runtime: string): string{
-    return runtime.replace(/[^0-9]/g,"");
-  }
-
-  private latestVersion(versionsArray: string[]): string{
-    versionsArray = versionsArray.map( a => a.split(".").map( b => +b+100000 ).join(".") ).sort()
-      .map( a => a.split(".").map( b => +b-100000 ).join(".") );    
-
-    return versionsArray[versionsArray.length-1];
-  }
-
 }

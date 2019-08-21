@@ -2,6 +2,9 @@ import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 
+import nodeVersions from "../../services/nodeVersion.json";
+import semver from "semver";
+
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const safeServiceName = config.service.replace(/\s/g, "-");
@@ -19,6 +22,10 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           "type": "String"
         },
         "functionAppName": {
+          "defaultValue": "",
+          "type": "String"
+        },
+        "functionAppNodeVersion": {
           "defaultValue": "",
           "type": "String"
         },
@@ -79,6 +86,10 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                   "value": "[toLower(parameters('functionAppName'))]"
                 },
                 {
+                  "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                  "value": "[parameters('functionAppNodeVersion')]"
+                },
+                {
                   "name": "WEBSITE_RUN_FROM_PACKAGE",
                   "value": "[parameters('functionAppRunFromPackage')]"
                 },
@@ -100,7 +111,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
-      nodeVersion: config.provider.runtime 
+      nodeVersion: this.getNodeVersion(config.provider.runtime)
     };
 
     return {
@@ -110,4 +121,33 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       functionAppExtensionVersion: resourceConfig.extensionVersion,
     };
   }
+
+  private getNodeVersion(runtime: string): string{ 
+    if(!runtime )
+      throw new Error("Node.js runtime version not specified in serverless.yml");
+
+    const nodeVersionObject = nodeVersions["nodejs"];
+
+    for(const nodeVersion of nodeVersionObject){ 
+      if(runtime.includes(nodeVersion["version"])){
+        return nodeVersion["version"]; }
+    } 
+    
+    //Searches for the latest verison
+    if(runtime.includes(".x")){
+      let majorVersion =  runtime.replace(/[^0-9]/g,"");
+      let nodeVersionsArray: string[] = [];
+    
+      for(const nodeVersion of nodeVersionObject){ 
+        let runtimeMajorVersion = nodeVersion["version"].split(".", 1);
+        if(runtimeMajorVersion[0] == majorVersion){
+          nodeVersionsArray.push(nodeVersion["version"]);
+        }
+      } 
+
+      if(nodeVersionsArray.length != 0)
+        return nodeVersionsArray.sort(semver.rcompare)[0];
+    }
+    throw new Error("Invalid Node.js version");
+  }  
 }
