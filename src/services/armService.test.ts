@@ -70,7 +70,7 @@ describe("Arm Service", () => {
     });
 
     it("Creates a custom ARM template from well-known type", async () => {
-      sls.service.provider.runtime = "10.14.1";
+      sls.service.provider.runtime = "nodejs10.14.1";
       const deployment = await service.createDeploymentFromType("premium");
 
       expect(deployment).not.toBeNull();
@@ -80,7 +80,7 @@ describe("Arm Service", () => {
 
     it("Creates a custom ARM template (with APIM support) from well-known type", async () => {
       sls.service.provider["apim"] = MockFactory.createTestApimConfig();
-      sls.service.provider.runtime = "10.14.1";
+      sls.service.provider.runtime = "nodejs10.x";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Premium);
 
       expect(deployment).not.toBeNull();
@@ -95,20 +95,36 @@ describe("Arm Service", () => {
     });
 
     it("throws error when invalid nodejs version in defined", async () => {
-      sls.service.provider.runtime = "10.6.1"; 
+      sls.service.provider.runtime = "nodejs10.5"; 
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid Node.js version");
     });
+
+    it("throws error when incomplete nodejs version in defined", async () => {
+      sls.service.provider.runtime = "nodejs8"; 
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid Node.js version");
+    });
+
+    it("throws error when unsupported nodejs version in defined", async () => {
+      sls.service.provider.runtime = "nodejs5.x"; 
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid Node.js version");
+    });
+
     it("Does not throw an error when valid nodejs version in defined", async () => {
       sls.service.provider.runtime = "nodejs10.x"; 
       await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
     });
+
+    it("Does not throw an error when specific nodejs version in defined", async () => {
+      sls.service.provider.runtime = "nodejs10.6.0"; 
+      await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
+    });
+
     it("throws an error when no nodejs version in defined", async () => {
-      await service.createDeploymentFromType("premium");
-      expect(sls.cli.log).lastCalledWith("Using default Node.js runtime version: 10.14.1", undefined, undefined);
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Node.js runtime version not specified in serverless.yml");
     });
 
     it("Premium template includes correct resources", async () => {
-      sls.service.provider.runtime = "10.14.1";
+      sls.service.provider.runtime = "nodejs10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Premium);
 
       expect(deployment.template.parameters.appServicePlanSkuTier.defaultValue).toEqual("ElasticPremium");
@@ -131,7 +147,7 @@ describe("Arm Service", () => {
     });
 
     it("ASE template includes correct resources", async () => {
-      sls.service.provider.runtime = "10.14.1";
+      sls.service.provider.runtime = "nodejs10.14.1";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.AppServiceEnvironment);
 
       expect(deployment.template.parameters.appServicePlanSkuTier.defaultValue).toEqual("Isolated");

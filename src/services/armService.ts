@@ -42,17 +42,11 @@ export class ArmService extends BaseService {
 
     const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
 
+    this.config.provider.runtime = this.getNodeVersion(this.config.provider.runtime);
+    this.log(`Using Node.js runtime version: ${this.config.provider.runtime}`);
+ 
     const mergedTemplate = template.getTemplate();
     let parameters = template.getParameters(azureConfig);
-
-    if(!this.config.provider.runtime){
-      this.log("Using default Node.js runtime version: 10.14.1");
-    } 
-    else{
-      if(!this.getNodeVersion(this.config.provider.runtime)){
-        throw new Error("Invalid Node.js version");
-      }
-    }
 
     if (this.config.provider.apim) {
       const apimTemplate = apimResource.getTemplate();
@@ -202,12 +196,44 @@ export class ArmService extends BaseService {
     }
   }
 
-  private getNodeVersion(input: string): string{ 
-    const object = nodeVersions["nodejs"]; 
-    for(const nodeVersion of object){ 
-      if(nodeVersion["version"] == input || nodeVersion["type-latest"] == input) 
-        return nodeVersion["version"]; 
+  private getNodeVersion(runtime: string): string{ 
+    if(!runtime )
+      throw new Error("Node.js runtime version not specified in serverless.yml");
+
+    const nodeVersionObject = nodeVersions["nodejs"];
+
+    for(const nodeVersion of nodeVersionObject){ 
+      if(runtime.includes(nodeVersion["version"])){
+        return nodeVersion["version"]; }
     } 
-    return null; 
+    
+    //Searches for the latest verison
+    if(runtime.includes(".x")){
+      let majorVersion = this.getMajorVersion(runtime);
+      let nodeVersionsArray: string[] = [];
+    
+      for(const nodeVersion of nodeVersionObject){ 
+        let runtimeMajorVersion = nodeVersion["version"].split(".", 1);
+        if(runtimeMajorVersion[0] == majorVersion){
+          nodeVersionsArray.push(nodeVersion["version"]);
+        }
+      } 
+
+      if(nodeVersionsArray.length != 0)
+        return this.latestVersion(nodeVersionsArray);
+    }
+    throw new Error("Invalid Node.js version");
   }  
+
+  private getMajorVersion(runtime: string): string{
+    return runtime.replace(/[^0-9]/g,"");
+  }
+
+  private latestVersion(versionsArray: string[]): string{
+    versionsArray = versionsArray.map( a => a.split(".").map( b => +b+100000 ).join(".") ).sort()
+      .map( a => a.split(".").map( b => +b-100000 ).join(".") );    
+
+    return versionsArray[versionsArray.length-1];
+  }
+
 }

@@ -22,10 +22,6 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           "defaultValue": "",
           "type": "String"
         },
-        "functionAppNodeVersion": {
-          "defaultValue": "10.14.1",
-          "type": "String"
-        },
         "functionAppWorkerRuntime": {
           "defaultValue": "node",
           "type": "String"
@@ -81,10 +77,6 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 {
                   "name": "WEBSITE_CONTENTSHARE",
                   "value": "[toLower(parameters('functionAppName'))]"
-                },
-                {
-                  "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                  "value": "[parameters('functionAppNodeVersion')]"
                 },
                 {
                   "name": "WEBSITE_RUN_FROM_PACKAGE",

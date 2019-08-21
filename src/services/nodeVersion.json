@@ -19,8 +19,7 @@
         "npm": "6.4.1"
     }, {
         "version": "10.15.2",
-        "npm": "6.4.1",
-        "type-latest": "nodejs10.x"
+        "npm": "6.4.1"
     }, {
         "version": "10.6.0",
         "npm": "6.1.0"
