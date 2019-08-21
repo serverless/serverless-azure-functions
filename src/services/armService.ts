@@ -39,10 +39,6 @@ export class ArmService extends BaseService {
     }
 
     const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
-    /*
-    this.config.provider.runtime = this.getNodeVersion(this.config.provider.runtime);
-    this.log(`Using Node.js runtime version: ${this.config.provider.runtime}`);
-    */
     const mergedTemplate = template.getTemplate();
     let parameters = template.getParameters(azureConfig);
 
