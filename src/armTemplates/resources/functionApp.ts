@@ -2,7 +2,8 @@ import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 
-import nodeVersions from "../../services/nodeVersion.json";
+//Runtime versions found at " https://<sitename>.scm.azurewebsites.net/api/diagnostics/runtime".
+import runtimeVersionsJson from "../../services/runtimeVersions.json";
 import semver from "semver";
 
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
@@ -123,31 +124,37 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   }
 
   private getNodeVersion(runtime: string): string{ 
-    if(!runtime )
-      throw new Error("Node.js runtime version not specified in serverless.yml");
+    if(!runtime ) {
+      throw new Error("Runtime version not specified in serverless.yml");
+    }
+    const runtimeVersionsList = runtimeVersionsJson["nodejs"];
 
-    const nodeVersionObject = nodeVersions["nodejs"];
-
-    for(const nodeVersion of nodeVersionObject){ 
-      if(runtime.includes(nodeVersion["version"]) && semver.valid(nodeVersion["version"])){
-        return nodeVersion["version"]; }
-    } 
+    //Searches for a specific version. For example nodejs10.6.0.
+    if(!runtime.includes(".x")) {
+      let retrivedVersion: string;
+      for(const version of runtimeVersionsList){
+        retrivedVersion = version["version"]; 
+        if(runtime.includes(retrivedVersion) && semver.valid(retrivedVersion)){
+          return retrivedVersion; 
+        }
+      }
+    }
+    else {
+      let versionsShortlist: string[] = [];
+      let retrivedVersion: string;
+      const extractedVersion = runtime.replace(/[^0-9\.]/g,"");
     
-    //Searches for the latest verison
-    if(runtime.includes(".x")){
-      let majorVersion =  runtime.replace(/[^0-9]/g,"");
-      let nodeVersionsArray: string[] = [];
-    
-      for(const nodeVersion of nodeVersionObject){ 
-        let runtimeMajorVersion = nodeVersion["version"].split(".", 1);
-        if(runtimeMajorVersion[0] == majorVersion && semver.valid(nodeVersion["version"])){
-          nodeVersionsArray.push(nodeVersion["version"]);
+      for(const version of runtimeVersionsList){ 
+        retrivedVersion = version["version"];
+        // matches extracted version to retrived versions and splits the strings to checks if major versions are equal. 
+        if(retrivedVersion.split(".", 1)[0] === extractedVersion.split(".", 1)[0] && retrivedVersion.includes(extractedVersion) && semver.valid(retrivedVersion)){
+          versionsShortlist.push(retrivedVersion);
         }
       } 
 
-      if(nodeVersionsArray.length != 0)
-        return nodeVersionsArray.sort(semver.rcompare)[0];
+      if(versionsShortlist.length != 0)
+        return versionsShortlist.sort(semver.rcompare)[0];
     }
-    throw new Error("Invalid Node.js version");
+    throw new Error("Invalid runtime version");
   }  
 }
