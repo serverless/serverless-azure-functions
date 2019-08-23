@@ -112,7 +112,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
-      nodeVersion: this.getNodeVersion(config.provider.runtime)
+      nodeVersion: this.getRuntimeVersion(config.provider.runtime)
     };
 
     return {
@@ -123,7 +123,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  private getNodeVersion(runtime: string): string{ 
+  private getRuntimeVersion(runtime: string): string{ 
     if(!runtime) {
       throw new Error("Runtime version not specified in serverless.yml");
     }
