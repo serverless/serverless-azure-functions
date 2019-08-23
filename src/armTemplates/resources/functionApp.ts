@@ -124,37 +124,35 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   }
 
   private getNodeVersion(runtime: string): string{ 
-    if(!runtime ) {
+    if(!runtime) {
       throw new Error("Runtime version not specified in serverless.yml");
     }
+    const extractedVersion = runtime.split("nodejs")[1];
     const runtimeVersionsList = runtimeVersionsJson["nodejs"];
 
     //Searches for a specific version. For example nodejs10.6.0.
-    if(!runtime.includes(".x")) {
+    if(!extractedVersion.endsWith(".x")) {
       let retrivedVersion: string;
       for(const version of runtimeVersionsList){
         retrivedVersion = version["version"]; 
-        if(runtime.includes(retrivedVersion) && semver.valid(retrivedVersion)){
+        if(extractedVersion === retrivedVersion && semver.valid(retrivedVersion)){
           return retrivedVersion; 
         }
       }
     }
     else {
-      let versionsShortlist: string[] = [];
-      let retrivedVersion: string;
-      const extractedVersion = runtime.replace(/[^0-9\.]/g,"");
-    
-      for(const version of runtimeVersionsList){ 
-        retrivedVersion = version["version"];
-        // matches extracted version to retrived versions and splits the strings to checks if major versions are equal. 
-        if(retrivedVersion.split(".", 1)[0] === extractedVersion.split(".", 1)[0] && retrivedVersion.includes(extractedVersion) && semver.valid(retrivedVersion)){
-          versionsShortlist.push(retrivedVersion);
-        }
-      } 
+      // User specified something like nodejs10.14.x
+      const extractedVersionNumber = extractedVersion.replace(/[^0-9\.]/g,"");
 
-      if(versionsShortlist.length != 0)
-        return versionsShortlist.sort(semver.rcompare)[0];
+      const selectedVersions = runtimeVersionsList.filter(({ version }) => {
+        return version.startsWith(extractedVersionNumber) && semver.valid(version)
+      }).map((item) => item.version);
+
+      if (!selectedVersions.length) {
+        throw new Error(`Could not find runtime version matching ${runtime}`)
+      }
+      return selectedVersions.sort(semver.rcompare)[0]
     }
-    throw new Error("Invalid runtime version");
+    throw new Error(`Could not find runtime version matching ${runtime}`)
   }  
 }

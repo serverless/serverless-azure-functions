@@ -96,17 +96,17 @@ describe("Arm Service", () => {
 
     it("throws error when invalid nodejs version in defined", async () => {
       sls.service.provider.runtime = "nodejs10.6.1"; 
-      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid runtime version");
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Could not find runtime version matching nodejs10.6.1");
     });
 
     it("throws error when incomplete nodejs version in defined", async () => {
       sls.service.provider.runtime = "nodejs8"; 
-      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid runtime version");
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Could not find runtime version matching nodejs8");
     });
 
     it("throws error when unsupported nodejs version in defined", async () => {
       sls.service.provider.runtime = "nodejs5.x"; 
-      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Invalid runtime version");
+      await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Could not find runtime version matching nodejs5.x");
     });
 
     it("Does not throw an error when valid nodejs version is defined", async () => {
