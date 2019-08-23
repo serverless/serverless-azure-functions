@@ -2,6 +2,10 @@ import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 
+//Runtime versions found at " https://<sitename>.scm.azurewebsites.net/api/diagnostics/runtime".
+import runtimeVersionsJson from "../../services/runtimeVersions.json";
+import semver from "semver";
+
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const safeServiceName = config.service.replace(/\s/g, "-");
@@ -23,7 +27,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           "type": "String"
         },
         "functionAppNodeVersion": {
-          "defaultValue": "10.14.1",
+          "defaultValue": "",
           "type": "String"
         },
         "functionAppWorkerRuntime": {
@@ -108,6 +112,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): any {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
+      nodeVersion: this.getRuntimeVersion(config.provider.runtime)
     };
 
     return {
@@ -117,4 +122,37 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       functionAppExtensionVersion: resourceConfig.extensionVersion,
     };
   }
+
+  private getRuntimeVersion(runtime: string): string{ 
+    if(!runtime) {
+      throw new Error("Runtime version not specified in serverless.yml");
+    }
+    const extractedVersion = runtime.split("nodejs")[1];
+    const runtimeVersionsList = runtimeVersionsJson["nodejs"];
+
+    //Searches for a specific version. For example nodejs10.6.0.
+    if(!extractedVersion.endsWith(".x")) {
+      let retrivedVersion: string;
+      for(const version of runtimeVersionsList){
+        retrivedVersion = version["version"]; 
+        if(extractedVersion === retrivedVersion && semver.valid(retrivedVersion)){
+          return retrivedVersion; 
+        }
+      }
+    }
+    else {
+      // User specified something like nodejs10.14.x
+      const extractedVersionNumber = extractedVersion.replace(/[^0-9\.]/g,"");
+
+      const selectedVersions = runtimeVersionsList.filter(({ version }) => {
+        return version.startsWith(extractedVersionNumber) && semver.valid(version)
+      }).map((item) => item.version);
+
+      if (!selectedVersions.length) {
+        throw new Error(`Could not find runtime version matching ${runtime}`)
+      }
+      return selectedVersions.sort(semver.rcompare)[0]
+    }
+    throw new Error(`Could not find runtime version matching ${runtime}`)
+  }  
 }

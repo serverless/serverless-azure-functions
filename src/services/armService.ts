@@ -39,7 +39,6 @@ export class ArmService extends BaseService {
     }
 
     const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
-
     const mergedTemplate = template.getTemplate();
     let parameters = template.getParameters(azureConfig);
 
