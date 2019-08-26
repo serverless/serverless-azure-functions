@@ -7,9 +7,6 @@ pr:
   - master
   - dev
 
-pool:
-  vmImage: 'ubuntu-16.04'
-
 jobs:
 - template: pipelines/templates/unit-tests.yml
   parameters:
