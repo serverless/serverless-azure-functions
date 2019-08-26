@@ -10,8 +10,8 @@ pr:
 jobs:
 - template: templates/unit-tests.yml  # path relative to this file
   parameters:
-    nodeVersion: 8.x
+    nodeVersion: 8
 
 - template: templates/unit-tests.yml
   parameters:
-    nodeVersion: 10.x
+    nodeVersion: 10

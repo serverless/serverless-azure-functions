@@ -1,6 +1,6 @@
 jobs:
 - job: "Test_${{ parameters.nodeVersion }}"
-  displayName: "Run tests on ${{ parameters.nodeVersion }}"
+  displayName: "Run tests on node ${{ parameters.nodeVersion }}"
   pool:
     vmImage: 'ubuntu-16.04'
 
@@ -8,14 +8,14 @@ jobs:
   - task: NodeTool@0
     displayName: 'Use Node ${{ parameters.nodeVersion }}'
     inputs:
-      versionSpec: ${{ parameters.nodeVersion }}
+      versionSpec: ${{ parameters.nodeVersion }}.x
 
   - bash: |
       npm run compile
       npm run test:coverage
     displayName: 'Run tests'
 
-  - ${{ if eq(parameters.nodeVersion, '10.x') }}:
+  - ${{ if eq(parameters.nodeVersion, '8') }}:
     - bash: |
         cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
       displayName: 'Upload code coverage report'
