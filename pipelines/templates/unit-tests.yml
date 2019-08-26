@@ -1,8 +1,16 @@
 jobs:
-- job: "Test_${{ parameters.nodeVersion }}"
-  displayName: "Run tests on node ${{ parameters.nodeVersion }}"
+- job: "${{ parameters.os }}_${{ parameters.nodeVersion }}"
+  strategy:
+    matrix:
+      linux:
+        imageName: 'ubuntu-16.04'
+      mac:
+        imageName: 'macos-10.13'
+      windows:
+        imageName: 'vs2017-win2016'
+  displayName: "NodeJs ${{ parameters.nodeVersion }}"
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: $(imageName)
 
   steps:
   - task: NodeTool@0
@@ -23,3 +31,4 @@ jobs:
       env:
         COVERALLS_SERVICE_NAME: "Azure DevOps"
         COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
+      condition: eq(variables['imageName'], 'linux')
