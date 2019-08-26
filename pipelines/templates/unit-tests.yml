@@ -1,0 +1,17 @@
+jobs:
+- job: "Run tests on ${{ parameters.version }}"
+  steps:
+  - task: NodeTool@0
+    displayName: 'Use Node 10.x'
+    inputs:
+      versionSpec: 10.x
+
+  - bash: |
+    npm run compile
+    npm run test:coverage
+  displayName: 'Run tests'
+
+  - ${{ if eq(parameters.nodeVersion, '10.x') }}:
+    - bash: |
+        cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+      displayName: 'Upload code coverage report'
