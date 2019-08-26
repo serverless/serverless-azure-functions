@@ -25,6 +25,10 @@ export class AzurePackagePlugin extends AzureBasePlugin {
       this.log("No need to create bindings. Using pre-existing package");
       return Promise.resolve();
     }
+    if (this.config.package && this.config.package.individually) {
+      throw new Error("Cannot package Azure Functions individually. " +
+        "Remove `individually` attribute from the `package` section of the serverless config");
+    }
     await this.packageService.createBindings();
     this.bindingsCreated = true;
 

@@ -41,6 +41,17 @@ describe("Azure Package Plugin", () => {
     expect(PackageService.prototype.cleanUp).toBeCalled();
   });
 
+  it("Throws an error of package.individually is specified", async () => {
+    const slsService = MockFactory.createTestService();
+    slsService["package"] = { individually: true };
+    sls = MockFactory.createTestServerless({ service: slsService });
+    plugin = new AzurePackagePlugin(sls, MockFactory.createTestServerlessOptions());
+    await expect(invokeHook(plugin, "before:package:setupProviderConfiguration")).rejects.toThrow(
+      "Cannot package Azure Functions individually. " +
+      "Remove `individually` attribute from the `package` section of the serverless config"
+    );
+  });
+
   describe("Package specified in options", () => {
 
     beforeEach(() => {

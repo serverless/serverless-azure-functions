@@ -1,11 +1,12 @@
 import { Guard } from "../shared/guard";
 import Serverless from "serverless";
 import { Utils } from "../shared/utils";
-import { ServerlessCommandMap, ServerlessHookMap } from "../models/serverless";
+import { ServerlessCommandMap, ServerlessHookMap, ServerlessAzureConfig } from "../models/serverless";
 
 export abstract class AzureBasePlugin<TOptions=Serverless.Options> {
 
   public hooks: ServerlessHookMap
+  protected config: ServerlessAzureConfig;
   protected commands: ServerlessCommandMap;
 
   public constructor(
@@ -13,6 +14,7 @@ export abstract class AzureBasePlugin<TOptions=Serverless.Options> {
     protected options: TOptions,
   ) {
     Guard.null(serverless);
+    this.config = serverless.service as any;
   }
 
   protected log(message: string) {
