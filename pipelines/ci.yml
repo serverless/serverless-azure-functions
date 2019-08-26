@@ -8,10 +8,10 @@ pr:
   - dev
 
 jobs:
-- template: pipelines/templates/unit-tests.yml
+- template: templates/unit-tests.yml  # path relative to this file
   parameters:
     nodeVersion: 8.x
 
-- template: pipelines/templates/unit-tests.yml
+- template: templates/unit-tests.yml
   parameters:
     nodeVersion: 10.x
