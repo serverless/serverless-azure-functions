@@ -16,13 +16,8 @@ jobs:
       npm run test:coverage
     displayName: 'Run tests'
 
-  - bash: |
-      printenv
-    displayName: make sure we're not leaking info
-
   - ${{ if eq(parameters.nodeVersion, '8') }}:
     - bash: |
-        printenv
         cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
       displayName: 'Upload code coverage report'
       env:
