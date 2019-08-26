@@ -7,6 +7,9 @@ pr:
   - master
   - dev
 
+variables:
+- coveralls-credentials
+
 jobs:
 - template: templates/unit-tests.yml  # path relative to this file
   parameters:
