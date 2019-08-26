@@ -8,7 +8,7 @@ jobs:
         imageName: 'macos-10.13'
       windows:
         imageName: 'vs2017-win2016'
-  displayName: "NodeJs ${{ parameters.nodeVersion }}"
+  displayName: "NodeJs_${{ parameters.nodeVersion }}"
   pool:
     vmImage: $(imageName)
 
