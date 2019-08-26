@@ -1,4 +1,8 @@
 # CI should only run when PRs are opened against dev/master.
+trigger:
+  - master
+  - dev
+
 pr:
   - master
   - dev
