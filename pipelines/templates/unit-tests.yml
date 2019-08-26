@@ -1,5 +1,6 @@
 jobs:
-- job: "Run tests on ${{ parameters.nodeVersion }}"
+- job: "Test_${{ parameters.nodeVersion }}"
+  displayName: "Run tests on ${{ parameters.nodeVersion }}"
   pool:
     vmImage: 'ubuntu-16.04'
 
