@@ -1,17 +1,18 @@
 jobs:
-- job: "Run tests on ${{ parameters.version }}"
+- job: "Run tests on ${{ parameters.nodeVersion }}"
   pool:
     vmImage: 'ubuntu-16.04'
+
   steps:
   - task: NodeTool@0
-    displayName: 'Use Node 10.x'
+    displayName: 'Use Node ${{ parameters.nodeVersion }}'
     inputs:
-      versionSpec: 10.x
+      versionSpec: ${{ parameters.nodeVersion }}
 
   - bash: |
-    npm run compile
-    npm run test:coverage
-  displayName: 'Run tests'
+      npm run compile
+      npm run test:coverage
+    displayName: 'Run tests'
 
   - ${{ if eq(parameters.nodeVersion, '10.x') }}:
     - bash: |
