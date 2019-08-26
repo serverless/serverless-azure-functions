@@ -11,6 +11,7 @@ jobs:
       versionSpec: ${{ parameters.nodeVersion }}.x
 
   - bash: |
+      npm ci
       npm run compile
       npm run test:coverage
     displayName: 'Run tests'
