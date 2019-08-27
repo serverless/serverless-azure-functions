@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eo pipefail
 
-./$(pwd)/scripts/build.sh
+$(pwd)/scripts/build.sh
 
 # NOTE: auth is taken care of via NPM_TOKEN env variable
 if [ -z "$1" ]; then
