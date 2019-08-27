@@ -21,7 +21,7 @@ jobs:
   - bash: |
       npm ci
       npm run compile
-      npm run test:coverage
+      npm run test:coverage  # linting is run before test
     displayName: 'Run tests'
 
   - ${{ if eq(parameters.nodeVersion, '8') }}:

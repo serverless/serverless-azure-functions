@@ -1,7 +1,6 @@
 # CI should only run when PRs are opened against dev/master.
-trigger:
-  - master
-  - dev
+# we're already running tests before release so no need to do it here
+trigger: none
 
 pr:
   - master
@@ -11,10 +10,6 @@ variables:
 - group: coveralls-credentials  # variable group
 
 jobs:
-- template: templates/unit-tests.yml
-  parameters:
-    nodeVersion: 6
-
 - template: templates/unit-tests.yml  # path relative to this file
   parameters:
     nodeVersion: 8
