@@ -11,6 +11,10 @@ variables:
 - group: coveralls-credentials  # variable group
 
 jobs:
+- template: templates/unit-tests.yml
+  parameters:
+    nodeVersion: 6
+
 - template: templates/unit-tests.yml  # path relative to this file
   parameters:
     nodeVersion: 8
