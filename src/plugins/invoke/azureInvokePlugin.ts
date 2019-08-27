@@ -62,16 +62,53 @@ export class AzureInvokePlugin extends AzureBasePlugin {
             usage: "HTTP method (Default is GET)",
             shortcut: "m"
           }
+        },
+        commands: {
+          local: {
+            usage: "Invoke a local function",
+            options: {
+              function: {
+                usage: "Function to call",
+                shortcut: "f",
+              },
+              path: {
+                usage: "Path to file to put in body",
+                shortcut: "p"
+              },
+              data: {
+                usage: "Data string for body of request",
+                shortcut: "d"
+              },
+              method: {
+                usage: "HTTP method (Default is GET)",
+                shortcut: "m"
+              },
+              port: {
+                usage: "Port through which locally running service is exposed",
+                shortcut: "t"
+              }
+            },
+            lifecycleEvents: [ "local" ],
+          }
         }
       }
     }
 
     this.hooks = {
-      "invoke:invoke": this.invoke.bind(this)
+      "invoke:invoke": this.invokeRemote.bind(this),
+      "invoke:local:local": this.invokeLocal.bind(this),
     };
   }
 
-  private async invoke() {
+  private async invokeRemote() {
+    await this.invoke();
+  }
+
+  private async invokeLocal() {
+    await this.invoke(true);
+  }
+
+  private async invoke(local: boolean = false) {
     const functionName = this.options["function"];
     const data = this.options["data"];
     const method = this.options["method"] || "GET";
@@ -80,7 +117,7 @@ export class AzureInvokePlugin extends AzureBasePlugin {
       return;
     }
 
-    this.invokeService = new InvokeService(this.serverless, this.options);
+    this.invokeService = new InvokeService(this.serverless, this.options, local);
     const response = await this.invokeService.invoke(method, functionName, data);
     if (response) {
       this.log(JSON.stringify(response.data));
