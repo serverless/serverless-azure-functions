@@ -21,13 +21,14 @@ jobs:
   - bash: |
       npm ci
       npm run compile
-      npm run test:coverage  # linting is run before test
+      npm run test:coverage  # linting is run as part of pretest
     displayName: 'Run tests'
 
-  - ${{ if (and (eq(parameters.nodeVersion, '8'), eq(variables['imageName'], 'ubuntu-16.04'))) }}:
+  - ${{ if eq(parameters.nodeVersion, '8') }}:
     - bash: |
         cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
       displayName: 'Upload code coverage report'
       env:
         COVERALLS_SERVICE_NAME: "Azure DevOps"
         COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
+      condition: eq(variables['imageName'], 'ubuntu-16.04')
