@@ -1,0 +1,34 @@
+jobs:
+- job: "${{ parameters.os }}_${{ parameters.nodeVersion }}"
+  strategy:
+    matrix:
+      linux:
+        imageName: 'ubuntu-16.04'
+      mac:
+        imageName: 'macos-10.13'
+      windows:
+        imageName: 'vs2017-win2016'
+  displayName: "NodeJs_${{ parameters.nodeVersion }}"
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - task: NodeTool@0
+    displayName: 'Use Node ${{ parameters.nodeVersion }}'
+    inputs:
+      versionSpec: ${{ parameters.nodeVersion }}.x
+
+  - bash: |
+      npm ci
+      npm run compile
+      npm run test:coverage  # linting is run as part of pretest
+    displayName: 'Run tests'
+
+  - ${{ if eq(parameters.nodeVersion, '8') }}:
+    - bash: |
+        cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+      displayName: 'Upload code coverage report'
+      env:
+        COVERALLS_SERVICE_NAME: "Azure DevOps"
+        COVERALLS_REPO_TOKEN: $(COVERALLS_REPO_TOKEN)
+      condition: eq(variables['imageName'], 'ubuntu-16.04')
