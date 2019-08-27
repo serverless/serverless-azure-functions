@@ -57,6 +57,13 @@ describe("Deploy plugin", () => {
     expect(uploadFunctions).toBeCalledWith(functionAppStub);
   });
 
+  it("Crashes deploy if function is specified", async () => {
+    plugin = new AzureDeployPlugin(sls, { function: "myFunction" } as any);
+    await expect(invokeHook(plugin, "deploy:deploy"))
+      .rejects.toThrow("The Azure Functions plugin does not currently support deployments of individual functions. " +
+        "Azure Functions are zipped up as a package and deployed together as a unit");
+  });
+
   it("lists deployments", async () => {
     const deploymentString = "deployments";
     ResourceService.prototype.listDeployments = jest.fn(() => Promise.resolve(deploymentString));
@@ -64,7 +71,14 @@ describe("Deploy plugin", () => {
     expect(ResourceService.prototype.listDeployments).toBeCalled();
     expect(sls.cli.log).lastCalledWith(deploymentString);
   });
-	
+
+  it("Crashes deploy list if function is specified", async () => {
+    plugin = new AzureDeployPlugin(sls, { function: "myFunction" } as any);
+    await expect(invokeHook(plugin, "deploy:list:list"))
+      .rejects.toThrow("The Azure Functions plugin does not currently support deployments of individual functions. " +
+        "Azure Functions are zipped up as a package and deployed together as a unit");
+  });
+
   it("crashes deploy if zip file is not found", async () => {
     FunctionAppService.prototype.getFunctionZipFile = jest.fn(() => "notExisting.zip");
     await expect(invokeHook(plugin, "deploy:deploy"))

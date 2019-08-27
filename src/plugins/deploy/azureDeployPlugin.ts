@@ -42,6 +42,10 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
               usage: "Sets the Azure subscription ID",
               shortcut: "i",
             },
+            function: {
+              usage: "Deployment of individual function - NOT SUPPORTED",
+              shortcut: "f",
+            }
           }
         },
         options: {
@@ -64,6 +68,10 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
           package: {
             usage: "Package to deploy",
             shortcut: "p",
+          },
+          function: {
+            usage: "Deployment of individual function - NOT SUPPORTED",
+            shortcut: "f",
           }
         }
       }
@@ -71,12 +79,14 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   }
 
   private async list() {
+    this.checkForIndividualFunctionDeploy();
     this.log("Listing deployments");
     const resourceService = new ResourceService(this.serverless, this.options);
     this.log(await resourceService.listDeployments());
   }
 
   private async deploy() {
+    this.checkForIndividualFunctionDeploy();
     const resourceService = new ResourceService(this.serverless, this.options);
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const zipFile = functionAppService.getFunctionZipFile();
@@ -86,5 +96,16 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
     await resourceService.deployResourceGroup();
     const functionApp = await functionAppService.deploy();
     await functionAppService.uploadFunctions(functionApp);
+  }
+
+  /**
+   * Check to see if user tried to target an individual function for deployment or deployment list
+   * Throws error if `function` is specified
+   */
+  private checkForIndividualFunctionDeploy() {
+    if (this.options.function) {
+      throw new Error("The Azure Functions plugin does not currently support deployments of individual functions. " +
+        "Azure Functions are zipped up as a package and deployed together as a unit");
+    }
   }
 }
