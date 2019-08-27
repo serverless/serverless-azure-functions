@@ -42,13 +42,6 @@ export class OfflineService extends BaseService {
   public async cleanup() {
     this.log("Cleaning up offline files")
     await this.packageService.cleanUp();
-    const filenames = Object.keys(this.localFiles);
-    for (const filename of filenames) {
-      if (fs.existsSync(filename)) {
-        this.log(`Removing file '${filename}'`);
-        fs.unlinkSync(filename)
-      }
-    }
     this.log("Finished cleaning up offline files");
   }
 
