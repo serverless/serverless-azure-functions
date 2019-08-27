@@ -74,7 +74,7 @@
     "axios-mock-adapter": "^1.16.0",
     "babel-jest": "^24.8.0",
     "babel-preset-react-app": "^9.0.0",
-    "coveralls": "git@github.com:nickmerwin/node-coveralls.git#f0ddec529c8271ea193bfab41de12b6c06d533f5",
+    "coveralls": "https://github.com/nickmerwin/node-coveralls.git#f0ddec529c8271ea193bfab41de12b6c06d533f5",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
