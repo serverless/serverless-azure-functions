@@ -6,9 +6,11 @@ import configConstants from "../config";
 
 export class InvokeService extends BaseService {
   public functionAppService: FunctionAppService;
+  private local: boolean;
 
-  public constructor(serverless: Serverless, options: Serverless.Options, private local: boolean = false) {
+  public constructor(serverless: Serverless, options: Serverless.Options, local: boolean = false) {
     super(serverless, options, !local);
+    this.local = local;
     if (!local) {
       this.functionAppService = new FunctionAppService(serverless, options);
     }
