@@ -27,6 +27,7 @@ Similar or dependent issues:
 ## Additional Data
 
 - **_Serverless Framework Version you're using_**:
+- **_Serverless CLI Version you're using_**:
 - **_Serverless Azure Plugin Version you're using_**:
 - **_Operating System_**:
 - **_Stack Trace_**:
