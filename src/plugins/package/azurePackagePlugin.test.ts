@@ -20,11 +20,13 @@ describe("Azure Package Plugin", () => {
   it("sets creates function bindings before package:setupProviderConfiguration life cycle event", async () => {
     await invokeHook(plugin, "before:package:setupProviderConfiguration");
     expect(PackageService.prototype.createBindings).toBeCalled();
+    expect(PackageService.prototype.cleanUpServerlessDir).toBeCalled();
   });
 
   it("prepares the package for webpack before webpack:package:packageModules life cycle event", async () => {
     await invokeHook(plugin, "before:webpack:package:packageModules");
     expect(PackageService.prototype.createBindings).toBeCalled();
+    expect(PackageService.prototype.cleanUpServerlessDir).toBeCalled();
     expect(PackageService.prototype.prepareWebpack).toBeCalled();
   });
 
@@ -34,6 +36,7 @@ describe("Azure Package Plugin", () => {
 
     expect(PackageService.prototype.createBindings).toBeCalledTimes(1);
     expect(PackageService.prototype.prepareWebpack).toBeCalledTimes(1);
+    expect(PackageService.prototype.cleanUpServerlessDir).toBeCalledTimes(1);
   });
 
   it("cleans up package after package:finalize", async () => {
@@ -63,19 +66,22 @@ describe("Azure Package Plugin", () => {
     it("does not call create bindings if package specified in options", async () => {
       await invokeHook(plugin, "before:package:setupProviderConfiguration");
       expect(PackageService.prototype.createBindings).not.toBeCalled();
-      expect(sls.cli.log).lastCalledWith("No need to create bindings. Using pre-existing package");
+      expect(sls.cli.log).lastCalledWith("Deploying pre-built package. No need to create bindings");
     });
 
     it("does not call webpack if package specified in options", async () => {
       await invokeHook(plugin, "before:webpack:package:packageModules");
       expect(PackageService.prototype.createBindings).not.toBeCalled();
       expect(PackageService.prototype.prepareWebpack).not.toBeCalled();
+      expect(PackageService.prototype.cleanUpServerlessDir).not.toBeCalled();
+
       expect(sls.cli.log).lastCalledWith("No need to perform webpack. Using pre-existing package");
     });
 
     it("does not call finalize if package specified in options", async () => {
       await invokeHook(plugin, "after:package:finalize");
       expect(PackageService.prototype.cleanUp).not.toBeCalled();
+      expect(PackageService.prototype.cleanUpServerlessDir).not.toBeCalled();
       expect(sls.cli.log).lastCalledWith("No need to clean up generated folders & files. Using pre-existing package");
     });
   })

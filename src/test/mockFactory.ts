@@ -15,7 +15,7 @@ import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
 import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand } from "../models/serverless";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -34,6 +34,10 @@ export class MockFactory {
     sls.service = getAttribute(config, "service", MockFactory.createTestService());
     sls.config.servicePath = "";
     sls.setProvider = jest.fn();
+    sls["processedInput"] = {
+      commands: [ ServerlessCliCommand.DEPLOY ],
+      options: {}
+    };
     return sls;
   }
 
@@ -360,6 +364,7 @@ export class MockFactory {
       deploymentName: "myDeploymentName",
       region: "eastus2",
       stage: "dev",
+      runtime: "nodejs10.x",
     }
   }
 

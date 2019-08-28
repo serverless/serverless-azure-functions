@@ -70,7 +70,7 @@ describe("Arm Service", () => {
     });
 
     it("Creates a custom ARM template from well-known type", async () => {
-      sls.service.provider.runtime = "nodejs6.9.x";      
+      sls.service.provider.runtime = "nodejs6.9.x";
       const deployment = await service.createDeploymentFromType("premium");
 
       expect(deployment).not.toBeNull();
@@ -95,36 +95,37 @@ describe("Arm Service", () => {
     });
 
     it("throws error when invalid nodejs version in defined", async () => {
-      sls.service.provider.runtime = "nodejs10.6.1"; 
+      sls.service.provider.runtime = "nodejs10.6.1";
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Could not find runtime version matching nodejs10.6.1");
     });
 
     it("throws error when incomplete nodejs version in defined", async () => {
-      sls.service.provider.runtime = "nodejs8"; 
+      sls.service.provider.runtime = "nodejs8";
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Could not find runtime version matching nodejs8");
     });
 
     it("throws error when unsupported nodejs version in defined", async () => {
-      sls.service.provider.runtime = "nodejs5.x"; 
+      sls.service.provider.runtime = "nodejs5.x";
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Could not find runtime version matching nodejs5.x");
     });
 
     it("Does not throw an error when valid nodejs version is defined", async () => {
-      sls.service.provider.runtime = "nodejs10.x"; 
+      sls.service.provider.runtime = "nodejs10.x";
       await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
     });
 
     it("Does not throw an error when nodejs version with major and minor is defined", async () => {
-      sls.service.provider.runtime = "nodejs6.9.x"; 
+      sls.service.provider.runtime = "nodejs6.9.x";
       await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
     });
 
     it("Does not throw an error when specific nodejs version is defined", async () => {
-      sls.service.provider.runtime = "nodejs10.6.0"; 
+      sls.service.provider.runtime = "nodejs10.6.0";
       await expect(service.createDeploymentFromType("premium")).resolves.not.toThrow();
     });
 
-    it("throws an error when no nodejs version in defined", async () => {
+    it("throws an error when no nodejs version is defined", async () => {
+      sls.service.provider.runtime = undefined;
       await expect(service.createDeploymentFromType("premium")).rejects.toThrowError("Runtime version not specified in serverless.yml");
     });
 
@@ -178,7 +179,7 @@ describe("Arm Service", () => {
     });
 
     it("Consumption template includes correct resources", async () => {
-      sls.service.provider.runtime = "nodejs10.x";      
+      sls.service.provider.runtime = "nodejs10.x";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
 
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Web/hostingEnvironments")).toBeUndefined();
