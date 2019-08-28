@@ -47,7 +47,6 @@ describe("Offline Service", () => {
         MockFactory.createTestBindingsObject(`..${path.sep}${name}.js`)
       );
     }
-    expect(calls[calls.length - 1][0]).toEqual("local.settings.json");
     writeFileSpy.mockRestore();
   });
 
@@ -80,9 +79,9 @@ describe("Offline Service", () => {
     const rmdirSpy = jest.spyOn(fs, "rmdirSync")
     await service.cleanup();
     const unlinkCalls = unlinkSpy.mock.calls;
+    expect(unlinkCalls).toHaveLength(2);
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
-    expect(unlinkCalls[2][0]).toBe("local.settings.json");
     const rmdirCalls = rmdirSpy.mock.calls;
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");
@@ -193,10 +192,9 @@ describe("Offline Service", () => {
 
     const unlinkCalls = unlinkSpy.mock.calls;
 
-    expect(unlinkCalls).toHaveLength(3);
+    expect(unlinkCalls).toHaveLength(2);
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
-    expect(unlinkCalls[2][0]).toBe("local.settings.json");
 
     const rmdirCalls = rmdirSpy.mock.calls;
 
