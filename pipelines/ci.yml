@@ -7,7 +7,7 @@ pr:
   - dev
 
 variables:
-- group: coveralls-credentials  # variable group
+- group: code-coverage-credentials  # variable group
 
 jobs:
 - template: templates/unit-tests.yml  # path relative to this file
