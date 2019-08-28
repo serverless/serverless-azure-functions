@@ -207,7 +207,7 @@ The getting started walkthrough illustrates the interactive login experience, wh
 
 Please create issues in this repo for any problems or questions you find. Before sending a PR for any major changes, please create an issue to discuss.
 
-We're still in the process of getting everying running 100%, but please refer to the [Serverless contributing guidlines](https://github.com/serverless/serverless/blob/master/CONTRIBUTING.md) for information on how to contribute and code of conduct.
+We're still in the process of getting everying running 100%, but please refer to the [Serverless contributing guidlines](CONTRIBUTING.md) for information on how to contribute and code of conduct.
 
 #### Local dev
 
