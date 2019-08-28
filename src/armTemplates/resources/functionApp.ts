@@ -58,6 +58,9 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           "apiVersion": "2016-03-01",
           "name": "[parameters('functionAppName')]",
           "location": "[parameters('location')]",
+          "identity": {
+            "type": "SystemAssigned"
+          },
           "dependsOn": [
             "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
             "[concat('microsoft.insights/components/', parameters('appInsightsName'))]"
