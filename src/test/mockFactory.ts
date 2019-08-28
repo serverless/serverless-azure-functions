@@ -33,6 +33,7 @@ export class MockFactory {
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
     sls.service = getAttribute(config, "service", MockFactory.createTestService());
     sls.config.servicePath = "";
+    sls.setProvider = jest.fn();
     return sls;
   }
 
