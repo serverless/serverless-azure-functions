@@ -59,6 +59,7 @@ Must be one of the following:
 * **refactor**: A code change that neither fixes a bug nor adds a feature
 * **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 * **test**: Adding missing tests or correcting existing tests
+* **chore**: Updating dependencies
 
 #### Short Description
 
@@ -87,7 +88,7 @@ There is no debouncing when we store the asset container's scroll position.
 This results in erratic, jumpy scrolling and a poor user experience. Improve
 stability and usability with debouncing.
 
-AB#17056
+closes #123
 ```
 
 ---
@@ -112,7 +113,7 @@ To help reduce the effort of creating contributions with this style, an [.editor
 
 # Testing
 
-We aim for a (near) 80% test coverage, so make sure your tests cover as much of your code as possible.
+We aim for a (near) 75% test coverage, so make sure your tests cover as much of your code as possible.
 
 ## Test coverage
 
