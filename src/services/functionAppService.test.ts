@@ -16,6 +16,7 @@ jest.mock("@azure/arm-resources");
 jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService"
 import configConstants from "../config";
+import { Utils } from "../shared/utils";
 
 describe("Function App Service", () => {
   const app = MockFactory.createTestSite();
@@ -41,8 +42,10 @@ describe("Function App Service", () => {
     setting2: "value2",
   }
 
-  beforeAll(() => {
-    const axiosMock = new MockAdapter(axios);
+  let axiosMock: MockAdapter;
+
+  beforeEach(() => {
+    axiosMock = new MockAdapter(axios);
 
     // Master Key
     axiosMock.onGet(masterKeyUrl).reply(200, { value: masterKey });
@@ -64,9 +67,7 @@ describe("Function App Service", () => {
         "serviceName.zip": "contents",
       }
     }, { createCwd: true, createTmp: true });
-  });
 
-  beforeEach(() => {
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => app),
       deleteFunction: jest.fn(),
@@ -150,6 +151,30 @@ describe("Function App Service", () => {
   it("lists functions", async () => {
     const service = createService();
     expect(await service.listFunctions(app)).toEqual(functionsResponse.map((f) => f.properties));
+  });
+
+  it("list functions with retry", async () => {
+    axiosMock.onGet(listFunctionsUrl).reply(200, { value: [] });
+    const service = createService();
+
+    const originalRunWithRetry = Utils.runWithRetry;
+    Utils.runWithRetry = jest.fn(() => {
+      return {
+        data: {
+          value: []
+        }
+      }
+    }) as any;
+
+    await service.listFunctions(app);
+    const runWithRetryCalls = (Utils.runWithRetry as any).mock.calls;
+    Utils.runWithRetry = originalRunWithRetry;
+
+    expect(runWithRetryCalls).toHaveLength(1);
+    const call = runWithRetryCalls[0];
+    await expect(call[0]()).rejects.toThrow();
+    expect(call[1]).toEqual(30);
+    expect(call[2]).toEqual(30000);
   });
 
   describe("Deployments", () => {

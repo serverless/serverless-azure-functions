@@ -15,7 +15,7 @@ import configConstants from "../config";
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;
-  private static readonly retryInterval: number = 5000;
+  private static readonly retryInterval: number = 30000;
   private webClient: WebSiteManagementClient;
   private blobService: AzureBlobStorageService;
 
@@ -94,13 +94,18 @@ export class FunctionAppService extends BaseService {
     Guard.null(functionApp);
 
     const getTokenUrl = `${this.baseUrl}${functionApp.id}/functions?api-version=2016-08-01`;
+    let retries = 0;
     try {
       const response = await Utils.runWithRetry(async () => {
         const listFunctionsResponse = await this.sendApiRequest("GET", getTokenUrl);
 
         if (listFunctionsResponse.status !== 200 || listFunctionsResponse.data.value.length === 0) {
-          this.log("-> Function App not ready. Retrying...");
-          throw new Error(JSON.stringify(listFunctionsResponse.data, null, 2));
+          this.log(`-> Function App not ready. Retry ${retries++} of ${FunctionAppService.retryCount}...`);
+          const response = JSON.stringify(listFunctionsResponse.data, null, 2);
+          throw new Error(
+            `The function app is taking longer than usual to be provisioned. Please try again soon.
+            Response error data: \n${response}`
+          );
         }
 
         return listFunctionsResponse;
