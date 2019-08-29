@@ -50,7 +50,7 @@ export interface ServerlessAzureProvider {
   hostingEnvironment?: ResourceConfig;
   virtualNetwork?: ResourceConfig;
   armTemplate?: ArmTemplateConfig;
-  runtime: string; 
+  runtime: string;
 }
 
 export interface ServerlessAzureConfig {
@@ -58,6 +58,7 @@ export interface ServerlessAzureConfig {
   provider: ServerlessAzureProvider;
   plugins: string[];
   functions: any;
+  package: any;
 }
 
 export interface ServerlessAzureFunctionConfig {
