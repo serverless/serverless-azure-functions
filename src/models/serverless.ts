@@ -99,6 +99,7 @@ export interface ServerlessCommandMap {
 }
 
 export interface ServerlessAzureOptions extends Serverless.Options {
+  prefix?: string;
   resourceGroup?: string;
 }
 

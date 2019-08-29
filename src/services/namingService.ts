@@ -123,13 +123,15 @@ export class AzureNamingService {
    * @param stageName The stage name
    */
   public static createShortStageName(stageName: string) {
-    Guard.empty(stageName);
+    Guard.empty(stageName, "stageName");
 
     const stageMap = {
       "dogfood": "df",
       "production": "prod",
+      "prod": "prod",
       "development": "dev",
-      "testing": "test"
+      "testing": "test",
+      "test": "test"
     };
 
     return this.createShortName(stageName, stageMap);
@@ -140,7 +142,7 @@ export class AzureNamingService {
    * @param regionName The region name
    */
   public static getNormalizedRegionName(regionName: string) {
-    Guard.empty(regionName);
+    Guard.empty(regionName, "regionName");
     return regionName.replace(/\W/g, "").toLowerCase();
   }
 
@@ -149,7 +151,7 @@ export class AzureNamingService {
    * @param regionName The azure region name
    */
   public static createShortAzureRegionName(regionName: string) {
-    Guard.empty(regionName);
+    Guard.empty(regionName, "regionName");
 
     const locationMap = {
       "north": "n",
