@@ -1,14 +1,14 @@
 import Serverless from "serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureApimServicePlugin } from "./azureApimServicePlugin";
+import { AzureKeyVaultPlugin } from "./azureKeyVaultPlugin";
 
-jest.mock("../../services/apimService");
-import { ApimService } from "../../services/apimService";
+jest.mock("../../services/azureKeyVaultService.ts");
+import { AzureKeyVaultService } from "../../services/azureKeyVaultService";
 
-describe("APIM Service Plugin", () => {
+describe("Azure Key Vault Plugin", () => {
   it("is defined", () => {
-    expect(AzureApimServicePlugin).toBeDefined();
+    expect(AzureKeyVaultPlugin).toBeDefined();
   });
 
   it("can be instantiated", () => {
@@ -17,46 +17,40 @@ describe("APIM Service Plugin", () => {
       stage: "",
       region: "",
     }
-    const plugin = new AzureApimServicePlugin(serverless, options);
+    const plugin = new AzureKeyVaultPlugin(serverless, options);
 
     expect(plugin).not.toBeNull();
   });
 
-  it("calls deploy API and deploy functions", async () => {
-    const deployApi = jest.fn();
-    const deployFunctions = jest.fn();
+  it("calls set policy when key vault specified", async () => {
+    const setPolicy = jest.fn();
 
-    ApimService.prototype.deployApi = deployApi;
-    ApimService.prototype.deployFunctions = deployFunctions;
+    AzureKeyVaultService.prototype.setPolicy = setPolicy;
 
     const sls = MockFactory.createTestServerless();
-    sls.service.provider["apim"] = "apim config"
+    sls.service.provider["keyVault"] = { name: "testVault", resourceGroup: "testGroup"}
     const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureApimServicePlugin(sls, options);
+    const plugin = new AzureKeyVaultPlugin(sls, options);
 
     await invokeHook(plugin, "after:deploy:deploy");
 
-    expect(sls.cli.log).toBeCalledWith("Starting APIM service deployment")
-    expect(deployApi).toBeCalled();
-    expect(deployFunctions).toBeCalled();
-    expect(sls.cli.log).lastCalledWith("Finished APIM service deployment")
+    expect(sls.cli.log).toBeCalledWith("Starting KeyVault service setup")
+    expect(setPolicy).toBeCalled();
+    expect(sls.cli.log).lastCalledWith("Finished KeyVault service setup")
   });
 
-  it("does not call deploy API or deploy functions when \"apim\" not included in config", async () => {
-    const deployApi = jest.fn();
-    const deployFunctions = jest.fn();
+  it("does not call deploy API or deploy functions when \"keyVault\" not included in config", async () => {
+    const setPolicy = jest.fn();
 
-    ApimService.prototype.deployApi = deployApi;
-    ApimService.prototype.deployFunctions = deployFunctions;
+    AzureKeyVaultService.prototype.setPolicy = setPolicy;
 
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureApimServicePlugin(sls, options);
+    const plugin = new AzureKeyVaultPlugin(sls, options);
 
     await invokeHook(plugin, "after:deploy:deploy");
 
     expect(sls.cli.log).not.toBeCalled()
-    expect(deployApi).not.toBeCalled();
-    expect(deployFunctions).not.toBeCalled();
+    expect(setPolicy).not.toBeCalled();
   });
 });
