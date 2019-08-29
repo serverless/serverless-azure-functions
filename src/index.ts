@@ -7,7 +7,6 @@ whole provider implementation.
 import Serverless from "serverless";
 import AzureProvider from "./provider/azureProvider";
 import { AzureInvokePlugin } from "./plugins/invoke/azureInvokePlugin";
-import { AzureLogsPlugin } from "./plugins/logs/azureLogsPlugin";
 import { AzureRemovePlugin } from "./plugins/remove/azureRemovePlugin";
 import { AzurePackagePlugin } from "./plugins/package/azurePackagePlugin";
 import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
@@ -26,7 +25,6 @@ export default class AzureIndex {
     // To be refactored
     this.serverless.pluginManager.addPlugin(AzurePackagePlugin);
     this.serverless.pluginManager.addPlugin(AzureInvokePlugin);
-    this.serverless.pluginManager.addPlugin(AzureLogsPlugin);
     this.serverless.pluginManager.addPlugin(AzureRemovePlugin);
     // Refactored
     this.serverless.pluginManager.addPlugin(AzureLoginPlugin);
