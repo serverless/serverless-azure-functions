@@ -1,7 +1,7 @@
 import fs from "fs";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { ServerlessAzureOptions } from "../models/serverless";
+import { ServerlessAzureOptions, ServerlessAzureConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
 import { AzureNamingService } from "./namingService";
@@ -40,9 +40,10 @@ class MockService extends BaseService {
 describe("Base Service", () => {
   let service: MockService;
   let sls: Serverless;
+  const serviceName = "my-custom-service"
 
   const slsConfig = {
-    service: "my custom service",
+    service: serviceName,
     provider: {
       resourceGroup: "My-Resource-Group",
       deploymentName: "My-Deployment",
@@ -54,7 +55,6 @@ describe("Base Service", () => {
   });
 
   function createMockService(options?: Serverless.Options) {
-    sls = MockFactory.createTestServerless();
     sls.variables["azureCredentials"] = MockFactory.createTestAzureCredentials();
     sls.variables["subscriptionId"] = "ABC123";
     Object.assign(sls.service, slsConfig);
@@ -63,6 +63,7 @@ describe("Base Service", () => {
   }
 
   beforeEach(() => {
+    sls = MockFactory.createTestServerless();
     service = createMockService();
   });
 
@@ -197,5 +198,40 @@ describe("Base Service", () => {
     expect(request).toBeCalledWith(requestOptions, expect.anything());
 
     readStreamSpy.mockRestore();
+  });
+
+  it("sets stage name from CLI", async () => {
+    const stage = "test";
+    delete (sls.service as any as ServerlessAzureConfig).provider.resourceGroup;
+    expect(sls.service.provider.stage).not.toEqual(stage);
+    service = new MockService(sls, { stage } as any);
+    expect(service.getStage()).toEqual(stage);
+    expect(service.getResourceGroupName()).toEqual(`sls-wus-${stage}-${serviceName}-rg`);
+  });
+
+  it("sets region name from CLI", async () => {
+    const region = "East US";
+    delete (sls.service as any as ServerlessAzureConfig).provider.resourceGroup;
+    expect(sls.service.provider.region).not.toEqual(region);
+    service = new MockService(sls, { region } as any);
+    expect(service.getRegion()).toEqual(region);
+    expect(service.getResourceGroupName()).toEqual(`sls-eus-dev-${serviceName}-rg`);
+  });
+
+  it("sets prefix from CLI", async () => {
+    const prefix = "prefix";
+    delete (sls.service as any as ServerlessAzureConfig).provider.resourceGroup;
+    expect(sls.service.provider["prefix"]).not.toEqual(prefix);
+    service = new MockService(sls, { prefix } as any);
+    expect(service.getPrefix()).toEqual(prefix);
+    expect(service.getResourceGroupName()).toEqual(`${prefix}-wus-dev-${serviceName}-rg`);
+  });
+
+  it("sets resource group from CLI", async () => {
+    const resourceGroup = "resourceGroup";
+    delete (sls.service as any as ServerlessAzureConfig).provider.resourceGroup;
+    expect(sls.service.provider["resourceGroup"]).not.toEqual(resourceGroup);
+    service = new MockService(sls, { resourceGroup } as any);
+    expect(service.getResourceGroupName()).toEqual(resourceGroup);
   });
 });
