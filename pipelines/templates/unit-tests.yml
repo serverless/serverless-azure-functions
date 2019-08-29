@@ -19,6 +19,8 @@ jobs:
       versionSpec: ${{ parameters.nodeVersion }}.x
 
   - bash: |
+      set -e
+      
       npm ci
       npm run compile
       npm run test:coverage  # linting is run as part of pretest
