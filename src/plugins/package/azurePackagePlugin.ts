@@ -3,6 +3,7 @@ import Serverless from "serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { ServerlessCliCommand } from "../../models/serverless";
 
 export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;
@@ -21,14 +22,15 @@ export class AzurePackagePlugin extends AzureBasePlugin {
   }
 
   private async setupProviderConfiguration(): Promise<void> {
-    if (this.getOption("package")) {
-      this.log("No need to create bindings. Using pre-existing package");
-      return Promise.resolve();
+    if (this.processedCommands[0] === ServerlessCliCommand.DEPLOY && this.getOption("package")) {
+      this.log("Deploying pre-built package. No need to create bindings");
+      return;
     }
     if (this.config.package && this.config.package.individually) {
       throw new Error("Cannot package Azure Functions individually. " +
         "Remove `individually` attribute from the `package` section of the serverless config");
     }
+    this.packageService.cleanUpServerlessDir();
     await this.packageService.createBindings();
     this.bindingsCreated = true;
 
