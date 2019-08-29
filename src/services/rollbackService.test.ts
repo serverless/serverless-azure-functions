@@ -5,6 +5,7 @@ import { ArmDeployment } from "../models/armTemplates";
 import { DeploymentConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
+import fs from "fs";
 
 jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService";
@@ -31,9 +32,10 @@ describe("Rollback Service", () => {
   const containerName = "deployment-artifacts";
   const artifactName = MockFactory.createTestDeployment().name.replace(
     configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact) + ".zip";
-  const artifactPath = `.serverless${path.sep}${artifactName}`
+  const artifactPath = path.join(".serverless", artifactName);
   const armDeployment: ArmDeployment = { template, parameters };
   const deploymentString = "deployments";
+  let unlinkSpy: jest.SpyInstance;
 
   function createOptions(timestamp?: string): Serverless.Options {
     return {
@@ -64,10 +66,12 @@ describe("Rollback Service", () => {
     ResourceService.prototype.listDeployments = jest.fn(() => Promise.resolve(deploymentString))
     AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => sasURL) as any;
     FunctionAppService.prototype.get = jest.fn(() => appStub) as any;
+    unlinkSpy = jest.spyOn(fs, "unlinkSync");
   });
 
   afterEach(() => {
     mockFs.restore();
+    unlinkSpy.mockRestore();
     jest.resetAllMocks();
   });
 
@@ -94,6 +98,11 @@ describe("Rollback Service", () => {
   });
 
   it("should deploy blob package directly to function app", async () => {
+    const fsConfig = {};
+    fsConfig[artifactPath] = "contents";
+    // Mocking the existence of the downloaded artifact because the downloadBinary
+    // method won't write to the mock file system
+    mockFs(fsConfig);
     const service = createService();
     await service.rollback();
     expect(AzureBlobStorageService.prototype.initialize).toBeCalled();
@@ -107,7 +116,8 @@ describe("Rollback Service", () => {
     expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).toBeCalledWith(
       appStub,
       artifactPath
-    )
+    );
+    expect(unlinkSpy).toBeCalledWith(artifactPath);
   });
 
   it("should deploy function app with SAS URL", async () => {
@@ -133,5 +143,6 @@ describe("Rollback Service", () => {
     );
     expect(FunctionAppService.prototype.get).not.toBeCalled();
     expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).not.toBeCalled();
+    expect(unlinkSpy).not.toBeCalled();
   });
 });

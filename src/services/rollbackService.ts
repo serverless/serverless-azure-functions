@@ -8,6 +8,7 @@ import { BaseService } from "./baseService";
 import { FunctionAppService } from "./functionAppService";
 import { ResourceService } from "./resourceService";
 import { ArmDeployment } from "../models/armTemplates";
+import fs from "fs";
 
 /**
  * Services for the Rollback Plugin
@@ -98,6 +99,9 @@ export class RollbackService extends BaseService {
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const functionApp = await functionAppService.get();
     await functionAppService.uploadZippedArfifactToFunctionApp(functionApp, artifactPath);
+    if (fs.existsSync(artifactPath)) {
+      fs.unlinkSync(artifactPath);
+    }
   }
 
   /**
