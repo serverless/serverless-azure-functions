@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import rimraf from "rimraf";
 import Serverless from "serverless";
 import { FunctionMetadata, Utils } from "../shared/utils";
 import { BaseService } from "./baseService";
@@ -10,6 +11,14 @@ import { BaseService } from "./baseService";
 export class PackageService extends BaseService {
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options, false);
+  }
+
+  public cleanUpServerlessDir() {
+    const serverlessDir = path.join(this.serverless.config.servicePath, ".serverless");
+    if (fs.existsSync(serverlessDir)) {
+      this.log("Removing .serverless directory")
+      rimraf.sync(serverlessDir);
+    }
   }
 
   /**

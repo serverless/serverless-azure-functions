@@ -12,7 +12,7 @@ describe("APIM Service Plugin", () => {
   });
 
   it("can be instantiated", () => {
-    const serverless = new Serverless();
+    const serverless = MockFactory.createTestServerless();
     const options: Serverless.Options = {
       stage: "",
       region: "",

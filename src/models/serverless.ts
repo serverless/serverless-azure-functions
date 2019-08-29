@@ -53,12 +53,71 @@ export interface ServerlessAzureProvider {
   runtime: string;
 }
 
+/**
+ * Expanding type of incomplete `Serverless` type.
+ */
+export interface ServerlessObject {
+  /** Input provided by user */
+  processedInput: {
+    /** Commands issued after `serverless` */
+    commands: ServerlessCliCommand[];
+    /** Flags provided in CLI */
+    options: any;
+  };
+  /** Provider specific configuration */
+  service: ServerlessAzureConfig;
+  /** Provider agnostic configuration */
+  config: ServerlessConfig;
+}
+
+/**
+ * Commands that can be issued in CLI
+ */
+export enum ServerlessCliCommand {
+  /** Package service */
+  PACKAGE = "package",
+  /** Deploy service */
+  DEPLOY = "deploy",
+  /** Invoke HTTP endpoint */
+  INVOKE = "invoke",
+  /** Roll back service */
+  ROLLBACK = "rollback",
+  /** Run service offline */
+  OFFLINE = "offline",
+  /** Start pre-built offline service - subcommand for offline*/
+  START = "start",
+  /** Build an offline service - subcommand for offline */
+  BUILD = "build",
+  /** Cleanup files from offline build - subcommand for offline */
+  CLEANUP = "cleanup",
+  /** List deployments - subcommand for deploy */
+  LIST = "list",
+  /** Command to add or remove functions */
+  FUNC = "func",
+  /** Add a function - subcommand for func */
+  ADD = "add",
+  /** Remove a function - subcommand for func */
+  REMOVE = "remove"
+}
+
+/** Vendor agnostic Serverless configuration */
+export interface ServerlessConfig {
+  /** Path to root Serverless service */
+  servicePath: string;
+  /** Path to packaged artifact of service */
+  packagePath: string;
+}
+
 export interface ServerlessAzureConfig {
   service: string;
   provider: ServerlessAzureProvider;
   plugins: string[];
   functions: any;
-  package: any;
+  package: {
+    individually: boolean;
+    artifactDirectoryName: string;
+    artifact: string;
+  };
 }
 
 export interface ServerlessAzureFunctionConfig {

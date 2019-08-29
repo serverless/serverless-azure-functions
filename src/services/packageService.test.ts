@@ -6,6 +6,9 @@ import { PackageService } from "./packageService";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionMetadata } from "../shared/utils";
 
+jest.mock("rimraf");
+import rimraf from "rimraf";
+
 describe("Package Service", () => {
   let sls: Serverless;
   let packageService: PackageService;
@@ -23,6 +26,17 @@ describe("Package Service", () => {
 
   afterEach(() => {
     mockFs.restore();
+  });
+
+  it("cleans up previous .serverless folder", async () => {
+    mockFs({
+      ".serverless": {
+        "artifact.zip": "contents"
+      }
+    });
+
+    packageService.cleanUpServerlessDir();
+    expect(rimraf.sync).toBeCalledWith(path.join(process.cwd(), ".serverless"));
   });
 
   it("cleans up function.json and function folders", async () => {
