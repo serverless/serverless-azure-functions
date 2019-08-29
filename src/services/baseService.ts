@@ -35,14 +35,14 @@ export abstract class BaseService {
   ) {
     Guard.null(serverless);
     this.setDefaultValues();
+    this.config = serverless.service as any;
+    this.setConfigFromCli();
 
     this.baseUrl = "https://management.azure.com";
     this.serviceName = this.getServiceName();
-    this.config = serverless.service as any;
     this.credentials = serverless.variables["azureCredentials"];
     this.subscriptionId = serverless.variables["subscriptionId"];
     this.resourceGroup = this.getResourceGroupName();
-    this.config.provider.resourceGroup = this.resourceGroup;
     this.deploymentConfig = this.getDeploymentConfig();
     this.deploymentName = this.getDeploymentName();
     this.artifactName = this.getArtifactName(this.deploymentName);
@@ -59,16 +59,19 @@ export abstract class BaseService {
    * Name of Azure Region for deployment
    */
   public getRegion(): string {
-    return this.options.region || this.config.provider.region;
+    return this.config.provider.region;
   }
 
   /**
    * Name of current deployment stage
    */
   public getStage(): string {
-    return this.options.stage || this.config.provider.stage;
+    return this.config.provider.stage;
   }
 
+  /**
+   * Prefix for service
+   */
   public getPrefix(): string {
     return this.config.provider.prefix;
   }
@@ -77,9 +80,7 @@ export abstract class BaseService {
    * Name of current resource group
    */
   public getResourceGroupName(): string {
-    return this.options.resourceGroup
-      || this.config.provider.resourceGroup
-      || AzureNamingService.getResourceName(this.config, null, `${this.serviceName}-rg`);
+    return this.config.provider.resourceGroup;
   }
 
   /**
@@ -242,5 +243,25 @@ export abstract class BaseService {
       this.serverless.variables["packageTimestamp"] = timestamp;
     }
     return timestamp;
+  }
+
+  /**
+   * Overwrite values for resourceGroup, prefix, region and stage
+   * in config if passed through CLI
+   */
+  private setConfigFromCli() {
+    const { prefix, region, stage } = this.config.provider;
+    this.config.provider = {
+      ...this.config.provider,
+      prefix: this.getOption("prefix") || prefix,
+      stage: this.getOption("stage") || stage,
+      region: this.getOption("region") || region,
+    }
+    if (!this.config.provider.region && this.config.provider["location"]) {
+      this.config.provider.region = this.config.provider["location"];
+    }
+    this.config.provider.resourceGroup = (
+      this.getOption("resourceGroup", this.config.provider.resourceGroup)
+    ) || AzureNamingService.getResourceName(this.config, null, `${this.getServiceName()}-rg`);
   }
 }
