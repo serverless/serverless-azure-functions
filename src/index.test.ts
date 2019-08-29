@@ -1,7 +1,6 @@
 import AzureIndex from "./index";
 import { MockFactory } from "./test/mockFactory"
 import { AzureInvokePlugin } from "./plugins/invoke/azureInvokePlugin";
-import { AzureLogsPlugin } from "./plugins/logs/azureLogsPlugin";
 import { AzureRemovePlugin } from "./plugins/remove/azureRemovePlugin";
 import { AzurePackagePlugin } from "./plugins/package/azurePackagePlugin";
 import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
@@ -21,7 +20,6 @@ describe("Azure Index", () => {
 
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzurePackagePlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureInvokePlugin);
-    expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureLogsPlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureRemovePlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureLoginPlugin);
     expect(sls.pluginManager.addPlugin).toBeCalledWith(AzureDeployPlugin);
