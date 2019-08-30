@@ -7,8 +7,18 @@ import * as nodeauth from "@azure/ms-rest-nodeauth";
 
 jest.mock("../plugins/login/utils/simpleFileTokenCache");
 import { SimpleFileTokenCache } from "../plugins/login/utils/simpleFileTokenCache";
+import { MockFactory } from "../test/mockFactory";
 
 describe("Login Service", () => {
+
+  let loginService: AzureLoginService;
+
+  beforeEach(() => {
+    loginService = new AzureLoginService(
+      MockFactory.createTestServerless(),
+      MockFactory.createTestServerlessOptions()
+    )
+  })
 
   it("logs in interactively with no cached login", async () => {
     // Ensure env variables are not set
@@ -25,7 +35,7 @@ describe("Login Service", () => {
       { value: jest.fn(() => emptyObj) }
     );
 
-    await AzureLoginService.login();
+    await loginService.login();
     expect(SimpleFileTokenCache).toBeCalled();
     expect(open).toBeCalledWith("https://microsoft.com/devicelogin");
     expect(nodeauth.interactiveLoginWithAuthResponse).toBeCalled();
@@ -42,7 +52,7 @@ describe("Login Service", () => {
     SimpleFileTokenCache.prototype.isEmpty = jest.fn(() => false);
     SimpleFileTokenCache.prototype.first = jest.fn(() => ({ userId: "" }));
 
-    await AzureLoginService.login();
+    await loginService.login();
     expect(SimpleFileTokenCache).toBeCalled();
     expect(nodeauth.DeviceTokenCredentials).toBeCalled();
     expect(SimpleFileTokenCache.prototype.listSubscriptions).toBeCalled();
@@ -55,7 +65,7 @@ describe("Login Service", () => {
     process.env.azureServicePrincipalPassword = "azureServicePrincipalPassword";
     process.env.azureServicePrincipalTenantId = "azureServicePrincipalTenantId";
 
-    await AzureLoginService.login();
+    await loginService.login();
     expect(nodeauth.loginWithServicePrincipalSecretWithAuthResponse).toBeCalledWith(
       "azureServicePrincipalClientId",
       "azureServicePrincipalPassword",

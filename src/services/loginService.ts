@@ -6,34 +6,40 @@ import {
   AuthResponse,
   AzureTokenCredentialsOptions,
   InteractiveLoginOptions,
-  DeviceTokenCredentials,  
+  DeviceTokenCredentials,
 } from "@azure/ms-rest-nodeauth";
 import { SimpleFileTokenCache } from "../plugins/login/utils/simpleFileTokenCache";
+import { BaseService } from "./baseService";
 
 export interface AzureLoginOptions extends Serverless.Options {
   subscriptionId?: string;
 }
 
-export class AzureLoginService {
+export class AzureLoginService extends BaseService {
+
+  public constructor(serverless: Serverless, options: Serverless.Options) {
+    super(serverless, options, false);
+  }
+
   /**
    * Logs in via service principal login if environment variables are
    * set or via interactive login if environment variables are not set
    * @param options Options for different authentication methods
    */
-  public static async login(options?: AzureTokenCredentialsOptions|InteractiveLoginOptions): Promise<AuthResponse> {
+  public async login(options?: AzureTokenCredentialsOptions|InteractiveLoginOptions): Promise<AuthResponse> {
     const subscriptionId = process.env.azureSubId;
     const clientId = process.env.azureServicePrincipalClientId;
     const secret = process.env.azureServicePrincipalPassword;
     const tenantId = process.env.azureServicePrincipalTenantId;
 
     if (subscriptionId && clientId && secret && tenantId) {
-      return await AzureLoginService.servicePrincipalLogin(clientId, secret, tenantId, options);
+      return await this.servicePrincipalLogin(clientId, secret, tenantId, options);
     } else {
-      return await AzureLoginService.interactiveLogin(options);
+      return await this.interactiveLogin(options);
     }
   }
 
-  public static async interactiveLogin(options?: InteractiveLoginOptions): Promise<AuthResponse> {
+  public async interactiveLogin(options?: InteractiveLoginOptions): Promise<AuthResponse> {
     let authResp: AuthResponse = {credentials: undefined, subscriptions: []};
     const fileTokenCache = new SimpleFileTokenCache();
     if(fileTokenCache.isEmpty()){
@@ -49,7 +55,7 @@ export class AzureLoginService {
 
   }
 
-  public static async servicePrincipalLogin(clientId: string, secret: string, tenantId: string, options: AzureTokenCredentialsOptions): Promise<AuthResponse> {
+  public async servicePrincipalLogin(clientId: string, secret: string, tenantId: string, options: AzureTokenCredentialsOptions): Promise<AuthResponse> {
     return loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId, options);
   }
 }

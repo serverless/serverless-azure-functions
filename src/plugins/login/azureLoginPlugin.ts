@@ -23,15 +23,18 @@ export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
     this.log("Logging into Azure");
 
     try {
-      const authResult = await AzureLoginService.login();
+      const loginService = new AzureLoginService(this.serverless, this.options);
+      const authResult = await loginService.login();
+
       this.serverless.variables["azureCredentials"] = authResult.credentials;
       // Use environment variable for sub ID or use the first subscription in the list (service principal can
       // have access to more than one subscription)
-      if (!authResult.subscriptions.length) {
+      let subId = loginService.getSubscriptionId();
+      if (!subId && !authResult.subscriptions.length) {
         throw new Error("Authentication returned an empty list of subscriptions. " +
           "Try another form of authentication. See the serverless-azure-functions README for more help");
       }
-      const subId = authResult.subscriptions[0].id;
+      subId = subId || authResult.subscriptions[0].id;
       this.serverless.variables["subscriptionId"] = subId;
       this.serverless.cli.log(`Using subscription ID: ${subId}`);
     }
