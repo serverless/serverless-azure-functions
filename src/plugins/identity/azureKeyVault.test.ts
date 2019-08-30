@@ -12,11 +12,8 @@ describe("Azure Key Vault Plugin", () => {
   });
 
   it("can be instantiated", () => {
-    const serverless = new Serverless();
-    const options: Serverless.Options = {
-      stage: "",
-      region: "",
-    }
+    const serverless = MockFactory.createTestServerless();
+    const options: Serverless.Options = MockFactory.createTestServerlessOptions();
     const plugin = new AzureKeyVaultPlugin(serverless, options);
 
     expect(plugin).not.toBeNull();
