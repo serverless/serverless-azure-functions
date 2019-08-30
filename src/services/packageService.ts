@@ -95,6 +95,7 @@ export class PackageService extends BaseService {
     functionJSON.scriptFile = functionMetadata.handlerPath;
     const functionObject = this.slsFunctions()[functionName];
     const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
+
     if (bindingAzureSettings.route) {
       // Find incoming binding within functionJSON and set the route
       const index = (functionJSON.bindings as any[])

@@ -5,8 +5,8 @@ import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
 import { ApiManagementConfig, ApiOperationOptions, ApiCorsPolicy } from "../models/apiManagement";
 import {
-  ApiContract, BackendContract, OperationContract,
-  PropertyContract, ApiManagementServiceResource,
+  ApiContract, OperationContract,
+  PropertyContract, ApiManagementServiceResource, BackendContract,
 } from "@azure/arm-apimanagement/esm/models";
 import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
@@ -77,9 +77,11 @@ export class ApimService extends BaseService {
 
     const functionApp = await this.functionAppService.get();
 
+    const resource = await this.get();
     const api = await this.ensureApi();
     await this.ensureFunctionAppKeys(functionApp);
     await this.ensureBackend(functionApp);
+    await this.deployFunctions(functionApp, resource, api);
 
     return api;
   }
@@ -87,7 +89,7 @@ export class ApimService extends BaseService {
   /**
    * Deploys all the functions of the serverless service to APIM
    */
-  public async deployFunctions(service: ApiManagementServiceResource, api: ApiContract) {
+  public async deployFunctions(functionApp: Site, service: ApiManagementServiceResource, api: ApiContract) {
     Guard.null(service);
     Guard.null(api);
 
@@ -99,7 +101,7 @@ export class ApimService extends BaseService {
 
     const deployApiTasks = this.serverless.service
       .getAllFunctions()
-      .map((functionName) => this.deployFunction(service, api, { function: functionName }));
+      .map((functionName) => this.deployFunction(functionApp, service, api, { function: functionName }));
 
     return Promise.all(deployApiTasks);
   }
@@ -108,15 +110,37 @@ export class ApimService extends BaseService {
    * Deploys the specified serverless function  to APIM
    * @param options
    */
-  public async deployFunction(service: ApiManagementServiceResource, api: ApiContract, options) {
+  public async deployFunction(functionApp: Site, service: ApiManagementServiceResource, api: ApiContract, options) {
+    Guard.null(functionApp);
     Guard.null(service);
     Guard.null(api);
     Guard.null(options);
 
     const functionConfig = this.serverless.service["functions"][options.function];
+    functionConfig.name = options.function;
 
-    if (!(functionConfig && functionConfig.apim)) {
+    const httpEvent = functionConfig.events.find((event) => event.http);
+    if (!httpEvent) {
       return;
+    }
+
+    this.ensureFunctionBackend(functionApp, functionConfig);
+
+    const httpConfig = httpEvent["x-azure-settings"];
+
+    // Infer APIM operation configuration from HTTP event
+    if (!functionConfig.apim) {
+      const operations = httpConfig.methods.map((method) => {
+        return {
+          name: functionConfig.name,
+          displayName: functionConfig.name,
+          urlTemplate: httpConfig.route || functionConfig.name,
+          method: method,
+          templateParameters: this.getTemplateParameters(httpConfig.route)
+        };
+      })
+
+      functionConfig.apim = { operations };
     }
 
     const tasks = functionConfig.apim.operations.map((operation) => {
@@ -127,6 +151,24 @@ export class ApimService extends BaseService {
     });
 
     await Promise.all(tasks);
+  }
+
+  /**
+   * Retrieves the template parameter referenced in the route template
+   * @param route The route template to inspect
+   */
+  private getTemplateParameters(route: string) {
+    const matches = [...route["matchAll"](/{(\w+)}/g)];
+    if (!matches.length) {
+      return null;
+    }
+
+    const templateParamMap = {};
+    matches.forEach((match) => {
+      templateParamMap[match[1]] = "string"
+    });
+
+    return templateParamMap;
   }
 
   /**
@@ -167,7 +209,8 @@ export class ApimService extends BaseService {
    * @param functionAppUrl The host name for the deployed function app
    */
   private async ensureBackend(functionApp: Site): Promise<BackendContract> {
-    const backendUrl = `https://${functionApp.defaultHostName}/api`;
+    const backendPath = this.apimConfig.backend.url || "api";
+    const backendUrl = `https://${functionApp.defaultHostName}/${backendPath}`;
 
     this.log(`-> Deploying API Backend ${functionApp.name} = ${backendUrl}`);
     try {
@@ -195,15 +238,53 @@ export class ApimService extends BaseService {
   }
 
   /**
+   * Deploys the HTTP backend service required to support the function
+   * @param functionApp The Azure function app
+   * @param functionConfig The serverless function configuration
+   */
+  private async ensureFunctionBackend(functionApp: Site, functionConfig: any): Promise<BackendContract> {
+    Guard.null(functionApp);
+    Guard.null(functionConfig);
+
+    const httpEvent = functionConfig.events.find((event) => event.http);
+    if (!(httpEvent && functionConfig.apim.backend)) {
+      return;
+    }
+
+    const backendName = functionConfig.apim.backend.name || `${this.serviceName}-${functionConfig.name}`;
+    const backendUrl = `https://${functionApp.defaultHostName}/${functionConfig.apim.backend.url}`
+
+    this.log(`-> Deploying Function Backend ${backendName} = ${backendUrl}`);
+    try {
+      const functionAppResourceId = `https://management.azure.com${functionApp.id}`;
+
+      return await this.apimClient.backend.createOrUpdate(this.resourceGroup, this.apimConfig.name, backendName, {
+        credentials: {
+          header: {
+            "x-functions-key": [`{{${this.serviceName}-key}}`],
+          },
+        },
+        title: backendName,
+        tls: functionConfig.apim.backend.tls,
+        proxy: functionConfig.apim.backend.proxy,
+        description: functionConfig.apim.backend.description,
+        protocol: functionConfig.apim.backend || "http",
+        resourceId: functionAppResourceId,
+        url: `https://${functionApp.defaultHostName}${functionConfig.apim.backend.url}`,
+      });
+    } catch (e) {
+      this.log("Error creating APIM Function Backend");
+      this.log(JSON.stringify(e.body, null, 4));
+      throw e;
+    }
+  }
+
+  /**
    * Deploys a single APIM api operation for the specified function
    * @param serverless The serverless framework
    * @param options The plugin options
    */
-  private async deployOperation(
-    service: ApiManagementServiceResource,
-    api: ApiContract,
-    options: ApiOperationOptions,
-  ): Promise<OperationContract> {
+  private async deployOperation(service: ApiManagementServiceResource, api: ApiContract, options: ApiOperationOptions): Promise<OperationContract> {
     try {
       const client = new ApiManagementClient(this.credentials, this.subscriptionId);
 
@@ -221,6 +302,12 @@ export class ApimService extends BaseService {
       const operationUrl = `${service.gatewayUrl}${operationPath}`;
       this.log(`--> Deploying API operation ${options.function}: ${operationConfig.method.toUpperCase()} ${operationUrl}`);
 
+      // Determine if the function requires a custom backend configuration otherwise default to top level APIM backend config
+      const functionConfig = this.serverless.service["functions"][options.function];
+      const backendId = functionConfig.apim && functionConfig.apim.backend
+        ? `${this.serviceName}-${options.function}`
+        : this.serviceName;
+
       const operation = await client.apiOperation.createOrUpdate(
         this.resourceGroup,
         this.apimConfig.name,
@@ -231,7 +318,7 @@ export class ApimService extends BaseService {
 
       await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, this.apimConfig.api.name, options.function, {
         format: "rawxml",
-        value: this.createApiOperationXmlPolicy(),
+        value: this.createApiOperationXmlPolicy(backendId),
       });
 
       return operation;
@@ -267,7 +354,7 @@ export class ApimService extends BaseService {
   /**
    * Creates the XML payload that defines the API operation policy to link to the configured backend
    */
-  private createApiOperationXmlPolicy(): string {
+  private createApiOperationXmlPolicy(backendId: string): string {
     const operationPolicy = [{
       policies: [
         {
@@ -278,7 +365,7 @@ export class ApimService extends BaseService {
                 {
                   "_attr": {
                     "id": "apim-generated-policy",
-                    "backend-id": this.serviceName,
+                    "backend-id": backendId,
                   }
                 },
               ],
