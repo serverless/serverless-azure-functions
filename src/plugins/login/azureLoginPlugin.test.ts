@@ -7,7 +7,6 @@ import { loginHooks } from "./loginHooks";
 
 describe("Login Plugin", () => {
 
-  const authResponse = MockFactory.createTestAuthResponse();
   const envVariables = MockFactory.createTestServicePrincipalEnvVariables()
   const credentials = MockFactory.createTestVariables().azureCredentials;
 
@@ -19,8 +18,8 @@ describe("Login Plugin", () => {
     return new AzureLoginPlugin(sls, options || MockFactory.createTestServerlessOptions());
   }
 
-  function createMockLoginFunction() {
-    return jest.fn(() => Promise.resolve(authResponse));
+  function createMockLoginFunction(authResponse?) {
+    return jest.fn(() => Promise.resolve(authResponse || MockFactory.createTestAuthResponse()));
   }
 
   function setServicePrincipalEnvVariables() {
@@ -91,37 +90,27 @@ describe("Login Plugin", () => {
     });
     const sls = MockFactory.createTestServerless();
     await expect(invokeLoginHook(false, sls)).rejects.toThrow(error);
-    expect(AzureLoginService.interactiveLogin).toBeCalled()
+    expect(AzureLoginService.interactiveLogin).toBeCalled();
     expect(AzureLoginService.servicePrincipalLogin).not.toBeCalled();
     expect(sls.cli.log).lastCalledWith("Error logging into azure");
-  });
-
-  it("Uses the user specified subscription ID", async () => {
-    const sls = MockFactory.createTestServerless();
-    const opt = MockFactory.createTestServerlessOptions();
-    opt["subscriptionId"] = "test-subs-id";
-    await invokeLoginHook(false, sls, opt);
-    expect(AzureLoginService.interactiveLogin).toBeCalled()
-    expect(sls.variables["subscriptionId"]).toEqual("test-subs-id");
-    expect(sls.cli.log).toBeCalledWith("Using subscription ID: test-subs-id");
   });
 
   it("Uses the default subscription ID" , async () => {
     const sls = MockFactory.createTestServerless();
     const opt = MockFactory.createTestServerlessOptions();
     await invokeLoginHook(false, sls, opt);
-    expect(AzureLoginService.interactiveLogin).toBeCalled()
+    expect(AzureLoginService.interactiveLogin).toBeCalled();
     expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
     expect(sls.cli.log).toBeCalledWith("Using subscription ID: azureSubId");
   });
 
-  it("Uses the subscription ID specified in serverless yaml", async () => {
+  it("Throws an error with empty subscription list", async () => {
+    const authResponse = MockFactory.createTestAuthResponse();
+    authResponse.subscriptions = [];
+    AzureLoginService.interactiveLogin = createMockLoginFunction(authResponse);
     const sls = MockFactory.createTestServerless();
     const opt = MockFactory.createTestServerlessOptions();
-    sls.service.provider["subscriptionId"] = "test-subs-id";
-    await invokeLoginHook(false, sls, opt);
-    expect(AzureLoginService.interactiveLogin).toBeCalled()
-    expect(sls.variables["subscriptionId"]).toEqual("test-subs-id");
-    expect(sls.cli.log).toBeCalledWith("Using subscription ID: test-subs-id");
+    await expect(invokeLoginHook(false, sls, opt)).rejects.toThrow();
+    expect(AzureLoginService.interactiveLogin).toBeCalled();
   });
 });

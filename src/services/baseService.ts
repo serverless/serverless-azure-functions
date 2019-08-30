@@ -41,7 +41,7 @@ export abstract class BaseService {
     this.baseUrl = "https://management.azure.com";
     this.serviceName = this.getServiceName();
     this.credentials = serverless.variables["azureCredentials"];
-    this.subscriptionId = serverless.variables["subscriptionId"];
+    this.subscriptionId = this.config.provider.subscriptionId;
     this.resourceGroup = this.getResourceGroupName();
     this.deploymentConfig = this.getDeploymentConfig();
     this.deploymentName = this.getDeploymentName();
@@ -81,6 +81,13 @@ export abstract class BaseService {
    */
   public getResourceGroupName(): string {
     return this.config.provider.resourceGroup;
+  }
+
+  /**
+   * Azure Subscription ID
+   */
+  public getSubscriptionId(): string {
+    return this.config.provider.subscriptionId;
   }
 
   /**
@@ -250,12 +257,16 @@ export abstract class BaseService {
    * in config if passed through CLI
    */
   private setConfigFromCli() {
-    const { prefix, region, stage } = this.config.provider;
+    const { prefix, region, stage, subscriptionId } = this.config.provider;
     this.config.provider = {
       ...this.config.provider,
       prefix: this.getOption("prefix") || prefix,
       stage: this.getOption("stage") || stage,
       region: this.getOption("region") || region,
+      subscriptionId: this.getOption("subscriptionId")
+        || process.env.azureSubId
+        || subscriptionId
+        || this.serverless.variables["subscriptionId"]
     }
     if (!this.config.provider.region && this.config.provider["location"]) {
       this.config.provider.region = this.config.provider["location"];
