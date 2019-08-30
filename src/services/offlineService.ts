@@ -13,7 +13,7 @@ export class OfflineService extends BaseService {
     "local.settings.json": JSON.stringify({
       IsEncrypted: false,
       Values: {
-        AzureWebJobsStorage: "",
+        AzureWebJobsStorage: "UseDevelopmentStorage=true",
         FUNCTIONS_WORKER_RUNTIME: "node"
       }
     }),
