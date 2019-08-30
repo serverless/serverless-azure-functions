@@ -16,6 +16,7 @@ import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState } from
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
 import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand } from "../models/serverless";
+import configConstants from "../config";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -174,7 +175,7 @@ export class MockFactory {
     const result = [];
     const originalTimestamp = +MockFactory.createTestTimestamp();
     for (let i = 0; i < count; i++) {
-      const name = (includeTimestamp) ? `deployment${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
+      const name = (includeTimestamp) ? `${configConstants.naming.suffix.deployment}${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
       result.push(
         MockFactory.createTestDeployment(name, i)
       )
@@ -194,7 +195,7 @@ export class MockFactory {
 
   public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
     return {
-      name: name || `deployment1-t${MockFactory.createTestTimestamp()}`,
+      name: name || `${configConstants.naming.suffix.deployment}1-t${MockFactory.createTestTimestamp()}`,
       properties: {
         timestamp: new Date(2019, 1, 1, 0, 0, second),
         parameters: MockFactory.createTestParameters(),
