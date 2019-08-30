@@ -49,7 +49,7 @@ describe("Azure Blob Storage Service", () => {
     }) as any;
 
     BlockBlobURL.fromContainerURL = jest.fn(() => blockBlobUrl) as any;
-    AzureLoginService.login = jest.fn(() => Promise.resolve({
+    AzureLoginService.prototype.login = jest.fn(() => Promise.resolve({
       credentials: {
         getToken: jest.fn(() => {
           return {
@@ -142,7 +142,7 @@ describe("Azure Blob Storage Service", () => {
     expect(ContainerURL.fromServiceURL).not.toBeCalled();
     expect(ContainerURL.prototype.create).not.toBeCalled
   })
-  
+
   it("should delete a container", async () => {
     const containerToDelete = "delete container";
     ContainerURL.fromServiceURL = jest.fn(() => new ContainerURL(null, null));
