@@ -3,7 +3,6 @@ import { AzureBasePlugin } from "../azureBasePlugin";
 import { AzureKeyVaultService } from "../../services/azureKeyVaultService";
 
 export class AzureKeyVaultPlugin extends AzureBasePlugin {
-
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     this.hooks = {

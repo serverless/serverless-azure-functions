@@ -322,6 +322,13 @@ export class MockFactory {
     };
   }
 
+  public static createTestKeyVaultConfig(name: string = "testVault") {
+    return {
+      name: name,
+      resourceGroup: "testGroup",
+    };
+  }
+
   public static createTestFunctionMetadata(name: string) {
     return {
       "handler": `${name}.handler`,

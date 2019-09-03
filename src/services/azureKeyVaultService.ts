@@ -4,7 +4,6 @@ import { FunctionAppService } from "./functionAppService";
 import { KeyVaultManagementClient } from "@azure/arm-keyvault";
 import { KeyPermissions, SecretPermissions } from "@azure/arm-keyvault/esm/models/index";
 
-
 /**
  * Defines the Azure Key Vault configuration
  */
@@ -36,31 +35,22 @@ export class AzureKeyVaultService extends BaseService {
    * @param keyVaultConfig Azure Key Vault settings
    */
   public async setPolicy(keyVaultConfig: AzureKeyVaultConfig) {
-    const subscriptionID = this.serverless.service.provider["subscriptionId"];
+    const subscriptionID = this.subscriptionId;
 
     const func = await this.funcApp.get();
     const identity = func.identity;
 
     const keyVaultClient = new KeyVaultManagementClient(this.credentials, subscriptionID);
-    const vault = await keyVaultClient.vaults.get(keyVaultConfig.resourceGroup, keyVaultConfig.name);
-    
-    const policy = vault.properties.accessPolicies.filter((val)=>{val.objectId === identity.principalId && val.tenantId === identity.tenantId})[0];
+    const vault = await keyVaultClient.vaults.get(keyVaultConfig.resourceGroup, keyVaultConfig.name).catch((e) => {throw new Error("Error: Specified vault not found")});
 
-    if(!policy){
-      const newEntry = {
-        tenantId: identity.tenantId,
-        objectId: identity.principalId,
-        permissions: {
-          secrets: ["get" as SecretPermissions],
-        }
-      }
-      vault.properties.accessPolicies.push(newEntry);
-    } else {
-      policy.permissions = {
-        keys: ["get" as KeyPermissions],
+    const newEntry = {
+      tenantId: identity.tenantId,
+      objectId: identity.principalId,
+      permissions: {
         secrets: ["get" as SecretPermissions],
       }
     }
+    vault.properties.accessPolicies.push(newEntry);
 
     return keyVaultClient.vaults.createOrUpdate(keyVaultConfig.resourceGroup, keyVaultConfig.name, {location: vault.location, properties: vault.properties})
   }
