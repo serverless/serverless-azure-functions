@@ -3,11 +3,9 @@ import { OfflineService } from "../../services/offlineService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureOfflinePlugin extends AzureBasePlugin {
-  private offlineService: OfflineService;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-    this.offlineService = new OfflineService(this.serverless, this.options);
 
     this.hooks = {
       "before:offline:offline": this.azureOfflineBuild.bind(this),
@@ -60,14 +58,17 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
   }
 
   private async azureOfflineBuild(){
-    await this.offlineService.build();
+    const offlineService = new OfflineService(this.serverless, this.options);
+    await offlineService.build();
   }
 
   private async azureOfflineStart(){
-    await this.offlineService.start();
+    const offlineService = new OfflineService(this.serverless, this.options);
+    await offlineService.start();
   }
 
   private async azureOfflineCleanup(){
-    await this.offlineService.cleanup();
+    const offlineService = new OfflineService(this.serverless, this.options);
+    await offlineService.cleanup();
   }
 }
