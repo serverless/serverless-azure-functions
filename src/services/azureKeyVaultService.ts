@@ -2,7 +2,7 @@ import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { FunctionAppService } from "./functionAppService";
 import { KeyVaultManagementClient } from "@azure/arm-keyvault";
-import { KeyPermissions, SecretPermissions } from "@azure/arm-keyvault/esm/models/index";
+import { KeyPermissions, SecretPermissions, Vault } from "@azure/arm-keyvault/esm/models/index";
 
 /**
  * Defines the Azure Key Vault configuration
@@ -39,9 +39,13 @@ export class AzureKeyVaultService extends BaseService {
 
     const func = await this.funcApp.get();
     const identity = func.identity;
-
+    let vault: Vault;
     const keyVaultClient = new KeyVaultManagementClient(this.credentials, subscriptionID);
-    const vault = await keyVaultClient.vaults.get(keyVaultConfig.resourceGroup, keyVaultConfig.name).catch((e) => {throw new Error("Error: Specified vault not found")});
+    try {
+      vault = await keyVaultClient.vaults.get(keyVaultConfig.resourceGroup, keyVaultConfig.name)
+    } catch (error) {
+      throw new Error("Error: Specified vault not found")
+    }
 
     const newEntry = {
       tenantId: identity.tenantId,

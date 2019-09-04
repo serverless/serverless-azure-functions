@@ -5,14 +5,11 @@ import {
   AzureKeyVaultConfig
 } from "./azureKeyVaultService";
 
-import { KeyVaultManagementClient, Vaults } from "@azure/arm-keyvault";
+import { Vaults } from "@azure/arm-keyvault";
 import { FunctionAppService } from "./functionAppService";
 
 describe("Azure Key Vault Service", () => {
   const options: Serverless.Options = MockFactory.createTestServerlessOptions();
-  const createOrUpdate = jest.fn(() => {
-    console.log();
-  });
   const knownVaults = {
     testVault: {
       location: "WestUS",
@@ -25,16 +22,6 @@ describe("Azure Key Vault Service", () => {
   let serverless: Serverless = MockFactory.createTestServerless();
 
   beforeEach(() => {
-    // KeyVaultManagementClient.prototype.vaults = {
-    //   get: jest.fn(async (resourceGroup, vaultName) => {
-    //     if (!knownVaults.hasOwnProperty(vaultName)) {
-    //       throw new Error("No matching vaults");
-    //     }
-    //     return knownVaults["testVault"];
-    //   }),
-    //   createOrUpdate,
-    // } as any;
-
     Vaults.prototype.createOrUpdate = jest.fn();
     Vaults.prototype.get = jest.fn(async (resourceGroup, vaultName) => {
       if (!knownVaults.hasOwnProperty(vaultName)) {
@@ -63,7 +50,7 @@ describe("Azure Key Vault Service", () => {
     expect(service).not.toBeNull();
   });
 
-  it("Throws an error if correct keyvault name is not specified", async () => {
+  it("Throws an error if keyvault doesn't exist", async () => {
     const service = new AzureKeyVaultService(serverless, options);
     const keyVault: AzureKeyVaultConfig = MockFactory.createTestKeyVaultConfig(
       "fake-vault"
@@ -107,6 +94,5 @@ describe("Azure Key Vault Service", () => {
         properties: knownVaults["testVault"].properties
       }
     );
-    // fail();
   });
 });
