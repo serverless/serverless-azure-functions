@@ -227,7 +227,7 @@ export abstract class BaseService {
 
     if (!providerRegion || providerRegion === awsDefault) {
       // no region specified in serverless.yml
-      this.serverless.service.provider.region = "westus";
+      this.serverless.service.provider.region = this.serverless.service.provider["location"] || "westus";
     }
 
     if (!this.serverless.service.provider.stage) {
@@ -267,9 +267,6 @@ export abstract class BaseService {
         || process.env.azureSubId
         || subscriptionId
         || this.serverless.variables["subscriptionId"]
-    }
-    if (!this.config.provider.region && this.config.provider["location"]) {
-      this.config.provider.region = this.config.provider["location"];
     }
     this.config.provider.resourceGroup = (
       this.getOption("resourceGroup", this.config.provider.resourceGroup)

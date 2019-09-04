@@ -275,4 +275,18 @@ describe("Base Service", () => {
     expect(service.getSubscriptionId()).toEqual(loginResultSubscriptionId);
     expect(serverless.service.provider["subscriptionId"]).toEqual(loginResultSubscriptionId);
   });
+
+  it("sets region to be value from location property if region not set", () => {
+    const slsService = MockFactory.createTestService();
+    delete slsService.provider.region;
+    const location = "East US";
+    slsService.provider["location"] = location;
+
+    const sls = MockFactory.createTestServerless({
+      service: slsService
+    });
+
+    service = new MockService(sls, {} as any);
+    expect(service.getRegion()).toEqual(location);
+  });
 });
