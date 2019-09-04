@@ -195,7 +195,7 @@ export class FunctionAppService extends BaseService {
    *    resource-group, storage account, app service plan, and app service at the minimum
    */
   public async deploy() {
-    this.log(`Creating function app: ${this.serviceName}`);
+    this.log(`Creating function app: ${FunctionAppResource.getResourceName(this.config)}`);
 
     const armService = new ArmService(this.serverless, this.options);
     const { armTemplate, type } = this.config.provider;
