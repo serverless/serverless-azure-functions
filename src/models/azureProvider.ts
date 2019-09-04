@@ -18,3 +18,9 @@ export interface FunctionMetadata {
   handler: string;
   events: FunctionEvent[];
 }
+
+export interface DeploymentExtendedError {
+  code: string;
+  message: string;
+  details?: DeploymentExtendedError[];
+}

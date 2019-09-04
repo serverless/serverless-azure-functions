@@ -8,6 +8,7 @@ import jsonpath from "jsonpath";
 import { Deployments } from "@azure/arm-resources";
 import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
 import { ResourceService } from "./resourceService";
+import { DeploymentExtendedError } from "../models/azureProvider";
 
 describe("Arm Service", () => {
   let sls: Serverless
@@ -310,6 +311,48 @@ describe("Arm Service", () => {
       expect(call[0]).toEqual(expectedResourceGroup);
       expect(call[1]).toMatch(expectedDeploymentNameRegex);
       expect(call[2]).toEqual(expectedDeployment);
+    });
+
+    it("Throws more detailed error message upon failed ARM deployment", async () => {
+      Deployments.prototype.createOrUpdate = jest.fn(() => Promise.reject(null));
+      const lastDeploymentError: DeploymentExtendedError = {
+        code: "DeploymentFailed",
+        message: "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-debug for usage details.",
+        details: [
+          {
+            code: "ServiceAlreadyExists",
+            message: "Api service already exists: abc-123-apim"
+          },
+          {
+            code: "StorageAccountAlreadyTaken",
+            message: "The storage account named ABC123 is already taken."
+          }
+        ]
+      }
+      ResourceService.prototype.getLastDeployment = jest.fn(() => Promise.resolve({
+        properties: {
+          error: lastDeploymentError
+        }
+      })) as any;
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(false),
+        template: MockFactory.createTestArmTemplate()
+      };
+      deployment.parameters.param1 = "3"
+      const { code, message, details } = lastDeploymentError;
+      let errorPattern = [
+        code,
+        message,
+        details[0].code,
+        details[0].message,
+        details[1].code,
+        details[1].message
+      ].join(".*")
+      await expect(service.deployTemplate(deployment))
+        .rejects
+        .toThrowError(
+          new RegExp(`.*${errorPattern}.*`,"s")
+        );
     });
   });
 });

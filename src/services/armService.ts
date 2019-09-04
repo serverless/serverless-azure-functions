@@ -10,6 +10,7 @@ import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
 import { ResourceService } from "./resourceService"
 import deepEqual from "deep-equal";
+import { DeploymentExtendedError } from "../models/azureProvider";
 
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -130,14 +131,39 @@ export class ArmService extends BaseService {
     this.log(`---> Resource Group: ${this.resourceGroup}`)
     this.log(`---> Deployment Name: ${this.deploymentName}`)
 
-    const result = await this.resourceClient.deployments.createOrUpdate(
-      this.resourceGroup,
-      this.deploymentName,
-      armDeployment
-    );
-    this.log("-> ARM deployment complete");
+    try {
+      const result = await this.resourceClient.deployments.createOrUpdate(
+        this.resourceGroup,
+        this.deploymentName,
+        armDeployment
+      );
+      this.log("-> ARM deployment complete");
+      return result;
+    } catch (err) {
+      const lastDeployment = await resourceService.getLastDeployment();
+      const errorDetails: DeploymentExtendedError = lastDeployment.properties["error"];
+      if (errorDetails) {
+        throw new Error(this.deploymentErrorToString(errorDetails));
+      }
+    }
+  }
 
-    return result;
+  private deploymentErrorToString(deploymentError: DeploymentExtendedError) {
+    if (!deploymentError.code || !deploymentError.message) {
+      return JSON.stringify(deploymentError);
+    }
+    let errorString = `${deploymentError.code} - ${deploymentError.message}`;
+    if (deploymentError.details) {
+
+      errorString += `
+      ------------------------
+      DEPLOYMENT ERROR DETAILS
+      ------------------------\n`
+      deploymentError.details.forEach((childError) => {
+        errorString += `\n${this.deploymentErrorToString(childError)}`
+      })
+    }
+    return errorString;
   }
 
   /**
