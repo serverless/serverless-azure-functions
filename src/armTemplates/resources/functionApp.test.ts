@@ -1,20 +1,13 @@
-import { ApimResource } from "./apim";
+import { FunctionAppResource } from "./functionApp";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import md5 from "md5";
-import configConstants from "../../config";
 
-describe("APIM Resource", () => {
+describe("Function App Resource", () => {
   const resourceGroupName = "myResourceGroup";
   const prefix = "prefix";
-  const region = "eastus2";
+  const region = "westus";
   const stage = "prod";
 
   it("generates the correct resource name", () => {
-    const resourceGroupHash = md5(resourceGroupName).substr(
-      0,
-      configConstants.resourceGroupHashLength
-    );
-
     const config: ServerlessAzureConfig = {
       provider: {
         name: "azure",
@@ -27,18 +20,18 @@ describe("APIM Resource", () => {
       service: ""
     } as any;
 
-    expect(ApimResource.getResourceName(config)).toEqual(
-      `${prefix}-eus2-${stage}-${resourceGroupHash}-apim`
+    expect(FunctionAppResource.getResourceName(config)).toEqual(
+      `${config.provider.prefix}-wus-${config.provider.stage}`
     );
   });
 
   it("uses the specified name from the azure provider", () => {
-    const apimName = "myAPIM";
+    const serviceName = "myapp";
 
     const config: ServerlessAzureConfig = {
       provider: {
         apim: {
-          name: apimName
+          name: ""
         },
         name: "azure",
         prefix,
@@ -47,9 +40,11 @@ describe("APIM Resource", () => {
         resourceGroup: resourceGroupName,
         runtime: "nodejs10.x"
       },
-      service: ""
+      service: serviceName
     } as any;
 
-    expect(ApimResource.getResourceName(config)).toEqual(apimName);
+    expect(FunctionAppResource.getResourceName(config)).toEqual(
+      `${config.provider.prefix}-wus-${config.provider.stage}-${serviceName}`
+    );
   });
 });

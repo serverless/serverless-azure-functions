@@ -1,9 +1,9 @@
-import { ApimResource } from "./apim";
+import { VirtualNetworkResource } from "./virtualNetwork";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
 import configConstants from "../../config";
 
-describe("APIM Resource", () => {
+describe("Virtual Network Resource", () => {
   const resourceGroupName = "myResourceGroup";
   const prefix = "prefix";
   const region = "eastus2";
@@ -27,29 +27,8 @@ describe("APIM Resource", () => {
       service: ""
     } as any;
 
-    expect(ApimResource.getResourceName(config)).toEqual(
-      `${prefix}-eus2-${stage}-${resourceGroupHash}-apim`
+    expect(VirtualNetworkResource.getResourceName(config)).toEqual(
+      `${prefix}-eus2-${stage}-${resourceGroupHash}-vnet`
     );
-  });
-
-  it("uses the specified name from the azure provider", () => {
-    const apimName = "myAPIM";
-
-    const config: ServerlessAzureConfig = {
-      provider: {
-        apim: {
-          name: apimName
-        },
-        name: "azure",
-        prefix,
-        region,
-        stage,
-        resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
-      },
-      service: ""
-    } as any;
-
-    expect(ApimResource.getResourceName(config)).toEqual(apimName);
   });
 });
