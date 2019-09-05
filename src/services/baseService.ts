@@ -271,6 +271,6 @@ export abstract class BaseService {
     }
     this.config.provider.resourceGroup = (
       this.getOption("resourceGroup", this.config.provider.resourceGroup)
-    ) || AzureNamingService.getResourceName(this.config, null, `${this.getServiceName()}-rg`);
+    ) || AzureNamingService.getResourceName(this.config, null, `${this.getServiceName()}-rg`, false);
   }
 }

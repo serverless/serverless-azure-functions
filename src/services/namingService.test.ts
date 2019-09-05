@@ -1,9 +1,36 @@
 import { AzureNamingService } from "./namingService"
 import { ServerlessAzureConfig } from "../models/serverless";
+import md5 from "md5";
 
 describe("Naming Service", () => {
 
   const resourceGroup = "myResourceGroup";
+  const resourceGroupHash = md5(resourceGroup).substr(0, 6);
+
+  it("Gets resource name with hash", () => {
+    const config: ServerlessAzureConfig = {
+      functions: [],
+      plugins: [],
+      provider: {
+        prefix: "sls",
+        name: "azure",
+        region: "westus",
+        stage: "dev",
+        resourceGroup,
+        runtime: "nodejs10.x"
+      },
+      service: "test-api",
+      package: {
+        artifact: "",
+        artifactDirectoryName: "",
+        individually: false,
+      }
+    };
+    
+    const result = AzureNamingService.getResourceName(config);
+
+    expect(result).toEqual(`${config.provider.prefix}-wus-${config.provider.stage}-${resourceGroupHash}`);
+  });
 
   it("Creates a short name for an azure region", () => {
     const expected = "ausse";
@@ -100,8 +127,14 @@ describe("Naming Service", () => {
         region: "westus",
         stage: "dev",
         resourceGroup,
+        runtime: "nodejs10.x"
       },
-      service: "test-api"
+      service: "test-api",
+      package: {
+        artifact: "",
+        artifactDirectoryName: "",
+        individually: false,
+      }
     };
 
     const timestamp = Date.now();
