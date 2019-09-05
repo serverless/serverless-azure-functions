@@ -57,15 +57,12 @@ export class BindingUtils {
     return bindingUserSettingsMetaData;
   }
 
-  public static getHttpOutBinding(bindingUserSettings) {
+  public static getHttpOutBinding() {
     const binding = {};
 
     binding[constants.type] = "http";
     binding[constants.direction] = constants.outDirection;
-    binding[constants.name] = "$return";
-    if (bindingUserSettings[constants.webHookType]) {
-      binding[constants.name] = "res";
-    }
+    binding[constants.name] = "res";
 
     return binding;
   }

@@ -78,7 +78,7 @@ export class Utils {
     }
 
     if (bindingType === constants.httpTrigger) {
-      bindings.push(BindingUtils.getHttpOutBinding(bindingUserSettings));
+      bindings.push(BindingUtils.getHttpOutBinding());
     }
 
     functionsJson.bindings = bindings;
