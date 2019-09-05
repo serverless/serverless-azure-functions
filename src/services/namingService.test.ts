@@ -6,27 +6,26 @@ describe("Naming Service", () => {
 
   const resourceGroup = "myResourceGroup";
   const resourceGroupHash = md5(resourceGroup).substr(0, 6);
+  const defaultConfig: ServerlessAzureConfig = {
+    functions: [],
+    plugins: [],
+    provider: {
+      prefix: "sls",
+      name: "azure",
+      region: "westus",
+      stage: "dev",
+      resourceGroup,
+      runtime: "nodejs10.x"
+    },
+    service: "test-api",
+    package: {
+      artifact: "",
+      artifactDirectoryName: "",
+      individually: false,
+    }
+  };
 
   it("Gets resource name with hash", () => {
-    const config: ServerlessAzureConfig = {
-      functions: [],
-      plugins: [],
-      provider: {
-        prefix: "sls",
-        name: "azure",
-        region: "westus",
-        stage: "dev",
-        resourceGroup,
-        runtime: "nodejs10.x"
-      },
-      service: "test-api",
-      package: {
-        artifact: "",
-        artifactDirectoryName: "",
-        individually: false,
-      }
-    };
-    
     const result = AzureNamingService.getResourceName(config);
 
     expect(result).toEqual(`${config.provider.prefix}-wus-${config.provider.stage}-${resourceGroupHash}`);
