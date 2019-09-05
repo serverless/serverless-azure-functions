@@ -22,7 +22,7 @@ describe("Bindings", () => {
     expect(sls.cli.log).toBeCalledWith("Parsing Azure Functions Bindings.json...");
   });
 
-  it("Http output bindings should default to 'res' unless specifically specified", () => {
+  it("Http output bindings should default to 'res'", () => {
     const binding = BindingUtils.getHttpOutBinding();
 
     expect(binding).toMatchObject({
