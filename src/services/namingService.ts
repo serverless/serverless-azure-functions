@@ -26,7 +26,7 @@ export class AzureNamingService {
       this.createShortStageName(stage),
     ].join("-");
 
-    if(includeHash) {
+    if(includeHash && config.provider.resourceGroup) {
       name += `-${md5(config.provider.resourceGroup).substr(0, configConstants.resourceGroupHashLength)}`
     }
 
