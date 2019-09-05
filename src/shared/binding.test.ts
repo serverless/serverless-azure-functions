@@ -31,4 +31,41 @@ describe("Bindings", () => {
       name: "res"
     });
   });
+
+  it("Gets the http binding with default settings", () => {
+    const serverless = MockFactory.createTestServerless();
+    const parsedBindings = BindingUtils.getBindingsMetaData(serverless);
+    const bindingType = "http";
+
+    const bindingTypes = parsedBindings.bindingTypes;
+    const bindingTypeIndex = bindingTypes.indexOf(bindingType);
+    const bindingSettings = parsedBindings.bindingSettings[bindingTypeIndex];
+
+    const binding = BindingUtils.getBinding(bindingType, bindingSettings, {});
+
+    expect(binding).toMatchObject({
+      type: "http",
+      direction: "out",
+      name: "res",
+    });
+  });
+
+  it("Gets the http binding with custom name", () => {
+    const serverless = MockFactory.createTestServerless();
+    const parsedBindings = BindingUtils.getBindingsMetaData(serverless);
+    const bindingType = "http";
+    const userSettings = { name: "custom" };
+
+    const bindingTypes = parsedBindings.bindingTypes;
+    const bindingTypeIndex = bindingTypes.indexOf(bindingType);
+    const bindingSettings = parsedBindings.bindingSettings[bindingTypeIndex];
+
+    const binding = BindingUtils.getBinding(bindingType, bindingSettings, userSettings);
+
+    expect(binding).toMatchObject({
+      type: "http",
+      direction: "out",
+      name: userSettings.name,
+    });
+  });
 });
