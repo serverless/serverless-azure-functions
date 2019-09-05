@@ -19,9 +19,11 @@ import {
   ApiPolicyCreateOrUpdateResponse,
 } from "@azure/arm-apimanagement/esm/models";
 import { AzureNamingService } from "./namingService";
+import { ApiManagementConfig } from "../models/apiManagement";
 
 describe("APIM Service", () => {
-  const apimConfig = MockFactory.createTestApimConfig();
+  let apimConfig: ApiManagementConfig;
+
   const functionApp = {
     id: "/testapp1",
     name: "Test Site",
@@ -32,6 +34,7 @@ describe("APIM Service", () => {
   let serverless: Serverless;
 
   beforeEach(() => {
+    apimConfig = MockFactory.createTestApimConfig();
     const slsConfig: any = {
       ...MockFactory.createTestService(MockFactory.createTestSlsFunctionConfig()),
       service: "test-sls",
@@ -341,6 +344,98 @@ describe("APIM Service", () => {
       const apimService = new ApimService(serverless);
       await expect(apimService.deploy()).rejects.toEqual(apiError);
     });
+
+    it("automatically creates API and Backend if not explicitly defined", async () => {
+      apimConfig.api = [];
+      apimConfig.backend = [];
+
+      Api.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+      Backend.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+      Property.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+
+      const apimService = new ApimService(serverless);
+      await apimService.deploy();
+
+      expect(Api.prototype.createOrUpdate).toBeCalled();
+      expect(Backend.prototype.createOrUpdate).toBeCalled();
+    });
+
+    it("creates multiple API's & Backends", async () => {
+      apimConfig.api = MockFactory.createTestApimApis(3);
+      apimConfig.backend = MockFactory.createTestApimBackends(3);
+
+      Api.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+      Backend.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+      Property.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+
+      const apimService = new ApimService(serverless);
+      await apimService.deploy();
+
+      expect(Api.prototype.createOrUpdate).toBeCalledTimes(apimConfig.api.length);
+      expect(Backend.prototype.createOrUpdate).toBeCalledTimes(apimConfig.api.length);
+    });
+
+    it("infers APIM operation configuration from HTTP binding", async () => {
+      const functions = MockFactory.createTestSlsFunctionConfig();
+      Object.assign(serverless.service, { functions });
+
+      Api.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+      Backend.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+      Property.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiOperation.prototype.createOrUpdate =
+        jest.fn((resourceGroup, serviceName, apiName, operationName, operationContract) => {
+          const response = MockFactory.createTestArmSdkResponse<ApiOperationCreateOrUpdateResponse>(operationContract, 201);
+          return Promise.resolve(response);
+        });
+
+      const apimService = new ApimService(serverless);
+      await apimService.deploy();
+
+      expect(ApiOperation.prototype.createOrUpdate).toBeCalledTimes(2)
+      expect(ApiOperation.prototype.createOrUpdate).toBeCalledWith(
+        resourceGroupName,
+        serviceName,
+        apiName,
+        "hello",
+        {
+          displayName: "hello",
+          description: "",
+          method: "get",
+          urlTemplate: "hello",
+          templateParameters: [],
+          responses: [],
+        }
+      );
+      expect(ApiOperation.prototype.createOrUpdate).toBeCalledWith(
+        resourceGroupName,
+        serviceName,
+        apiName,
+        "goodbye",
+        {
+          displayName: "goodbye",
+          description: "",
+          method: "get",
+          urlTemplate: "goodbye",
+          templateParameters: [],
+          responses: [],
+        }
+      );
+    });
   });
 
   describe("Deploying Functions", () => {
@@ -351,9 +446,7 @@ describe("APIM Service", () => {
       const deploySpy = jest.spyOn(apimService, "deployFunction");
 
       const serviceResource: ApiManagementServiceResource = MockFactory.createTestApimService();
-      const api: ApiContract = MockFactory.createTestApimApi();
-
-      await apimService.deployFunctions(serviceResource, api);
+      await apimService.deployFunctions(functionApp, serviceResource);
 
       expect(deploySpy).not.toBeCalled();
     });
@@ -390,7 +483,7 @@ describe("APIM Service", () => {
       apimResource = await service.get();
       const api = await service.getApi(apimConfig.api[0].name);
 
-      await service.deployFunctions(functionApp, apimResource);
+      await service.deploy();
 
       expect(api).not.toBeNull();
       expect(deployFunctionSpy).toBeCalledTimes(slsFunctions.length);
