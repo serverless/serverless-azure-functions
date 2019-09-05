@@ -14,7 +14,7 @@ export class AzureNamingService {
    * @param resourceConfig The serverless resource configuration
    * @param suffix Optional suffix to append on the end of the generated name
    */
-  public static getResourceName(config: ServerlessAzureConfig, resourceConfig?: ResourceConfig, suffix?: string) {
+  public static getResourceName(config: ServerlessAzureConfig, resourceConfig?: ResourceConfig, suffix?: string, includeHash: boolean = true) {
     if (resourceConfig && resourceConfig.name) {
       return resourceConfig.name;
     }
@@ -25,6 +25,10 @@ export class AzureNamingService {
       this.createShortAzureRegionName(region),
       this.createShortStageName(stage),
     ].join("-");
+
+    if(includeHash) {
+      name += `-${md5(config.provider.resourceGroup).substr(0, configConstants.resourceGroupHashLength)}`
+    }
 
     if (suffix) {
       name += `-${suffix}`;

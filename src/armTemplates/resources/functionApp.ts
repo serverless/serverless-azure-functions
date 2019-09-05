@@ -10,7 +10,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const safeServiceName = config.service.replace(/\s/g, "-");
 
-    return AzureNamingService.getResourceName(config, config.provider.functionApp, safeServiceName);
+    return AzureNamingService.getResourceName(config, config.provider.functionApp, safeServiceName, false);
   }
 
   public getTemplate(): ArmResourceTemplate {
