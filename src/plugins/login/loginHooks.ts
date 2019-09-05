@@ -4,6 +4,7 @@
 export const loginHooks = [
   "deploy:list:list",
   "deploy:deploy",
+  "deploy:apim:apim",
   "invoke:invoke",
   "rollback:rollback",
   "remove:remove",

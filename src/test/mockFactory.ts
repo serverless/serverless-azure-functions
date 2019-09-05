@@ -36,7 +36,7 @@ export class MockFactory {
     sls.config.servicePath = "";
     sls.setProvider = jest.fn();
     sls["processedInput"] = {
-      commands: [ ServerlessCliCommand.DEPLOY ],
+      commands: [ServerlessCliCommand.DEPLOY],
       options: {}
     };
     return sls;
@@ -188,9 +188,9 @@ export class MockFactory {
       param1: { value: "1", type: "String" },
       param2: { value: "2", type: "String" },
     } : {
-      param1: "1",
-      param2: "2",
-    }
+        param1: "1",
+        param2: "2",
+      }
   }
 
   public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
@@ -298,14 +298,15 @@ export class MockFactory {
   public static createTestApimConfig(generateName: boolean = false): ApiManagementConfig {
     return {
       name: generateName ? null : "test-apim-resource",
-      api: {
+      api: [{
         name: "test-apim-api1",
         subscriptionRequired: false,
         displayName: "API 1",
         description: "description of api 1",
         protocols: ["https"],
         path: "test-api1",
-      },
+      }],
+      backend: [],
     };
   }
 
