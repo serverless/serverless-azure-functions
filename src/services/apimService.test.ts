@@ -185,7 +185,7 @@ describe("APIM Service", () => {
       appName = serverless.service["service"];
       serviceName = apimConfig.name;
       apiName = apimConfig.api[0].name;
-      backendName = backendConfig[0] ? backendConfig[0].name : appName;
+      backendName = backendConfig[0] ? backendConfig[0].name : `${appName}-backend`;
 
       masterKey = "ABC123";
 
@@ -194,6 +194,7 @@ describe("APIM Service", () => {
 
       expectedApi = {
         isCurrent: true,
+        name: apimConfig.api[0].name,
         subscriptionRequired: apimConfig.api[0].subscriptionRequired,
         displayName: apimConfig.api[0].displayName,
         description: apimConfig.api[0].description,
@@ -218,10 +219,11 @@ describe("APIM Service", () => {
             "x-functions-key": [`{{${serverless.service["service"]}-key}}`],
           },
         },
+        name: backendConfig[0] ? backendConfig[0].name : `${appName}-backend`,
         title: backendConfig.title || functionApp.name,
         tls: backendConfig.tls,
         proxy: backendConfig.proxy,
-        description: backendConfig.description,
+        description: backendConfig.description || "Function App Backend",
         protocol: backendConfig.protocol || "http",
         resourceId: `https://management.azure.com${functionApp.id}`,
         url: `https://${functionApp.defaultHostName}/api`,

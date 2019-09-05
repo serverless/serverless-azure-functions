@@ -11,7 +11,6 @@ import {
 import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ApimResource } from "../armTemplates/resources/apim";
-import { stringLiteral } from "@babel/types";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -248,6 +247,7 @@ export class ApimService extends BaseService {
             "x-functions-key": [`{{${this.serviceName}-key}}`],
           },
         },
+        name: backendContract.name,
         title: backendContract.title || functionApp.name,
         tls: backendContract.tls,
         proxy: backendContract.proxy,

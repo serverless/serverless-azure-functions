@@ -184,10 +184,11 @@ export class MockFactory {
   }
 
   public static createTestParameters(wrap = true) {
-    return (wrap) ? {
-      param1: { value: "1", type: "String" },
-      param2: { value: "2", type: "String" },
-    } : {
+    return (wrap)
+      ? {
+        param1: { value: "1", type: "String" },
+        param2: { value: "2", type: "String" },
+      } : {
         param1: "1",
         param2: "2",
       }
