@@ -7,9 +7,9 @@ export interface ApiManagementConfig {
   /** The name of the APIM azure resource */
   name: string;
   /** The API contract configuration */
-  api: ApiContract[];
+  apis: ApiContract[];
   /** The API's backend contract configuration */
-  backend?: BackendContract[];
+  backends?: BackendContract[];
   /** The API's CORS policy */
   cors?: ApiCorsPolicy;
   sku?: {

@@ -31,7 +31,7 @@ export class ApimService extends BaseService {
     if (typeof (this.apimConfig) === "boolean") {
       this.apimConfig = {
         name: null,
-        api: [],
+        apis: [],
       };
     }
 
@@ -39,12 +39,12 @@ export class ApimService extends BaseService {
       this.apimConfig.name = ApimResource.getResourceName(this.config);
     }
 
-    if (!this.apimConfig.api) {
-      this.apimConfig.api = [];
+    if (!this.apimConfig.apis) {
+      this.apimConfig.apis = [];
     }
 
-    if (!this.apimConfig.backend) {
-      this.apimConfig.backend = [];
+    if (!this.apimConfig.backends) {
+      this.apimConfig.backends = [];
     }
 
     this.apimClient = new ApiManagementClient(this.credentials, this.subscriptionId);
@@ -97,8 +97,8 @@ export class ApimService extends BaseService {
     await this.ensureFunctionAppKeys(functionApp);
 
     const resource = await this.get();
-    const apiTasks = this.apimConfig.api.map((api) => this.ensureApi(api));
-    const backendTasks = this.apimConfig.backend.map((backend) => this.ensureBackend(functionApp, backend));
+    const apiTasks = this.apimConfig.apis.map((api) => this.ensureApi(api));
+    const backendTasks = this.apimConfig.backends.map((backend) => this.ensureBackend(functionApp, backend));
 
     await Promise.all(apiTasks);
     await Promise.all(backendTasks);
@@ -161,13 +161,13 @@ export class ApimService extends BaseService {
 
     // Lookup api mapping
     const apiContract = functionConfig.apim.api
-      ? this.apimConfig.api.find((api) => api.name === functionConfig.apim.api)
-      : this.apimConfig.api[0];
+      ? this.apimConfig.apis.find((api) => api.name === functionConfig.apim.api)
+      : this.apimConfig.apis[0];
 
     // Lookup backend mapping
     const backendContract = functionConfig.apim.backend
-      ? this.apimConfig.backend.find((backend) => backend.name === functionConfig.apim.backend)
-      : this.apimConfig.backend[0];
+      ? this.apimConfig.backends.find((backend) => backend.name === functionConfig.apim.backend)
+      : this.apimConfig.backends[0];
 
     const tasks = functionConfig.apim.operations
       .map((operation) => this.deployOperation(resource, apiContract, backendContract, operation, functionName));
@@ -409,8 +409,8 @@ export class ApimService extends BaseService {
       protocols: ["http", "https"]
     }
 
-    if (this.apimConfig.api.length === 0) {
-      this.apimConfig.api.push(defaultApi);
+    if (this.apimConfig.apis.length === 0) {
+      this.apimConfig.apis.push(defaultApi);
     }
 
     const functionAppResourceId = `https://management.azure.com${functionApp.id}`;
@@ -430,8 +430,8 @@ export class ApimService extends BaseService {
       url: "api"
     };
 
-    if (this.apimConfig.backend.length === 0) {
-      this.apimConfig.backend.push(defaultBackend);
+    if (this.apimConfig.backends.length === 0) {
+      this.apimConfig.backends.push(defaultBackend);
     }
   }
 }

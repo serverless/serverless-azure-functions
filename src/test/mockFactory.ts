@@ -299,7 +299,7 @@ export class MockFactory {
   public static createTestApimConfig(generateName: boolean = false): ApiManagementConfig {
     return {
       name: generateName ? null : "test-apim-resource",
-      api: [{
+      apis: [{
         name: "test-apim-api1",
         subscriptionRequired: false,
         displayName: "API 1",
@@ -307,7 +307,7 @@ export class MockFactory {
         protocols: ["https"],
         path: "test-api1",
       }],
-      backend: [],
+      backends: [],
     };
   }
 
