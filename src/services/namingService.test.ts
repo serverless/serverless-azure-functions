@@ -25,10 +25,28 @@ describe("Naming Service", () => {
     }
   };
 
-  it("Gets resource name with hash", () => {
-    const result = AzureNamingService.getResourceName(config);
+  it("Gets resource name with hash by default", () => {
+    const result = AzureNamingService.getResourceName(defaultConfig);
 
-    expect(result).toEqual(`${config.provider.prefix}-wus-${config.provider.stage}-${resourceGroupHash}`);
+    expect(result).toEqual(`${defaultConfig.provider.prefix}-wus-${defaultConfig.provider.stage}-${resourceGroupHash}`);
+  });
+
+  it("Gets resource name without hash when specified", () => {
+    const result = AzureNamingService.getResourceName(defaultConfig, {} as any, undefined, false);
+
+    expect(result).toEqual(`${defaultConfig.provider.prefix}-wus-${defaultConfig.provider.stage}`);
+  });
+
+  it("Gets resource name with suffix", () => {
+    const result = AzureNamingService.getResourceName(defaultConfig, {} as any, "suf");
+
+    expect(result).toEqual(`${defaultConfig.provider.prefix}-wus-${defaultConfig.provider.stage}-${resourceGroupHash}-suf`);
+  });
+
+  it("Uses resource name from config if specified", () => {
+    const result = AzureNamingService.getResourceName(defaultConfig, {name: "test-resource"} as any);
+
+    expect(result).toEqual("test-resource");
   });
 
   it("Creates a short name for an azure region", () => {
@@ -117,42 +135,19 @@ describe("Naming Service", () => {
   });
 
   it("deployment name is generated correctly", () => {
-    const config: ServerlessAzureConfig = {
-      functions: [],
-      plugins: [],
-      provider: {
-        prefix: "sls",
-        name: "azure",
-        region: "westus",
-        stage: "dev",
-        resourceGroup,
-        runtime: "nodejs10.x"
-      },
-      service: "test-api",
-      package: {
-        artifact: "",
-        artifactDirectoryName: "",
-        individually: false,
-      }
-    };
-
     const timestamp = Date.now();
-    const deploymentName = AzureNamingService.getDeploymentName(config, `t${timestamp}`);
+    const deploymentName = AzureNamingService.getDeploymentName(defaultConfig, `t${timestamp}`);
 
     expect(deploymentName).toEqual(`slswusdevtestapi-DEPLOYMENT-t${timestamp}`);
-    assertValidDeploymentName(config, deploymentName, timestamp);
+    assertValidDeploymentName(defaultConfig, deploymentName, timestamp);
   });
 
   it("deployment name with long suffix or service name generated correctly", () => {
     const config: ServerlessAzureConfig = {
-      functions: [],
-      plugins: [],
+      ...defaultConfig,
       provider: {
-        prefix: "sls-long-prefix-name",
-        name: "azure",
-        region: "westus",
-        stage: "multicloud",
-        resourceGroup,
+        ...defaultConfig.provider,
+        prefix: "sls-long-prefix-name"
       },
       service: "extra-long-service-name"
     };
@@ -160,7 +155,7 @@ describe("Naming Service", () => {
     const timestamp = Date.now();
     const deploymentName = AzureNamingService.getDeploymentName(config, `t${timestamp}`);
 
-    expect(deploymentName).toEqual(`slswusmulext-DEPLOYMENT-t${timestamp}`);
+    expect(deploymentName).toEqual(`slswusdevext-DEPLOYMENT-t${timestamp}`);
     assertValidDeploymentName(config, deploymentName, timestamp);
   });
 
