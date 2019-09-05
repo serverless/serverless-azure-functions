@@ -162,7 +162,7 @@ export class ApimService extends BaseService {
 
     // Lookup api mapping
     const apiContract = functionConfig.apim.api
-      ? this.apimConfig.api.find((api) => api.name === functionConfig.apim.name)
+      ? this.apimConfig.api.find((api) => api.name === functionConfig.apim.api)
       : this.apimConfig.api[0];
 
     // Lookup backend mapping
