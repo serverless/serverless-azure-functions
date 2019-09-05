@@ -36,7 +36,7 @@ export abstract class BaseService {
     Guard.null(serverless);
     this.setDefaultValues();
     this.config = serverless.service as any;
-    this.setConfigFromCli();
+    this.setupConfig();
 
     this.baseUrl = "https://management.azure.com";
     this.serviceName = this.getServiceName();
@@ -256,8 +256,9 @@ export abstract class BaseService {
    * Overwrite values for resourceGroup, prefix, region and stage
    * in config if passed through CLI
    */
-  private setConfigFromCli() {
+  private setupConfig() {
     const { prefix, region, stage, subscriptionId } = this.config.provider;
+
     this.config.provider = {
       ...this.config.provider,
       prefix: this.getOption("prefix") || prefix,

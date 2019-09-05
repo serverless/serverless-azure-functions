@@ -3,7 +3,6 @@ import { FuncService } from "../../services/funcService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureFuncPlugin extends AzureBasePlugin {
-  private service: FuncService;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
@@ -48,8 +47,6 @@ export class AzureFuncPlugin extends AzureBasePlugin {
         }
       }
     }
-
-    this.service = new FuncService(serverless, options);
   }
 
   private async func() {
@@ -57,10 +54,12 @@ export class AzureFuncPlugin extends AzureBasePlugin {
   }
 
   private async add() {
-    this.service.add();
+    const service = new FuncService(this.serverless, this.options);
+    service.add();
   }
 
   private async remove() {
-    this.service.remove();
+    const service = new FuncService(this.serverless, this.options);
+    service.remove();
   }
 }
