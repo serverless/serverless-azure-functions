@@ -184,7 +184,7 @@ export class FunctionAppService extends BaseService {
 
         if (httpConfig) {
           const method = httpConfig.methods[0].toUpperCase();
-          this.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+          this.log(`-> ${functionConfig.name}: [${method}] ${httpConfig.url}`);
         }
       }
     });
