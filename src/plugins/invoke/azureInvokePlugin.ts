@@ -6,8 +6,6 @@ import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzureInvokePlugin extends AzureBasePlugin {
 
-  private invokeService: InvokeService;
-
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
     const path = this.options["path"];
@@ -117,8 +115,8 @@ export class AzureInvokePlugin extends AzureBasePlugin {
       return;
     }
 
-    this.invokeService = new InvokeService(this.serverless, this.options, local);
-    const response = await this.invokeService.invoke(method, functionName, data);
+    const invokeService = new InvokeService(this.serverless, this.options, local);
+    const response = await invokeService.invoke(method, functionName, data);
     if (response) {
       this.log(JSON.stringify(response.data));
     }
