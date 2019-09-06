@@ -10,7 +10,9 @@ describe("Storage Account Resource", () => {
   const config: ServerlessAzureConfig = {
     functions: [],
     plugins: [],
+    package: null,
     provider: {
+      runtime: "nodejs10.x",
       prefix: "sls",
       name: "azure",
       region: "westus",

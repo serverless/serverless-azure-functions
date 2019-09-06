@@ -11,13 +11,11 @@ import { AzureRemovePlugin } from "./plugins/remove/azureRemovePlugin";
 import { AzurePackagePlugin } from "./plugins/package/azurePackagePlugin";
 import { AzureDeployPlugin } from "./plugins/deploy/azureDeployPlugin";
 import { AzureLoginPlugin } from "./plugins/login/azureLoginPlugin";
-import { AzureApimServicePlugin } from "./plugins/apim/azureApimServicePlugin";
-import { AzureApimFunctionPlugin } from "./plugins/apim/azureApimFunctionPlugin";
+import { AzureApimPlugin } from "./plugins/apim/azureApimPlugin";
 import { AzureFuncPlugin } from "./plugins/func/azureFuncPlugin";
 import { AzureOfflinePlugin } from "./plugins/offline/azureOfflinePlugin"
 import { AzureRollbackPlugin } from "./plugins/rollback/azureRollbackPlugin"
 import { AzureKeyVaultPlugin } from "./plugins/identity/azureKeyVaultPlugin"
-
 
 export default class AzureIndex {
   public constructor(private serverless: Serverless, private options) {
@@ -30,8 +28,7 @@ export default class AzureIndex {
     // Refactored
     this.serverless.pluginManager.addPlugin(AzureLoginPlugin);
     this.serverless.pluginManager.addPlugin(AzureDeployPlugin);
-    this.serverless.pluginManager.addPlugin(AzureApimServicePlugin);
-    this.serverless.pluginManager.addPlugin(AzureApimFunctionPlugin);
+    this.serverless.pluginManager.addPlugin(AzureApimPlugin);
     this.serverless.pluginManager.addPlugin(AzureFuncPlugin);
     this.serverless.pluginManager.addPlugin(AzureOfflinePlugin);
     this.serverless.pluginManager.addPlugin(AzureRollbackPlugin);

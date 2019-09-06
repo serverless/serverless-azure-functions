@@ -18,8 +18,6 @@ export interface AzureKeyVaultConfig {
  * Services for the Key Vault Plugin
  */
 export class AzureKeyVaultService extends BaseService {
-  private funcApp: FunctionAppService;
-
   /**
    * Initialize key vault service and get function app
    * @param serverless Serverless object
@@ -27,7 +25,6 @@ export class AzureKeyVaultService extends BaseService {
    */
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-    this.funcApp = new FunctionAppService(serverless, options);
   }
 
   /**
@@ -36,13 +33,15 @@ export class AzureKeyVaultService extends BaseService {
    */
   public async setPolicy(keyVaultConfig: AzureKeyVaultConfig) {
     const subscriptionID = this.subscriptionId;
-
-    const func = await this.funcApp.get();
-    const identity = func.identity;
-    let vault: Vault;
+    const functionAppService = new FunctionAppService(this.serverless, this.options);
     const keyVaultClient = new KeyVaultManagementClient(this.credentials, subscriptionID);
+
+    const functionApp = await functionAppService.get();
+    const identity = functionApp.identity;
+    let vault: Vault;
+
     try {
-      vault = await keyVaultClient.vaults.get(keyVaultConfig.resourceGroup, keyVaultConfig.name)
+      vault = await keyVaultClient.vaults.get(keyVaultConfig.resourceGroup, keyVaultConfig.name);
     } catch (error) {
       throw new Error("Error: Specified vault not found")
     }
@@ -56,6 +55,6 @@ export class AzureKeyVaultService extends BaseService {
     }
     vault.properties.accessPolicies.push(newEntry);
 
-    return keyVaultClient.vaults.createOrUpdate(keyVaultConfig.resourceGroup, keyVaultConfig.name, {location: vault.location, properties: vault.properties})
+    await keyVaultClient.vaults.createOrUpdate(keyVaultConfig.resourceGroup, keyVaultConfig.name, {location: vault.location, properties: vault.properties});
   }
 }

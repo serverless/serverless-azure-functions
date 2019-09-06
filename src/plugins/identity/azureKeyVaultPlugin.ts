@@ -15,13 +15,11 @@ export class AzureKeyVaultPlugin extends AzureBasePlugin {
     if (!keyVaultConfig) {
       return Promise.resolve();
     }
-    this.serverless.cli.log("Starting KeyVault service setup");
+    this.log("Starting KeyVault service setup");
 
     const keyVaultService = new AzureKeyVaultService(this.serverless, this.options);
-    const result = await keyVaultService.setPolicy(keyVaultConfig);
+    await keyVaultService.setPolicy(keyVaultConfig);
 
-    this.serverless.cli.log("Finished KeyVault service setup");
-
-    return result;
+    this.log("Finished KeyVault service setup");
   }
 }

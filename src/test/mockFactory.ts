@@ -1,4 +1,4 @@
-import { ApiContract, ApiManagementServiceResource } from "@azure/arm-apimanagement/esm/models";
+import { ApiContract, ApiManagementServiceResource, BackendContract } from "@azure/arm-apimanagement/esm/models";
 import { FunctionEnvelope, Site } from "@azure/arm-appservice/esm/models";
 import { DeploymentExtended, DeploymentsListByResourceGroupResponse } from "@azure/arm-resources/esm/models";
 import { HttpHeaders, HttpOperationResponse, HttpResponse, WebResource } from "@azure/ms-rest-js";
@@ -36,7 +36,7 @@ export class MockFactory {
     sls.config.servicePath = "";
     sls.setProvider = jest.fn();
     sls["processedInput"] = {
-      commands: [ ServerlessCliCommand.DEPLOY ],
+      commands: [ServerlessCliCommand.DEPLOY],
       options: {}
     };
     return sls;
@@ -184,13 +184,14 @@ export class MockFactory {
   }
 
   public static createTestParameters(wrap = true) {
-    return (wrap) ? {
-      param1: { value: "1", type: "String" },
-      param2: { value: "2", type: "String" },
-    } : {
-      param1: "1",
-      param2: "2",
-    }
+    return (wrap)
+      ? {
+        param1: { value: "1", type: "String" },
+        param2: { value: "2", type: "String" },
+      } : {
+        param1: "1",
+        param2: "2",
+      }
   }
 
   public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
@@ -298,14 +299,15 @@ export class MockFactory {
   public static createTestApimConfig(generateName: boolean = false): ApiManagementConfig {
     return {
       name: generateName ? null : "test-apim-resource",
-      api: {
+      apis: [{
         name: "test-apim-api1",
         subscriptionRequired: false,
         displayName: "API 1",
         description: "description of api 1",
         protocols: ["https"],
         path: "test-api1",
-      },
+      }],
+      backends: [],
     };
   }
 
@@ -521,10 +523,42 @@ export class MockFactory {
     };
   }
 
-  public static createTestApimApi(): ApiContract {
+  public static createTestApimApis(count: number): ApiContract[] {
+    const apis: ApiContract[] = [];
+    for (let i = 1; i <= count; i++) {
+      const api = MockFactory.createTestApimApi(i);
+      apis.push(api);
+    }
+
+    return apis;
+  }
+
+  public static createTestApimApi(index: number = 1): ApiContract {
     return {
-      name: "Api1",
-      path: "/api1",
+      displayName: `API ${index}`,
+      description: `Description for API ${index}`,
+      name: `Api${index}`,
+      path: `/api${index}`,
+    };
+  }
+
+  public static createTestApimBackends(count: number): BackendContract[] {
+    const backends: BackendContract[] = [];
+    for (let i = 1; i <= count; i++) {
+      const backend = MockFactory.createTestApimBackend(i);
+      backends.push(backend);
+    }
+
+    return backends;
+  }
+
+  public static createTestApimBackend(index: number = 1): BackendContract {
+    return {
+      name: `backend-${index}`,
+      description: `Description for Backend ${index}`,
+      title: `Backend ${index}`,
+      url: `/backend${index}`,
+      protocol: "http",
     };
   }
 
