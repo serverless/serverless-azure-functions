@@ -2,7 +2,7 @@
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
-[![Coverage Status](https://coveralls.io/repos/github/serverless/serverless-azure-functions/badge.svg)](https://coveralls.io/github/serverless/serverless-azure-functions)
+[![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions)
 
 ## Quickstart
 
@@ -201,6 +201,7 @@ The getting started walkthrough illustrates the interactive login experience, wh
     ```
 
 ### Example Usage
+- **[Visit our sample repos](docs/examples/samples.md) for full projects with different use cases**
 - [Configuring API Management](docs/examples/apim.md) that sits in front of function app
 
 ### Contributing
