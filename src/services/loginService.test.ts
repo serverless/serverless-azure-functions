@@ -22,10 +22,10 @@ describe("Login Service", () => {
 
   it("logs in interactively with no cached login", async () => {
     // Ensure env variables are not set
-    delete process.env.azureSubId;
-    delete process.env.azureServicePrincipalClientId;
-    delete process.env.azureServicePrincipalPassword;
-    delete process.env.azureServicePrincipalTenantId;
+    delete process.env.AZURE_SUBSCRIPTION_ID;
+    delete process.env.AZURE_CLIENT_ID;
+    delete process.env.AZURE_CLIENT_SECRET;
+    delete process.env.AZURE_TENANT_ID;
 
     SimpleFileTokenCache.prototype.isEmpty = jest.fn(() => true);
 
@@ -44,10 +44,10 @@ describe("Login Service", () => {
 
   it("logs in with a cached login", async () => {
     // Ensure env variables are not set
-    delete process.env.azureSubId;
-    delete process.env.azureServicePrincipalClientId;
-    delete process.env.azureServicePrincipalPassword;
-    delete process.env.azureServicePrincipalTenantId;
+    delete process.env.AZURE_SUBSCRIPTION_ID;
+    delete process.env.AZURE_CLIENT_ID;
+    delete process.env.AZURE_CLIENT_SECRET;
+    delete process.env.AZURE_TENANT_ID;
 
     SimpleFileTokenCache.prototype.isEmpty = jest.fn(() => false);
     SimpleFileTokenCache.prototype.first = jest.fn(() => ({ userId: "" }));
@@ -60,16 +60,16 @@ describe("Login Service", () => {
 
   it("logs in with a service principal", async () => {
     // Set environment variables
-    process.env.azureSubId = "azureSubId";
-    process.env.azureServicePrincipalClientId = "azureServicePrincipalClientId";
-    process.env.azureServicePrincipalPassword = "azureServicePrincipalPassword";
-    process.env.azureServicePrincipalTenantId = "azureServicePrincipalTenantId";
+    process.env.AZURE_SUBSCRIPTION_ID = "AZURE_SUBSCRIPTION_ID";
+    process.env.AZURE_CLIENT_ID = "AZURE_CLIENT_ID";
+    process.env.AZURE_CLIENT_SECRET = "AZURE_CLIENT_SECRET";
+    process.env.AZURE_TENANT_ID = "AZURE_TENANT_ID";
 
     await loginService.login();
     expect(nodeauth.loginWithServicePrincipalSecretWithAuthResponse).toBeCalledWith(
-      "azureServicePrincipalClientId",
-      "azureServicePrincipalPassword",
-      "azureServicePrincipalTenantId",
+      "AZURE_CLIENT_ID",
+      "AZURE_CLIENT_SECRET",
+      "AZURE_TENANT_ID",
       undefined // would be options
     );
   });

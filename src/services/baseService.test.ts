@@ -242,7 +242,7 @@ describe("Base Service", () => {
   const configSubscriptionId = "config sub id";
 
   it("sets subscription ID from CLI", async () => {
-    process.env.azureSubId = envVarSubscriptionId;
+    process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
     serverless.service.provider["subscriptionId"] = configSubscriptionId;
     serverless.variables["subscriptionId"] = loginResultSubscriptionId
     service = new MockService(serverless, { subscriptionId: cliSubscriptionId } as any);
@@ -251,7 +251,7 @@ describe("Base Service", () => {
   });
 
   it("sets subscription ID from environment variable", async () => {
-    process.env.azureSubId = envVarSubscriptionId;
+    process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
     serverless.service.provider["subscriptionId"] = configSubscriptionId;
     serverless.variables["subscriptionId"] = loginResultSubscriptionId
     service = new MockService(serverless, { } as any);
@@ -260,7 +260,7 @@ describe("Base Service", () => {
   });
 
   it("sets subscription ID from config", async () => {
-    delete process.env.azureSubId;
+    delete process.env.AZURE_SUBSCRIPTION_ID;
     serverless.service.provider["subscriptionId"] = configSubscriptionId;
     serverless.variables["subscriptionId"] = loginResultSubscriptionId
     service = new MockService(serverless, { } as any);
@@ -269,7 +269,7 @@ describe("Base Service", () => {
   });
 
   it("sets subscription ID from login result", async () => {
-    delete process.env.azureSubId;
+    delete process.env.AZURE_SUBSCRIPTION_ID;
     serverless.variables["subscriptionId"] = loginResultSubscriptionId
     service = new MockService(serverless, { } as any);
     expect(service.getSubscriptionId()).toEqual(loginResultSubscriptionId);

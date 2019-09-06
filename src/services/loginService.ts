@@ -27,10 +27,10 @@ export class AzureLoginService extends BaseService {
    * @param options Options for different authentication methods
    */
   public async login(options?: AzureTokenCredentialsOptions | InteractiveLoginOptions): Promise<AuthResponse> {
-    const subscriptionId = process.env.azureSubId;
-    const clientId = process.env.azureServicePrincipalClientId;
-    const secret = process.env.azureServicePrincipalPassword;
-    const tenantId = process.env.azureServicePrincipalTenantId;
+    const subscriptionId = this.getSubscriptionId();
+    const clientId = process.env.AZURE_CLIENT_ID;
+    const secret = process.env.AZURE_CLIENT_SECRET;
+    const tenantId = process.env.AZURE_TENANT_ID;
 
     if (subscriptionId && clientId && secret && tenantId) {
       return await this.servicePrincipalLogin(clientId, secret, tenantId, options);
