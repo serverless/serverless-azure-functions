@@ -2,7 +2,7 @@
 
 ###
 # This script generate a service principal using your currently set subscription
-#   then write out the credentials of your new sp in a file 
+#   then write out the credentials of your new sp in a file
 #   that you can export as environment variables
 ###
 set -e
@@ -29,10 +29,10 @@ FILE=".env.servicePrincipal"
 
 echo "--> Writing creds to '${FILE}'"
 cat <<EOF >${FILE}
-export azureSubId=$(az account show | jq .id)
-export azureServicePrincipalTenantId=$(echo "${SP_RESPONSE}" | jq .tenant)
-export azureServicePrincipalClientId=$(echo "${SP_RESPONSE}" | jq .name)
-export azureServicePrincipalPassword=$(echo "${SP_RESPONSE}" | jq .password)
+export AZURE_SUBSCRIPTION_ID=$(az account show | jq .id)
+export AZURE_TENANT_ID=$(echo "${SP_RESPONSE}" | jq .tenant)
+export AZURE_CLIENT_ID=$(echo "${SP_RESPONSE}" | jq .name)
+export AZURE_CLIENT_SECRET=$(echo "${SP_RESPONSE}" | jq .password)
 EOF
 
 echo "Run \"source ${FILE}\" to set your Azure account credentials "

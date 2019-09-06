@@ -104,7 +104,7 @@ export class MockFactory {
         .azureCredentials as any as TokenCredentialsBase,
       subscriptions: [
         {
-          id: "azureSubId",
+          id: "AZURE_SUBSCRIPTION_ID",
         },
       ] as any as LinkedSubscription[],
     };
@@ -380,17 +380,17 @@ export class MockFactory {
 
   public static createTestServicePrincipalEnvVariables(): ServicePrincipalEnvVariables {
     return {
-      azureSubId: "azureSubId",
-      azureServicePrincipalClientId: "azureServicePrincipalClientId",
-      azureServicePrincipalPassword: "azureServicePrincipalPassword",
-      azureServicePrincipalTenantId: "azureServicePrincipalTenantId",
+      AZURE_SUBSCRIPTION_ID: "AZURE_SUBSCRIPTION_ID",
+      AZURE_CLIENT_ID: "AZURE_CLIENT_ID",
+      AZURE_CLIENT_SECRET: "AZURE_CLIENT_SECRET",
+      AZURE_TENANT_ID: "AZURE_TENANT_ID",
     }
   }
 
   public static createTestVariables() {
     return {
       azureCredentials: this.createTestAzureCredentials(),
-      subscriptionId: "azureSubId",
+      subscriptionId: "AZURE_SUBSCRIPTION_ID",
     }
   }
 
