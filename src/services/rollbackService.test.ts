@@ -1,7 +1,7 @@
 import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
-import { ArmDeployment } from "../models/armTemplates";
+import { ArmDeployment, ArmParamType } from "../models/armTemplates";
 import { DeploymentConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
@@ -24,9 +24,6 @@ describe("Rollback Service", () => {
 
   const template = MockFactory.createTestArmTemplate();
   const parameters = MockFactory.createTestParameters();
-  for (const p of Object.keys(parameters)) {
-    parameters[p] = parameters[p].value
-  }
   const appStub = "appStub";
   const sasURL = "sasURL";
   const containerName = "deployment-artifacts";
@@ -130,7 +127,10 @@ describe("Rollback Service", () => {
       ...armDeployment,
       parameters: {
         ...armDeployment.parameters,
-        functionAppRunFromPackage: sasURL,
+        functionAppRunFromPackage: {
+          type: ArmParamType.String,
+          value: sasURL
+        },
       }
     });
     expect(AzureBlobStorageService.prototype.downloadBinary).not.toBeCalled();

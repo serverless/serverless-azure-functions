@@ -1,4 +1,4 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParameters, ArmParamType } from "../models/armTemplates";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureNamingService } from "../services/namingService";
 import { Guard } from "../shared/guard";
@@ -33,14 +33,17 @@ export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
     return template;
   }
 
-  public getParameters(config: ServerlessAzureConfig) {
-    let parameters = {};
+  public getParameters(config: ServerlessAzureConfig): ArmParameters {
+    let parameters: ArmParameters = {};
 
     this.childTemplates.forEach(resource => {
       parameters = {
         ...parameters,
         ...resource.getParameters(config),
-        location: AzureNamingService.getNormalizedRegionName(config.provider.region)
+        location: {
+          type: ArmParamType.String,
+          value: AzureNamingService.getNormalizedRegionName(config.provider.region)
+        }
       };
     });
 

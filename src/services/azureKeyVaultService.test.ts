@@ -1,12 +1,10 @@
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
-import {
-  AzureKeyVaultService,
-  AzureKeyVaultConfig
-} from "./azureKeyVaultService";
+import { AzureKeyVaultService } from "./azureKeyVaultService";
 
 import { Vaults } from "@azure/arm-keyvault";
 import { FunctionAppService } from "./functionAppService";
+import { AzureKeyVaultConfig } from "../models/serverless";
 
 describe("Azure Key Vault Service", () => {
   const options: Serverless.Options = MockFactory.createTestServerlessOptions();
@@ -31,7 +29,6 @@ describe("Azure Key Vault Service", () => {
     }) as any;
 
     FunctionAppService.prototype.get = jest.fn(() => {
-      console.log("testing");
       return {
         identity: {
           tenantId: "tid",

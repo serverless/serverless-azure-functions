@@ -1,12 +1,10 @@
 import { ApiManagementConfig } from "./apiManagement";
 import Serverless from "serverless";
+import { ArmParameters } from "./armTemplates";
 
 export interface ArmTemplateConfig {
   file: string;
-  parameters:
-  {
-    [key: string]: string;
-  };
+  parameters: ArmParameters;
 }
 
 export interface ResourceConfig {
@@ -51,7 +49,18 @@ export interface ServerlessAzureProvider {
   hostingEnvironment?: ResourceConfig;
   virtualNetwork?: ResourceConfig;
   armTemplate?: ArmTemplateConfig;
+  keyVaultConfig?: AzureKeyVaultConfig;
   runtime: string;
+}
+
+/**
+ * Defines the Azure Key Vault configuration
+ */
+export interface AzureKeyVaultConfig {
+  /** The name of the azure key vault */
+  name: string;
+  /** The name of the azure resource group with the key vault */
+  resourceGroup: string;
 }
 
 /**

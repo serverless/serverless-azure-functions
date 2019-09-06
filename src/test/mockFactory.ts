@@ -12,7 +12,7 @@ import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
 import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
-import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
+import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
 import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand } from "../models/serverless";
@@ -183,15 +183,11 @@ export class MockFactory {
     return result as DeploymentsListByResourceGroupResponse
   }
 
-  public static createTestParameters(wrap = true) {
-    return (wrap)
-      ? {
-        param1: { value: "1", type: "String" },
-        param2: { value: "2", type: "String" },
-      } : {
-        param1: "1",
-        param2: "2",
-      }
+  public static createTestParameters(): ArmParameters {
+    return {
+      param1: { value: "1", type: ArmParamType.String },
+      param2: { value: "2", type: ArmParamType.String },
+    }
   }
 
   public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {

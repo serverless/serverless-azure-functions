@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ArmService } from "./armService";
-import { ArmResourceTemplate, ArmTemplateType, ArmDeployment, ArmTemplateProvisioningState } from "../models/armTemplates";
+import { ArmResourceTemplate, ArmTemplateType, ArmDeployment, ArmTemplateProvisioningState, ArmParamType } from "../models/armTemplates";
 import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import mockFs from "mock-fs";
 import jsonpath from "jsonpath";
@@ -47,10 +47,7 @@ describe("Arm Service", () => {
     it("Creates an ARM template from a specified file", async () => {
       const armTemplateConfig: ArmTemplateConfig = {
         file: "armTemplates/custom-template.json",
-        parameters: {
-          param1: "1",
-          param2: "2",
-        },
+        parameters: MockFactory.createTestParameters(),
       };
 
       const testTemplate: ArmResourceTemplate = MockFactory.createTestArmTemplate();
@@ -201,9 +198,30 @@ describe("Arm Service", () => {
 
     it("Does not deploy if previously deployed template is the same", async () => {
       const deployment: ArmDeployment = {
-        parameters: MockFactory.createTestParameters(false),
+        parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).not.toBeCalled()
+    });
+
+    it("Does not deploy if identity is only difference between deployments", async () => {
+      const template = MockFactory.createTestArmTemplate();
+      const deployment: ArmDeployment = {
+        parameters: MockFactory.createTestParameters(),
+        template: {
+          ...template,
+          resources: template.resources.map((item) => {
+            return {
+              ...item,
+              identity: {
+                "type": ArmParamType.SystemAssigned
+              }
+            }
+          })
+        }
+      };
+
       await service.deployTemplate(deployment);
       expect(Deployments.prototype.createOrUpdate).not.toBeCalled()
     });
@@ -221,7 +239,7 @@ describe("Arm Service", () => {
       ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(deployments))
 
       const deployment: ArmDeployment = {
-        parameters: MockFactory.createTestParameters(false),
+        parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
       await service.deployTemplate(deployment);
@@ -230,10 +248,10 @@ describe("Arm Service", () => {
 
     it("Calls deploy if parameters have changed from deployed template", async () => {
       const deployment: ArmDeployment = {
-        parameters: MockFactory.createTestParameters(false),
+        parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
-      deployment.parameters.param1 = "3"
+      deployment.parameters.param1.value = "3";
       await service.deployTemplate(deployment);
       expect(Deployments.prototype.createOrUpdate).toBeCalled();
     });
@@ -241,11 +259,13 @@ describe("Arm Service", () => {
     it("Calls deploy if previously deployed template is different", async () => {
       ResourceService.prototype.getDeploymentTemplate = jest.fn(() => {
         return {
-          template: {}
+          template: {
+            resources: []
+          }
         }
       }) as any;
       const deployment: ArmDeployment = {
-        parameters: MockFactory.createTestParameters(false),
+        parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
       await service.deployTemplate(deployment);
@@ -257,7 +277,7 @@ describe("Arm Service", () => {
         return []
       }) as any;
       const deployment: ArmDeployment = {
-        parameters: MockFactory.createTestParameters(false),
+        parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
       await service.deployTemplate(deployment);
@@ -286,13 +306,6 @@ describe("Arm Service", () => {
     it("Deploys ARM template via resources REST API", async () => {
       sls.service.provider.runtime = "nodejs10.x";
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
-      const deploymentParameters = {};
-      Object.keys(deployment.parameters).forEach((key) => {
-        const parameterValue = deployment.parameters[key];
-        if (parameterValue) {
-          deploymentParameters[key] = { value: deployment.parameters[key] };
-        }
-      });
 
       await service.deployTemplate(deployment);
 
@@ -302,8 +315,7 @@ describe("Arm Service", () => {
       const expectedDeployment: Deployment = {
         properties: {
           mode: "Incremental",
-          template: deployment.template,
-          parameters: deploymentParameters,
+          ...deployment
         },
       };
 
@@ -335,10 +347,10 @@ describe("Arm Service", () => {
         }
       })) as any;
       const deployment: ArmDeployment = {
-        parameters: MockFactory.createTestParameters(false),
+        parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
-      deployment.parameters.param1 = "3"
+      deployment.parameters.param1.value = "3"
       const { code, message, details } = lastDeploymentError;
       let errorPattern = [
         code,
