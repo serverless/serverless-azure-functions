@@ -2,7 +2,7 @@ import Serverless from "serverless";
 import { ApimService } from "../../services/apimService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
-export class AzureApimServicePlugin extends AzureBasePlugin {
+export class AzureApimPlugin extends AzureBasePlugin {
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);

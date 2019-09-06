@@ -1,14 +1,14 @@
 import Serverless from "serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import { AzureApimServicePlugin } from "./azureApimServicePlugin";
+import { AzureApimPlugin } from "./azureApimPlugin";
 
 jest.mock("../../services/apimService");
 import { ApimService } from "../../services/apimService";
 
 describe("APIM Service Plugin", () => {
   it("is defined", () => {
-    expect(AzureApimServicePlugin).toBeDefined();
+    expect(AzureApimPlugin).toBeDefined();
   });
 
   it("can be instantiated", () => {
@@ -17,7 +17,7 @@ describe("APIM Service Plugin", () => {
       stage: "",
       region: "",
     }
-    const plugin = new AzureApimServicePlugin(serverless, options);
+    const plugin = new AzureApimPlugin(serverless, options);
 
     expect(plugin).not.toBeNull();
   });
@@ -30,7 +30,7 @@ describe("APIM Service Plugin", () => {
     const sls = MockFactory.createTestServerless();
     sls.service.provider["apim"] = "apim config"
     const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureApimServicePlugin(sls, options);
+    const plugin = new AzureApimPlugin(sls, options);
 
     await invokeHook(plugin, "after:deploy:deploy");
 
@@ -46,7 +46,7 @@ describe("APIM Service Plugin", () => {
 
     const sls = MockFactory.createTestServerless();
     const options = MockFactory.createTestServerlessOptions();
-    const plugin = new AzureApimServicePlugin(sls, options);
+    const plugin = new AzureApimPlugin(sls, options);
 
     await invokeHook(plugin, "after:deploy:deploy");
 

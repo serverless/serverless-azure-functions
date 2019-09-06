@@ -122,7 +122,7 @@ export class ApimService extends BaseService {
       .getAllFunctions()
       .map((functionName) => this.deployFunction(functionApp, resource, functionName));
 
-    return Promise.all(deployApiTasks);
+    return await Promise.all(deployApiTasks);
   }
 
   /**
@@ -268,7 +268,7 @@ export class ApimService extends BaseService {
    * @param serverless The serverless framework
    * @param options The plugin options
    */
-  private async deployOperation(service: ApiManagementServiceResource, api: ApiContract, backend: BackendContract, operation: OperationContract, functionName: string): Promise<OperationContract> {
+  private async deployOperation(resource: ApiManagementServiceResource, api: ApiContract, backend: BackendContract, operation: OperationContract, functionName: string): Promise<OperationContract> {
     try {
       const client = new ApiManagementClient(this.credentials, this.subscriptionId);
 
@@ -283,7 +283,7 @@ export class ApimService extends BaseService {
 
       // Ensure a single path seperator in the operation path
       const operationPath = `/${api.path}/${operationConfig.urlTemplate}`.replace(/\/+/g, "/");
-      const operationUrl = `${service.gatewayUrl}${operationPath}`;
+      const operationUrl = `${resource.gatewayUrl}${operationPath}`;
       this.log(`--> ${functionName}: [${operationConfig.method.toUpperCase()}] ${operationUrl}`);
 
       const result = await client.apiOperation.createOrUpdate(

@@ -389,6 +389,20 @@ describe("APIM Service", () => {
       const functions = MockFactory.createTestSlsFunctionConfig();
       Object.assign(serverless.service, { functions });
 
+      let apimResource: ApiManagementServiceResource = {
+        name: apimConfig.name,
+        location: "West US",
+        gatewayUrl: "https://you.url.com",
+        publisherEmail: "someone@example.com",
+        publisherName: "Someone",
+        sku: {
+          capacity: 1,
+          name: "Consumption",
+        },
+      };
+
+      ApiManagementService.prototype.get =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiManagementServiceGetResponse>(apimResource, 200));
       Api.prototype.createOrUpdate =
         jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
       Backend.prototype.createOrUpdate =
@@ -435,6 +449,7 @@ describe("APIM Service", () => {
           responses: [],
         }
       );
+      fail();
     });
   });
 
@@ -465,9 +480,9 @@ describe("APIM Service", () => {
         },
       };
 
-      const apiContract = apimConfig.apis;
+      const apiContracts = apimConfig.apis;
       ApiManagementService.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiManagementServiceGetResponse>(apimResource, 200));
-      Api.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiGetResponse>(apiContract, 200));
+      Api.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiGetResponse>(apiContracts[0], 200));
 
       ApiOperation.prototype.createOrUpdate =
         jest.fn((resourceGroup, serviceName, apiName, operationName, operationContract) => {
