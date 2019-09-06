@@ -1,6 +1,6 @@
 import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
-import { AzureNamingService } from "../../services/namingService";
+import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 //Runtime versions found at " https://<sitename>.scm.azurewebsites.net/api/diagnostics/runtime".
 import runtimeVersionsJson from "../../services/runtimeVersions.json";
@@ -9,8 +9,14 @@ import semver from "semver";
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const safeServiceName = config.service.replace(/\s/g, "-");
+    const options: AzureNamingServiceOptions = {
+      config,
+      resourceConfig: config.provider.functionApp,
+      suffix: safeServiceName,
+      includeHash: false,
+    }
 
-    return AzureNamingService.getResourceName(config, config.provider.functionApp, safeServiceName);
+    return AzureNamingService.getResourceName(options);
   }
 
   public getTemplate(): ArmResourceTemplate {

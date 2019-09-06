@@ -1,14 +1,15 @@
 import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { AzureNamingService } from "../../services/namingService";
+import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 export class VirtualNetworkResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getResourceName(
+    const options: AzureNamingServiceOptions = {
       config,
-      config.provider.hostingEnvironment,
-      "vnet"
-    );
+      resourceConfig: config.provider.hostingEnvironment,
+      suffix: "vnet",
+    }
+    return AzureNamingService.getResourceName(options);
   }
 
   public getTemplate(): ArmResourceTemplate {
