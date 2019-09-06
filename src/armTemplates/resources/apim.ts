@@ -1,5 +1,5 @@
 import { ApiManagementConfig } from "../../models/apiManagement";
-import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
@@ -20,27 +20,27 @@ export class ApimResource implements ArmResourceTemplateGenerator {
       "parameters": {
         "apiManagementName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "location": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "apimSkuName": {
           "defaultValue": "Consumption",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "apimCapacity": {
           "defaultValue": 0,
-          "type": "int"
+          "type": ArmParamType.Int
         },
         "apimPublisherEmail": {
           "defaultValue": "contact@contoso.com",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "apimPublisherName": {
           "defaultValue": "Contoso",
-          "type": "String"
+          "type": ArmParamType.String
         }
       },
       "variables": {},
@@ -66,18 +66,33 @@ export class ApimResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig) {
+  public getParameters(config: ServerlessAzureConfig): ArmParameters {
     const apimConfig: ApiManagementConfig = {
       sku: {},
       ...config.provider.apim,
     };
 
     return {
-      apiManagementName: ApimResource.getResourceName(config),
-      apimSkuName: apimConfig.sku.name,
-      apimSkuCapacity: apimConfig.sku.capacity,
-      apimPublisherEmail: apimConfig.publisherEmail,
-      apimPublisherName: apimConfig.publisherName,
+      apiManagementName: {
+        type: ArmParamType.String,
+        value: ApimResource.getResourceName(config),
+      },
+      apimSkuName: {
+        type: ArmParamType.String,
+        value: apimConfig.sku.name,
+      },
+      apimSkuCapacity: {
+        type: ArmParamType.Int,
+        value: apimConfig.sku.capacity,
+      },
+      apimPublisherEmail: {
+        type: ArmParamType.String,
+        value: apimConfig.publisherEmail,
+      },
+      apimPublisherName: {
+        type: ArmParamType.String,
+        value: apimConfig.publisherName,
+      }
     };
   }
 }

@@ -3,16 +3,7 @@ import { BaseService } from "./baseService";
 import { FunctionAppService } from "./functionAppService";
 import { KeyVaultManagementClient } from "@azure/arm-keyvault";
 import { Vault, SecretPermissions } from "@azure/arm-keyvault/esm/models";
-
-/**
- * Defines the Azure Key Vault configuration
- */
-export interface AzureKeyVaultConfig {
-  /** The name of the azure key vault */
-  name: string;
-  /** The name of the azure resource group with the key vault */
-  resourceGroup: string;
-}
+import { AzureKeyVaultConfig } from "../models/serverless";
 
 /**
  * Services for the Key Vault Plugin

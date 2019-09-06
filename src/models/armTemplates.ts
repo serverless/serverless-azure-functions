@@ -5,7 +5,7 @@ import { ServerlessAzureConfig } from "./serverless";
  */
 export interface ArmResourceTemplateGenerator {
   getTemplate(): ArmResourceTemplate;
-  getParameters(config: ServerlessAzureConfig): any;
+  getParameters(config: ServerlessAzureConfig): ArmParameters;
 }
 
 export enum ArmTemplateProvisioningState {
@@ -23,6 +23,15 @@ export enum ArmTemplateType {
 }
 
 /**
+ * Parameter types within an ARM template
+ */
+export enum ArmParamType {
+  String = "String",
+  Int = "Int",
+  SystemAssigned = "SystemAssigned",
+}
+
+/**
  * Represents an Azure ARM template
  */
 export interface ArmResourceTemplate {
@@ -35,10 +44,18 @@ export interface ArmResourceTemplate {
   variables?: any;
 }
 
+export interface ArmParameters {
+  [key: string]: {
+    type: ArmParamType;
+    value?: string | number;
+    defaultValue?: string | number;
+  };
+}
+
 /**
  * Represents an Azure ARM deployment
  */
 export interface ArmDeployment {
   template: ArmResourceTemplate;
-  parameters: { [key: string]: any };
+  parameters: ArmParameters;
 }

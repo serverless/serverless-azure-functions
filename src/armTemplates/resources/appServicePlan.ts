@@ -1,4 +1,4 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
@@ -19,19 +19,19 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       "parameters": {
         "appServicePlanName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "location": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "appServicePlanSkuName": {
           "defaultValue": "EP1",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "appServicePlanSkuTier": {
           "defaultValue": "ElasticPremium",
-          "type": "String"
+          "type": ArmParamType.String
         }
       },
       "variables": {},
@@ -57,16 +57,25 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig): ArmParameters {
     const resourceConfig: ResourceConfig = {
       sku: {},
       ...config.provider.storageAccount,
     };
 
     return {
-      appServicePlanName: AppServicePlanResource.getResourceName(config),
-      appServicePlanSkuName: resourceConfig.sku.name,
-      appServicePlanSkuTier: resourceConfig.sku.tier,
+      appServicePlanName: {
+        type: ArmParamType.String,
+        value: AppServicePlanResource.getResourceName(config),
+      },
+      appServicePlanSkuName: {
+        type: ArmParamType.String,
+        value: resourceConfig.sku.name,
+      },
+      appServicePlanSkuTier: {
+        type: ArmParamType.String,
+        value: resourceConfig.sku.tier,
+      }
     }
   }
 }

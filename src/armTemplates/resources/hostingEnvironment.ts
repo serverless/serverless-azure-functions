@@ -1,4 +1,4 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
@@ -19,15 +19,15 @@ export class HostingEnvironmentResource implements ArmResourceTemplateGenerator 
       "parameters": {
         "hostingEnvironmentName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "virtualNetworkName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "location": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         }
       },
       "variables": {},
@@ -65,9 +65,12 @@ export class HostingEnvironmentResource implements ArmResourceTemplateGenerator 
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig): ArmParameters {
     return {
-      hostingEnvironmentName: HostingEnvironmentResource.getResourceName(config)
+      hostingEnvironmentName: {
+        type: ArmParamType.String,
+        value: HostingEnvironmentResource.getResourceName(config)
+      }
     }
   }
 }

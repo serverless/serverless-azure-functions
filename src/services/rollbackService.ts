@@ -7,7 +7,7 @@ import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
 import { FunctionAppService } from "./functionAppService";
 import { ResourceService } from "./resourceService";
-import { ArmDeployment } from "../models/armTemplates";
+import { ArmDeployment, ArmParamType } from "../models/armTemplates";
 import fs from "fs";
 
 /**
@@ -58,10 +58,13 @@ export class RollbackService extends BaseService {
     await this.blobService.initialize();
     if (this.deploymentConfig.runFromBlobUrl) {
       // Set functionRunFromPackage param to SAS URL of blob
-      armDeployment.parameters.functionAppRunFromPackage = await this.blobService.generateBlobSasTokenUrl(
-        this.deploymentConfig.container,
-        artifactName
-      )
+      armDeployment.parameters.functionAppRunFromPackage = {
+        type: ArmParamType.String,
+        value: await this.blobService.generateBlobSasTokenUrl(
+          this.deploymentConfig.container,
+          artifactName
+        )
+      }
     }
     await armService.deployTemplate(armDeployment);
     /**
@@ -82,9 +85,6 @@ export class RollbackService extends BaseService {
     const resourceService = new ResourceService(this.serverless, this.options);
     const { template } = await resourceService.getDeploymentTemplate(deployment.name);
     const { parameters } = deployment.properties;
-    for (const key of Object.keys(parameters)) {
-      parameters[key] = parameters[key].value;
-    }
     return {
       template,
       parameters,
