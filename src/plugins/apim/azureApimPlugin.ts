@@ -8,20 +8,6 @@ export class AzureApimPlugin extends AzureBasePlugin {
     super(serverless, options);
     this.hooks = {
       "after:deploy:deploy": this.deploy.bind(this),
-      "deploy:apim:apim": this.deploy.bind(this),
-    };
-
-    this.commands = {
-      deploy: {
-        usage: "Deploys APIM",
-        lifecycleEvents: ["deploy"],
-        commands: {
-          apim: {
-            usage: "Deploys APIM",
-            lifecycleEvents: ["apim"]
-          }
-        }
-      }
     };
   }
 
