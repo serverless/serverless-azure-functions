@@ -1,11 +1,16 @@
 import { ApiManagementConfig } from "../../models/apiManagement";
 import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
-import { AzureNamingService } from "../../services/namingService";
+import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 export class ApimResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getResourceName(config, config.provider.apim, "apim");
+    const options: AzureNamingServiceOptions = {
+      config,
+      resourceConfig: config.provider.apim,
+      suffix: "apim",
+    }
+    return AzureNamingService.getResourceName(options);
   }
 
   public getTemplate(): ArmResourceTemplate {

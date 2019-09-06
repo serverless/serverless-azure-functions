@@ -17,10 +17,11 @@ describe("Storage Account Resource", () => {
       name: "azure",
       region: "westus",
       stage: "dev",
-      resourceGroup
+      resourceGroup,
+      runtime: "nodejs10.x"
     },
     service: "test-api"
-  }
+  } as any;
 
   it("Generates safe storage account name with short parts", () => {
     const testConfig: ServerlessAzureConfig = {
