@@ -194,7 +194,7 @@ export abstract class BaseService {
    * Log message to Serverless CLI
    * @param message Message to log
    */
-  protected log(message: string, options?: ServerlessLogOptions, entity?: string, ) {
+  protected log(message: string, options?: ServerlessLogOptions, entity?: string) {
     (this.serverless.cli.log as any)(message, entity, options);
   }
 
