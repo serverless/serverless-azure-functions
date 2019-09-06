@@ -1,4 +1,4 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
@@ -26,36 +26,36 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       "parameters": {
         "functionAppRunFromPackage": {
           "defaultValue": "1",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "functionAppName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "functionAppNodeVersion": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "functionAppWorkerRuntime": {
           "defaultValue": "node",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "functionAppExtensionVersion": {
           "defaultValue": "~2",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "storageAccountName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "appInsightsName": {
           "defaultValue": "",
-          "type": "String"
+          "type": ArmParamType.String
         },
         "location": {
           "defaultValue": "",
-          "type": "String"
-        }
+          "type": ArmParamType.String
+        },
       },
       "variables": {},
       "resources": [
@@ -65,7 +65,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           "name": "[parameters('functionAppName')]",
           "location": "[parameters('location')]",
           "identity": {
-            "type": "SystemAssigned"
+            "type": ArmParamType.SystemAssigned
           },
           "dependsOn": [
             "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
@@ -118,17 +118,29 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     };
   }
 
-  public getParameters(config: ServerlessAzureConfig): any {
+  public getParameters(config: ServerlessAzureConfig): ArmParameters {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
       nodeVersion: this.getRuntimeVersion(config.provider.runtime)
     };
 
     return {
-      functionAppName: FunctionAppResource.getResourceName(config),
-      functionAppNodeVersion: resourceConfig.nodeVersion,
-      functionAppWorkerRuntime: resourceConfig.workerRuntime,
-      functionAppExtensionVersion: resourceConfig.extensionVersion,
+      functionAppName: {
+        type: ArmParamType.String,
+        value: FunctionAppResource.getResourceName(config),
+      },
+      functionAppNodeVersion: {
+        type: ArmParamType.String,
+        value: resourceConfig.nodeVersion,
+      },
+      functionAppWorkerRuntime: {
+        type: ArmParamType.String,
+        value: resourceConfig.workerRuntime,
+      },
+      functionAppExtensionVersion: {
+        type: ArmParamType.String,
+        value: resourceConfig.extensionVersion,
+      }
     };
   }
 

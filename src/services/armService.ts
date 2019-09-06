@@ -4,13 +4,13 @@ import fs from "fs";
 import jsonpath from "jsonpath";
 import path from "path";
 import Serverless from "serverless";
-import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
+import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType, ArmResourceTemplate, ArmParameters } from "../models/armTemplates";
 import { ArmTemplateConfig, ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
 import { ResourceService } from "./resourceService"
-import deepEqual from "deep-equal";
 import { DeploymentExtendedError } from "../models/azureProvider";
+import deepEqual from "deep-equal";
 
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -94,37 +94,21 @@ export class ArmService extends BaseService {
 
     this.applyEnvironmentVariables(deployment);
 
-    // Convert flat parameter list into ARM parameter format
-    const deploymentParameters = {};
-    Object.keys(deployment.parameters).forEach((key) => {
-      const parameterValue = deployment.parameters[key];
-      if (parameterValue) {
-        deploymentParameters[key] = { value: parameterValue }
-      }
-    });
+    const resourceService = new ResourceService(this.serverless, this.options);
+    const previous = await resourceService.getLastDeploymentTemplate();
+
+    if (this.areDeploymentsEqual(deployment, previous)) {
+      this.log("Generated template same as previous. Skipping ARM deployment");
+      return;
+    }
 
     // Construct deployment object
     const armDeployment: Deployment = {
       properties: {
+        ...deployment,
         mode: "Incremental",
-        template: deployment.template,
-        parameters: deploymentParameters,
       }
     };
-
-    const resourceService = new ResourceService(this.serverless, this.options);
-    const latest = await resourceService.getLastDeploymentTemplate();
-
-    if (latest) {
-      const templateEqual = deepEqual(latest.template, deployment.template);
-      const mergedDefaultParameters = this.mergeDefaultParams(deploymentParameters, deployment.template.parameters);
-      const paramatersEqual = deepEqual(latest.parameters, mergedDefaultParameters);
-
-      if (templateEqual && paramatersEqual) {
-        this.log("Generated template same as previous. Skipping ARM deployment");
-        return;
-      }
-    }
 
     // Deploy ARM template
     this.log("-> Deploying ARM template...");
@@ -148,6 +132,46 @@ export class ArmService extends BaseService {
     }
   }
 
+  private areDeploymentsEqual(current: ArmDeployment, previous: ArmDeployment): boolean {
+    if (!current || !previous) {
+      return false;
+    }
+    const mergedDefaultParameters = this.mergeDefaultParams(current.parameters, current.template.parameters);
+    const templateNormalizer = (template: ArmResourceTemplate): ArmResourceTemplate => {
+      return {
+        ...template,
+        resources: template.resources.map((item) => {
+          return {
+            ...item,
+            // Currently ignoring `identity` property given to function app arm template
+            identity: undefined
+          }
+        })
+      }
+    }
+
+    const paramsNormalizer = (params: ArmParameters): ArmParameters => {
+      const normalized = {};
+      const keys = Object.keys(params);
+      for (const key of keys) {
+        const original = params[key];
+        normalized[key] = {
+          ...original,
+          type: original.type.toLowerCase()
+        }
+      }
+      return normalized;
+    }
+
+    return deepEqual(
+      paramsNormalizer(mergedDefaultParameters),
+      paramsNormalizer(previous.parameters)
+    ) && deepEqual(
+      templateNormalizer(previous.template),
+      templateNormalizer(current.template),
+    );
+  }
+
   private deploymentErrorToString(deploymentError: DeploymentExtendedError) {
     if (!deploymentError.code || !deploymentError.message) {
       return JSON.stringify(deploymentError);
@@ -155,10 +179,12 @@ export class ArmService extends BaseService {
     let errorString = `${deploymentError.code} - ${deploymentError.message}`;
     if (deploymentError.details) {
 
-      errorString += `
-      ------------------------
-      DEPLOYMENT ERROR DETAILS
-      ------------------------\n`
+      errorString += [
+        "------------------------",
+        "DEPLOYMENT ERROR DETAILS",
+        "------------------------",
+      ].join("\n") + "\n"
+
       deploymentError.details.forEach((childError) => {
         errorString += `\n${this.deploymentErrorToString(childError)}`
       })
@@ -171,17 +197,14 @@ export class ArmService extends BaseService {
    * @param parameters Parameters with specified values
    * @param defaultParameters Parameters with `type` and `defaultValue`
    */
-  private mergeDefaultParams(parameters: any, defaultParameters: any) {
-    const mergedParams = {}
+  private mergeDefaultParams(parameters: ArmParameters, defaultParameters: ArmParameters): ArmParameters {
+    const mergedParams: ArmParameters = {}
     Object.keys(defaultParameters).forEach((key) => {
       const defaultParam = defaultParameters[key];
+      const param = parameters[key];
       mergedParams[key] = {
         type: defaultParam.type,
-        value: (key in parameters)
-          ?
-          parameters[key].value
-          :
-          defaultParameters[key].defaultValue
+        value: (param && param.value) ? param.value : defaultParam.value || defaultParam.defaultValue
       }
     });
     return mergedParams;
