@@ -12,7 +12,7 @@ describe("Storage Account Resource", () => {
     plugins: [],
     package: null,
     provider: {
-      runtime: "node10.x",
+      runtime: "nodejs10.x",
       prefix: "sls",
       name: "azure",
       region: "westus",

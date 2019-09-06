@@ -3,7 +3,7 @@
 [API Management](https://azure.microsoft.com/en-us/services/api-management/) is an Azure Service for publishing, managing, securing and monitoring APIs. It can be deployed along with your Serverless function app by specifying its configuration in `serverless.yml`. Here is a basic example of how to configure API Mangement:
 
 ## Simple Configuration
-Simply by setting `apim: true` in your configuration a consumption based APIM resource will automatically be deployed to Azure.  By default it will create a API with path of `/api` in your APIM instance and will map all operations defined in the serverless yaml to your function app
+Simply setting `apim: true` in your configuration will automatically deploy a consumption based APIM resource to Azure.  By default it will create a API with path of `/api` in your APIM instance and will map all operations defined in the serverless yaml to your function app.
 
 ```yaml
 service: greeter
@@ -33,10 +33,6 @@ functions:
           methods:
             - GET
           authLevel : function
-      - http: true
-        x-azure-settings:
-          direction: out
-          name: res
 ```
 
 ## Full Configuration
