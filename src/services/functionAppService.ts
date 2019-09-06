@@ -154,23 +154,26 @@ export class FunctionAppService extends BaseService {
     this.log("Deploying serverless functions...");
 
     const functionZipFile = this.getFunctionZipFile();
-    const blobUpload = this.uploadZippedArtifactToBlobStorage(functionZipFile);
 
     if (this.deploymentConfig.runFromBlobUrl) {
       this.log("Updating function app setting to run from external package...");
-      await blobUpload;
+      await this.uploadZippedArtifactToBlobStorage(functionZipFile);
+
       const sasUrl = await this.blobService.generateBlobSasTokenUrl(
         this.deploymentConfig.container,
         this.artifactName
-      )
+      );
+
       await this.updateFunctionAppSetting(
         functionApp,
         configConstants.runFromPackageSetting,
         sasUrl
-      )
+      );
     } else {
-      const functionAppUpload = this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile);
-      Promise.all([blobUpload, functionAppUpload]);
+      await Promise.all([
+        this.uploadZippedArtifactToBlobStorage(functionZipFile),
+        this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile)
+      ]);
     }
 
     this.log("Deployed serverless functions:")
@@ -184,7 +187,7 @@ export class FunctionAppService extends BaseService {
 
         if (httpConfig) {
           const method = httpConfig.methods[0].toUpperCase();
-          this.log(`-> ${functionConfig.name}: ${method} ${httpConfig.url}`);
+          this.log(`-> ${functionConfig.name}: [${method}] ${httpConfig.url}`);
         }
       }
     });
@@ -256,7 +259,7 @@ export class FunctionAppService extends BaseService {
   /**
    * Uploads artifact file to blob storage container
    */
-  private async uploadZippedArtifactToBlobStorage(functionZipFile: string) {
+  private async uploadZippedArtifactToBlobStorage(functionZipFile: string): Promise<void> {
     await this.blobService.initialize();
     await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
     await this.blobService.uploadFile(

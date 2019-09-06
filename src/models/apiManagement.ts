@@ -1,4 +1,4 @@
-import { OperationContract, ApiContract, BackendContract } from "@azure/arm-apimanagement/esm/models";
+import { ApiContract, BackendContract } from "@azure/arm-apimanagement/esm/models";
 
 /**
  * Defines the serverless APIM configuration
@@ -7,9 +7,9 @@ export interface ApiManagementConfig {
   /** The name of the APIM azure resource */
   name: string;
   /** The API contract configuration */
-  api: ApiContract;
+  apis: ApiContract[];
   /** The API's backend contract configuration */
-  backend?: BackendContract;
+  backends?: BackendContract[];
   /** The API's CORS policy */
   cors?: ApiCorsPolicy;
   sku?: {
@@ -18,16 +18,6 @@ export interface ApiManagementConfig {
   };
   publisherEmail?: string;
   publisherName?: string;
-}
-
-/**
- * Defines the APIM API Operation configuration
- */
-export interface ApiOperationOptions {
-  /** The name of the serverless function */
-  function: string;
-  /** The APIM operation contract configuration */
-  operation: OperationContract;
 }
 
 /**

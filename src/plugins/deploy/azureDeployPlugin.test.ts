@@ -1,6 +1,6 @@
 import { Site } from "@azure/arm-appservice/esm/models";
 import Serverless from "serverless";
-import { ServerlessAzureOptions } from "../../models/serverless";
+import { ServerlessAzureOptions, ServerlessAzureConfig } from "../../models/serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzureDeployPlugin } from "./azureDeployPlugin";
@@ -11,6 +11,7 @@ import { FunctionAppService } from "../../services/functionAppService";
 
 jest.mock("../../services/resourceService");
 import { ResourceService } from "../../services/resourceService";
+import { ApimService } from "../../services/apimService";
 
 describe("Deploy plugin", () => {
   let sls: Serverless;
@@ -25,6 +26,7 @@ describe("Deploy plugin", () => {
 
   beforeEach(() => {
     FunctionAppService.prototype.getFunctionZipFile = jest.fn(() => "serviceName.zip");
+    ApimService.prototype.deploy = jest.fn();
 
     sls = MockFactory.createTestServerless();
     options = MockFactory.createTestServerlessOptions();
@@ -64,7 +66,7 @@ describe("Deploy plugin", () => {
         "Azure Functions are zipped up as a package and deployed together as a unit");
   });
 
-  it("lists deployments", async () => {
+  it("lists deployments from sub-command", async () => {
     const deploymentString = "deployments";
     ResourceService.prototype.listDeployments = jest.fn(() => Promise.resolve(deploymentString));
     await invokeHook(plugin, "deploy:list:list");
@@ -72,7 +74,21 @@ describe("Deploy plugin", () => {
     expect(sls.cli.log).lastCalledWith(deploymentString);
   });
 
-  it("Crashes deploy list if function is specified", async () => {
+  it("deploys APIM from sub-command if configured", async () => {
+    (sls.service as any as ServerlessAzureConfig).provider.apim = {} as any;
+    plugin = new AzureDeployPlugin(sls, {} as any);
+    await invokeHook(plugin, "deploy:apim:apim");
+    expect(ApimService.prototype.deploy).toBeCalled();
+  });
+
+  it("skips deployment of APIM from sub-command if not configured", async () => {
+    delete (sls.service as any as ServerlessAzureConfig).provider.apim;
+    plugin = new AzureDeployPlugin(sls, {} as any);
+    await invokeHook(plugin, "deploy:apim:apim");
+    expect(ApimService.prototype.deploy).not.toBeCalled();
+  });
+
+  it("crashes deploy list if function is specified", async () => {
     plugin = new AzureDeployPlugin(sls, { function: "myFunction" } as any);
     await expect(invokeHook(plugin, "deploy:list:list"))
       .rejects.toThrow("The Azure Functions plugin does not currently support deployments of individual functions. " +

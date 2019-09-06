@@ -4,6 +4,7 @@ import { FunctionAppService } from "../../services/functionAppService";
 import { AzureLoginOptions } from "../../services/loginService";
 import { ResourceService } from "../../services/resourceService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { ApimService } from "../../services/apimService";
 
 export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   public commands: any;
@@ -14,65 +15,49 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
     this.hooks = {
       "deploy:deploy": this.deploy.bind(this),
       "deploy:list:list": this.list.bind(this),
+      "deploy:apim:apim": this.deployApim.bind(this),
     };
+
+    const deployOptions = {
+      resourceGroup: {
+        usage: "Resource group for the service",
+        shortcut: "g",
+      },
+      stage: {
+        usage: "Stage of service",
+        shortcut: "s"
+      },
+      region: {
+        usage: "Region of service",
+        shortcut: "r"
+      },
+      subscriptionId: {
+        usage: "Sets the Azure subscription ID",
+        shortcut: "i",
+      },
+      function: {
+        usage: "Deployment of individual function - NOT SUPPORTED",
+        shortcut: "f",
+      }
+    }
 
     this.commands = {
       deploy: {
         commands: {
           list: {
             usage: "List deployments",
-            lifecycleEvents: [
-              "list"
-            ]
-          },
-          options: {
-            resourceGroup: {
-              usage: "Resource group for the service",
-              shortcut: "g",
-            },
-            stage: {
-              usage: "Stage of service",
-              shortcut: "s"
-            },
-            region: {
-              usage: "Region of service",
-              shortcut: "r"
-            },
-            subscriptionId: {
-              usage: "Sets the Azure subscription ID",
-              shortcut: "i",
-            },
-            function: {
-              usage: "Deployment of individual function - NOT SUPPORTED",
-              shortcut: "f",
+            lifecycleEvents: ["list"],
+            options: {
+              ...deployOptions
             }
+          },
+          apim: {
+            usage: "Deploys APIM",
+            lifecycleEvents: ["apim"]
           }
         },
         options: {
-          resourceGroup: {
-            usage: "Resource group for the service",
-            shortcut: "g",
-          },
-          stage: {
-            usage: "Stage of service",
-            shortcut: "s"
-          },
-          region: {
-            usage: "Region of service",
-            shortcut: "r"
-          },
-          subscriptionId: {
-            usage: "Sets the Azure subscription ID",
-            shortcut: "i",
-          },
-          package: {
-            usage: "Package to deploy",
-            shortcut: "p",
-          },
-          function: {
-            usage: "Deployment of individual function - NOT SUPPORTED",
-            shortcut: "f",
-          }
+          ...deployOptions
         }
       }
     }
@@ -96,6 +81,24 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
     await resourceService.deployResourceGroup();
     const functionApp = await functionAppService.deploy();
     await functionAppService.uploadFunctions(functionApp);
+  }
+
+  /**
+   * Deploys APIM if configured
+   */
+  private async deployApim() {
+    const apimConfig = this.serverless.service.provider["apim"];
+    if (!apimConfig) {
+      this.log("No APIM configuration found");
+      return Promise.resolve();
+    }
+
+    this.serverless.cli.log("Starting APIM service deployment");
+
+    const apimService = new ApimService(this.serverless, this.options);
+    await apimService.deploy();
+
+    this.log("Finished APIM service deployment");
   }
 
   /**
