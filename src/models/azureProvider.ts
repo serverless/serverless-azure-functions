@@ -8,10 +8,10 @@ export interface FunctionEvent {
 }
 
 export interface ServicePrincipalEnvVariables {
-  azureSubId: string;
-  azureServicePrincipalClientId: string;
-  azureServicePrincipalPassword: string;
-  azureServicePrincipalTenantId: string;
+  AZURE_SUBSCRIPTION_ID: string;
+  AZURE_CLIENT_ID: string;
+  AZURE_CLIENT_SECRET: string;
+  AZURE_TENANT_ID: string;
 }
 
 export interface FunctionMetadata {

@@ -63,14 +63,14 @@ describe("Login Plugin", () => {
     const sls = MockFactory.createTestServerless();
     await invokeLoginHook(false, sls);
     expect(AzureLoginService.prototype.servicePrincipalLogin).toBeCalledWith(
-      "azureServicePrincipalClientId",
-      "azureServicePrincipalPassword",
-      "azureServicePrincipalTenantId",
+      "AZURE_CLIENT_ID",
+      "AZURE_CLIENT_SECRET",
+      "AZURE_TENANT_ID",
       undefined // would be options
     )
     expect(AzureLoginService.prototype.interactiveLogin).not.toBeCalled();
     expect(JSON.stringify(sls.variables["azureCredentials"])).toEqual(JSON.stringify(credentials));
-    expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
+    expect(sls.variables["subscriptionId"]).toEqual("AZURE_SUBSCRIPTION_ID");
   });
 
   it("calls interactive login if environment variables are not set", async () => {
@@ -80,7 +80,7 @@ describe("Login Plugin", () => {
     expect(AzureLoginService.prototype.servicePrincipalLogin).not.toBeCalled();
     expect(AzureLoginService.prototype.interactiveLogin).toBeCalled();
     expect(JSON.stringify(sls.variables["azureCredentials"])).toEqual(JSON.stringify(credentials));
-    expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
+    expect(sls.variables["subscriptionId"]).toEqual("AZURE_SUBSCRIPTION_ID");
   });
 
   it("logs an error from authentication and crashes with it", async () => {
@@ -101,8 +101,8 @@ describe("Login Plugin", () => {
     const opt = MockFactory.createTestServerlessOptions();
     await invokeLoginHook(false, sls, opt);
     expect(AzureLoginService.prototype.interactiveLogin).toBeCalled();
-    expect(sls.variables["subscriptionId"]).toEqual("azureSubId");
-    expect(sls.cli.log).toBeCalledWith("Using subscription ID: azureSubId");
+    expect(sls.variables["subscriptionId"]).toEqual("AZURE_SUBSCRIPTION_ID");
+    expect(sls.cli.log).toBeCalledWith("Using subscription ID: AZURE_SUBSCRIPTION_ID");
   });
 
   it("Throws an error with empty subscription list", async () => {

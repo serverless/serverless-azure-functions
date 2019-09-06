@@ -263,7 +263,7 @@ export abstract class BaseService {
       stage: this.getOption("stage") || stage,
       region: this.getOption("region") || region,
       subscriptionId: this.getOption("subscriptionId")
-        || process.env.azureSubId
+        || process.env.AZURE_SUBSCRIPTION_ID
         || subscriptionId
         || this.serverless.variables["subscriptionId"]
     }
