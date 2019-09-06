@@ -31,4 +31,25 @@ describe("Virtual Network Resource", () => {
       `${prefix}-eus2-${stage}-${resourceGroupHash}-vnet`
     );
   });
+
+  it("uses the specified name from the azure provider", () => {
+    const virtualNetworkName = "myVNET";
+
+    const config: ServerlessAzureConfig = {
+      provider: {
+        hostingEnvironment: {
+          name: virtualNetworkName
+        },
+        name: "azure",
+        prefix,
+        region,
+        stage,
+        resourceGroup: resourceGroupName,
+        runtime: "nodejs10.x"
+      },
+      service: ""
+    } as any;
+
+    expect(VirtualNetworkResource.getResourceName(config)).toEqual(virtualNetworkName);
+  });
 });

@@ -31,4 +31,25 @@ describe("App Service Plan Resource", () => {
       `${prefix}-eus2-${stage}-${resourceGroupHash}-asp`
     );
   });
+
+  it("uses the specified name from the azure provider", () => {
+    const appServicePlanName = "myAppServicePlan";
+
+    const config: ServerlessAzureConfig = {
+      provider: {
+        name: "azure",
+        prefix,
+        region,
+        stage,
+        resourceGroup: resourceGroupName,
+        runtime: "nodejs10.x",
+        appServicePlan: {
+          name: appServicePlanName,
+        },
+      },
+      service: "myapp",
+    } as any;
+
+    expect(AppServicePlanResource.getResourceName(config)).toEqual(appServicePlanName);
+  });
 });

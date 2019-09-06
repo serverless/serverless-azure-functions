@@ -31,4 +31,25 @@ describe("App Insights Resource", () => {
       `${prefix}-eus2-${stage}-${resourceGroupHash}-appinsights`
     );
   });
+
+  it("uses the specified name from the azure provider", () => {
+    const appInsightsName = "myAppInsights";
+
+    const config: ServerlessAzureConfig = {
+      provider: {
+        name: "azure",
+        prefix,
+        region,
+        stage,
+        resourceGroup: resourceGroupName,
+        runtime: "nodejs10.x",
+        appInsights: {
+          name: appInsightsName,
+        },
+      },
+      service: "myapp",
+    } as any;
+
+    expect(AppInsightsResource.getResourceName(config)).toEqual(appInsightsName);
+  });
 });

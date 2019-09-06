@@ -3,6 +3,13 @@ import { Guard } from "../shared/guard"
 import configConstants from "../config";
 import md5 from "md5";
 
+export interface AzureNamingServiceOptions {
+  config: ServerlessAzureConfig;
+  resourceConfig?: ResourceConfig;
+  suffix?: string;
+  includeHash?: boolean;
+}
+
 export class AzureNamingService {
 
   /**
@@ -14,24 +21,28 @@ export class AzureNamingService {
    * @param resourceConfig The serverless resource configuration
    * @param suffix Optional suffix to append on the end of the generated name
    */
-  public static getResourceName(config: ServerlessAzureConfig, resourceConfig?: ResourceConfig, suffix?: string, includeHash: boolean = true) {
-    if (resourceConfig && resourceConfig.name) {
-      return resourceConfig.name;
+  public static getResourceName(options: AzureNamingServiceOptions) {
+    if (options.resourceConfig && options.resourceConfig.name) {
+      return options.resourceConfig.name;
     }
 
-    const { prefix, region, stage } = config.provider
+    if (options.includeHash === undefined) {
+      options.includeHash = true;
+    }
+
+    const { prefix, region, stage } = options.config.provider
     let name = [
       prefix,
       this.createShortAzureRegionName(region),
       this.createShortStageName(stage),
     ].join("-");
 
-    if(includeHash) {
-      name += `-${md5(config.provider.resourceGroup).substr(0, configConstants.resourceGroupHashLength)}`
+    if(options.includeHash) {
+      name += `-${md5(options.config.provider.resourceGroup).substr(0, configConstants.resourceGroupHashLength)}`
     }
 
-    if (suffix) {
-      name += `-${suffix}`;
+    if (options.suffix) {
+      name += `-${options.suffix}`;
     }
 
     return name.toLowerCase();
@@ -50,11 +61,11 @@ export class AzureNamingService {
    * @param forbidden Regex for characters to remove from name. Defaults to non-alpha-numerics
    * @param replaceWith String to replace forbidden characters. Defaults to empty string
    */
-  public static getSafeResourceName(config: ServerlessAzureConfig, maxLength: number, resourceConfig?: ResourceConfig, suffix: string = "", includeHash = false) {
+  public static getSafeResourceName(options: AzureNamingServiceOptions, maxLength: number) {
     const nonAlphaNumeric = /\W+/g;
 
-    if (resourceConfig && resourceConfig.name) {
-      const { name } = resourceConfig;
+    if (options.resourceConfig && options.resourceConfig.name) {
+      const { name } = options.resourceConfig;
 
       if (name.length > maxLength) {
         throw new Error(`Name '${name}' invalid. Should be shorter than ${maxLength} characters`);
@@ -63,14 +74,18 @@ export class AzureNamingService {
       return name.replace(nonAlphaNumeric, "");
     }
 
-    const { prefix, region, stage } = config.provider;
+    if (options.includeHash === undefined) {
+      options.includeHash = true;
+    }
+
+    const { prefix, region, stage } = options.config.provider;
 
     let safePrefix = prefix.replace(nonAlphaNumeric, "");
     const safeRegion = this.createShortAzureRegionName(region);
     let safeStage = this.createShortStageName(stage);
-    let safeSuffix = suffix.replace(nonAlphaNumeric, "");
+    let safeSuffix = options.suffix.replace(nonAlphaNumeric, "");
 
-    const hashLength = (includeHash) ? configConstants.resourceGroupHashLength : 0;
+    const hashLength = (options.includeHash) ? configConstants.resourceGroupHashLength : 0;
     const remaining = maxLength - (safePrefix.length + safeRegion.length + safeStage.length + safeSuffix.length + hashLength);
 
     // Dynamically adjust the substring based on space needed
@@ -85,7 +100,7 @@ export class AzureNamingService {
       safeSuffix = safeSuffix.substr(0, partLength);
     }
 
-    const safeHash = md5(config.provider.resourceGroup).substr(0, hashLength);
+    const safeHash = md5(options.config.provider.resourceGroup).substr(0, hashLength);
 
     const name = [safePrefix, safeRegion, safeStage, safeHash, safeSuffix]
       .join("")
@@ -112,9 +127,15 @@ export class AzureNamingService {
     if (timestamp) {
       maxLength -= timestamp.length + suffix.length;
 
+      const options: AzureNamingServiceOptions = {
+        config,
+        suffix: config.service,
+        includeHash: false,
+      }
+
       const name = (deploymentName)
         ? deploymentName.substr(0, maxLength)
-        : [AzureNamingService.getSafeResourceName(config, maxLength, null, config.service), suffix].join("-");
+        : [AzureNamingService.getSafeResourceName(options, maxLength), suffix].join("-");
 
       return [name, timestamp].join("-");
     }

@@ -1,10 +1,15 @@
 import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
-import { AzureNamingService } from "../../services/namingService";
+import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getResourceName(config, config.provider.appServicePlan, "asp");
+    const options: AzureNamingServiceOptions = {
+      config,
+      resourceConfig: config.provider.appServicePlan,
+      suffix: "asp",
+    }
+    return AzureNamingService.getResourceName(options);
   }
 
   public getTemplate(): ArmResourceTemplate {

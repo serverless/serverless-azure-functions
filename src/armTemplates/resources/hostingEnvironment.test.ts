@@ -31,4 +31,25 @@ describe("Azure Hosting Environment Resource", () => {
       `${prefix}-eus2-${stage}-${resourceGroupHash}-ase`
     );
   });
+
+  it("uses the specified name from the azure provider", () => {
+    const hostingEnvironmentName = "myHostingEnv";
+
+    const config: ServerlessAzureConfig = {
+      provider: {
+        hostingEnvironment: {
+          name: hostingEnvironmentName
+        },
+        name: "azure",
+        prefix,
+        region,
+        stage,
+        resourceGroup: resourceGroupName,
+        runtime: "nodejs10.x"
+      },
+      service: ""
+    } as any;
+
+    expect(HostingEnvironmentResource.getResourceName(config)).toEqual(hostingEnvironmentName);
+  });
 });

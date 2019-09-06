@@ -1,4 +1,4 @@
-import { AzureNamingService } from "./namingService"
+import { AzureNamingService, AzureNamingServiceOptions } from "./namingService"
 import { ServerlessAzureConfig } from "../models/serverless";
 import md5 from "md5";
 
@@ -26,25 +26,28 @@ describe("Naming Service", () => {
   };
 
   it("Gets resource name with hash by default", () => {
-    const result = AzureNamingService.getResourceName(defaultConfig);
+    const result = AzureNamingService.getResourceName({config: defaultConfig});
 
     expect(result).toEqual(`${defaultConfig.provider.prefix}-wus-${defaultConfig.provider.stage}-${resourceGroupHash}`);
   });
 
   it("Gets resource name without hash when specified", () => {
-    const result = AzureNamingService.getResourceName(defaultConfig, {} as any, undefined, false);
+    const options: AzureNamingServiceOptions = {config: defaultConfig, includeHash: false};
+    const result = AzureNamingService.getResourceName(options);
 
     expect(result).toEqual(`${defaultConfig.provider.prefix}-wus-${defaultConfig.provider.stage}`);
   });
 
   it("Gets resource name with suffix", () => {
-    const result = AzureNamingService.getResourceName(defaultConfig, {} as any, "suf");
+    const options: AzureNamingServiceOptions = {config: defaultConfig, suffix: "suf"};
+    const result = AzureNamingService.getResourceName(options);
 
     expect(result).toEqual(`${defaultConfig.provider.prefix}-wus-${defaultConfig.provider.stage}-${resourceGroupHash}-suf`);
   });
 
   it("Uses resource name from config if specified", () => {
-    const result = AzureNamingService.getResourceName(defaultConfig, {name: "test-resource"} as any);
+    const options: AzureNamingServiceOptions = {config: defaultConfig, resourceConfig: {name: "test-resource"} as any};
+    const result = AzureNamingService.getResourceName(options);
 
     expect(result).toEqual("test-resource");
   });

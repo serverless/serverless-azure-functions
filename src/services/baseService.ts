@@ -14,7 +14,7 @@ import {
 } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
-import { AzureNamingService } from "./namingService";
+import { AzureNamingService, AzureNamingServiceOptions } from "./namingService";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -259,6 +259,12 @@ export abstract class BaseService {
   private setupConfig() {
     const { prefix, region, stage, subscriptionId } = this.config.provider;
 
+    const options: AzureNamingServiceOptions = {
+      config: this.config,
+      suffix: `${this.getServiceName()}-rg`,
+      includeHash: false,
+    }
+
     this.config.provider = {
       ...this.config.provider,
       prefix: this.getOption("prefix") || prefix,
@@ -271,6 +277,6 @@ export abstract class BaseService {
     }
     this.config.provider.resourceGroup = (
       this.getOption("resourceGroup", this.config.provider.resourceGroup)
-    ) || AzureNamingService.getResourceName(this.config, null, `${this.getServiceName()}-rg`, false);
+    ) || AzureNamingService.getResourceName(options);
   }
 }

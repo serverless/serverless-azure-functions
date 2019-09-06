@@ -1,16 +1,18 @@
 import { ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
-import { AzureNamingService } from "../../services/namingService";
+import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 import configConstants from "../../config";
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
-    return AzureNamingService.getSafeResourceName(
+    const options: AzureNamingServiceOptions = {
       config,
-      configConstants.naming.maxLength.storageAccount,
-      config.provider.storageAccount,
-      "",
-      true
+      resourceConfig: config.provider.storageAccount,
+      suffix: "",
+    }
+    return AzureNamingService.getSafeResourceName(
+      options,
+      configConstants.naming.maxLength.storageAccount
     );
   }
 

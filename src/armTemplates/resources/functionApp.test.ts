@@ -38,13 +38,14 @@ describe("Function App Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
+        runtime: "nodejs10.x",
+        functionApp: {
+          name: serviceName,
+        },
       },
       service: serviceName
     } as any;
 
-    expect(FunctionAppResource.getResourceName(config)).toEqual(
-      `${config.provider.prefix}-wus-${config.provider.stage}-${serviceName}`
-    );
+    expect(FunctionAppResource.getResourceName(config)).toEqual(serviceName);
   });
 });
