@@ -26,7 +26,7 @@ export class AzureLoginService extends BaseService {
    * set or via interactive login if environment variables are not set
    * @param options Options for different authentication methods
    */
-  public async login(options?: AzureTokenCredentialsOptions|InteractiveLoginOptions): Promise<AuthResponse> {
+  public async login(options?: AzureTokenCredentialsOptions | InteractiveLoginOptions): Promise<AuthResponse> {
     const subscriptionId = process.env.azureSubId;
     const clientId = process.env.azureServicePrincipalClientId;
     const secret = process.env.azureServicePrincipalPassword;
@@ -40,11 +40,11 @@ export class AzureLoginService extends BaseService {
   }
 
   public async interactiveLogin(options?: InteractiveLoginOptions): Promise<AuthResponse> {
-    let authResp: AuthResponse = {credentials: undefined, subscriptions: []};
+    let authResp: AuthResponse = { credentials: undefined, subscriptions: [] };
     const fileTokenCache = new SimpleFileTokenCache();
-    if(fileTokenCache.isEmpty()){
+    if (fileTokenCache.isEmpty()) {
       await open("https://microsoft.com/devicelogin");
-      authResp = await interactiveLoginWithAuthResponse({...options, tokenCache: fileTokenCache});
+      authResp = await interactiveLoginWithAuthResponse({ ...options, tokenCache: fileTokenCache });
       fileTokenCache.addSubs(authResp.subscriptions);
     } else {
       authResp.credentials = new DeviceTokenCredentials(undefined, undefined, fileTokenCache.first().userId, undefined, undefined, fileTokenCache);
@@ -52,10 +52,9 @@ export class AzureLoginService extends BaseService {
     }
 
     return authResp;
-
   }
 
   public async servicePrincipalLogin(clientId: string, secret: string, tenantId: string, options: AzureTokenCredentialsOptions): Promise<AuthResponse> {
-    return loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId, options);
+    return await loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId, options);
   }
 }

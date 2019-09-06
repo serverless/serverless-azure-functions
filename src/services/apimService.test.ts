@@ -449,7 +449,6 @@ describe("APIM Service", () => {
           responses: [],
         }
       );
-      fail();
     });
   });
 

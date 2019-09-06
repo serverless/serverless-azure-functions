@@ -24,14 +24,14 @@ export class PackageService extends BaseService {
   /**
    * Creates the function.json binding files required for the serverless service
    */
-  public createBindings(): Promise<any[]> {
+  public async createBindings(): Promise<void> {
     const createEventsPromises = this.serverless.service.getAllFunctions()
       .map((functionName) => {
         const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
         return this.createBinding(functionName, metaData);
       });
 
-    return Promise.all(createEventsPromises);
+    await Promise.all(createEventsPromises);
   }
 
   /**
@@ -100,6 +100,7 @@ export class PackageService extends BaseService {
       // Find incoming binding within functionJSON and set the route
       const index = (functionJSON.bindings as any[])
         .findIndex((binding) => (!binding.direction || binding.direction === "in"));
+
       functionJSON.bindings[index].route = bindingAzureSettings.route;
     }
 
@@ -109,7 +110,6 @@ export class PackageService extends BaseService {
     }
 
     const functionJsonString = JSON.stringify(functionJSON, null, 2);
-
     fs.writeFileSync(path.join(functionDirPath, "function.json"), functionJsonString);
 
     return Promise.resolve();

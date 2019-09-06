@@ -49,9 +49,7 @@ export abstract class BaseService {
     this.storageAccountName = StorageAccountResource.getResourceName(this.config);
 
     if (!this.credentials && authenticate) {
-      throw new Error(
-        `Azure Credentials has not been set in ${this.constructor.name}`
-      );
+      throw new Error(`Azure Credentials has not been set in ${this.constructor.name}`);
     }
   }
 
@@ -196,7 +194,7 @@ export abstract class BaseService {
    * Log message to Serverless CLI
    * @param message Message to log
    */
-  protected log(message: string, options?: ServerlessLogOptions, entity?: string,) {
+  protected log(message: string, options?: ServerlessLogOptions, entity?: string, ) {
     (this.serverless.cli.log as any)(message, entity, options);
   }
 
