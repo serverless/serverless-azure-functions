@@ -68,7 +68,6 @@ export class HostingEnvironmentResource implements ArmResourceTemplateGenerator 
   public getParameters(config: ServerlessAzureConfig): ArmParameters {
     return {
       hostingEnvironmentName: {
-        type: ArmParamType.String,
         value: HostingEnvironmentResource.getResourceName(config)
       }
     }

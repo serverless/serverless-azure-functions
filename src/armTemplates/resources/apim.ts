@@ -74,23 +74,18 @@ export class ApimResource implements ArmResourceTemplateGenerator {
 
     return {
       apiManagementName: {
-        type: ArmParamType.String,
         value: ApimResource.getResourceName(config),
       },
       apimSkuName: {
-        type: ArmParamType.String,
         value: apimConfig.sku.name,
       },
       apimSkuCapacity: {
-        type: ArmParamType.Int,
         value: apimConfig.sku.capacity,
       },
       apimPublisherEmail: {
-        type: ArmParamType.String,
         value: apimConfig.publisherEmail,
       },
       apimPublisherName: {
-        type: ArmParamType.String,
         value: apimConfig.publisherName,
       }
     };
