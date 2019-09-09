@@ -4,6 +4,7 @@ import Serverless from "serverless";
 import configConstants from "../config";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
+import path from "path";
 
 export class OfflineService extends BaseService {
 
@@ -58,6 +59,15 @@ export class OfflineService extends BaseService {
    * @param spawnArgs Array of arguments for CLI command
    */
   private spawn(command: string, spawnArgs?: string[]): Promise<void> {
+    // Run command from local node_modules
+    command = path.join(
+      this.serverless.config.servicePath,
+      "node_modules",
+      ".bin",
+      command
+    );
+    
+    // Append .cmd if running on windows
     if (process.platform === "win32") {
       command += ".cmd";
     }
