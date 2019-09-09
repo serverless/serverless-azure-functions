@@ -126,19 +126,15 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
 
     return {
       functionAppName: {
-        type: ArmParamType.String,
         value: FunctionAppResource.getResourceName(config),
       },
       functionAppNodeVersion: {
-        type: ArmParamType.String,
         value: resourceConfig.nodeVersion,
       },
       functionAppWorkerRuntime: {
-        type: ArmParamType.String,
         value: resourceConfig.workerRuntime,
       },
       functionAppExtensionVersion: {
-        type: ArmParamType.String,
         value: resourceConfig.extensionVersion,
       }
     };

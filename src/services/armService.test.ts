@@ -366,5 +366,40 @@ describe("Arm Service", () => {
           new RegExp(`.*${errorPattern}.*`,"s")
         );
     });
+
+    it("Does not try to include paramaters with a value that is undefined", async () => {
+      sls.service.provider.runtime = "nodejs10.x";
+      const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
+
+      expect(deployment.parameters.functionAppExtensionVersion).not.toBeUndefined();
+      expect(deployment.parameters.functionAppExtensionVersion.value).toBeUndefined();
+
+      await service.deployTemplate(deployment);
+
+      expect(deployment.parameters.functionAppExtensionVersion).toBeUndefined();
+
+      const paramKeys = Object.keys(deployment.parameters);
+      paramKeys.forEach((key) => {
+        const paramValue = deployment.parameters[key];
+        if (paramValue) {
+          expect(paramValue.value).not.toBeUndefined();
+        }
+      })
+
+      const expectedResourceGroup = sls.service.provider["resourceGroup"];
+      const expectedDeploymentName = sls.service.provider["deploymentName"] || `${this.resourceGroup}-deployment`;
+      const expectedDeploymentNameRegex = new RegExp(expectedDeploymentName + "-t([0-9]+)")
+      const expectedDeployment: Deployment = {
+        properties: {
+          mode: "Incremental",
+          ...deployment
+        },
+      };
+
+      const call = (Deployments.prototype.createOrUpdate as any).mock.calls[0];
+      expect(call[0]).toEqual(expectedResourceGroup);
+      expect(call[1]).toMatch(expectedDeploymentNameRegex);
+      expect(call[2]).toEqual(expectedDeployment);
+    });
   });
 });

@@ -66,15 +66,12 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
 
     return {
       storageAccountName: {
-        type: ArmParamType.String,
         value: StorageAccountResource.getResourceName(config),
       },
       storageAccountSkuName: {
-        type: ArmParamType.String,
         value: resourceConfig.sku.name,
       },
       storageAccoutSkuTier: {
-        type: ArmParamType.String,
         value: resourceConfig.sku.tier,
       }
     };

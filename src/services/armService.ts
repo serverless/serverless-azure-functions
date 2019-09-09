@@ -102,6 +102,12 @@ export class ArmService extends BaseService {
       return;
     }
 
+    for (const key of Object.keys(deployment.parameters)) {
+      if (!deployment.parameters[key].value) {
+        delete deployment.parameters[key];
+      }
+    }
+
     // Construct deployment object
     const armDeployment: Deployment = {
       properties: {
