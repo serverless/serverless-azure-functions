@@ -46,7 +46,6 @@ export class AppInsightsResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): ArmParameters {
     return {
       appInsightsName: {
-        type: ArmParamType.String,
         value: AppInsightsResource.getResourceName(config),
       }
     };

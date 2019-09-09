@@ -86,7 +86,6 @@ export class VirtualNetworkResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): ArmParameters {
     return {
       virtualNetworkName: {
-        type: ArmParamType.String,
         value: VirtualNetworkResource.getResourceName(config),
       }
     }

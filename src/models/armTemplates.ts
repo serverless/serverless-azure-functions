@@ -46,7 +46,7 @@ export interface ArmResourceTemplate {
 
 export interface ArmParameters {
   [key: string]: {
-    type: ArmParamType;
+    type?: ArmParamType;
     value?: string | number;
     defaultValue?: string | number;
   };

@@ -65,15 +65,12 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
 
     return {
       appServicePlanName: {
-        type: ArmParamType.String,
         value: AppServicePlanResource.getResourceName(config),
       },
       appServicePlanSkuName: {
-        type: ArmParamType.String,
         value: resourceConfig.sku.name,
       },
       appServicePlanSkuTier: {
-        type: ArmParamType.String,
         value: resourceConfig.sku.tier,
       }
     }

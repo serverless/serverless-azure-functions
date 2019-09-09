@@ -41,7 +41,6 @@ export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
         ...parameters,
         ...resource.getParameters(config),
         location: {
-          type: ArmParamType.String,
           value: AzureNamingService.getNormalizedRegionName(config.provider.region)
         }
       };
