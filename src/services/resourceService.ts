@@ -29,7 +29,7 @@ export class ResourceService extends BaseService {
   /**
    * Get the most recent resource group deployment
    */
-  public async getLastDeployment() {
+  public async getPreviousDeployment() {
     const deployments = await this.getDeployments();
     if (deployments && deployments.length) {
       return deployments[0];
@@ -39,8 +39,8 @@ export class ResourceService extends BaseService {
   /**
    * Get template from last resource group deployment
    */
-  public async getLastDeploymentTemplate(): Promise<ArmDeployment> {
-    const deployment = await this.getLastDeployment();
+  public async getPreviousDeploymentTemplate(): Promise<ArmDeployment> {
+    const deployment = await this.getPreviousDeployment();
     if (!deployment || deployment.properties.provisioningState !== ArmTemplateProvisioningState.SUCCEEDED) {
       return;
     }

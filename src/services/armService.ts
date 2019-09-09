@@ -95,7 +95,7 @@ export class ArmService extends BaseService {
     this.applyEnvironmentVariables(deployment);
 
     const resourceService = new ResourceService(this.serverless, this.options);
-    const previous = await resourceService.getLastDeploymentTemplate();
+    const previous = await resourceService.getPreviousDeploymentTemplate();
 
     if (this.areDeploymentsEqual(deployment, previous)) {
       this.log("Generated template same as previous. Skipping ARM deployment");
@@ -130,11 +130,14 @@ export class ArmService extends BaseService {
       this.log("-> ARM deployment complete");
       return result;
     } catch (err) {
-      const lastDeployment = await resourceService.getLastDeployment();
-      const errorDetails: DeploymentExtendedError = lastDeployment.properties["error"];
-      if (errorDetails) {
-        throw new Error(this.deploymentErrorToString(errorDetails));
+      const previousDeployment = await resourceService.getPreviousDeployment();
+      if (previousDeployment) {
+        const errorDetails: DeploymentExtendedError = previousDeployment.properties["error"];
+        if (errorDetails) {
+          throw new Error(this.deploymentErrorToString(errorDetails));
+        }
       }
+      throw err;
     }
   }
 
