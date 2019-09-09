@@ -126,7 +126,7 @@ describe("Offline Service", () => {
     const calls = mySpawn.calls;
     expect(calls).toHaveLength(1);
     const call = calls[0];
-    expect(call.command).toEqual("func");
+    expect(call.command).toEqual(path.join("node_modules", ".bin", "func"));
     expect(call.args).toEqual(["host", "start"]);
   });
 
@@ -142,7 +142,7 @@ describe("Offline Service", () => {
     const calls = mySpawn.calls;
     expect(calls).toHaveLength(1);
     const call = calls[0];
-    expect(call.command).toEqual("func.cmd");
+    expect(call.command).toEqual(path.join("node_modules", ".bin", "func.cmd"));
     expect(call.args).toEqual(["host", "start"]);
   });
 
@@ -174,7 +174,7 @@ describe("Offline Service", () => {
     const calls = mySpawn.calls;
     expect(calls).toHaveLength(1);
     const call = calls[0];
-    expect(call.command).toEqual("func.cmd");
+    expect(call.command).toEqual(path.join("node_modules", ".bin", "func.cmd"));
     expect(call.args).toEqual(["host", "start"]);
 
     const processOnCalls = processOnSpy.mock.calls;
@@ -230,7 +230,7 @@ describe("Offline Service", () => {
     const calls = mySpawn.calls;
     expect(calls).toHaveLength(1);
     const call = calls[0];
-    expect(call.command).toEqual("func.cmd");
+    expect(call.command).toEqual(path.join("node_modules", ".bin", "func.cmd"));
     expect(call.args).toEqual(["host", "start"]);
 
     const processOnCalls = processOnSpy.mock.calls;
