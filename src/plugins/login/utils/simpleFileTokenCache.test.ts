@@ -33,6 +33,11 @@ describe("Simple File Token Cache", () => {
   it("Create .azure default directory if it doesn't exist", () => {
     mockFs();
     const makeDirSpy = jest.spyOn(fs, "mkdirSync");
+
+    jest.unmock("os");
+    const os = require.requireActual("os");
+    
+    os.homedir = jest.fn(() => "./");
     new SimpleFileTokenCache();
 
     expect(makeDirSpy).toBeCalled();
