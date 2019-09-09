@@ -12,7 +12,7 @@ export class SimpleFileTokenCache implements adal.TokenCache {
 
   public constructor(private tokenPath: string = DEFAULT_SLS_TOKEN_FILE) {
     if(tokenPath === DEFAULT_SLS_TOKEN_FILE && !fs.existsSync(CONFIG_DIRECTORY)) {
-      fs.mkdirSync(CONFIG_DIRECTORY);
+      fs.mkdirSync(CONFIG_DIRECTORY, {recursive: true});
     }
     this.load();
   }

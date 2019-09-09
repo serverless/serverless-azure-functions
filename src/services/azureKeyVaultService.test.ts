@@ -31,7 +31,6 @@ describe("Azure Key Vault Service", () => {
     }) as any;
 
     FunctionAppService.prototype.get = jest.fn(() => {
-      console.log("testing");
       return {
         identity: {
           tenantId: "tid",
