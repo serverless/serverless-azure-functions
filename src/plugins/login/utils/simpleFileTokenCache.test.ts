@@ -1,8 +1,9 @@
 import fs from "fs";
+import path from "path";
+import os from "os";
 import mockFs from "mock-fs";
 import { MockFactory } from "../../../test/mockFactory";
 import { SimpleFileTokenCache } from "./simpleFileTokenCache";
-import os from "os";
 
 describe("Simple File Token Cache", () => {
   const tokenFilePath = "slsTokenCache.json";
@@ -35,20 +36,29 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Create .azure default directory if it doesn't exist", () => {
-    mockFs();
-    const mockMkDir = jest.fn((path) => {
-      return
-    });
-    const mockHomedir = jest.fn(() => {
-      return ""
-    });
-    fs.mkdirSync = mockMkDir;
-    os.homedir = mockHomedir;
-    new SimpleFileTokenCache();
+    const expected = path.join(os.homedir(), ".azure");
 
-    expect(mockMkDir).toBeCalled();
-    mockMkDir.mockRestore();
-    mockHomedir.mockRestore();
+    mockFs();
+
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+    writeFileSpy.mockImplementation(() => undefined);
+
+    const mkdirSpy = jest.spyOn(fs, "mkdirSync");
+    mkdirSpy.mockImplementation(() => undefined);
+
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => false);
+
+    const readFileSpy = jest.spyOn(fs, "readFileSync");
+    readFileSpy.mockImplementation(() => "{\"entries\": []}");
+
+    new SimpleFileTokenCache();
+    expect(mkdirSpy).toBeCalledWith(expected);
+
+    mkdirSpy.mockRestore();
+    existsSpy.mockRestore();
+    readFileSpy.mockRestore();
+    writeFileSpy.mockRestore();
   });
 
   it("Load file on creation if available", () => {
