@@ -48,6 +48,7 @@ describe("Simple File Token Cache", () => {
 
     expect(mockMkDir).toBeCalled();
     mockMkDir.mockRestore();
+    mockHomedir.mockRestore();
   });
 
   it("Load file on creation if available", () => {
