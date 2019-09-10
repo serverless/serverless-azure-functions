@@ -3,7 +3,7 @@ import path from "path";
 import os from "os";
 import * as adal from "adal-node";
 
-const CONFIG_DIRECTORY = path.join(os.homedir(), ".azure");
+let CONFIG_DIRECTORY = path.join(os.homedir(), ".azure");
 const DEFAULT_SLS_TOKEN_FILE = path.join(CONFIG_DIRECTORY, "slsTokenCache.json");
 
 export class SimpleFileTokenCache implements adal.TokenCache {
@@ -11,6 +11,11 @@ export class SimpleFileTokenCache implements adal.TokenCache {
   private subscriptions: any[] = [];
 
   public constructor(private tokenPath: string = DEFAULT_SLS_TOKEN_FILE) {
+    if(tokenPath === DEFAULT_SLS_TOKEN_FILE && !fs.existsSync(CONFIG_DIRECTORY)) {
+      CONFIG_DIRECTORY = path.join(os.homedir(), ".azure");
+      this.tokenPath = CONFIG_DIRECTORY;
+      fs.mkdirSync(CONFIG_DIRECTORY);
+    }
     this.load();
   }
 
