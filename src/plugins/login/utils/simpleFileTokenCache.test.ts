@@ -12,13 +12,15 @@ describe("Simple File Token Cache", () => {
     subscriptions: []
   };
 
+  beforeEach(() => {
+    mockFs();
+  });
+
   afterEach(() => {
     mockFs.restore();
   });
 
   it("Creates a load file on creation if none", () => {
-    mockFs();
-
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     new SimpleFileTokenCache(tokenFilePath);
 
@@ -35,20 +37,14 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Create .azure default directory if it doesn't exist", () => {
-    mockFs();
-    const mockMkDir = jest.fn((path) => {
-      return
-    });
-    const mockHomedir = jest.fn(() => {
-      return ""
-    });
-    fs.mkdirSync = mockMkDir;
-    os.homedir = mockHomedir;
+    fs.mkdirSync = jest.fn();
+    const originalHomeDir = os.homedir;
+    os.homedir = jest.fn(() => "");
     new SimpleFileTokenCache();
 
-    expect(mockMkDir).toBeCalled();
-    mockMkDir.mockRestore();
-    mockHomedir.mockRestore();
+    expect(fs.mkdirSync).toBeCalled();
+    (fs.mkdirSync as any).mockRestore();
+    os.homedir = originalHomeDir;
   });
 
   it("Load file on creation if available", () => {
@@ -67,8 +63,6 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Saves to file after token is added", () => {
-    mockFs();
-
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const tokenCache = new SimpleFileTokenCache(tokenFilePath);
     const testEntries = MockFactory.createTestTokenCacheEntries();
@@ -89,8 +83,6 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Saves to file after subscription is added", () => {
-    mockFs();
-
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const testFileCache = new SimpleFileTokenCache(tokenFilePath);
     const testSubs = MockFactory.createTestSubscriptions();
