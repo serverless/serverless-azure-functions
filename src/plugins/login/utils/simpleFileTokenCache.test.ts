@@ -2,7 +2,7 @@ import fs from "fs";
 import mockFs from "mock-fs";
 import { MockFactory } from "../../../test/mockFactory";
 import { SimpleFileTokenCache } from "./simpleFileTokenCache";
-// import os from "os";
+import os from "os";
 
 describe("Simple File Token Cache", () => {
   const tokenFilePath = "slsTokenCache.json";
@@ -36,15 +36,14 @@ describe("Simple File Token Cache", () => {
 
   it("Create .azure default directory if it doesn't exist", () => {
     mockFs();
-    // const makeDirSpy = jest.spyOn(fs, "mkdirSync");
-    const mockMkDir = jest.fn(() => {
-      console.log("mocking");
+    const mockMkDir = jest.fn((path) => {
+      return
     });
-    // const mockHomedir = jest.fn(() => {
-    //   return ""
-    // });
+    const mockHomedir = jest.fn(() => {
+      return ""
+    });
     fs.mkdirSync = mockMkDir;
-    // os.homedir = mockHomedir;
+    os.homedir = mockHomedir;
     new SimpleFileTokenCache();
 
     expect(mockMkDir).toBeCalled();
