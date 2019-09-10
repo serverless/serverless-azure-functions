@@ -50,14 +50,17 @@ describe("Azure Invoke Plugin", () => {
     options["function"] = "testApp";
     options["path"] = "testFile.json";
     options["method"] = "GET";
-    const plugin = new AzureInvokePlugin(sls, options);
+    const plugin = new AzureInvokePlugin(sls, {
+      function: "testApp",
+      path: "testFile.json",
+    } as any);
     await invokeHook(plugin, "invoke:invoke");
     expect(invoke).toBeCalledWith(options["method"], options["function"], fileContent);
     expect(sls.cli.log).toBeCalledWith(JSON.stringify(expectedResult.data));
 
   });
 
-  it("calls the invoke hook with file path", async () => {
+  it("fails when data file path does not exist", async () => {
     const invoke = jest.fn();
     InvokeService.prototype.invoke = invoke;
     const sls = MockFactory.createTestServerless();
@@ -65,7 +68,11 @@ describe("Azure Invoke Plugin", () => {
     options["function"] = "testApp";
     options["path"] = "notExist.json";
     options["method"] = "GET";
-    expect(() => new AzureInvokePlugin(sls, options)).toThrow();
+    const plugin = new AzureInvokePlugin(sls, {
+      function: "testApp",
+      path: "notExist.json",
+    } as any);
+    await expect(invokeHook(plugin, "invoke:invoke")).rejects.toThrow();
   });
 
   it("Function invoked with no data", async () => {
