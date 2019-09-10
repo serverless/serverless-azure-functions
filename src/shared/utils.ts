@@ -195,4 +195,8 @@ export class Utils {
       setTimeout(resolve, time);
     });
   }
+
+  public static isTestEnv(): boolean {
+    return process.env.NODE_ENV === "test";
+  }
 }

@@ -34,23 +34,6 @@ describe("Simple File Token Cache", () => {
     writeFileSpy.mockRestore();
   });
 
-  it("Create .azure default directory if it doesn't exist", () => {
-    mockFs();
-    const mockMkDir = jest.fn((path) => {
-      return
-    });
-    const mockHomedir = jest.fn(() => {
-      return ""
-    });
-    fs.mkdirSync = mockMkDir;
-    os.homedir = mockHomedir;
-    new SimpleFileTokenCache();
-
-    expect(mockMkDir).toBeCalled();
-    mockMkDir.mockRestore();
-    mockHomedir.mockRestore();
-  });
-
   it("Load file on creation if available", () => {
     fileContent.entries = MockFactory.createTestTokenCacheEntries();
 
