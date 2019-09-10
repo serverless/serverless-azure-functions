@@ -3,25 +3,12 @@ import { isAbsolute, join } from "path";
 import Serverless from "serverless";
 import { InvokeService } from "../../services/invokeService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import path from "path";
 
 export class AzureInvokePlugin extends AzureBasePlugin {
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
-    const path = this.options["path"];
-
-    if (path) {
-      const absolutePath = isAbsolute(path)
-        ? path
-        : join(this.serverless.config.servicePath, path);
-      this.log(this.serverless.config.servicePath);
-      this.log(path);
-
-      if (!fs.existsSync(absolutePath)) {
-        throw new Error("The file you provided does not exist.");
-      }
-      this.options["data"] = fs.readFileSync(absolutePath).toString();
-    }
 
     this.commands = {
       invoke: {
@@ -108,7 +95,6 @@ export class AzureInvokePlugin extends AzureBasePlugin {
 
   private async invoke(local: boolean = false) {
     const functionName = this.options["function"];
-    const data = this.options["data"];
     const method = this.options["method"] || "GET";
     if (!functionName) {
       this.log("Need to provide a name of function to invoke");
@@ -116,9 +102,21 @@ export class AzureInvokePlugin extends AzureBasePlugin {
     }
 
     const invokeService = new InvokeService(this.serverless, this.options, local);
-    const response = await invokeService.invoke(method, functionName, data);
+    const response = await invokeService.invoke(method, functionName, this.getData());
     if (response) {
       this.log(JSON.stringify(response.data));
     }
+  }
+
+  private getData() {
+    let dataPath = this.getOption("path");
+    if (dataPath) {
+      dataPath = (isAbsolute(dataPath)) ? dataPath : path.join(this.serverless.config.servicePath, dataPath);
+      if (!fs.existsSync(dataPath)) {
+        throw new Error("The file you provided does not exist.");
+      }
+      return fs.readFileSync(dataPath).toString();
+    }
+    return this.getOption("data");
   }
 }

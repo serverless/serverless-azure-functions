@@ -90,7 +90,19 @@ $ sls invoke -f <functionName>
 After deploying template function app, run
 
 ```bash
-$ sls invoke -f hello '{"name": "Azure"}'
+$ sls invoke -f hello -d '{"name": "Azure"}'
+```
+
+If you have a JSON object in a file, you could run
+
+```bash
+$ sls invoke -f hello -p data.json
+```
+
+If you have your service running locally (in another terminal), you can run:
+
+```bash
+$ sls invoke local -f hello -p data.json
 ```
 
 ### Roll Back Your Function App
