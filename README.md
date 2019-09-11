@@ -8,7 +8,7 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 ### Pre-requisites
 
-1. Node.js v6.5.0+ *(this is the runtime version supported by Azure Functions)*
+1. Node.js 8.x or 10.x *(this is the runtime version supported by Azure Functions)*
 2. Serverless CLI `v1.9.0+`. You can run `npm i -g serverless` if you don't already have it.
 3. An Azure account. If you don't already have one, you can sign up for a [free trial](https://azure.microsoft.com/en-us/free/) that includes $200 of free credit.
 
@@ -182,7 +182,7 @@ The getting started walkthrough illustrates the interactive login experience, wh
 3. Generate Service Principal for Azure Subscription
     ```bash
     # Create SP with unique name
-    $ az ad sp create-for-rbac --name <name>
+    $ az ad sp create-for-rbac --name <my-unique-name>
     ```
     This will yield something like:
     ```json
@@ -194,11 +194,11 @@ The getting started walkthrough illustrates the interactive login experience, wh
       "tenant": "<tenantId>"
     }
     ```
-4. Set environment variables
+4. Set environment variables **with values from above service principal**
 
     **Bash**
     ```bash
-    $ export AZURE_SUBSCRIPTION_ID='<subscriptionId>'
+    $ export AZURE_SUBSCRIPTION_ID='<subscriptionId (see above, step 2)>'
     $ export AZURE_TENANT_ID='<tenantId>'
     $ export AZURE_CLIENT_ID='<servicePrincipalId>'
     $ export AZURE_CLIENT_SECRET='<password>'
@@ -206,9 +206,9 @@ The getting started walkthrough illustrates the interactive login experience, wh
 
     **Powershell**
     ```powershell
-    $env:AZURE_SUBSCRIPTION_ID='<subscriptionId>'
+    $env:AZURE_SUBSCRIPTION_ID='<subscriptionId (see above, step 2)>'
     $env:AZURE_TENANT_ID='<tenantId>'
-    $env:AZURE_CLIENT_ID='<servicePrincipalName>'
+    $env:AZURE_CLIENT_ID='<servicePrincipalId>'
     $env:AZURE_CLIENT_SECRET='<password>'
     ```
 
