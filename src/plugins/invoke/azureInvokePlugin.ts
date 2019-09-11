@@ -1,9 +1,8 @@
 import fs from "fs";
-import { isAbsolute } from "path";
+import path, { isAbsolute } from "path";
 import Serverless from "serverless";
 import { InvokeService } from "../../services/invokeService";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import path from "path";
 
 export class AzureInvokePlugin extends AzureBasePlugin {
 

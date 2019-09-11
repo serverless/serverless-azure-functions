@@ -352,7 +352,7 @@ describe("Arm Service", () => {
       };
       deployment.parameters.param1.value = "3"
       const { code, message, details } = previousDeploymentError;
-      let errorPattern = [
+      const errorPattern = [
         code,
         message,
         details[0].code,
@@ -412,7 +412,6 @@ describe("Arm Service", () => {
         template: MockFactory.createTestArmTemplate()
       };
       deployment.parameters.param1.value = "3"
-
       await expect(service.deployTemplate(deployment))
         .rejects
         .toThrowError(originalError);
