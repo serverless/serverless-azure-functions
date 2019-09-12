@@ -363,7 +363,7 @@ describe("Arm Service", () => {
       await expect(service.deployTemplate(deployment))
         .rejects
         .toThrowError(
-          new RegExp(`.*${errorPattern}.*`,"s")
+          new RegExp(`.*${errorPattern}.*`, "s")
         );
     });
 
@@ -401,39 +401,18 @@ describe("Arm Service", () => {
       expect(call[1]).toMatch(expectedDeploymentNameRegex);
       expect(call[2]).toEqual(expectedDeployment);
     });
-    
+
     it("Throws original error when there has not been a previous deployment", async () => {
       const originalError = new Error("original error message");
       Deployments.prototype.createOrUpdate = jest.fn(() => Promise.reject(originalError));
-      const previousDeploymentError: DeploymentExtendedError = {
-        code: "DeploymentFailed",
-        message: "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-debug for usage details.",
-        details: [
-          {
-            code: "ServiceAlreadyExists",
-            message: "Api service already exists: abc-123-apim"
-          },
-          {
-            code: "StorageAccountAlreadyTaken",
-            message: "The storage account named ABC123 is already taken."
-          }
-        ]
-      }
       ResourceService.prototype.getPreviousDeployment = jest.fn(() => Promise.resolve(undefined)) as any;
+
       const deployment: ArmDeployment = {
         parameters: MockFactory.createTestParameters(),
         template: MockFactory.createTestArmTemplate()
       };
       deployment.parameters.param1.value = "3"
-      const { code, message, details } = previousDeploymentError;
-      let errorPattern = [
-        code,
-        message,
-        details[0].code,
-        details[0].message,
-        details[1].code,
-        details[1].message
-      ].join(".*")
+
       await expect(service.deployTemplate(deployment))
         .rejects
         .toThrowError(originalError);
