@@ -457,6 +457,76 @@ describe("APIM Service", () => {
         }
       );
     });
+
+    it("uses GET as default HTTP method with inferred APIM operation", async () => {
+      const functions = MockFactory.createTestSlsFunctionConfig();
+      functions.hello.events.forEach((event) => delete event["x-azure-settings"].methods);
+      functions.goodbye.events.forEach((event) => delete event["x-azure-settings"].methods);
+      Object.assign(serverless.service, { functions });
+
+      let apimResource: ApiManagementServiceResource = {
+        name: apimConfig.name,
+        location: "West US",
+        gatewayUrl: "https://you.url.com",
+        publisherEmail: "someone@example.com",
+        publisherName: "Someone",
+        sku: {
+          capacity: 1,
+          name: "Consumption",
+        },
+      };
+
+      ApiManagementService.prototype.get =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiManagementServiceGetResponse>(apimResource, 200));
+      Api.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+      Backend.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+      Property.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiOperation.prototype.createOrUpdate =
+        jest.fn((resourceGroup, serviceName, apiName, operationName, operationContract) => {
+          const response = MockFactory.createTestArmSdkResponse<ApiOperationCreateOrUpdateResponse>(operationContract, 201);
+          return Promise.resolve(response);
+        });
+
+      const apimService = new ApimService(serverless);
+      await apimService.deploy();
+
+      expect(ApiOperation.prototype.createOrUpdate).toBeCalledTimes(2)
+      expect(ApiOperation.prototype.createOrUpdate).toBeCalledWith(
+        resourceGroupName,
+        serviceName,
+        apiName,
+        "hello",
+        {
+          displayName: "hello",
+          name: "hello",
+          description: "",
+          method: "get",
+          urlTemplate: "hello",
+          templateParameters: [],
+          responses: [],
+        }
+      );
+      expect(ApiOperation.prototype.createOrUpdate).toBeCalledWith(
+        resourceGroupName,
+        serviceName,
+        apiName,
+        "goodbye",
+        {
+          displayName: "goodbye",
+          name: "goodbye",
+          description: "",
+          method: "get",
+          urlTemplate: "goodbye",
+          templateParameters: [],
+          responses: [],
+        }
+      );
+    });
   });
 
   describe("Deploying Functions", () => {

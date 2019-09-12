@@ -15,7 +15,7 @@ import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
 import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig } from "../models/serverless";
 import configConstants from "../config";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
@@ -328,14 +328,14 @@ export class MockFactory {
     };
   }
 
-  public static createTestFunctionMetadata(name: string) {
+  public static createTestFunctionMetadata(name: string): ServerlessAzureFunctionConfig {
     return {
       "handler": `${name}.handler`,
       "events": MockFactory.createTestFunctionEvents(),
     }
   }
 
-  public static createTestFunctionEvents() {
+  public static createTestFunctionEvents(): ServerlessAzureFunctionBindingConfig[] {
     return [
       {
         "http": true,
