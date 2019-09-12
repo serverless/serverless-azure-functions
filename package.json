@@ -17,7 +17,9 @@
     "compile": "tsc",
     "prebuild": "shx rm -rf lib/ && npm run test",
     "build": "npm run compile",
-    "generate:spn": "bash ./scripts/generate-service-principal.sh"
+    "generate:spn": "bash ./scripts/generate-service-principal.sh",
+    "generate:changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "generate:changelog-condensed": "npm run generate:changelog && node ./scripts/condenseChangelog.js"
   },
   "repository": {
     "git": "https://github.com/serverless/serverless-azure-functions"
@@ -77,6 +79,7 @@
     "axios-mock-adapter": "^1.16.0",
     "babel-jest": "^24.8.0",
     "babel-preset-react-app": "^9.0.0",
+    "conventional-changelog-cli": "^2.0.23",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
