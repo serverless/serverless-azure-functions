@@ -144,7 +144,7 @@ export class ApimService extends BaseService {
 
     const httpConfig = httpEvent["x-azure-settings"];
 
-    // Default to GET method by default
+    // Set to GET method by default
     if (!httpConfig.methods) {
       httpConfig.methods = ["GET"];
     }
