@@ -145,6 +145,7 @@ export interface ServerlessExtraAzureSettingsConfig {
   route?: string;
   name?: string;
   authLevel?: string;
+  methods?: string[];
 }
 
 export interface ServerlessCommand {

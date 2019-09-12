@@ -1,11 +1,4 @@
-export interface FunctionEvent {
-  http?: boolean;
-  "x-azure-settings"?: {
-    authLevel?: string;
-    direction?: string;
-    name?: string;
-  };
-}
+import { ServerlessAzureFunctionBindingConfig } from "./serverless";
 
 export interface ServicePrincipalEnvVariables {
   AZURE_SUBSCRIPTION_ID: string;
@@ -16,7 +9,7 @@ export interface ServicePrincipalEnvVariables {
 
 export interface FunctionMetadata {
   handler: string;
-  events: FunctionEvent[];
+  events: ServerlessAzureFunctionBindingConfig[];
 }
 
 export interface DeploymentExtendedError {
