@@ -116,7 +116,7 @@ export class ApimService extends BaseService {
       return null;
     }
 
-    this.log("-> Deploying API Operations");
+    this.log(`-> Deploying API Operations: ${this.apimConfig.name}`);
 
     const deployApiTasks = this.serverless.service
       .getAllFunctions()
@@ -144,12 +144,17 @@ export class ApimService extends BaseService {
 
     const httpConfig = httpEvent["x-azure-settings"];
 
+    // Set to GET method by default
+    if (!httpConfig.methods) {
+      httpConfig.methods = ["GET"];
+    }
+
     // Infer APIM operation configuration from HTTP event if not already set
     if (!functionConfig.apim) {
       const operations = httpConfig.methods.map((method) => {
         return {
-          name: functionConfig.name,
-          displayName: functionConfig.name,
+          name: `${method}-${functionConfig.name}`,
+          displayName: `${functionConfig.name} (${method})`,
           urlTemplate: httpConfig.route || functionConfig.name,
           method: method,
           templateParameters: this.getTemplateParameters(httpConfig.route)
@@ -214,7 +219,7 @@ export class ApimService extends BaseService {
       });
 
       if (this.apimConfig.cors) {
-        this.log("-> Deploying CORS policy");
+        this.log(`-> Deploying CORS policy: ${apiContract.name}`);
 
         await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
           format: "rawxml",
@@ -273,6 +278,7 @@ export class ApimService extends BaseService {
       const client = new ApiManagementClient(this.credentials, this.subscriptionId);
 
       const operationConfig: OperationContract = {
+        name: operation.name || functionName,
         displayName: operation.displayName || functionName,
         description: operation.description || "",
         method: operation.method,
@@ -284,17 +290,17 @@ export class ApimService extends BaseService {
       // Ensure a single path seperator in the operation path
       const operationPath = `/${api.path}/${operationConfig.urlTemplate}`.replace(/\/+/g, "/");
       const operationUrl = `${resource.gatewayUrl}${operationPath}`;
-      this.log(`--> ${functionName}: [${operationConfig.method.toUpperCase()}] ${operationUrl}`);
+      this.log(`--> ${operationConfig.name}: [${operationConfig.method.toUpperCase()}] ${operationUrl}`);
 
       const result = await client.apiOperation.createOrUpdate(
         this.resourceGroup,
         this.apimConfig.name,
         api.name,
-        functionName,
+        operationConfig.name,
         operationConfig,
       );
 
-      await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, api.name, functionName, {
+      await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, api.name, operationConfig.name, {
         format: "rawxml",
         value: this.createApiOperationXmlPolicy(backend.name),
       });

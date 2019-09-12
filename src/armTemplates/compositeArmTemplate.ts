@@ -1,4 +1,4 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParameters, ArmParamType } from "../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParameters } from "../models/armTemplates";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { AzureNamingService } from "../services/namingService";
 import { Guard } from "../shared/guard";

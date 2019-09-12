@@ -387,6 +387,11 @@ describe("APIM Service", () => {
 
     it("infers APIM operation configuration from HTTP binding", async () => {
       const functions = MockFactory.createTestSlsFunctionConfig();
+
+      // Remove APIM operation configuration
+      delete functions.hello.apim;
+      delete functions.goodbye.apim;
+
       Object.assign(serverless.service, { functions });
 
       let apimResource: ApiManagementServiceResource = {
@@ -425,11 +430,12 @@ describe("APIM Service", () => {
         resourceGroupName,
         serviceName,
         apiName,
-        "hello",
+        "GET-hello",
         {
-          displayName: "hello",
+          name: "GET-hello",
+          displayName: "hello (GET)",
           description: "",
-          method: "get",
+          method: "GET",
           urlTemplate: "hello",
           templateParameters: [],
           responses: [],
@@ -439,11 +445,12 @@ describe("APIM Service", () => {
         resourceGroupName,
         serviceName,
         apiName,
-        "goodbye",
+        "GET-goodbye",
         {
-          displayName: "goodbye",
+          name: "GET-goodbye",
+          displayName: "goodbye (GET)",
           description: "",
-          method: "get",
+          method: "GET",
           urlTemplate: "goodbye",
           templateParameters: [],
           responses: [],

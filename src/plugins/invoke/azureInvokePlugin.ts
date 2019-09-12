@@ -1,5 +1,5 @@
 import fs from "fs";
-import { isAbsolute, join } from "path";
+import { isAbsolute } from "path";
 import Serverless from "serverless";
 import { InvokeService } from "../../services/invokeService";
 import { AzureBasePlugin } from "../azureBasePlugin";
