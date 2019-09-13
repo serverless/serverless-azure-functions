@@ -23,20 +23,6 @@ echo "Checked out branch: ${SOURCE_BRANCH_NAME}"
 NPM_VERSION=`npm version ${NPM_RELEASE_TYPE} -m "release: Update ${NPM_RELEASE_TYPE} version to %s ***NO_CI***"`
 echo "Set NPM version to: ${NPM_VERSION}"
 
-npm ci
-
-# Generate full changelog (shows beta releases) on a prerelease
-if [ ${NPM_RELEASE_TYPE} = "prerelease" ]
-then
-  npm run generate:changelog
-else
-  # Generate condensed changelog on any other kind of release
-  npm run generate:changelog-condensed
-fi
-
-git commit -a --amend --no-edit
-echo "Generated changelog in CHANGELOG.md"
-
 SHA=`git rev-parse HEAD`
 
 git remote add authOrigin https://${GITHUB_ACCESS_TOKEN}@github.com/serverless/serverless-azure-functions.git
