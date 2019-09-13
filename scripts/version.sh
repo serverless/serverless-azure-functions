@@ -23,6 +23,8 @@ echo "Checked out branch: ${SOURCE_BRANCH_NAME}"
 NPM_VERSION=`npm version ${NPM_RELEASE_TYPE} -m "release: Update ${NPM_RELEASE_TYPE} version to %s ***NO_CI***"`
 echo "Set NPM version to: ${NPM_VERSION}"
 
+npm ci
+
 # Generate full changelog (shows beta releases) on a prerelease
 if [ ${NPM_RELEASE_TYPE} = "prerelease" ]
 then
