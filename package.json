@@ -18,7 +18,7 @@
     "prebuild": "shx rm -rf lib/ && npm run test",
     "build": "npm run compile",
     "generate:spn": "bash ./scripts/generate-service-principal.sh",
-    "generate:changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
+    "generate:changelog": "./node_modules/.bin/conventional-changelog -p angular -i CHANGELOG.md -s -r 0",
     "generate:changelog-condensed": "npm run generate:changelog && node ./scripts/condenseChangelog.js"
   },
   "repository": {
