@@ -3,7 +3,7 @@ const fs = require("fs");
 /** Original changelog string content */
 const changelog = fs.readFileSync("CHANGELOG.md").toString();
 /** Base URL for repository */
-const baseUrl = "https://github.com/serverless/serverless-azure-function/";
+const baseUrl = "https://github.com/serverless/serverless-azure-functions/";
 /** URL for viewing releases */
 const releaseUrl = baseUrl + "releases/tag/"
 /** URL for comparing releases, commits or branches */
@@ -59,7 +59,7 @@ function generateMarkdown(condensed) {
     /** Markdown header and link to comparison between previous release */
     const header = (i < versions.length - 1)
       ?
-      `# [${releaseVersion}](${compareUrl}v${releaseVersion}...v${versions[i+1]})`
+      `# [${releaseVersion}](${compareUrl}v${versions[i+1]}...v${releaseVersion})`
       :
       `# [${releaseVersion}](${releaseUrl}v${releaseVersion})`
     result += header;
