@@ -20,7 +20,7 @@ describe("Invoke Service ", () => {
   const functionName = "hello";
   const urlPOST = `http://${app.defaultHostName}/api/${functionName}`;
   const urlGET = `http://${app.defaultHostName}/api/${functionName}?name%3D${testData}`;
-  const localUrl = `http://localhost:${configConstants.defaultLocalPort}/api/${functionName}`
+  const localUrl = `http://localhost:${configConstants.defaults.localPort}/api/${functionName}`
   let masterKey: string;
   let sls = MockFactory.createTestServerless();
   let options = {
