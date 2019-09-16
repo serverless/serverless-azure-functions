@@ -2,24 +2,28 @@ import path from "path";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { FunctionMetadata, Utils } from "./utils";
+import { ConfigService } from "../services/configService";
 
 describe("utils", () => {
   let sls: Serverless;
 
   beforeEach(() => {
-    const slsConfig = {
-      service: "my test service",
-      provider: "azure",
-      functions: MockFactory.createTestSlsFunctionConfig(),
-    };
-
     sls = MockFactory.createTestServerless();
-    Object.assign(sls.service, slsConfig);
+    const configService = new ConfigService(sls, {} as any);
+    Object.assign(sls.service, configService.getConfig());
   });
 
   it("resolves handler when handler code is outside function folders", () => {
-    sls.service["functions"].hello.handler = "src/handlers/hello.handler";
-    MockFactory.updateService(sls);
+    const handler = "src/handlers/hello.handler";
+    const slsFunctions = sls.service["functions"];
+    MockFactory.updateService(sls, {
+      ...slsFunctions,
+      hello: {
+        ...slsFunctions.hello,
+        handler
+      }
+    });
+    expect(sls.service["functions"].hello.handler).toEqual(handler);
 
     const functions = sls.service.getAllFunctions();
     const metadata = Utils.getFunctionMetaData(functions[0], sls);
@@ -34,8 +38,15 @@ describe("utils", () => {
   });
 
   it("resolves handler when code is in function folder", () => {
-    sls.service["functions"].hello.handler = "hello/index.handler";
-    MockFactory.updateService(sls);
+    const handler = "hello/index.handler";
+    const slsFunctions = sls.service["functions"];
+    MockFactory.updateService(sls, {
+      ...slsFunctions,
+      hello: {
+        ...slsFunctions.hello,
+        handler
+      }
+    });
 
     const functions = sls.service.getAllFunctions();
     const metadata = Utils.getFunctionMetaData(functions[0], sls);
@@ -50,8 +61,15 @@ describe("utils", () => {
   });
 
   it("resolves handler when code is at the project root", () => {
-    sls.service["functions"].hello.handler = "hello.handler";
-    MockFactory.updateService(sls);
+    const handler = "hello.handler";
+    const slsFunctions = sls.service["functions"];
+    MockFactory.updateService(sls, {
+      ...slsFunctions,
+      hello: {
+        ...slsFunctions.hello,
+        handler
+      }
+    });
 
     const functions = sls.service.getAllFunctions();
     const metadata = Utils.getFunctionMetaData(functions[0], sls);

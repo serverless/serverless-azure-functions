@@ -15,7 +15,7 @@ export class OfflineService extends BaseService {
       IsEncrypted: false,
       Values: {
         AzureWebJobsStorage: "UseDevelopmentStorage=true",
-        FUNCTIONS_WORKER_RUNTIME: "node"
+        FUNCTIONS_WORKER_RUNTIME: this.config.provider.functionRuntime.language
       }
     }),
   }

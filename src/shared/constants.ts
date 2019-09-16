@@ -28,5 +28,9 @@ export const constants = {
     appId: "appId",
     packageTimestamp: "packageTimestamp",
     azureCredentials: "azureCredentials",
+  },
+  runtimeExtensions: {
+    node: ".js",
+    python: ".py"
   }
 }
