@@ -47,6 +47,7 @@ describe("Base Service", () => {
     provider: {
       resourceGroup: "My-Resource-Group",
       deploymentName: "My-Deployment",
+      runtime: "nodejs10.x"
     },
   };
 

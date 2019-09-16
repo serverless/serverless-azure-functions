@@ -1,16 +1,16 @@
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
+import deepEqual from "deep-equal";
 import fs from "fs";
 import jsonpath from "jsonpath";
 import path from "path";
 import Serverless from "serverless";
-import { ArmDeployment, ArmResourceTemplateGenerator, ArmTemplateType, ArmResourceTemplate, ArmParameters } from "../models/armTemplates";
-import { ArmTemplateConfig, ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
+import { ArmDeployment, ArmParameters, ArmResourceTemplate, ArmResourceTemplateGenerator, ArmTemplateType } from "../models/armTemplates";
+import { DeploymentExtendedError } from "../models/azureProvider";
+import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { BaseService } from "./baseService";
-import { ResourceService } from "./resourceService"
-import { DeploymentExtendedError } from "../models/azureProvider";
-import deepEqual from "deep-equal";
+import { ResourceService } from "./resourceService";
 
 export class ArmService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -39,13 +39,12 @@ export class ArmService extends BaseService {
       throw new Error(`Unable to find template with name ${type} `);
     }
 
-    const azureConfig: ServerlessAzureConfig = this.serverless.service as any;
     const mergedTemplate = template.getTemplate();
-    let parameters = template.getParameters(azureConfig);
+    let parameters = template.getParameters(this.config);
 
     if (this.config.provider.apim) {
       const apimTemplate = apimResource.getTemplate();
-      const apimParameters = apimResource.getParameters(azureConfig);
+      const apimParameters = apimResource.getParameters(this.config);
 
       mergedTemplate.parameters = {
         ...mergedTemplate.parameters,

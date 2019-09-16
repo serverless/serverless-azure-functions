@@ -53,6 +53,22 @@ export interface ServerlessAzureProvider {
   armTemplate?: ArmTemplateConfig;
   keyVaultConfig?: AzureKeyVaultConfig;
   runtime: string;
+  functionRuntime?: FunctionRuntime;
+}
+
+export enum FunctionAppOS {
+  WINDOWS = "windows",
+  LINUX = "linux"
+}
+
+export interface FunctionRuntime {
+  language: SupportedRuntimeLanguage;
+  version: string;
+}
+
+export enum SupportedRuntimeLanguage {
+  PYTHON = "python",
+  NODE = "node"
 }
 
 /**

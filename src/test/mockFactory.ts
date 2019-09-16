@@ -67,8 +67,14 @@ export class MockFactory {
     } as any as Service;
   }
 
-  public static updateService(sls: Serverless) {
-    sls.service = MockFactory.createTestService(sls.service["functions"]);
+  public static updateService(serverless: Serverless, functions) {
+    Object.assign(serverless.service, {
+      ...serverless.service,
+      getAllFunctions: jest.fn(() => Object.keys(functions)),
+      getFunction: jest.fn((name: string) => functions[name]),
+      getAllFunctionsNames: jest.fn(() => Object.keys(functions)),
+      functions
+    });
   }
 
   public static createTestServerlessOptions(options?: any): Serverless.Options {

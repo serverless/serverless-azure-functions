@@ -4,3 +4,5 @@ node_modules/
 /coverage/
 .env*
 .idea/
+
+.vscode/launch.json
