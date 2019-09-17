@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import configConstants from "../config";
-import { ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureFunctionConfig, DeploymentConfig } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Utils } from "../shared/utils";
 import { AzureNamingService, AzureNamingServiceOptions } from "./namingService";
@@ -68,6 +68,10 @@ export class ConfigService {
       this.config,
       (this.config.provider.deployment.rollback) ? `t${this.getTimestamp()}` : null
     )
+  }
+
+  public getDeploymentConfig(): DeploymentConfig {
+    return this.config.provider.deployment;
   }
 
   /**
@@ -167,6 +171,11 @@ export class ConfigService {
     config.provider.resourceGroup = (
       this.getOption("resourceGroup", config.provider.resourceGroup)
     ) || AzureNamingService.getResourceName(options);
+
+    // Get property from `runFromBlobUrl` for backwards compatability
+    if (deployment && deployment.external === undefined && deployment["runFromBlobUrl"] !== undefined) {
+      deployment.external = deployment["runFromBlobUrl"];
+    }
 
     config.provider.deployment = {
       ...configConstants.deploymentConfig,

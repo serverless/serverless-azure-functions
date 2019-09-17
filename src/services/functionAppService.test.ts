@@ -17,15 +17,18 @@ jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService"
 import configConstants from "../config";
 import { Utils } from "../shared/utils";
+import { ServerlessAzureConfig } from "../models/serverless";
 
 describe("Function App Service", () => {
   const app = MockFactory.createTestSite();
   const slsService = MockFactory.createTestService();
+  const config: ServerlessAzureConfig = slsService as any;
   const variables = MockFactory.createTestVariables();
   const provider = MockFactory.createTestAzureServiceProvider();
 
   const masterKey = "masterKey";
   const authKey = "authKey";
+  const subscriptionId = "subId";
   const syncTriggersMessage = "sync triggers success";
   const deleteFunctionMessage = "delete function success";
   const functions = MockFactory.createTestSlsFunctionConfig();
@@ -34,8 +37,13 @@ describe("Function App Service", () => {
   const baseUrl = "https://management.azure.com"
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
-  const syncTriggersUrl = `${baseUrl}${app.id}/syncfunctiontriggers?api-version=2016-08-01`;
+  const syncTriggersUrl = `${baseUrl}/subscriptions/${subscriptionId}` +
+    `/resourceGroups/${config.provider.resourceGroup}/providers/Microsoft.Web/sites/${app.name}` +
+    "/syncfunctiontriggers?api-version=2016-08-01";
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
+  const appSettingsUrl = `${baseUrl}/subscriptions/${subscriptionId}/resourceGroups/${config.provider.resourceGroup}` +
+    `/providers/Microsoft.Web/sites/${app.name}/config/appsettings?api-version=2016-08-01`;
+
 
   const appSettings = {
     setting1: "value1",
@@ -53,6 +61,8 @@ describe("Function App Service", () => {
     axiosMock.onGet(authKeyUrl).reply(200, authKey);
     // Sync Triggers
     axiosMock.onPost(syncTriggersUrl).reply(200, syncTriggersMessage);
+    // Update app settings
+    axiosMock.onPut(appSettingsUrl).reply(200, appSettings)
     // List Functions
     axiosMock.onGet(listFunctionsUrl).reply(200, { value: functionsResponse });
     // Delete Function
@@ -86,12 +96,16 @@ describe("Function App Service", () => {
   });
 
   function createService(sls?: Serverless, options?: Serverless.Options) {
+    options = options || MockFactory.createTestServerlessOptions();
     return new FunctionAppService(
       sls || MockFactory.createTestServerless({
         service: slsService,
         variables: variables,
       }),
-      options || MockFactory.createTestServerlessOptions()
+      {
+        ...options,
+        subscriptionId: subscriptionId
+      } as any
     )
   }
 
@@ -119,7 +133,6 @@ describe("Function App Service", () => {
     const service = createService();
     const result = await service.getMasterKey();
     expect(result).toEqual(masterKey);
-
   });
 
   it("deletes function", async () => {
@@ -131,7 +144,7 @@ describe("Function App Service", () => {
 
   it("syncs triggers", async () => {
     const service = createService();
-    const result = await service.syncTriggers(app);
+    const result = await service.syncTriggers(app, {});
     expect(result.data).toEqual(syncTriggersMessage)
   });
 
@@ -344,29 +357,45 @@ describe("Function App Service", () => {
   it("adds a new function app setting", async () => {
     const service = createService();
     const settingName = "TEST_SETTING";
-    const settingValue = "TEST_VALUE"
+    const settingValue = "TEST_VALUE";
+    const sendApiSpy = jest.spyOn(FunctionAppService.prototype as any, "sendApiRequest")
     await service.updateFunctionAppSetting(app, settingName, settingValue);
-    expect(WebSiteManagementClient.prototype.webApps.updateApplicationSettings).toBeCalledWith(
-      "myResourceGroup",
-      "Test",
+
+    const expectedAppSettings = {
+      ...appSettings,
+      TEST_SETTING: settingValue
+    }
+
+    expect(sendApiSpy).toBeCalledWith(
+      "PUT",
+      appSettingsUrl,
       {
-        ...appSettings,
-        TEST_SETTING: settingValue
+        data: {
+          properties: expectedAppSettings
+        }
       }
-    )
+    );
   });
 
   it("updates an existing function app setting", async () => {
     const service = createService();
     const settingName = "setting1";
     const settingValue = "TEST_VALUE"
+    const sendApiSpy = jest.spyOn(FunctionAppService.prototype as any, "sendApiRequest")
+
     await service.updateFunctionAppSetting(app, settingName, settingValue);
-    expect(WebSiteManagementClient.prototype.webApps.updateApplicationSettings).toBeCalledWith(
-      "myResourceGroup",
-      "Test",
+
+    const expectedAppSettings = {
+      setting1: settingValue,
+      setting2: appSettings.setting2
+    }
+    expect(sendApiSpy).toBeCalledWith(
+      "PUT",
+      appSettingsUrl,
       {
-        setting1: settingValue,
-        setting2: appSettings.setting2
+        data: {
+          properties: expectedAppSettings
+        }
       }
     );
   });
@@ -376,7 +405,11 @@ describe("Function App Service", () => {
     const sasUrl = "sasUrl"
 
     beforeEach(() => {
-      FunctionAppService.prototype.updateFunctionAppSetting = jest.fn();
+      FunctionAppService.prototype.updateFunctionAppSetting = jest.fn(() => {
+        return {
+          properties: appSettings
+        }
+      });
       AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => Promise.resolve(sasUrl));
     });
 
@@ -387,7 +420,7 @@ describe("Function App Service", () => {
     it("updates WEBSITE_RUN_FROM_PACKAGE with SAS URL if configured to run from blob", async () => {
       const newSlsService = MockFactory.createTestService();
       newSlsService.provider["deployment"] = {
-        runFromBlobUrl: true,
+        external: true,
       }
       const service = createService(MockFactory.createTestServerless({
         service: newSlsService,
@@ -404,7 +437,7 @@ describe("Function App Service", () => {
     it("does not upload directly to function app if configured to run from blob", async () => {
       const newSlsService = MockFactory.createTestService();
       newSlsService.provider["deployment"] = {
-        runFromBlobUrl: true,
+        external: true,
       }
       const service = createService(MockFactory.createTestServerless({
         service: newSlsService,
@@ -424,7 +457,7 @@ describe("Function App Service", () => {
     it("uploads directly to function app if not configured to run from blob", async () => {
       const newSlsService = MockFactory.createTestService();
       newSlsService.provider["deployment"] = {
-        runFromBlobUrl: false,
+        external: false,
       }
       const sls = MockFactory.createTestServerless({
         service: newSlsService,
