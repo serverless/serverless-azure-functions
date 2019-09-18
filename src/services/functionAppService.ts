@@ -5,7 +5,7 @@ import path from "path";
 import Serverless from "serverless";
 import { FunctionAppResource } from "../armTemplates/resources/functionApp";
 import { ArmDeployment } from "../models/armTemplates";
-import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
+import { FunctionHttpBindingConfig } from "../models/functionApp";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
@@ -269,7 +269,7 @@ export class FunctionAppService extends BaseService {
     );
   }
 
-  public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
+  public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionHttpBindingConfig {
     const httpTrigger = functionConfig.config.bindings.find((binding) => {
       return binding.type === "httpTrigger";
     });

@@ -94,7 +94,7 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {
+        functionJson: {
           bindings: [
             MockFactory.createTestHttpBinding("out"),
             MockFactory.createTestHttpBinding("in"),
@@ -140,7 +140,7 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/eventhubHandler",
       params: {
-        functionsJson: {
+        functionJson: {
           bindings: [
             MockFactory.createTestEventHubBinding("in"),
           ]
@@ -180,7 +180,7 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {
+        functionJson: {
           bindings: [
             MockFactory.createTestHttpBinding("out"),
             MockFactory.createTestHttpBinding("in"),

@@ -17,54 +17,6 @@ describe("utils", () => {
     Object.assign(sls.service, slsConfig);
   });
 
-  it("resolves handler when handler code is outside function folders", () => {
-    sls.service["functions"].hello.handler = "src/handlers/hello.handler";
-    MockFactory.updateService(sls);
-
-    const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
-
-    const expectedMetadata: FunctionMetadata = {
-      entryPoint: "handler",
-      handlerPath: path.normalize("../src/handlers/hello.js"),
-      params: expect.anything(),
-    };
-
-    expect(metadata).toEqual(expectedMetadata);
-  });
-
-  it("resolves handler when code is in function folder", () => {
-    sls.service["functions"].hello.handler = "hello/index.handler";
-    MockFactory.updateService(sls);
-
-    const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
-
-    const expectedMetadata: FunctionMetadata = {
-      entryPoint: "handler",
-      handlerPath: path.normalize("index.js"),
-      params: expect.anything(),
-    };
-
-    expect(metadata).toEqual(expectedMetadata);
-  });
-
-  it("resolves handler when code is at the project root", () => {
-    sls.service["functions"].hello.handler = "hello.handler";
-    MockFactory.updateService(sls);
-
-    const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
-
-    const expectedMetadata: FunctionMetadata = {
-      entryPoint: "handler",
-      handlerPath: path.normalize("../hello.js"),
-      params: expect.anything(),
-    };
-
-    expect(metadata).toEqual(expectedMetadata);
-  });
-
   it("should create string from substrings", () => {
     expect(
       Utils.appendSubstrings(
@@ -86,24 +38,6 @@ describe("utils", () => {
 
     expect(Utils.getTimestampFromName("myDeployment-t")).toEqual(null);
     expect(Utils.getTimestampFromName("")).toEqual(null);
-  });
-
-  it("should get incoming binding", () => {
-    expect(Utils.getIncomingBindingConfig(MockFactory.createTestAzureFunctionConfig())).toEqual(
-      {
-        http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("in"),
-      }
-    );
-  });
-
-  it("should get outgoing binding", () => {
-    expect(Utils.getOutgoingBinding(MockFactory.createTestAzureFunctionConfig())).toEqual(
-      {
-        http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("out"),
-      }
-    );
   });
 
   describe("runWithRetry", () => {

@@ -133,11 +133,13 @@ export interface ServerlessAzureConfig {
 export interface ServerlessAzureFunctionConfig {
   handler: string;
   events: ServerlessAzureFunctionBindingConfig[];
+  scriptFile?: string;
 }
 
 export interface ServerlessAzureFunctionBindingConfig {
   http?: boolean;
   "x-azure-settings": ServerlessExtraAzureSettingsConfig;
+  queue?: string;
 }
 
 export interface ServerlessExtraAzureSettingsConfig {

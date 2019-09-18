@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import rimraf from "rimraf";
 import Serverless from "serverless";
-import { FunctionMetadata, Utils } from "../shared/utils";
 import { BaseService } from "./baseService";
+import { FunctionBuildService, FunctionMetadata } from "./functionBuildService";
 
 /**
  * Adds service packing support
@@ -25,9 +25,10 @@ export class PackageService extends BaseService {
    * Creates the function.json binding files required for the serverless service
    */
   public async createBindings(): Promise<void> {
+    const functionBuildService = new FunctionBuildService(this.serverless, this.options);
     const createEventsPromises = this.serverless.service.getAllFunctions()
       .map((functionName) => {
-        const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
+        const metaData = functionBuildService.getFunctionMetaData(functionName);
         return this.createBinding(functionName, metaData);
       });
 
@@ -90,11 +91,13 @@ export class PackageService extends BaseService {
    * Creates the function.json for for the specified function
    */
   public createBinding(functionName: string, functionMetadata: FunctionMetadata) {
-    const functionJSON = functionMetadata.params.functionsJson;
+    const functionJSON = functionMetadata.params.functionJson;
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
     const functionObject = this.slsFunctions()[functionName];
-    const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
+    const functionBuildService = new FunctionBuildService(this.serverless, this.options);
+
+    const bindingAzureSettings = functionBuildService.getIncomingBindingConfig(functionObject)["x-azure-settings"];
 
     if (bindingAzureSettings.route) {
       // Find incoming binding within functionJSON and set the route
