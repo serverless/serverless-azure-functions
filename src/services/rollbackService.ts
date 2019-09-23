@@ -41,7 +41,7 @@ export class RollbackService extends BaseService {
       return;
     }
     // Name of artifact in blob storage
-    const artifactName = this.getArtifactName(deployment.name);
+    const artifactName = this.configService.getArtifactName(deployment.name);
     // Redeploy resource group (includes SAS token URL if running from blob URL)
     await this.redeployDeployment(deployment, artifactName);
   }
@@ -56,12 +56,12 @@ export class RollbackService extends BaseService {
     const armDeployment = await this.convertToArmDeployment(deployment);
     // Initialize blob service for either creating SAS token or downloading artifact to uplod to function app
     await this.blobService.initialize();
-    if (this.deploymentConfig.runFromBlobUrl) {
+    if (this.config.provider.deployment.runFromBlobUrl) {
       // Set functionRunFromPackage param to SAS URL of blob
       armDeployment.parameters.functionAppRunFromPackage = {
         type: ArmParamType.String,
         value: await this.blobService.generateBlobSasTokenUrl(
-          this.deploymentConfig.container,
+          this.config.provider.deployment.container,
           artifactName
         )
       }
@@ -71,7 +71,7 @@ export class RollbackService extends BaseService {
      * Cannot use an `else` statement just because deploying the artifact
      * depends on `deployTemplate` already being called
      */
-    if (!this.deploymentConfig.runFromBlobUrl) {
+    if (!this.config.provider.deployment.runFromBlobUrl) {
       const artifactPath = await this.downloadArtifact(artifactName);
       await this.redeployArtifact(artifactPath);
     }
@@ -132,7 +132,7 @@ export class RollbackService extends BaseService {
   private async downloadArtifact(artifactName: string): Promise<string> {
     const artifactPath = path.join(this.serverless.config.servicePath, ".serverless", artifactName)
     await this.blobService.downloadBinary(
-      this.deploymentConfig.container,
+      this.config.provider.deployment.container,
       artifactName,
       artifactPath
     );

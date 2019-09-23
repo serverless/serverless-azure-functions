@@ -35,6 +35,8 @@ export interface ServerlessAzureProvider {
   stage: string;
   name: string;
   subscriptionId?: string;
+  tenantId?: string;
+  appId?: string;
   environment?: {
     [key: string]: any;
   };

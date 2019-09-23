@@ -34,7 +34,13 @@ export const configConstants = {
   scmVfsPath: "/api/vfs/site/wwwroot/",
   scmZipDeployApiPath: "/api/zipdeploy",
   resourceGroupHashLength: 6,
-  defaultLocalPort: 7071,
+  defaults: {
+    awsRegion: "us-east-1",
+    region: "westus",
+    stage: "dev",
+    prefix: "sls",
+    localPort: 7071,
+  },
 };
 
 export default configConstants;

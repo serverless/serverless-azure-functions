@@ -21,4 +21,12 @@ export const constants = {
   queueName: "queueName",
   xAzureSettings: "x-azure-settings",
   entryPoint: "entryPoint",
+  variableKeys: {
+    config: "serverlessAzureConfig",
+    subscriptionId: "subscriptionId",
+    tenantId: "tenantId",
+    appId: "appId",
+    packageTimestamp: "packageTimestamp",
+    azureCredentials: "azureCredentials",
+  }
 }

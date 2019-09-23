@@ -44,7 +44,7 @@ export class FuncService extends BaseService {
   }
 
   private exists(functionName: string) {
-    return (functionName in this.slsFunctions());
+    return (functionName in this.configService.getFunctionConfig());
   }
 
   private createHandler(functionName: string) {
@@ -52,26 +52,26 @@ export class FuncService extends BaseService {
   }
 
   private addToServerlessYml(functionName: string) {
-    const functions = this.slsFunctions();
+    const functions = this.configService.getFunctionConfig();
     functions[functionName] = this.getFunctionSlsObject(functionName)
     this.updateFunctionsYml(functions)
   }
 
   private removeFromServerlessYml(functionName: string) {
-    const functions = this.slsFunctions();
+    const functions = this.configService.getFunctionConfig();
     delete functions[functionName];
     this.updateFunctionsYml(functions)
   }
 
   private getServerlessYml() {
-    return this.serverless.utils.readFileSync(this.slsConfigFile());
+    return this.serverless.utils.readFileSync(this.configService.getConfigFile());
   }
 
   private updateFunctionsYml(functionYml: any) {
     const serverlessYml = this.getServerlessYml();
     serverlessYml["functions"] = functionYml;
     this.serverless.utils.writeFileSync(
-      this.slsConfigFile(),
+      this.configService.getConfigFile(),
       yaml.dump(serverlessYml)
     );
   }

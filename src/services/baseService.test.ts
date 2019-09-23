@@ -1,10 +1,9 @@
 import fs from "fs";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { ServerlessAzureOptions, ServerlessAzureConfig } from "../models/serverless";
+import { ServerlessAzureOptions } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
-import { AzureNamingService } from "./namingService";
 
 jest.mock("axios", () => jest.fn());
 import axios from "axios";
@@ -40,11 +39,9 @@ class MockService extends BaseService {
 describe("Base Service", () => {
   let service: MockService;
   let serverless: Serverless;
-  const serviceName = "my-custom-service"
-  const loginResultSubscriptionId = "ABC123";
-  const envVarSubscriptionId = "env var sub id";
 
-
+  const serviceName = "my-custom-service";
+  
   const slsConfig = {
     service: serviceName,
     provider: {
@@ -59,7 +56,6 @@ describe("Base Service", () => {
 
   function createMockService(sls: Serverless, options?: Serverless.Options) {
     sls.variables["azureCredentials"] = MockFactory.createTestAzureCredentials();
-    sls.variables["subscriptionId"] = loginResultSubscriptionId;
     Object.assign(sls.service, slsConfig);
 
     return new MockService(sls, options);
@@ -87,65 +83,7 @@ describe("Base Service", () => {
     expect(mockService).not.toBeNull();
     expect(serverless.service.provider.region).toEqual("westus");
     expect(serverless.service.provider.stage).toEqual("dev");
-  });
-
-  it("returns region and stage based on CLI options", () => {
-    const cliOptions = {
-      stage: "prod",
-      region: "eastus2",
-    };
-    const mockService = new MockService(serverless, cliOptions);
-
-    expect(mockService.getRegion()).toEqual(cliOptions.region);
-    expect(mockService.getStage()).toEqual(cliOptions.stage);
-  });
-
-  it("use the resource group name specified in CLI", () => {
-    const resourceGroupName = "cliResourceGroupName"
-    const cliOptions = {
-      stage: "prod",
-      region: "eastus2",
-      resourceGroup: resourceGroupName
-    };
-
-    const mockService = new MockService(serverless, cliOptions);
-    const actualResourceGroupName = mockService.getResourceGroupName();
-
-    expect(actualResourceGroupName).toEqual(resourceGroupName);
-  });
-
-  it("use the resource group name from sls yaml config", () => {
-    const mockService = new MockService(serverless);
-    const actualResourceGroupName = mockService.getResourceGroupName();
-
-    expect(actualResourceGroupName).toEqual(serverless.service.provider["resourceGroup"]);
-  });
-
-  it("Generates resource group from convention when NOT defined in sls yaml", () => {
-    serverless.service.provider["resourceGroup"] = null;
-    const mockService = new MockService(serverless);
-    const actualResourceGroupName = mockService.getResourceGroupName();
-    const expectedRegion = AzureNamingService.createShortAzureRegionName(mockService.getRegion());
-    const expectedStage = AzureNamingService.createShortStageName(mockService.getStage());
-    const expectedResourceGroupName = `sls-${expectedRegion}-${expectedStage}-${serverless.service["service"]}-rg`;
-
-    expect(actualResourceGroupName).toEqual(expectedResourceGroupName);
-  });
-
-  it("set default prefix when one is not defined in yaml config", () => {
-    const mockService = new MockService(serverless);
-    const actualPrefix = mockService.getPrefix();
-    expect(actualPrefix).toEqual("sls");
-  });
-
-  it("use the prefix defined in sls yaml config", () => {
-    const expectedPrefix = "testPrefix"
-    serverless.service.provider["prefix"] = expectedPrefix;
-    const mockService = new MockService(serverless);
-    const actualPrefix = mockService.getPrefix();
-
-    expect(actualPrefix).toEqual(expectedPrefix);
-  });
+  });  
 
   it("Fails if credentials have not been set in serverless config", () => {
     serverless.variables["azureCredentials"] = null;
@@ -201,92 +139,5 @@ describe("Base Service", () => {
     expect(request).toBeCalledWith(requestOptions, expect.anything());
 
     readStreamSpy.mockRestore();
-  });
-
-  it("sets stage name from CLI", async () => {
-    const stage = "test";
-    delete (serverless.service as any as ServerlessAzureConfig).provider.resourceGroup;
-    expect(serverless.service.provider.stage).not.toEqual(stage);
-    service = new MockService(serverless, { stage } as any);
-    expect(service.getStage()).toEqual(stage);
-    expect(service.getResourceGroupName()).toEqual(`sls-wus-${stage}-${serviceName}-rg`);
-  });
-
-  it("sets region name from CLI", async () => {
-    const region = "East US";
-    delete (serverless.service as any as ServerlessAzureConfig).provider.resourceGroup;
-    expect(serverless.service.provider.region).not.toEqual(region);
-    service = new MockService(serverless, { region } as any);
-    expect(service.getRegion()).toEqual(region);
-    expect(service.getResourceGroupName()).toEqual(`sls-eus-dev-${serviceName}-rg`);
-  });
-
-  it("sets prefix from CLI", async () => {
-    const prefix = "prefix";
-    delete (serverless.service as any as ServerlessAzureConfig).provider.resourceGroup;
-    expect(serverless.service.provider["prefix"]).not.toEqual(prefix);
-    service = new MockService(serverless, { prefix } as any);
-    expect(service.getPrefix()).toEqual(prefix);
-    expect(service.getResourceGroupName()).toEqual(`${prefix}-wus-dev-${serviceName}-rg`);
-  });
-
-  it("sets resource group from CLI", async () => {
-    const resourceGroup = "resourceGroup";
-    delete (serverless.service as any as ServerlessAzureConfig).provider.resourceGroup;
-    expect(serverless.service.provider["resourceGroup"]).not.toEqual(resourceGroup);
-    service = new MockService(serverless, { resourceGroup } as any);
-    expect(service.getResourceGroupName()).toEqual(resourceGroup);
-  });
-
-  const cliSubscriptionId = "cli sub id";
-  const configSubscriptionId = "config sub id";
-
-  it("sets subscription ID from CLI", async () => {
-    process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
-    serverless.service.provider["subscriptionId"] = configSubscriptionId;
-    serverless.variables["subscriptionId"] = loginResultSubscriptionId
-    service = new MockService(serverless, { subscriptionId: cliSubscriptionId } as any);
-    expect(service.getSubscriptionId()).toEqual(cliSubscriptionId);
-    expect(serverless.service.provider["subscriptionId"]).toEqual(cliSubscriptionId);
-  });
-
-  it("sets subscription ID from environment variable", async () => {
-    process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
-    serverless.service.provider["subscriptionId"] = configSubscriptionId;
-    serverless.variables["subscriptionId"] = loginResultSubscriptionId
-    service = new MockService(serverless, { } as any);
-    expect(service.getSubscriptionId()).toEqual(envVarSubscriptionId);
-    expect(serverless.service.provider["subscriptionId"]).toEqual(envVarSubscriptionId);
-  });
-
-  it("sets subscription ID from config", async () => {
-    delete process.env.AZURE_SUBSCRIPTION_ID;
-    serverless.service.provider["subscriptionId"] = configSubscriptionId;
-    serverless.variables["subscriptionId"] = loginResultSubscriptionId
-    service = new MockService(serverless, { } as any);
-    expect(service.getSubscriptionId()).toEqual(configSubscriptionId);
-    expect(serverless.service.provider["subscriptionId"]).toEqual(configSubscriptionId);
-  });
-
-  it("sets subscription ID from login result", async () => {
-    delete process.env.AZURE_SUBSCRIPTION_ID;
-    serverless.variables["subscriptionId"] = loginResultSubscriptionId
-    service = new MockService(serverless, { } as any);
-    expect(service.getSubscriptionId()).toEqual(loginResultSubscriptionId);
-    expect(serverless.service.provider["subscriptionId"]).toEqual(loginResultSubscriptionId);
-  });
-
-  it("sets region to be value from location property if region not set", () => {
-    const slsService = MockFactory.createTestService();
-    delete slsService.provider.region;
-    const location = "East US";
-    slsService.provider["location"] = location;
-
-    const sls = MockFactory.createTestServerless({
-      service: slsService
-    });
-
-    service = new MockService(sls, {} as any);
-    expect(service.getRegion()).toEqual(location);
   });
 });

@@ -70,8 +70,8 @@ describe("APIM Service", () => {
     const apimConfigName = MockFactory.createTestApimConfig(true);
     (serverless.service.provider as any).apim = apimConfigName;
 
-    const service = new ApimService(serverless);
-    const expectedRegionName = AzureNamingService.createShortAzureRegionName(service.getRegion());
+    new ApimService(serverless);
+    const expectedRegionName = AzureNamingService.createShortAzureRegionName(serverless.service.provider.region);
     expect(apimConfigName.name.includes(expectedRegionName)).toBeTruthy();
   });
 
