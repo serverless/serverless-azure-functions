@@ -24,7 +24,7 @@ export class InvokeService extends BaseService {
    */
   public async invoke(method: string, functionName: string, data?: any){
 
-    const functionObject = this.slsFunctions()[functionName];
+    const functionObject = this.configService.getFunctionConfig()[functionName];
     /* accesses the admin key */
     if (!functionObject) {
       this.serverless.cli.log(`Function ${functionName} does not exist`);
@@ -63,7 +63,7 @@ export class InvokeService extends BaseService {
   }
 
   private getLocalHost() {
-    return `http://localhost:${this.getOption("port", configConstants.defaultLocalPort)}`
+    return `http://localhost:${this.getOption("port", configConstants.defaults.localPort)}`
   }
 
   private getConfiguredFunctionRoute(functionName: string) {
