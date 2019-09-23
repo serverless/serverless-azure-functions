@@ -22,7 +22,6 @@ describe("Config Service", () => {
   });
 
   describe("Configurable Variables", () => {
-
     it("returns default values if not specified", () => {
       const service = new ConfigService(serverless, {} as any);
       const { prefix, region, stage } = configConstants.defaults;
@@ -122,7 +121,6 @@ describe("Config Service", () => {
   });
   
   describe("Service Principal Configuration", () => {
-    
     const cliSubscriptionId = "cli sub id";
     const envVarSubscriptionId = "env var sub id";
     const configSubscriptionId = "config sub id";
