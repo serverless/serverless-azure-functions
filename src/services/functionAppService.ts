@@ -155,12 +155,12 @@ export class FunctionAppService extends BaseService {
 
     const functionZipFile = this.getFunctionZipFile();
 
-    if (this.deploymentConfig.runFromBlobUrl) {
+    if (this.config.provider.deployment.runFromBlobUrl) {
       this.log("Updating function app setting to run from external package...");
       await this.uploadZippedArtifactToBlobStorage(functionZipFile);
 
       const sasUrl = await this.blobService.generateBlobSasTokenUrl(
-        this.deploymentConfig.container,
+        this.config.provider.deployment.container,
         this.artifactName
       );
 
@@ -250,6 +250,10 @@ export class FunctionAppService extends BaseService {
     return functionZipFile;
   }
 
+  public getDeploymentName(): string {
+    return this.configService.getDeploymentName();
+  }
+
   public async updateFunctionAppSetting(functionApp: Site, setting: string, value: string) {
     const { properties } = await this.webClient.webApps.listApplicationSettings(this.resourceGroup, functionApp.name);
     properties[setting] = value;
@@ -261,10 +265,10 @@ export class FunctionAppService extends BaseService {
    */
   private async uploadZippedArtifactToBlobStorage(functionZipFile: string): Promise<void> {
     await this.blobService.initialize();
-    await this.blobService.createContainerIfNotExists(this.deploymentConfig.container);
+    await this.blobService.createContainerIfNotExists(this.config.provider.deployment.container);
     await this.blobService.uploadFile(
       functionZipFile,
-      this.deploymentConfig.container,
+      this.config.provider.deployment.container,
       this.artifactName,
     );
   }

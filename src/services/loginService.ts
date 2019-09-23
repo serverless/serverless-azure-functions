@@ -27,7 +27,7 @@ export class AzureLoginService extends BaseService {
    * @param options Options for different authentication methods
    */
   public async login(options?: AzureTokenCredentialsOptions | InteractiveLoginOptions): Promise<AuthResponse> {
-    const subscriptionId = this.getSubscriptionId();
+    const subscriptionId = this.configService.getSubscriptionId();
     const clientId = process.env.AZURE_CLIENT_ID;
     const secret = process.env.AZURE_CLIENT_SECRET;
     const tenantId = process.env.AZURE_TENANT_ID;
@@ -56,5 +56,9 @@ export class AzureLoginService extends BaseService {
 
   public async servicePrincipalLogin(clientId: string, secret: string, tenantId: string, options: AzureTokenCredentialsOptions): Promise<AuthResponse> {
     return await loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId, options);
+  }
+
+  public getSubscriptionId() {
+    return this.configService.getSubscriptionId();
   }
 }

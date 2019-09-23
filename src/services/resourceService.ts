@@ -58,7 +58,7 @@ export class ResourceService extends BaseService {
   public async listDeployments(): Promise<string> {
     const deployments = await this.getDeployments()
     if (!deployments || deployments.length === 0) {
-      this.log(`No deployments found for resource group '${this.getResourceGroupName()}'`);
+      this.log(`No deployments found for resource group '${this.configService.getResourceGroupName()}'`);
       return;
     }
     let stringDeployments = "\n\nDeployments";
@@ -89,7 +89,7 @@ export class ResourceService extends BaseService {
     this.log(`Creating resource group: ${this.resourceGroup}`);
 
     return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, {
-      location: AzureNamingService.getNormalizedRegionName(this.getRegion()),
+      location: AzureNamingService.getNormalizedRegionName(this.configService.getRegion()),
     });
   }
 
