@@ -1,7 +1,13 @@
 import configConstants from "../../config";
-import { ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator } from "../../models/armTemplates";
+import { ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+
+interface StorageAccountParams extends DefaultArmParams {
+  storageAccountName: ArmParameter;
+  storageAccountSkuName: ArmParameter;
+  storageAccountSkuTier: ArmParameter;
+}
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -17,27 +23,28 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
   }
 
   public getTemplate(): ArmResourceTemplate {
+    const parameters: StorageAccountParams = {
+      storageAccountName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      location: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      storageAccountSkuName: {
+        defaultValue: "Standard_LRS",
+        type: ArmParamType.String
+      },
+      storageAccountSkuTier: {
+        defaultValue: "Standard",
+        type: ArmParamType.String
+      }
+    }
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
-      "parameters": {
-        "storageAccountName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "location": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "storageAccountSkuName": {
-          "defaultValue": "Standard_LRS",
-          "type": ArmParamType.String
-        },
-        "storageAccoutSkuTier": {
-          "defaultValue": "Standard",
-          "type": ArmParamType.String
-        }
-      },
+      parameters,
       variables: {},
       resources: [
         {
@@ -51,7 +58,7 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
           },
           sku: {
             name: "[parameters('storageAccountSkuName')]",
-            tier: "[parameters('storageAccoutSkuTier')]"
+            tier: "[parameters('storageAccountSkuTier')]"
           }
         }
       ]
@@ -64,16 +71,18 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
       ...config.provider.storageAccount
     };
 
-    return {
+    const params: StorageAccountParams = {
       storageAccountName: {
         value: StorageAccountResource.getResourceName(config),
       },
       storageAccountSkuName: {
         value: resourceConfig.sku.name,
       },
-      storageAccoutSkuTier: {
+      storageAccountSkuTier: {
         value: resourceConfig.sku.tier,
       }
     };
+
+    return params as unknown as ArmParameters;
   }
 }

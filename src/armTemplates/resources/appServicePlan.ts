@@ -1,6 +1,12 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+
+interface AppServicePlanParams extends DefaultArmParams {
+  appServicePlanName: ArmParameter;
+  appServicePlanSkuName: ArmParameter;
+  appServicePlanSkuTier: ArmParameter;
+}
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -13,27 +19,29 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   }
 
   public getTemplate(): ArmResourceTemplate {
+    const parameters: AppServicePlanParams = {
+      appServicePlanName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      location: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      appServicePlanSkuName: {
+        defaultValue: "EP1",
+        type: ArmParamType.String
+      },
+      appServicePlanSkuTier: {
+        defaultValue: "ElasticPremium",
+        type: ArmParamType.String
+      }
+    };
+
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
-      "parameters": {
-        "appServicePlanName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "location": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "appServicePlanSkuName": {
-          "defaultValue": "EP1",
-          "type": ArmParamType.String
-        },
-        "appServicePlanSkuTier": {
-          "defaultValue": "ElasticPremium",
-          "type": ArmParamType.String
-        }
-      },
+      parameters,
       "variables": {},
       "resources": [
         {
@@ -63,7 +71,7 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       ...config.provider.storageAccount,
     };
 
-    return {
+    const params: AppServicePlanParams = {
       appServicePlanName: {
         value: AppServicePlanResource.getResourceName(config),
       },
@@ -74,5 +82,7 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
         value: resourceConfig.sku.tier,
       }
     }
+
+    return params as unknown as ArmParameters;
   }
 }

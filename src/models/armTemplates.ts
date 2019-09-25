@@ -45,11 +45,17 @@ export interface ArmResourceTemplate {
 }
 
 export interface ArmParameters {
-  [key: string]: {
-    type?: ArmParamType;
-    value?: string | number;
-    defaultValue?: string | number;
-  };
+  [key: string]: ArmParameter;
+}
+
+export interface ArmParameter {
+  type?: ArmParamType;
+  value?: string | number;
+  defaultValue?: string | number;
+}
+
+export interface DefaultArmParams {
+  location?: ArmParameter;
 }
 
 /**

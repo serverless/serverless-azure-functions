@@ -1,10 +1,20 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 //Runtime versions found at " https://<sitename>.scm.azurewebsites.net/api/diagnostics/runtime".
 import runtimeVersionsJson from "../../services/runtimeVersions.json";
 import semver from "semver";
+
+interface FunctionAppParams extends DefaultArmParams {
+  functionAppName: ArmParameter;
+  functionAppNodeVersion: ArmParameter;
+  functionAppWorkerRuntime: ArmParameter;
+  functionAppExtensionVersion: ArmParameter;
+  appInsightsName?: ArmParameter;
+  functionAppRunFromPackage?: ArmParameter;
+  storageAccountName?: ArmParameter;
+}
 
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -20,43 +30,44 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   }
 
   public getTemplate(): ArmResourceTemplate {
+    const parameters: FunctionAppParams = {
+      functionAppRunFromPackage: {
+        defaultValue: "1",
+        type: ArmParamType.String
+      },
+      functionAppName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      functionAppNodeVersion: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      functionAppWorkerRuntime: {
+        defaultValue: "node",
+        type: ArmParamType.String
+      },
+      functionAppExtensionVersion: {
+        defaultValue: "~2",
+        type: ArmParamType.String
+      },
+      storageAccountName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      appInsightsName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      location: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+    }
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
-      "parameters": {
-        "functionAppRunFromPackage": {
-          "defaultValue": "1",
-          "type": ArmParamType.String
-        },
-        "functionAppName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "functionAppNodeVersion": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "functionAppWorkerRuntime": {
-          "defaultValue": "node",
-          "type": ArmParamType.String
-        },
-        "functionAppExtensionVersion": {
-          "defaultValue": "~2",
-          "type": ArmParamType.String
-        },
-        "storageAccountName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "appInsightsName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "location": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-      },
+      parameters,
       "variables": {},
       "resources": [
         {
@@ -124,7 +135,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       nodeVersion: this.getRuntimeVersion(config.provider.runtime)
     };
 
-    return {
+    const params: FunctionAppParams = {
       functionAppName: {
         value: FunctionAppResource.getResourceName(config),
       },
@@ -138,6 +149,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         value: resourceConfig.extensionVersion,
       }
     };
+
+    return params as unknown as ArmParameters;
   }
 
   private getRuntimeVersion(runtime: string): string {
