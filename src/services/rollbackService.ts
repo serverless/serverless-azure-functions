@@ -56,7 +56,7 @@ export class RollbackService extends BaseService {
     const armDeployment = await this.convertToArmDeployment(deployment);
     // Initialize blob service for either creating SAS token or downloading artifact to uplod to function app
     await this.blobService.initialize();
-    if (this.config.provider.deployment.runFromBlobUrl) {
+    if (this.config.provider.deployment.external) {
       // Set functionRunFromPackage param to SAS URL of blob
       armDeployment.parameters.functionAppRunFromPackage = {
         type: ArmParamType.String,
@@ -71,7 +71,7 @@ export class RollbackService extends BaseService {
      * Cannot use an `else` statement just because deploying the artifact
      * depends on `deployTemplate` already being called
      */
-    if (!this.config.provider.deployment.runFromBlobUrl) {
+    if (!this.config.provider.deployment.external) {
       const artifactPath = await this.downloadArtifact(artifactName);
       await this.redeployArtifact(artifactPath);
     }

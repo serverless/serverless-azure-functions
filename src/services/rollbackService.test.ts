@@ -117,7 +117,7 @@ describe("Rollback Service", () => {
   it("should deploy function app with SAS URL", async () => {
     const sls = MockFactory.createTestServerless();
     const deploymentConfig: DeploymentConfig = {
-      runFromBlobUrl: true
+      external: true
     }
     sls.service.provider["deployment"] = deploymentConfig;
     const service = createService(sls);

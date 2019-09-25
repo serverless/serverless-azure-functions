@@ -1,7 +1,7 @@
 import { ConfigService } from "./configService";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
-import { ServerlessAzureConfig } from "../models/serverless";
+import { ServerlessAzureConfig, DeploymentConfig } from "../models/serverless";
 import configConstants from "../config";
 import { AzureNamingService } from "./namingService";
 
@@ -117,6 +117,38 @@ describe("Config Service", () => {
       const expectedStage = AzureNamingService.createShortStageName(service.getStage());
       const expectedResourceGroupName = `sls-${expectedRegion}-${expectedStage}-${serverless.service["service"]}-rg`;
       expect(actualResourceGroupName).toEqual(expectedResourceGroupName);
+    });
+
+    it("Gets deployment config from SLS yaml using external property", () => {
+      const deploymentConfig1: DeploymentConfig = {
+        external: true
+      }
+      serverless.service.provider["deployment"] = deploymentConfig1
+      const service1 = new ConfigService(serverless, { } as any);
+      expect(service1.getDeploymentConfig().external).toBe(true);
+
+      const deploymentConfig2: DeploymentConfig = {
+        external: false
+      }
+      serverless.service.provider["deployment"] = deploymentConfig2
+      const service2 = new ConfigService(serverless, { } as any);
+      expect(service2.getDeploymentConfig().external).toBe(false);
+    });
+
+    it("Gets deployment config from SLS yaml using runFromBlobUrl property", () => {
+      const deploymentConfig1 = {
+        runFromBlobUrl: true
+      }
+      serverless.service.provider["deployment"] = deploymentConfig1
+      const service1 = new ConfigService(serverless, { } as any);
+      expect(service1.getDeploymentConfig().external).toBe(true);
+
+      const deploymentConfig2 = {
+        runFromBlobUrl: false
+      }
+      serverless.service.provider["deployment"] = deploymentConfig2
+      const service2 = new ConfigService(serverless, { } as any);
+      expect(service2.getDeploymentConfig().external).toBe(false);
     });
   });
   
