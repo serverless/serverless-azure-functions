@@ -3,7 +3,7 @@ export const configConstants = {
   deploymentConfig: {
     container: "deployment-artifacts",
     rollback: true,
-    runFromBlobUrl: false,
+    external: false,
   },
   naming: {
     maxLength: {

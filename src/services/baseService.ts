@@ -96,7 +96,7 @@ export abstract class BaseService {
       fs.createReadStream(filePath).pipe(
         request(requestOptions, (err, response) => {
           if (err) {
-            this.log(JSON.stringify(err, null, 4));
+            this.log(this.stringify(err));
             return reject(err);
           }
           resolve(response);
@@ -114,7 +114,11 @@ export abstract class BaseService {
   }  
 
   protected prettyPrint(object: any) {
-    this.log(JSON.stringify(object, null, 2));
+    this.log(this.stringify(object));
+  }
+
+  protected stringify(object: any): string {
+    return JSON.stringify(object, null, 2);
   }
 
   protected getOption(key: string, defaultValue?: any) {
