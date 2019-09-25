@@ -1,7 +1,15 @@
 import { ApiManagementConfig } from "../../models/apiManagement";
-import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, ArmParameter, DefaultArmParams } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+
+interface ApimArmParams extends DefaultArmParams {
+  apiManagementName: ArmParameter;
+  apimSkuName: ArmParameter;
+  apimSkuCapacity: ArmParameter;
+  apimPublisherEmail: ArmParameter;
+  apimPublisherName: ArmParameter;
+}
 
 export class ApimResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -14,35 +22,36 @@ export class ApimResource implements ArmResourceTemplateGenerator {
   }
 
   public getTemplate(): ArmResourceTemplate {
+    const parameters: ApimArmParams = {
+      apiManagementName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      location: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      apimSkuName: {
+        defaultValue: "Consumption",
+        type: ArmParamType.String
+      },
+      apimSkuCapacity: {
+        defaultValue: 0,
+        type: ArmParamType.Int
+      },
+      apimPublisherEmail: {
+        defaultValue: "contact@contoso.com",
+        type: ArmParamType.String
+      },
+      apimPublisherName: {
+        defaultValue: "Contoso",
+        type: ArmParamType.String
+      }
+    }
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
-      "parameters": {
-        "apiManagementName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "location": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "apimSkuName": {
-          "defaultValue": "Consumption",
-          "type": ArmParamType.String
-        },
-        "apimCapacity": {
-          "defaultValue": 0,
-          "type": ArmParamType.Int
-        },
-        "apimPublisherEmail": {
-          "defaultValue": "contact@contoso.com",
-          "type": ArmParamType.String
-        },
-        "apimPublisherName": {
-          "defaultValue": "Contoso",
-          "type": ArmParamType.String
-        }
-      },
+      parameters,
       "variables": {},
       "resources": [
         {
@@ -72,7 +81,7 @@ export class ApimResource implements ArmResourceTemplateGenerator {
       ...config.provider.apim,
     };
 
-    return {
+    const parameters: ApimArmParams =  {
       apiManagementName: {
         value: ApimResource.getResourceName(config),
       },
@@ -89,5 +98,7 @@ export class ApimResource implements ArmResourceTemplateGenerator {
         value: apimConfig.publisherName,
       }
     };
+
+    return parameters as unknown as ArmParameters;
   }
 }

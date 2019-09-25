@@ -1,6 +1,11 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+
+export interface HostingEnvironmentParams extends DefaultArmParams {
+  hostingEnvironmentName?: ArmParameter;
+  virtualNetworkName?: ArmParameter;
+}
 
 export class HostingEnvironmentResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -13,23 +18,25 @@ export class HostingEnvironmentResource implements ArmResourceTemplateGenerator 
   }
 
   public getTemplate(): ArmResourceTemplate {
+    const parameters: HostingEnvironmentParams = {
+      hostingEnvironmentName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      virtualNetworkName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      location: {
+        defaultValue: "",
+        type: ArmParamType.String
+      }
+    }
+
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
-      "parameters": {
-        "hostingEnvironmentName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "virtualNetworkName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "location": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        }
-      },
+      parameters,
       "variables": {},
       "resources": [
         {
@@ -66,11 +73,13 @@ export class HostingEnvironmentResource implements ArmResourceTemplateGenerator 
   }
 
   public getParameters(config: ServerlessAzureConfig): ArmParameters {
-    return {
+    const params: HostingEnvironmentParams = {
       hostingEnvironmentName: {
         value: HostingEnvironmentResource.getResourceName(config)
       }
     }
+
+    return params as unknown as ArmParameters;
   }
 }
 
