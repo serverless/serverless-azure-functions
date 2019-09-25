@@ -231,7 +231,7 @@ export class ApimService extends BaseService {
       return api;
     } catch (e) {
       this.log("Error creating APIM API");
-      this.log(JSON.stringify(e.body, null, 4));
+      this.log(this.stringify(e.body));
       throw e;
     }
   }
@@ -264,7 +264,7 @@ export class ApimService extends BaseService {
       });
     } catch (e) {
       this.log("Error creating APIM Backend");
-      this.log(JSON.stringify(e.body, null, 4));
+      this.log(this.stringify(e.body));
       throw e;
     }
   }
@@ -309,7 +309,7 @@ export class ApimService extends BaseService {
       return result;
     } catch (e) {
       this.log(`Error deploying API operation ${functionName}`);
-      this.log(JSON.stringify(e.body, null, 4));
+      this.log(this.stringify(e.body));
       throw e;
     }
   }
@@ -331,7 +331,7 @@ export class ApimService extends BaseService {
       });
     } catch (e) {
       this.log("Error creating APIM Property");
-      this.log(JSON.stringify(e.body, null, 4));
+      this.log(this.stringify(e.body));
       throw e;
     }
   }

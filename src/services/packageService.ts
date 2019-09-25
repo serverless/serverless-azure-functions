@@ -109,7 +109,7 @@ export class PackageService extends BaseService {
       fs.mkdirSync(functionDirPath);
     }
 
-    const functionJsonString = JSON.stringify(functionJSON, null, 2);
+    const functionJsonString = this.stringify(functionJSON);
     fs.writeFileSync(path.join(functionDirPath, "function.json"), functionJsonString);
 
     return Promise.resolve();

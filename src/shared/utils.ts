@@ -114,10 +114,6 @@ export class Utils {
     return metaData;
   }
 
-  public static prettyPrint(json) {
-    return JSON.stringify(json, null, 2);
-  }
-
   /**
    * Take the first `substringSize` characters from each string and return as one string
    * @param substringSize Size of substring to take from beginning of each string
