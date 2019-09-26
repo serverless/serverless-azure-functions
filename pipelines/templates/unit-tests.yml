@@ -1,5 +1,5 @@
 jobs:
-  - job: "${{parameters.os}}_${{ parameters.name }}"
+  - job: "${{ parameters.name }}"
     strategy:
       matrix:
         linux:
@@ -8,7 +8,7 @@ jobs:
           imageName: "macos-10.13"
         windows:
           imageName: "vs2017-win2016"
-    displayName: "$(imageName)_${{ parameters.nodeVersion }}"
+    displayName: "${{ parameters.name }}"
     pool:
       vmImage: $(imageName)
 
