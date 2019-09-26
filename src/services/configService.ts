@@ -202,8 +202,8 @@ export class ConfigService {
   private getRuntime(runtime: string): FunctionRuntime {
     Guard.null(runtime, "runtime", "Runtime version not specified in serverless.yml");
 
-    let versionMatch = runtime.match(/([0-9]+\.)+[0-9]*x?/);
-    let languageMatch = runtime.match(/nodejs|python/);
+    const versionMatch = runtime.match(/([0-9]+\.)+[0-9]*x?/);
+    const languageMatch = runtime.match(/nodejs|python/);
 
     let versionInput: string;
     let languageInput: string;
