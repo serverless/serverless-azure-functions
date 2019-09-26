@@ -1,44 +1,44 @@
 jobs:
-- job: "${{ parameters.os }}_${{ parameters.nodeVersion }}"
-  strategy:
-    matrix:
-      linux:
-        imageName: 'ubuntu-16.04'
-      mac:
-        imageName: 'macos-10.13'
-      windows:
-        imageName: 'vs2017-win2016'
-  displayName: "NodeJs_${{ parameters.nodeVersion }}"
-  pool:
-    vmImage: $(imageName)
+  - job: "${{ parameters.nodeVersion }}"
+    strategy:
+      matrix:
+        linux:
+          imageName: "ubuntu-16.04"
+        mac:
+          imageName: "macos-10.13"
+        windows:
+          imageName: "vs2017-win2016"
+    displayName: "$(imageName)_${{ parameters.nodeVersion }}"
+    pool:
+      vmImage: $(imageName)
 
-  steps:
-  - task: NodeTool@0
-    displayName: 'Use Node ${{ parameters.nodeVersion }}'
-    inputs:
-      versionSpec: ${{ parameters.nodeVersion }}.x
+    steps:
+      - task: NodeTool@0
+        displayName: "Use Node ${{ parameters.nodeVersion }}"
+        inputs:
+          versionSpec: ${{ parameters.nodeVersion }}
 
-  - bash: |
-      set -e
-      
-      npm ci
-      npm run compile
-      npm run test:coverage  # linting is run as part of pretest
-    displayName: 'Run tests'
+      - bash: |
+          set -e
 
-  - ${{ if eq(parameters.nodeVersion, '8') }}:
-    - bash: |
-        set -e
+          npm ci
+          npm run compile
+          npm run test:coverage  # linting is run as part of pretest
+        displayName: "Run tests"
 
-        token=$(CODECOV_TOKEN)
-        if [[ -z "${token}" ]]; then
-          echo "Need to set CODECOV_TOKEN"
-          exit 1
-        fi
+      - ${{ if eq(parameters.nodeVersion, '8.16.1') }}:
+          - bash: |
+              set -e
 
-        # https://docs.codecov.io/docs/about-the-codecov-bash-uploader
-        bash <(curl -s https://codecov.io/bash) -t ${token}
-      displayName: 'Upload code coverage report'
-      env:
-        CODECOV_TOKEN: $(CODECOV_TOKEN)
-      condition: eq(variables['imageName'], 'ubuntu-16.04')
+              token=$(CODECOV_TOKEN)
+              if [[ -z "${token}" ]]; then
+                echo "Need to set CODECOV_TOKEN"
+                exit 1
+              fi
+
+              # https://docs.codecov.io/docs/about-the-codecov-bash-uploader
+              bash <(curl -s https://codecov.io/bash) -t ${token}
+            displayName: "Upload code coverage report"
+            env:
+              CODECOV_TOKEN: $(CODECOV_TOKEN)
+            condition: eq(variables['imageName'], 'ubuntu-16.04')

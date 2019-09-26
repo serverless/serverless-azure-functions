@@ -12,8 +12,8 @@ variables:
 jobs:
   - template: templates/unit-tests.yml # path relative to this file
     parameters:
-      nodeVersion: 8.16.1
+      nodeVersion: "8.16.1"
 
   - template: templates/unit-tests.yml
     parameters:
-      nodeVersion: 10
+      nodeVersion: 10.x
