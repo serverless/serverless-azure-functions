@@ -1,5 +1,5 @@
 jobs:
-  - job: "${{ parameters.nodeVersion }}"
+  - job: "${{ parameters.name }}"
     strategy:
       matrix:
         linux:
