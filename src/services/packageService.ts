@@ -94,14 +94,18 @@ export class PackageService extends BaseService {
     functionJSON.entryPoint = functionMetadata.entryPoint;
     functionJSON.scriptFile = functionMetadata.handlerPath;
     const functionObject = this.configService.getFunctionConfig()[functionName];
-    const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
+    const incomingBinding = Utils.getIncomingBindingConfig(functionObject);
 
-    if (bindingAzureSettings.route) {
-      // Find incoming binding within functionJSON and set the route
-      const index = (functionJSON.bindings as any[])
-        .findIndex((binding) => (!binding.direction || binding.direction === "in"));
+    if (incomingBinding) {
+      const bindingAzureSettings = incomingBinding["x-azure-settings"];
 
-      functionJSON.bindings[index].route = bindingAzureSettings.route;
+      if (bindingAzureSettings && bindingAzureSettings.route) {
+        // Find incoming binding within functionJSON and set the route
+        const index = (functionJSON.bindings as any[])
+          .findIndex((binding) => (!binding.direction || binding.direction === "in"));
+
+        functionJSON.bindings[index].route = bindingAzureSettings.route;
+      }
     }
 
     const functionDirPath = path.join(this.serverless.config.servicePath, functionName);

@@ -48,7 +48,9 @@ export class Utils {
       bindingUserSettings = {};
       const azureSettings = events[eventsIndex][constants.xAzureSettings];
       let bindingTypeIndex = bindingTypes.indexOf(bindingType);
+
       const bindingUserSettingsMetaData = BindingUtils.getBindingUserSettingsMetaData(azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames);
+      console.log("bindingUserSettingsMetaData", bindingUserSettingsMetaData);
 
       bindingTypeIndex = bindingUserSettingsMetaData.index;
       bindingUserSettings = bindingUserSettingsMetaData.userSettings;
