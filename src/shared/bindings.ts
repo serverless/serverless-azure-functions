@@ -44,7 +44,6 @@ export class BindingUtils {
       if (directionIndex >= 0) {
         const key = Object.keys(azureSettings)[directionIndex];
         const displayName = `$${bindingType}${azureSettings[key]}_displayName`;
-        console.log("displayName", displayName);
 
         bindingDisplayNamesIndex = bindingDisplayNames.indexOf(displayName.toLowerCase());
         bindingUserSettings[constants.direction] = azureSettings[key];
