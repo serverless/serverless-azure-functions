@@ -1,6 +1,10 @@
-import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters } from "../../models/armTemplates";
+import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, ArmParameter, DefaultArmParams } from "../../models/armTemplates";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+
+interface AppInsightsParams extends DefaultArmParams {
+  appInsightsName: ArmParameter;
+}
 
 export class AppInsightsResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
@@ -13,19 +17,21 @@ export class AppInsightsResource implements ArmResourceTemplateGenerator {
   }
 
   public getTemplate(): ArmResourceTemplate {
+    const parameters: AppInsightsParams = {
+      appInsightsName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      location: {
+        defaultValue: "",
+        type: ArmParamType.String
+      }
+    }
+    
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
       "contentVersion": "1.0.0.0",
-      "parameters": {
-        "appInsightsName": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        },
-        "location": {
-          "defaultValue": "",
-          "type": ArmParamType.String
-        }
-      },
+      parameters,
       "variables": {},
       "resources": [
         {
@@ -44,10 +50,12 @@ export class AppInsightsResource implements ArmResourceTemplateGenerator {
   }
 
   public getParameters(config: ServerlessAzureConfig): ArmParameters {
-    return {
+    const params: AppInsightsParams = {
       appInsightsName: {
         value: AppInsightsResource.getResourceName(config),
       }
     };
+
+    return params as unknown as ArmParameters;
   }
 }
