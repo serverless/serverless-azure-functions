@@ -61,7 +61,7 @@ export class ApimResource implements ArmResourceTemplateGenerator {
           "location": "[parameters('location')]",
           "sku": {
             "name": "[parameters('apimSkuName')]",
-            "capacity": "[parameters('apimCapacity')]"
+            "capacity": "[parameters('apimSkuCapacity')]"
           },
           "properties": {
             "publisherEmail": "[parameters('apimPublisherEmail')]",
