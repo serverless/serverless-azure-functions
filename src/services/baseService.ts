@@ -4,11 +4,7 @@ import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
-import { 
-  ServerlessAzureConfig,
-  ServerlessAzureOptions,
-  ServerlessLogOptions 
-} from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureOptions, ServerlessLogOptions } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";

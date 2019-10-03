@@ -1,6 +1,6 @@
 import { relative } from "path";
 import Serverless from "serverless";
-import { ServerlessAzureFunctionConfig } from "../models/serverless";
+import { ServerlessAzureFunctionConfig, ServerlessAzureConfig } from "../models/serverless";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 
@@ -12,6 +12,7 @@ export interface FunctionMetadata {
 
 export class Utils {
   public static getFunctionMetaData(functionName: string, serverless: Serverless): FunctionMetadata {
+    const config: ServerlessAzureConfig = serverless.service as any;
     const bindings = [];
     let bindingSettingsNames = [];
     let bindingSettings = [];
@@ -84,7 +85,7 @@ export class Utils {
     functionsJson.bindings = bindings;
     params.functionsJson = functionsJson;
 
-    let { handlerPath, entryPoint } = Utils.getEntryPointAndHandlerPath(handler);
+    let { handlerPath, entryPoint } = Utils.getEntryPointAndHandlerPath(handler, config);
     if (functionObject["scriptFile"]) {
       handlerPath = functionObject["scriptFile"];
     }
@@ -96,22 +97,18 @@ export class Utils {
     };
   }
 
-  public static getEntryPointAndHandlerPath(handler: string) {
-    let handlerPath = "handler.js";
-    let entryPoint = handler;
+  public static getEntryPointAndHandlerPath(handler: string, config: ServerlessAzureConfig) {
     const handlerSplit = handler.split(".");
 
-    if (handlerSplit.length > 1) {
-      entryPoint = handlerSplit[handlerSplit.length - 1];
-      handlerPath = `${handler.substring(0, handler.lastIndexOf("."))}.js`;
-    }
+    const entryPoint = (handlerSplit.length > 1) ? handlerSplit[handlerSplit.length - 1] : undefined;
 
-    const metaData = {
-      entryPoint: entryPoint,
-      handlerPath: handlerPath
+    const handlerPath = ((handlerSplit.length > 1) ? handlerSplit[0] : handler) 
+      + constants.runtimeExtensions[config.provider.functionRuntime.language]
+
+    return {
+      entryPoint,
+      handlerPath
     };
-
-    return metaData;
   }
 
   /**
