@@ -7,11 +7,14 @@ import { ResourceService } from "./resourceService";
 jest.mock("@azure/arm-resources")
 
 describe("Resource Service", () => {
-  let deployments: DeploymentsListByResourceGroupResponse;
+  
+  /**
+   * List of deployments in ASCENDING order (oldest first)
+   */
+  const deployments: DeploymentsListByResourceGroupResponse = MockFactory.createTestDeployments(5, true);
   const template = "myTemplate";
 
   beforeEach(() => {
-    deployments = MockFactory.createTestDeployments(5, true);
     ResourceManagementClient.prototype.resourceGroups = {
       createOrUpdate: jest.fn(),
       deleteMethod: jest.fn(),
@@ -19,7 +22,7 @@ describe("Resource Service", () => {
 
     ResourceManagementClient.prototype.deployments = {
       deleteMethod: jest.fn(),
-      listByResourceGroup: jest.fn(() => Promise.resolve(deployments)),
+      listByResourceGroup: jest.fn(() => Promise.resolve([...deployments])),
       exportTemplate: jest.fn(() => Promise.resolve(template)),
     } as any;
   });
@@ -90,7 +93,7 @@ describe("Resource Service", () => {
     const service = new ResourceService(sls, options);
     const deps = await service.getDeployments();
     // Make sure deps are in correct order
-    expect(deps).toEqual(deployments);
+    expect(deps).toEqual([...deployments].reverse());
   });
 
   it("lists deployments as string with timestamps", async () => {
@@ -102,10 +105,10 @@ describe("Resource Service", () => {
     const service = new ResourceService(sls, options);
     const deploymentString = await service.listDeployments();
     let expectedDeploymentString = "\n\nDeployments";
-    const originalTimestamp = +MockFactory.createTestTimestamp();
-    let i = 0
-    for (const dep of deployments) {
-      const timestamp = originalTimestamp + i
+    const originalTimestamp = +MockFactory.createTestTimestamp() + 4;
+    let i = 0;
+    for (const dep of [...deployments].reverse()) {
+      const timestamp = originalTimestamp - i;
       expectedDeploymentString += "\n-----------\n"
       expectedDeploymentString += `Name: ${dep.name}\n`
       expectedDeploymentString += `Timestamp: ${timestamp}\n`;
@@ -117,9 +120,9 @@ describe("Resource Service", () => {
   });
 
   it("lists deployments as string without timestamps", async () => {
-    deployments = MockFactory.createTestDeployments();
+    const deployments = MockFactory.createTestDeployments();
     ResourceManagementClient.prototype.deployments = {
-      listByResourceGroup: jest.fn(() => Promise.resolve(deployments)),
+      listByResourceGroup: jest.fn(() => Promise.resolve([...deployments])),
     } as any;
 
     const sls = MockFactory.createTestServerless();
@@ -130,7 +133,7 @@ describe("Resource Service", () => {
     const service = new ResourceService(sls, options);
     const deploymentString = await service.listDeployments();
     let expectedDeploymentString = "\n\nDeployments";
-    for (const dep of deployments) {
+    for (const dep of [...deployments].reverse()) {
       expectedDeploymentString += "\n-----------\n"
       expectedDeploymentString += `Name: ${dep.name}\n`
       expectedDeploymentString += "Timestamp: None\n";
@@ -155,5 +158,16 @@ describe("Resource Service", () => {
         deploymentName
       );
     expect(result).toEqual(template);
+  });
+
+  it("gets previous deployment template", async () => {
+    ResourceManagementClient.prototype.deployments = {
+      listByResourceGroup: jest.fn(() => Promise.resolve([...deployments])),
+    } as any;
+    const sls = MockFactory.createTestServerless();
+    const service = new ResourceService(sls, {} as any);
+    const deployment = await service.getPreviousDeployment();
+    const expected = deployments[deployments.length - 1];
+    expect(deployment).toEqual(expected);
   });
 });

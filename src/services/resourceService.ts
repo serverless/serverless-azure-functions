@@ -22,7 +22,7 @@ export class ResourceService extends BaseService {
     this.log(`Listing deployments for resource group '${this.resourceGroup}':`);
     const deployments = await this.resourceClient.deployments.listByResourceGroup(this.resourceGroup);
     return deployments.sort((a: DeploymentExtended, b: DeploymentExtended) => {
-      return (a.properties.timestamp > b.properties.timestamp) ? 1 : -1
+      return (a.properties.timestamp < b.properties.timestamp) ? 1 : -1
     });
   }
 
