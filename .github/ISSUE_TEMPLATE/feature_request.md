@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for serverless framework
+about: Suggest an idea for serverless-azure-functions
 ---
 
 <!--

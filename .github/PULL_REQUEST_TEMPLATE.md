@@ -28,7 +28,7 @@ to review a PR, the faster we can review and merge it.
 Examples:
 * serverless.yml - Fully functioning to easily deploy changes
 * Screenshots - Showing the difference between your output and the master
-* Cloud Configuration - List cloud resources and show that the correct configuration is in place (e.g. AWS CLI commands)
+* Cloud Configuration - List cloud resources and show that the correct configuration is in place
 * Other - Anything else that comes to mind to help us evaluate
 -->
 
@@ -36,13 +36,12 @@ Examples:
 
 _**Note: Run `npm run test:ci` to run all validation checks on proposed changes**_
 
-- [ ] Write tests and confirm existing functionality is not broken.  
-       **Validate via `npm test`**
-- [ ] Write documentation
 - [ ] Ensure there are no lint errors.  
        **Validate via `npm run lint`**  
        _Note: Some reported issues can be automatically fixed by running `npm run lint:fix`_
-- [ ] Make sure code coverage hasn't dropped
+- [ ] Write tests and confirm existing functionality is not broken.  
+       **Validate via `npm test`**
+- [ ] Write documentation
 - [ ] Provide verification config / commands / resources
 - [ ] Enable "Allow edits from maintainers" for this PR
 - [ ] Update the messages below
