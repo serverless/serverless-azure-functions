@@ -4,6 +4,9 @@ import rimraf from "rimraf";
 import Serverless from "serverless";
 import { FunctionMetadata, Utils } from "../shared/utils";
 import { BaseService } from "./baseService";
+import { SupportedRuntimeLanguage } from "../models/serverless";
+import configConstants from "../config";
+import { CoreToolsService } from "./coreToolsService";
 
 /**
  * Adds service packing support
@@ -30,8 +33,24 @@ export class PackageService extends BaseService {
         const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
         return this.createBinding(functionName, metaData);
       });
+    this.generateFuncIgnore();
 
     await Promise.all(createEventsPromises);
+  }
+
+  public async createPackage() {
+    this.log("Invoking core tools to build package...")
+
+    await CoreToolsService.pack(this.serverless);
+    
+    const { servicePath } = this.serverless.config;
+    const artifact = path.join(servicePath, path.basename(process.cwd()) + ".zip");
+    const serverlessDir = path.join(servicePath, ".serverless")
+    if (!fs.existsSync(serverlessDir)) {
+      fs.mkdirSync(serverlessDir);
+    }
+    const artifactPath = path.join(serverlessDir, `${this.serviceName}.zip`);
+    fs.renameSync(artifact, artifactPath);
   }
 
   /**
@@ -69,19 +88,49 @@ export class PackageService extends BaseService {
    * Cleans up generated function.json files after packaging has completed
    */
   public cleanUp() {
+    const functionFilesToRemove = [
+      "function.json",
+      "__init__.py"
+    ];
+
+    const functionFoldersToRemove = [
+      "__pycache__"
+    ]
+
+    const rootFilesToRemove = [
+      ".funcignore"
+    ]
+
     this.serverless.service.getAllFunctions().map((functionName) => {
       // Delete function.json if exists in function folder
-      const filePath = path.join(functionName, "function.json");
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
 
+      functionFilesToRemove.forEach((fileToRemove) => {
+        const filePath = path.join(functionName, fileToRemove);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      });
+
+      functionFoldersToRemove.forEach((folderToRemove) => {
+        const folderPath = path.join(functionName, folderToRemove);
+        if (fs.existsSync(folderPath)) {
+          rimraf.sync(folderPath);
+        }
+      });
+      
       // Delete function folder if empty
       const items = fs.readdirSync(functionName);
       if (items.length === 0) {
         fs.rmdirSync(functionName);
       }
     });
+
+    for (const file of rootFilesToRemove) {
+      const filePath = path.join(this.serverless.config.servicePath, file);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }    
 
     return Promise.resolve();
   }
@@ -90,9 +139,29 @@ export class PackageService extends BaseService {
    * Creates the function.json for for the specified function
    */
   public createBinding(functionName: string, functionMetadata: FunctionMetadata) {
-    const functionJSON = functionMetadata.params.functionsJson;
-    functionJSON.entryPoint = functionMetadata.entryPoint;
-    functionJSON.scriptFile = functionMetadata.handlerPath;
+    const functionJSON = this.getFunctionJson(functionName, functionMetadata);
+    const functionDirPath = this.makeFunctionDir(functionName);
+
+    fs.writeFileSync(path.join(functionDirPath, "function.json"), this.stringify(functionJSON));
+
+    if (this.runtime.language === SupportedRuntimeLanguage.PYTHON) {
+      fs.writeFileSync(path.join(functionDirPath, "__init__.py"), "");
+    }
+    return Promise.resolve();
+  }
+
+  private getFunctionJson(functionName: string, functionMetadata: FunctionMetadata) {
+    const functionJSON = functionMetadata.params.functionJson;
+    const { entryPoint, handlerPath } = functionMetadata;
+    functionJSON.entryPoint = entryPoint;
+    if (this.pythonTarget) {
+      const index = (functionJSON.bindings as any[])
+        .findIndex((binding) => (!binding.direction || binding.direction === "out"));
+      functionJSON.bindings[index].name = "$return";
+    } else {
+    }
+    functionJSON.scriptFile = handlerPath;
+
     const functionObject = this.configService.getFunctionConfig()[functionName];
     const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
 
@@ -104,14 +173,27 @@ export class PackageService extends BaseService {
       functionJSON.bindings[index].route = bindingAzureSettings.route;
     }
 
+    return functionJSON;
+  }
+
+  private makeFunctionDir(functionName: string) {
     const functionDirPath = path.join(this.serverless.config.servicePath, functionName);
     if (!fs.existsSync(functionDirPath)) {
       fs.mkdirSync(functionDirPath);
     }
+    return functionDirPath;
+  }
 
-    const functionJsonString = this.stringify(functionJSON);
-    fs.writeFileSync(path.join(functionDirPath, "function.json"), functionJsonString);
-
-    return Promise.resolve();
+  private generateFuncIgnore() {
+    const exclude = this.config.package.exclude || []
+    fs.writeFileSync(
+      path.join(this.serverless.config.servicePath, ".funcignore"),
+      exclude
+        .concat(configConstants.defaultFuncIgnore)
+        .concat([
+          this.configService.getConfigFile()
+        ])
+        .join("\n")  
+    )
   }
 }

@@ -1,10 +1,14 @@
 import { ArmParameter, ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams } from "../../models/armTemplates";
-import { FunctionAppConfig, ServerlessAzureConfig, SupportedRuntimeLanguage } from "../../models/serverless";
+import { FunctionAppConfig, ServerlessAzureConfig, SupportedRuntimeLanguage, FunctionAppOS } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+import configConstants from "../../config";
 
 interface FunctionAppParams extends DefaultArmParams {
   functionAppName: ArmParameter;
   functionAppNodeVersion: ArmParameter;
+  functionAppKind: ArmParameter;
+  functionAppReserved: ArmParameter;
+  linuxFxVersion: ArmParameter;
   functionAppWorkerRuntime: ArmParameter;
   functionAppExtensionVersion: ArmParameter;
   appInsightsName?: ArmParameter;
@@ -38,6 +42,18 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       functionAppNodeVersion: {
         defaultValue: "",
         type: ArmParamType.String
+      },
+      functionAppKind: {
+        defaultValue: "functionapp",
+        type: ArmParamType.String,
+      },
+      functionAppReserved: {
+        defaultValue: false,
+        type: ArmParamType.Bool
+      },
+      linuxFxVersion : {
+        defaultValue: "",
+        type: ArmParamType.String,
       },
       functionAppWorkerRuntime: {
         defaultValue: "node",
@@ -78,7 +94,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
             "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
             "[concat('microsoft.insights/components/', parameters('appInsightsName'))]"
           ],
-          "kind": "functionapp",
+          "kind": "[parameters('functionAppKind')]",
           "properties": {
             "siteConfig": {
               "appSettings": [
@@ -116,6 +132,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 }
               ]
             },
+            "reserved": "[parameters('functionAppReserved')]",
+            "linuxFxVersion": "[parameters('linuxFxVersion')]",
             "name": "[parameters('functionAppName')]",
             "clientAffinityEnabled": false,
             "hostingEnvironment": ""
@@ -129,8 +147,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
     };
-    const { functionRuntime } = config.provider;
-
+    const { functionRuntime, os } = config.provider;
+    const isLinuxRuntime = os === FunctionAppOS.LINUX;
 
     const params: FunctionAppParams = {
       functionAppName: {
@@ -141,7 +159,16 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           ?
           functionRuntime.version
           :
-          undefined
+          undefined,
+      },
+      functionAppKind: {
+        value: (isLinuxRuntime) ? "functionapp,linux" : undefined,
+      },
+      functionAppReserved: {
+        value: (isLinuxRuntime) ? true : undefined,
+      },
+      linuxFxVersion: {
+        value: (isLinuxRuntime) ? this.getLinuxFxVersion(config) : undefined,
       },
       functionAppWorkerRuntime: {
         value: functionRuntime.language,
@@ -150,7 +177,18 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         value: resourceConfig.extensionVersion,
       }
     };
-
+    
     return params as unknown as ArmParameters;
+  }
+
+  private getLinuxFxVersion(config: ServerlessAzureConfig): string {
+    const { functionRuntime } = config.provider;
+    const { language, version } = functionRuntime
+    const major = (language === SupportedRuntimeLanguage.PYTHON) ? version : version.split(".")[0];
+    try {
+      return configConstants.dockerImages[language][major]
+    } catch (e) {
+      throw new Error(`Runtime ${language} ${version} not currently supported by Linux Function Apps`);
+    }    
   }
 }

@@ -409,7 +409,7 @@ describe("Function App Service", () => {
         return {
           properties: appSettings
         }
-      });
+      }) as any;
       AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => Promise.resolve(sasUrl));
     });
 
@@ -417,41 +417,18 @@ describe("Function App Service", () => {
       (FunctionAppService.prototype.updateFunctionAppSetting as any).mockRestore();
     });
 
-    it("updates WEBSITE_RUN_FROM_PACKAGE with SAS URL if configured to run from blob", async () => {
+    it("does not upload directly to function app if configured to run on linux", async () => {
       const newSlsService = MockFactory.createTestService();
-      newSlsService.provider["deployment"] = {
-        external: true,
-      }
+      newSlsService.provider["os"] = "linux";
       const service = createService(MockFactory.createTestServerless({
         service: newSlsService,
       }));
+      FunctionAppService.prototype.uploadZippedArtifactToFunctionApp = jest.fn();
       await service.uploadFunctions(app);
-      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).toBeCalled();
-      expect(FunctionAppService.prototype.updateFunctionAppSetting).toBeCalledWith(
-        app,
-        "WEBSITE_RUN_FROM_PACKAGE",
-        sasUrl
-      );
-    });
-
-    it("does not upload directly to function app if configured to run from blob", async () => {
-      const newSlsService = MockFactory.createTestService();
-      newSlsService.provider["deployment"] = {
-        external: true,
-      }
-      const service = createService(MockFactory.createTestServerless({
-        service: newSlsService,
-      }));
-      FunctionAppService.prototype.uploadZippedArfifactToFunctionApp = jest.fn();
-      await service.uploadFunctions(app);
-      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).toBeCalled();
-      expect(FunctionAppService.prototype.updateFunctionAppSetting).toBeCalledWith(
-        app,
-        "WEBSITE_RUN_FROM_PACKAGE",
-        sasUrl
-      );
-      expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).not.toBeCalled();
-      (FunctionAppService.prototype.uploadZippedArfifactToFunctionApp as any).mockRestore();
+      expect(AzureBlobStorageService.prototype.uploadFile).toBeCalled();
+      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
+      expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).not.toBeCalled();
+      (FunctionAppService.prototype.uploadZippedArtifactToFunctionApp as any).mockRestore();
     });
 
     it("uploads directly to function app if not configured to run from blob", async () => {
@@ -463,11 +440,11 @@ describe("Function App Service", () => {
         service: newSlsService,
       });
       const service = createService(sls);
-      FunctionAppService.prototype.uploadZippedArfifactToFunctionApp = jest.fn();
+      FunctionAppService.prototype.uploadZippedArtifactToFunctionApp = jest.fn();
       await service.uploadFunctions(app);
       expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
-      expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).toBeCalled();
-      (FunctionAppService.prototype.uploadZippedArfifactToFunctionApp as any).mockRestore();
+      expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).toBeCalled();
+      (FunctionAppService.prototype.uploadZippedArtifactToFunctionApp as any).mockRestore();
     });
 
     it("does not generate SAS URL or update WEBSITE_RUN_FROM_PACKAGE if not configured to run from blob", async() => {

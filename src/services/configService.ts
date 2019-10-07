@@ -3,7 +3,7 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import configConstants from "../config";
 import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, 
-  ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
+  ServerlessAzureFunctionConfig, SupportedRuntimeLanguage, FunctionAppOS } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
@@ -114,8 +114,15 @@ export class ConfigService {
   /**
    * Function runtime configuration
    */
-  public getFunctionRuntime(): FunctionRuntime {
+  public getRuntime(): FunctionRuntime {
     return this.config.provider.functionRuntime;
+  }
+
+  /**
+   * Operating system for function app
+   */
+  public getOs(): FunctionAppOS {
+    return this.config.provider.os;
   }
 
   /**
@@ -123,7 +130,7 @@ export class ConfigService {
    * @param config Current Serverless configuration
    */
   private setDefaultValues(config: ServerlessAzureConfig) {
-    const { awsRegion, region, stage, prefix } = configConstants.defaults;
+    const { awsRegion, region, stage, prefix, os } = configConstants.defaults;
     const providerRegion = config.provider.region;
 
     if (!providerRegion || providerRegion === awsRegion) {
@@ -136,6 +143,10 @@ export class ConfigService {
 
     if (!config.provider.prefix) {
       config.provider.prefix = prefix;
+    }
+
+    if (!config.provider.os) {
+      config.provider.os = os;
     }
   }
 
@@ -155,7 +166,8 @@ export class ConfigService {
       tenantId,
       appId,
       deployment,
-      runtime
+      runtime,
+      os
     } = config.provider;
 
     const options: AzureNamingServiceOptions = {
@@ -178,28 +190,29 @@ export class ConfigService {
         || tenantId,
       appId: this.getOption(constants.variableKeys.appId)
         || process.env.AZURE_CLIENT_ID
-        || appId
+        || appId,
     }
     config.provider.resourceGroup = (
       this.getOption("resourceGroup", config.provider.resourceGroup)
     ) || AzureNamingService.getResourceName(options);
+    
+    const functionRuntime = this.getFunctionRuntime(runtime);
+    if (functionRuntime.language === SupportedRuntimeLanguage.PYTHON) {
+      config.provider.os = FunctionAppOS.LINUX;
+    } 
 
-    // Get property from `runFromBlobUrl` for backwards compatability
-    if (deployment && deployment.external === undefined && deployment["runFromBlobUrl"] !== undefined) {
-      deployment.external = deployment["runFromBlobUrl"];
-    }
+    config.provider.functionRuntime = functionRuntime;
 
     config.provider.deployment = {
       ...configConstants.deploymentConfig,
-      ...deployment
+      ...deployment,
+      external: (os === FunctionAppOS.LINUX),
     }
-
-    config.provider.functionRuntime = this.getRuntime(runtime)
 
     return config;
   }
 
-  private getRuntime(runtime: string): FunctionRuntime {
+  private getFunctionRuntime(runtime: string): FunctionRuntime {
     Guard.null(runtime, "runtime", "Runtime version not specified in serverless.yml");
 
     const versionMatch = runtime.match(/([0-9]+\.)+[0-9]*x?/);

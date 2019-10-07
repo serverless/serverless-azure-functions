@@ -63,7 +63,11 @@ export class MockFactory {
       provider: MockFactory.createTestAzureServiceProvider(),
       service: serviceName,
       artifact: "app.zip",
-      functions
+      functions,
+      package: {
+        exclude: [],
+        include: [],
+      }
     } as any as Service;
   }
 
@@ -655,7 +659,7 @@ export class MockFactory {
       cliOptions: null,
       commands: null,
       deprecatedEvents: null,
-      hooks: null,
+      hooks: {},
       loadAllPlugins: jest.fn(),
       loadCommand: jest.fn(),
       loadCommands: jest.fn(),

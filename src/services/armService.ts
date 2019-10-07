@@ -231,7 +231,7 @@ export class ArmService extends BaseService {
 
       // This is a json path expression
       // Learn more @ https://goessner.net/articles/JsonPath/index.html#e2
-      const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
+      const appSettingsPath = "$.resources[?(@.type==\"Microsoft.Web/sites\")].properties.siteConfig.appSettings";
 
       // Merges serverless yaml environment configuration into the app settings of the template
       jsonpath.apply(deployment.template, appSettingsPath, function (appSettingsList) {

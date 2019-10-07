@@ -1,6 +1,6 @@
 import Serverless from "serverless";
 import configConstants from "../config";
-import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, SupportedRuntimeLanguage } from "../models/serverless";
+import { FunctionAppOS, FunctionRuntime, ServerlessAzureConfig, SupportedRuntimeLanguage, ServerlessAzureProvider } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ConfigService } from "./configService";
 import { AzureNamingService } from "./namingService";
@@ -28,6 +28,7 @@ describe("Config Service", () => {
       expect(service.getPrefix()).toEqual(prefix);
       expect(service.getStage()).toEqual(stage);
       expect(service.getRegion()).toEqual(region);
+      expect(service.getOs()).toEqual(FunctionAppOS.WINDOWS);
     });
 
     it("use prefix from the CLI over the SLS yml config", () => {
@@ -108,6 +109,12 @@ describe("Config Service", () => {
       const service = new ConfigService(sls, {} as any);
       expect(service.getRegion()).toEqual(location);
     });
+
+    it("use os property from SLS yml config", () => {
+      serverless.service.provider["os"] = FunctionAppOS.LINUX;
+      const service = new ConfigService(serverless, { } as any);
+      expect(service.getOs()).toEqual(FunctionAppOS.LINUX);
+    });
   
     it("Generates resource group from convention when NOT defined in sls yaml", () => {
       serverless.service.provider["resourceGroup"] = null;
@@ -119,35 +126,15 @@ describe("Config Service", () => {
       expect(actualResourceGroupName).toEqual(expectedResourceGroupName);
     });
 
-    it("Gets deployment config from SLS yaml using external property", () => {
-      const deploymentConfig1: DeploymentConfig = {
-        external: true
-      }
-      serverless.service.provider["deployment"] = deploymentConfig1
-      const service1 = new ConfigService(serverless, { } as any);
+    it("Sets external property based on Function App OS", () => {
+      const sls1 = MockFactory.createTestServerless();
+      sls1.service.provider["os"] = "linux";
+      const service1 = new ConfigService(sls1, {} as any);
       expect(service1.getDeploymentConfig().external).toBe(true);
 
-      const deploymentConfig2: DeploymentConfig = {
-        external: false
-      }
-      serverless.service.provider["deployment"] = deploymentConfig2
-      const service2 = new ConfigService(serverless, { } as any);
-      expect(service2.getDeploymentConfig().external).toBe(false);
-    });
-
-    it("Gets deployment config from SLS yaml using runFromBlobUrl property", () => {
-      const deploymentConfig1 = {
-        runFromBlobUrl: true
-      }
-      serverless.service.provider["deployment"] = deploymentConfig1
-      const service1 = new ConfigService(serverless, { } as any);
-      expect(service1.getDeploymentConfig().external).toBe(true);
-
-      const deploymentConfig2 = {
-        runFromBlobUrl: false
-      }
-      serverless.service.provider["deployment"] = deploymentConfig2
-      const service2 = new ConfigService(serverless, { } as any);
+      const sls2 = MockFactory.createTestServerless();
+      sls2.service.provider["os"] = "windows";
+      const service2 = new ConfigService(sls2, {} as any);
       expect(service2.getDeploymentConfig().external).toBe(false);
     });
   });
@@ -264,7 +251,22 @@ describe("Config Service", () => {
         language: SupportedRuntimeLanguage.PYTHON,
         version: "3.6"
       }
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
+      const provider = sls.service.provider as ServerlessAzureProvider
+      expect(provider.functionRuntime).toEqual(expectedRuntime);
+    });
+
+    it("forces python runtime to linux OS", () => {
+      const sls = MockFactory.createTestServerless();
+      sls.service.provider.runtime = "python3.6";
+      sls.service.provider["os"] = "windows";
+      expect(() => new ConfigService(sls, {} as any)).not.toThrow();
+      const expectedRuntime: FunctionRuntime = {
+        language: SupportedRuntimeLanguage.PYTHON,
+        version: "3.6"
+      }
+      const provider = sls.service.provider as ServerlessAzureProvider
+      expect(provider.functionRuntime).toEqual(expectedRuntime);
+      expect(provider.os).toEqual(FunctionAppOS.LINUX);
     });
   })
 });

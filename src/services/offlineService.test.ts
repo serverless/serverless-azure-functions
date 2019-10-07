@@ -1,10 +1,14 @@
-import fs from "fs";
 import mockFs from "mock-fs";
 import mockSpawn from "mock-spawn";
 import path from "path";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { OfflineService } from "./offlineService";
+
+let fs;
+jest.isolateModules(() => {
+  fs = require("fs");
+});
 
 describe("Offline Service", () => {
   let mySpawn;
@@ -36,17 +40,21 @@ describe("Offline Service", () => {
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     await service.build();
     const calls = writeFileSpy.mock.calls;
+    writeFileSpy.mockRestore();
     const functionNames = sls.service.getAllFunctions();
-    expect(calls).toHaveLength(functionNames.length + 1);
+    expect(calls).toHaveLength(functionNames.length + 2);
     for (let i = 0; i < functionNames.length; i++) {
       const name = functionNames[i];
       expect(calls[i][0]).toEqual(`${name}${path.sep}function.json`)
       expect(
-        JSON.parse(calls[i][1])
+        JSON.parse(calls[i][1] as string)
       ).toEqual(
-        MockFactory.createTestBindingsObject(`..${path.sep}${name}.js`)
+        MockFactory.createTestBindingsObject(`../${name}.js`)
       );
     }
+    expect(calls[functionNames.length][0]).toEqual(".funcignore");
+    expect(calls[functionNames.length + 1][0]).toEqual("local.settings.json");
+
     writeFileSpy.mockRestore();
   });
 
@@ -60,7 +68,8 @@ describe("Offline Service", () => {
     });
     await service.build();
     const calls = writeFileSpy.mock.calls;
-    expect(calls).toHaveLength(functionNames.length);
+    writeFileSpy.mockRestore();
+    expect(calls).toHaveLength(functionNames.length + 1);
   });
 
   it("cleans up functions files", async () => {
@@ -76,16 +85,17 @@ describe("Offline Service", () => {
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     const unlinkSpy = jest.spyOn(fs, "unlinkSync");
-    const rmdirSpy = jest.spyOn(fs, "rmdirSync")
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
     await service.cleanup();
     const unlinkCalls = unlinkSpy.mock.calls;
+    unlinkSpy.mockRestore();
+
     expect(unlinkCalls).toHaveLength(2);
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
     const rmdirCalls = rmdirSpy.mock.calls;
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");
-    unlinkSpy.mockRestore();
     rmdirSpy.mockRestore();
   });
 
@@ -101,16 +111,16 @@ describe("Offline Service", () => {
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     const unlinkSpy = jest.spyOn(fs, "unlinkSync");
-    const rmdirSpy = jest.spyOn(fs, "rmdirSync")
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
     await service.cleanup();
     const unlinkCalls = unlinkSpy.mock.calls;
+    unlinkSpy.mockRestore();
     expect(unlinkCalls).toHaveLength(2);
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
     const rmdirCalls = rmdirSpy.mock.calls;
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");
-    unlinkSpy.mockRestore();
     rmdirSpy.mockRestore();
   });
 
@@ -187,24 +197,22 @@ describe("Offline Service", () => {
 
     process.exit = jest.fn() as any;
     await sigintCallback();
+    expect(process.exit).toBeCalledTimes(1);
 
     /* Offline Cleanup assertions*/
 
     const unlinkCalls = unlinkSpy.mock.calls;
-
+    unlinkSpy.mockRestore();
+ 
     expect(unlinkCalls).toHaveLength(2);
     expect(unlinkCalls[0][0]).toBe(`hello${path.sep}function.json`);
     expect(unlinkCalls[1][0]).toBe(`goodbye${path.sep}function.json`);
-
+ 
     const rmdirCalls = rmdirSpy.mock.calls;
-
+    rmdirSpy.mockRestore();
+ 
     expect(rmdirCalls[0][0]).toBe("hello");
     expect(rmdirCalls[1][0]).toBe("goodbye");
-
-    unlinkSpy.mockRestore();
-    rmdirSpy.mockRestore();
-
-    expect(process.exit).toBeCalledTimes(1);
   });
 
   it("does not clean up after offline call if specified in options", async () => {
@@ -219,7 +227,6 @@ describe("Offline Service", () => {
     const rmdirSpy = jest.spyOn(fs, "rmdirSync");
 
     const sls = MockFactory.createTestServerless();
-
 
     const service = createService(sls, {
       "nocleanup": ""
@@ -243,6 +250,7 @@ describe("Offline Service", () => {
 
     process.exit = jest.fn() as any;
     await sigintCallback();
+    expect(process.exit).toBeCalledTimes(1);
 
     /* Offline Cleanup assertions*/
 
@@ -251,7 +259,5 @@ describe("Offline Service", () => {
 
     unlinkSpy.mockRestore();
     rmdirSpy.mockRestore();
-
-    expect(process.exit).toBeCalledTimes(1);
   });
 });
