@@ -39,7 +39,7 @@ export class ArmService extends BaseService {
       throw new Error(`Unable to find template with name ${type} `);
     }
 
-    const mergedTemplate = template.getTemplate();
+    const mergedTemplate = template.getTemplate(this.config);
     let parameters = template.getParameters(this.config);
 
     if (this.config.provider.apim) {
@@ -238,7 +238,7 @@ export class ArmService extends BaseService {
 
       // This is a json path expression
       // Learn more @ https://goessner.net/articles/JsonPath/index.html#e2
-      const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
+      const appSettingsPath = "$.resources[?(@.type==\"Microsoft.Web/sites\")].properties.siteConfig.appSettings";
 
       // Merges serverless yaml environment configuration into the app settings of the template
       jsonpath.apply(deployment.template, appSettingsPath, function (appSettingsList) {

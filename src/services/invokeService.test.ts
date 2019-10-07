@@ -1,13 +1,15 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import configConstants from "../config";
+import { configConstants } from "../config/constants";
 import { MockFactory } from "../test/mockFactory";
-import { FunctionAppService } from "./functionAppService";
 import { InvokeService } from "./invokeService";
 
 jest.mock("@azure/arm-appservice")
 jest.mock("@azure/arm-resources")
-jest.mock("./functionAppService")
+
+jest.mock("./functionAppService");
+import { FunctionAppService } from "./functionAppService";
+
 
 describe("Invoke Service ", () => {
   const app = MockFactory.createTestSite();
@@ -87,6 +89,6 @@ describe("Invoke Service ", () => {
     const service = new InvokeService(sls, options);
     const fakeName = "fakeFunction";
     await service.invoke("GET", fakeName);
-    expect(sls.cli.log).lastCalledWith(`Function ${fakeName} does not exist`, undefined, undefined)
+    expect(sls.cli.log).lastCalledWith(`Function ${fakeName} does not exist`)
   });
 });

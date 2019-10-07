@@ -1,15 +1,15 @@
 import Serverless from "serverless";
-import config from "../config";
+import { configConstants } from "../config/constants";
 
 export default class AzureProvider {
   private serverless: any;
 
   public static getProviderName() {
-    return config.providerName;
+    return configConstants.providerName;
   }
 
   public constructor(serverless: Serverless) {
     this.serverless = serverless;
-    this.serverless.setProvider(config.providerName, this);
+    this.serverless.setProvider(configConstants.providerName, this);
   }
 }

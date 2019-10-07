@@ -1,9 +1,10 @@
-import fs from "fs";
 import mockFs from "mock-fs";
 import rimraf from "rimraf";
 import { MockFactory } from "../test/mockFactory";
 import Serverless from "serverless";
 import { FuncService } from "./funcService";
+
+import fs from "fs";
 
 describe("Azure Func Service", () => {
 
@@ -52,7 +53,7 @@ describe("Azure Func Service", () => {
       const service = createService(sls, options);
       await service.add();
 
-      expect(sls.cli.log).toBeCalledWith("Function hello already exists", undefined, undefined);
+      expect(sls.cli.log).lastCalledWith("Function hello already exists");
     });
 
     it("creates function handler and updates serverless.yml", async () => {

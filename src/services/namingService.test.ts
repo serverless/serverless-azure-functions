@@ -1,5 +1,5 @@
 import { AzureNamingService, AzureNamingServiceOptions } from "./namingService"
-import { ServerlessAzureConfig } from "../models/serverless";
+import { ServerlessAzureConfig, Runtime } from "../models/serverless";
 import md5 from "md5";
 
 describe("Naming Service", () => {
@@ -15,14 +15,14 @@ describe("Naming Service", () => {
       region: "westus",
       stage: "dev",
       resourceGroup,
-      runtime: "nodejs10.x"
+      runtime: Runtime.NODE10,
     },
     service: "test-api",
     package: {
       artifact: "",
       artifactDirectoryName: "",
       individually: false,
-    }
+    } as any,
   };
 
   it("Gets resource name with hash by default", () => {

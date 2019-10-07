@@ -84,5 +84,5 @@ describe("Azure Package Plugin", () => {
       expect(PackageService.prototype.cleanUpServerlessDir).not.toBeCalled();
       expect(sls.cli.log).lastCalledWith("No need to clean up generated folders & files. Using pre-existing package");
     });
-  })
+  });
 });

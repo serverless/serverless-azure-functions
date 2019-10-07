@@ -1,6 +1,6 @@
 import { ServerlessAzureConfig, ResourceConfig } from "../models/serverless"
 import { Guard } from "../shared/guard"
-import configConstants from "../config";
+import { configConstants } from "../config/constants";
 import md5 from "md5";
 
 export interface AzureNamingServiceOptions {

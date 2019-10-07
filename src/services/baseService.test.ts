@@ -1,12 +1,12 @@
 import fs from "fs";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { ServerlessAzureOptions } from "../models/serverless";
+import { ServerlessAzureOptions, Runtime } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
 
 jest.mock("./loggingService");
-import { LoggingService, LogLevel } from "./loggingService";
+import { LoggingService } from "./loggingService";
 
 jest.mock("axios", () => jest.fn());
 import axios from "axios";
@@ -66,7 +66,7 @@ describe("Base Service", () => {
     provider: {
       resourceGroup: "My-Resource-Group",
       deploymentName: "My-Deployment",
-      runtime: "nodejs10.x"
+      runtime: Runtime.NODE10
     },
   };
 

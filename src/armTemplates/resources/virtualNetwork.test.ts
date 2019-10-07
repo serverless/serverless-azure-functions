@@ -1,7 +1,7 @@
 import { VirtualNetworkResource } from "./virtualNetwork";
-import { ServerlessAzureConfig } from "../../models/serverless";
+import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
 import md5 from "md5";
-import configConstants from "../../config";
+import { configConstants } from "../../config/constants";
 
 describe("Virtual Network Resource", () => {
   const resourceGroupName = "myResourceGroup";
@@ -22,7 +22,7 @@ describe("Virtual Network Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
+        runtime: Runtime.NODE10
       },
       service: ""
     } as any;
@@ -45,7 +45,7 @@ describe("Virtual Network Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
+        runtime: Runtime.NODE10
       },
       service: ""
     } as any;

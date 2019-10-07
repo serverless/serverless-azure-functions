@@ -1,7 +1,7 @@
 import { HostingEnvironmentResource } from "./hostingEnvironment";
-import { ServerlessAzureConfig } from "../../models/serverless";
+import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
 import md5 from "md5";
-import configConstants from "../../config";
+import { configConstants } from "../../config/constants";
 
 describe("Azure Hosting Environment Resource", () => {
   const resourceGroupName = "myResourceGroup";
@@ -22,7 +22,7 @@ describe("Azure Hosting Environment Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
+        runtime: Runtime.NODE10
       },
       service: ""
     } as any;
@@ -45,7 +45,7 @@ describe("Azure Hosting Environment Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
+        runtime: Runtime.NODE10
       },
       service: ""
     } as any;

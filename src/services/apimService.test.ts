@@ -23,6 +23,7 @@ import {
 import { AzureNamingService } from "./namingService";
 import { ApiManagementConfig, ApiIpFilterPolicy, ApiCheckHeaderPolicy } from "../models/apiManagement";
 import { ApimPolicyBuilder } from "./apimPolicyBuilder";
+import { Runtime } from "../models/serverless";
 
 describe("APIM Service", () => {
   let apimConfig: ApiManagementConfig;
@@ -46,7 +47,7 @@ describe("APIM Service", () => {
         resourceGroup: "test-sls-rg",
         region: "West US",
         apim: apimConfig,
-        runtime: "nodejs10.x"
+        runtime: Runtime.NODE10
       },
     };
 

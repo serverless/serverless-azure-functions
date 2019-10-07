@@ -8,7 +8,7 @@ export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
     Guard.null(childTemplates);
   }
 
-  public getTemplate(): ArmResourceTemplate {
+  public getTemplate(config: ServerlessAzureConfig): ArmResourceTemplate {
     const template: ArmResourceTemplate = {
       $schema:
         "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -18,7 +18,7 @@ export class CompositeArmTemplate implements ArmResourceTemplateGenerator {
     };
 
     this.childTemplates.forEach(resource => {
-      const resourceTemplate = resource.getTemplate();
+      const resourceTemplate = resource.getTemplate(config);
       template.parameters = {
         ...template.parameters,
         ...resourceTemplate.parameters

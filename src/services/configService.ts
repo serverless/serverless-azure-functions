@@ -1,14 +1,12 @@
-import semver from "semver";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
-import configConstants from "../config";
-import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, 
-  ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
+import { configConstants } from "../config/constants";
+import { supportedRuntimes } from "../config/runtime";
+import { DeploymentConfig, FunctionAppOS, FunctionRuntime, ServerlessAzureConfig, ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
 import { AzureNamingService, AzureNamingServiceOptions } from "./namingService";
-import runtimeVersionsJson from "./runtimeVersions.json";
 
 /**
  * Handles all Service Configuration
@@ -114,8 +112,29 @@ export class ConfigService {
   /**
    * Function runtime configuration
    */
-  public getFunctionRuntime(): FunctionRuntime {
+  public getRuntime(): FunctionRuntime {
     return this.config.provider.functionRuntime;
+  }
+
+  /**
+   * Operating system for function app
+   */
+  public getOs(): FunctionAppOS {
+    return this.config.provider.os;
+  }
+
+  /**
+   * Function app configured to run on Python
+   */
+  public isPythonTarget(): boolean {
+    return this.config.provider.functionRuntime.language === SupportedRuntimeLanguage.PYTHON;
+  }
+
+  /**
+   * Function app configured to run on Linux
+   */
+  public isLinuxTarget(): boolean {
+    return this.getOs() === FunctionAppOS.LINUX
   }
 
   /**
@@ -123,19 +142,23 @@ export class ConfigService {
    * @param config Current Serverless configuration
    */
   private setDefaultValues(config: ServerlessAzureConfig) {
-    const { awsRegion, region, stage, prefix } = configConstants.defaults;
+    const { awsRegion, region, stage, prefix, os } = configConstants.defaults;
     const providerRegion = config.provider.region;
 
     if (!providerRegion || providerRegion === awsRegion) {
       config.provider.region = this.serverless.service.provider["location"] || region;
     }
- 
+
     if (!config.provider.stage) {
       config.provider.stage = stage;
     }
 
     if (!config.provider.prefix) {
       config.provider.prefix = prefix;
+    }
+
+    if (!config.provider.os) {
+      config.provider.os = os;
     }
   }
 
@@ -161,7 +184,8 @@ export class ConfigService {
       tenantId,
       appId,
       deployment,
-      runtime
+      runtime,
+      os
     } = config.provider;
 
     const options: AzureNamingServiceOptions = {
@@ -184,80 +208,54 @@ export class ConfigService {
         || tenantId,
       appId: this.getOption(constants.variableKeys.appId)
         || process.env.AZURE_CLIENT_ID
-        || appId
+        || appId,
     }
     config.provider.resourceGroup = (
       this.getOption("resourceGroup", config.provider.resourceGroup)
     ) || AzureNamingService.getResourceName(options);
 
-    // Get property from `runFromBlobUrl` for backwards compatibility
-    if (deployment && deployment.external === undefined && deployment["runFromBlobUrl"] !== undefined) {
-      deployment.external = deployment["runFromBlobUrl"];
+    const functionRuntime = this.getFunctionRuntime(runtime);
+    if (functionRuntime.language === SupportedRuntimeLanguage.PYTHON && os !== FunctionAppOS.LINUX) {
+      this.serverless.cli.log("Python functions can ONLY run on Linux Function Apps. Switching now");
+      config.provider.os = FunctionAppOS.LINUX;
     }
+
+    config.provider.functionRuntime = functionRuntime;
 
     config.provider.deployment = {
       ...configConstants.deploymentConfig,
-      ...deployment
+      ...deployment,
     }
-
-    config.provider.functionRuntime = this.getRuntime(runtime);
 
     this.serverless.variables[constants.variableKeys.providerConfig] = config.provider;
     return config;
   }
 
-  private getRuntime(runtime: string): FunctionRuntime {
+  private getFunctionRuntime(runtime: string): FunctionRuntime {
     Guard.null(runtime, "runtime", "Runtime version not specified in serverless.yml");
 
-    const versionMatch = runtime.match(/([0-9]+\.)+[0-9]*x?/);
-    const languageMatch = runtime.match(/nodejs|python/);
-
-    let versionInput: string;
-    let languageInput: string;
-
-    // Extract version and language input
-    if (versionMatch && languageMatch) {
-      versionInput = versionMatch[0];
-      languageInput = languageMatch[0];
-    } else {
-      throw new Error(`Invalid runtime: ${runtime}. ${this.getRuntimeErrorMessage(null)}`);
+    if (!(runtime in supportedRuntimes)) {
+      const supportedRuntimeNames = Object.keys(supportedRuntimes).join(",");
+      throw new Error(`Runtime ${runtime} is not supported.\nRuntimes supported: ${supportedRuntimeNames}`);
     }
 
-    const targetedVersionRegex = new RegExp(
-      `^${versionInput}`
-        .replace(".", "\.")
-        .replace("x", "[0-9]+"),
-    );
+    let language: SupportedRuntimeLanguage;
+    let version: string;
 
-    const matchingVersions: string[] = runtimeVersionsJson[languageInput]
-      .filter((item) => item.version.match(targetedVersionRegex))
-      .map((item) => item.version);
+    runtime = runtime.toLowerCase();
 
-    if (!matchingVersions.length) {
-      throw new Error(`Runtime ${runtime} is not supported. ${this.getRuntimeErrorMessage(null)}`);
+    if (runtime.startsWith("nodejs")) {
+      language = SupportedRuntimeLanguage.NODE;
+      version = runtime.replace("nodejs", "");
+    } else if (runtime.startsWith("python")) {
+      language = SupportedRuntimeLanguage.PYTHON;
+      version = runtime.replace("python", "");
     }
 
-    const version = matchingVersions.sort(semver.rcompare)[0];
-
-    const language: SupportedRuntimeLanguage = {
-      "nodejs": SupportedRuntimeLanguage.NODE,
-      "python": SupportedRuntimeLanguage.PYTHON
-    }[languageInput];
-    
     return {
       language,
       version
     }
-  }
-
-  private getRuntimeErrorMessage(language: SupportedRuntimeLanguage) {
-    if (language) {
-      return `Supported versions for ${language} are: ${
-        runtimeVersionsJson[language]
-          .map((item) => item.version)
-          .join(",")}`
-    }
-    return `Supported versions: ${JSON.stringify(runtimeVersionsJson, null, 2)}`
   }
 
   /**

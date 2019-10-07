@@ -1,4 +1,4 @@
-import { ServerlessAzureConfig } from "../../models/serverless";
+import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 import { StorageAccountResource } from "./storageAccount";
 import md5 from "md5";
@@ -12,13 +12,12 @@ describe("Storage Account Resource", () => {
     plugins: [],
     package: null,
     provider: {
-      runtime: "nodejs10.x",
+      runtime: Runtime.NODE10,
       prefix: "sls",
       name: "azure",
       region: "westus",
       stage: "dev",
       resourceGroup,
-      runtime: "nodejs10.x"
     },
     service: "test-api"
   } as any;
