@@ -1,3 +1,5 @@
+import { FunctionAppOS } from "./models/serverless";
+
 export const configConstants = {
   bearer: "Bearer ",
   deploymentConfig: {
@@ -19,8 +21,12 @@ export const configConstants = {
   functionAppDomain: ".azurewebsites.net",
   functionsAdminApiPath: "/admin/functions/",
   functionsApiPath: "/api/functions",
-  funcCoreTools: "func",
-  funcCoreToolsArgs: ["host", "start"],
+  func: {
+    command: "func",
+    start: ["host", "start"],
+    pack: ["pack"],
+    publish: ["azure", "functionapp", "publish"]
+  },
   funcConsoleColor: "blue",
   runFromPackageSetting: "WEBSITE_RUN_FROM_PACKAGE",
   jsonContentType: "application/json",
@@ -40,8 +46,29 @@ export const configConstants = {
     stage: "dev",
     prefix: "sls",
     localPort: 7071,
+    os: FunctionAppOS.WINDOWS,
   },
-  bindingsJsonUrl: "https://raw.githubusercontent.com/Azure/azure-functions-templates/master/Functions.Templates/Bindings/bindings.json"
+  dockerImages: {
+    node: {
+      "8": "DOCKER|microsoft/azure-functions-node8:2.0",
+      "10": "DOCKER|microsoft/azure-functions/node:2.0"
+    },
+    python: {
+      "3.6": "DOCKER|microsoft/azure-functions/python:2.0"
+    }
+  },
+  bindingsJsonUrl: "https://raw.githubusercontent.com/Azure/azure-functions-templates/master/Functions.Templates/Bindings/bindings.json",
+  defaultFuncIgnore: [
+    "package.json",
+    "package-lock.json",
+    "README.md",
+    ".gitignore",
+    ".git/**",
+    ".vscode/**",
+    "node_modules/**",
+    "local.settings.json",
+    ".serverless/**",
+  ],
 };
 
 export default configConstants;

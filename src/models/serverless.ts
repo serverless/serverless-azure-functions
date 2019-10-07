@@ -57,6 +57,7 @@ export interface ServerlessAzureProvider {
   keyVaultConfig?: AzureKeyVaultConfig;
   runtime: string;
   functionRuntime?: FunctionRuntime;
+  os?: FunctionAppOS;
 }
 
 export enum FunctionAppOS {
@@ -157,6 +158,8 @@ export interface ServerlessAzureConfig {
     individually: boolean;
     artifactDirectoryName: string;
     artifact: string;
+    exclude: string[];
+    include: string[];
   };
 }
 

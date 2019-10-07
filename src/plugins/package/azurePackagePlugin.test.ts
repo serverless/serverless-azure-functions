@@ -84,5 +84,28 @@ describe("Azure Package Plugin", () => {
       expect(PackageService.prototype.cleanUpServerlessDir).not.toBeCalled();
       expect(sls.cli.log).lastCalledWith("No need to clean up generated folders & files. Using pre-existing package");
     });
-  })
+  });
+
+  describe("Linux", () => {
+    let pythonPlugin: AzurePackagePlugin;
+    const artifactHook = "package:createDeploymentArtifacts";
+
+    beforeEach(() => {
+      const sls = MockFactory.createTestServerless();
+      sls.service.provider["os"] = "linux";
+      pythonPlugin = new AzurePackagePlugin(sls, {} as any);
+      PackageService.prototype.createPackage = jest.fn();
+    });
+
+    it("replaces existing hook for creating artifact if python runtime", async () => {
+      expect(pythonPlugin.hooks[artifactHook]).toBeTruthy();
+      await invokeHook(pythonPlugin, "package:createDeploymentArtifacts");
+      expect(PackageService.prototype.createPackage).toBeCalled();
+    });
+
+    it("does not replace existing hook if node runtime", async () => {
+      const defaultPlugin = new AzurePackagePlugin(MockFactory.createTestServerless(), {} as any);
+      expect(defaultPlugin.hooks[artifactHook]).toBeFalsy();
+    })
+  });
 });

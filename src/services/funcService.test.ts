@@ -1,9 +1,13 @@
-import fs from "fs";
 import mockFs from "mock-fs";
 import rimraf from "rimraf";
 import { MockFactory } from "../test/mockFactory";
 import Serverless from "serverless";
 import { FuncService } from "./funcService";
+
+let fs;
+jest.isolateModules(() => {
+  fs = require("fs");
+});
 
 describe("Azure Func Service", () => {
 

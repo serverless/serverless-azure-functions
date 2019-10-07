@@ -1,13 +1,18 @@
-import Serverless from "serverless";
 import mockFs from "mock-fs";
-import fs from "fs";
+import mockSpawn from "mock-spawn";
 import path from "path";
-import { PackageService } from "./packageService";
-import { MockFactory } from "../test/mockFactory";
+import rimraf from "rimraf";
+import Serverless from "serverless";
 import { FunctionMetadata } from "../shared/utils";
+import { MockFactory } from "../test/mockFactory";
+import { PackageService } from "./packageService";
+
+let fs;
+jest.isolateModules(() => {
+  fs = require("fs");
+})
 
 jest.mock("rimraf");
-import rimraf from "rimraf";
 
 describe("Package Service", () => {
   let sls: Serverless;
@@ -94,7 +99,7 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {
+        functionJson: {
           bindings: [
             MockFactory.createTestHttpBinding("out"),
             MockFactory.createTestHttpBinding("in"),
@@ -126,12 +131,13 @@ describe("Package Service", () => {
     await packageService.createBinding(functionName, functionMetadata);
 
     expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
-    const call = writeFileSpy.mock.calls[0];
+    mkdirSpy.mockRestore();
+
+    const call = writeFileSpy.mock.calls[0] as string[];
+    writeFileSpy.mockRestore();
+
     expect(call[0]).toEqual(expectedFilePath);
     expect(JSON.parse(call[1])).toEqual(expectedFunctionJson);
-
-    mkdirSpy.mockRestore();
-    writeFileSpy.mockRestore();
   });
 
   it("Creates Event Hub Handler bindings and function.json ", async () => {
@@ -140,7 +146,7 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/eventhubHandler",
       params: {
-        functionsJson: {
+        functionJson: {
           bindings: [
             MockFactory.createTestEventHubBinding("in"),
           ]
@@ -166,12 +172,13 @@ describe("Package Service", () => {
     await packageService.createBinding(functionName, functionMetadata);
 
     expect(mkdirSpy).toBeCalledWith(expectedFolderPath);
-    const call = writeFileSpy.mock.calls[0];
+    mkdirSpy.mockRestore();
+
+    const call = writeFileSpy.mock.calls[0] as string[];
+    writeFileSpy.mockRestore();
     expect(call[0]).toEqual(expectedFilePath);
     expect(JSON.parse(call[1])).toEqual(expectedFunctionJson);
 
-    mkdirSpy.mockRestore();
-    writeFileSpy.mockRestore();
   });
 
   it("createBinding does not need to create directory if function folder already exists", async () => {
@@ -180,7 +187,7 @@ describe("Package Service", () => {
       entryPoint: "handler",
       handlerPath: "src/handlers/hello",
       params: {
-        functionsJson: {
+        functionJson: {
           bindings: [
             MockFactory.createTestHttpBinding("out"),
             MockFactory.createTestHttpBinding("in"),
@@ -229,7 +236,6 @@ describe("Package Service", () => {
 
     const destinationPath = path.join(".webpack", "service");
 
-    const mkDirSpy = jest.spyOn(fs, "mkdirSync");
     const copyFileSpy = jest.spyOn(fs, "copyFileSync");
 
     await packageService.prepareWebpack();
@@ -241,7 +247,97 @@ describe("Package Service", () => {
       expect(copyFileSpy).toBeCalledWith(functionJsonFilePath, path.join(destinationPath, functionJsonFilePath));
     });
 
-    mkDirSpy.mockRestore();
     copyFileSpy.mockRestore();
+  });
+
+  describe("Python packages", () => {
+    let mySpawn;
+    let packageService: PackageService;
+    let functions: string[];
+
+    beforeEach(() => {
+      
+      
+      mySpawn = mockSpawn();
+      require("child_process").spawn = mySpawn;
+      mySpawn.setDefault(mySpawn.simple(0, "Exit code"));
+
+      const sls = MockFactory.createTestServerless();
+      functions = sls.service.getAllFunctions();
+      sls.service.provider.runtime = "python3.6";
+      packageService = new PackageService(sls, {} as any);
+    });
+
+    function calledWithArgs(mockFn: any, values: string[]) {
+      const calls = mockFn.mock.calls;
+      for (const value of values) {
+        expect(calls.find((call) => call[0] === value)).toBeTruthy();
+      }
+    }
+
+    it("generates python files", async () => {
+      const writeSpy = jest.spyOn(fs, "writeFileSync");
+      mockFs({});
+      await packageService.createBindings();
+      mockFs.restore();
+      calledWithArgs(writeSpy, [
+        ".funcignore",
+        ...functions.map((name) => `${name}${path.sep}__init__.py`),
+        ...functions.map((name) => `${name}${path.sep}function.json`)
+      ]);
+      writeSpy.mockRestore();
+    });
+
+    it("creates a python package", async () => {
+      Object.defineProperty(process, "platform", {
+        value: "darwin",
+        writable: true,
+      });
+      const fsConfig = {}
+      fsConfig[path.basename(process.cwd()) + ".zip"] = ""
+      mockFs(fsConfig);
+
+      await packageService.createPackage();
+      const calls = mySpawn.calls;
+      expect(calls).toHaveLength(1);
+      const call = calls[0];
+      expect(call.command).toEqual(path.join("node_modules", ".bin", "func"));
+      expect(call.args).toEqual(["pack"]);
+    });
+
+    it("cleans up python files", async () => {
+      const rimrafSpy = jest.spyOn(rimraf, "sync");
+      const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+      mockFs({
+        ".funcignore": "",
+        "serverless-azure-functions.zip": "",
+        "hello" : {
+          "__pycache__": {
+            "file.pyc": ""
+          },
+          "__init__.py": "",
+          "function.json": ""
+        },
+        "goodbye" : {
+          "__pycache__": {
+            "file.pyc": ""
+          },
+          "__init__.py": "",
+          "function.json": "",
+        },
+      });
+      await packageService.cleanUp();
+      mockFs.restore();
+      calledWithArgs(unlinkSpy, [
+        ".funcignore",
+        ...functions.map((name) => `${name}${path.sep}__init__.py`),
+        ...functions.map((name) => `${name}${path.sep}function.json`)
+      ]);
+      unlinkSpy.mockRestore();
+      calledWithArgs(rimrafSpy, [
+        ...functions.map((name) => path.join(name, "__pycache__")),
+      ]);
+      rimrafSpy.mockRestore();
+    });
   });
 });

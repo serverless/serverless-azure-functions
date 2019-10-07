@@ -1,6 +1,6 @@
 import Serverless from "serverless";
 import configConstants from "../config";
-import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, SupportedRuntimeLanguage } from "../models/serverless";
+import { FunctionAppOS, FunctionRuntime, ServerlessAzureConfig, ServerlessAzureProvider, SupportedRuntimeLanguage } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ConfigService } from "./configService";
 import { AzureNamingService } from "./namingService";
@@ -33,6 +33,7 @@ describe("Config Service", () => {
       expect(service.getPrefix()).toEqual(prefix);
       expect(service.getStage()).toEqual(stage);
       expect(service.getRegion()).toEqual(region);
+      expect(service.getOs()).toEqual(FunctionAppOS.WINDOWS);
     });
 
     it("use prefix from the CLI over the SLS yml config", () => {
@@ -113,6 +114,12 @@ describe("Config Service", () => {
       const service = new ConfigService(sls, {} as any);
       expect(service.getRegion()).toEqual(location);
     });
+
+    it("use os property from SLS yml config", () => {
+      serverless.service.provider["os"] = FunctionAppOS.LINUX;
+      const service = new ConfigService(serverless, { } as any);
+      expect(service.getOs()).toEqual(FunctionAppOS.LINUX);
+    });
   
     it("Generates resource group from convention when NOT defined in sls yaml", () => {
       serverless.service.provider["resourceGroup"] = null;
@@ -124,41 +131,15 @@ describe("Config Service", () => {
       expect(actualResourceGroupName).toEqual(expectedResourceGroupName);
     });
 
-    it("Gets deployment config from SLS yaml using external property", () => {
-      const sls1 = createServerless();
-      const deploymentConfig1: DeploymentConfig = {
-        external: true
-      }
-      sls1.service.provider["deployment"] = deploymentConfig1
-      const service1 = new ConfigService(sls1, { } as any);
+    it("Sets external property based on Function App OS", () => {
+      const sls1 = MockFactory.createTestServerless();
+      sls1.service.provider["os"] = "linux";
+      const service1 = new ConfigService(sls1, {} as any);
       expect(service1.getDeploymentConfig().external).toBe(true);
 
-      const sls2 = createServerless();
-
-      const deploymentConfig2: DeploymentConfig = {
-        external: false
-      }
-      sls2.service.provider["deployment"] = deploymentConfig2
-      const service2 = new ConfigService(sls2, { } as any);
-      expect(service2.getDeploymentConfig().external).toBe(false);
-    });
-
-    it("Gets deployment config from SLS yaml using runFromBlobUrl property", () => {
-      const sls1 = createServerless();
-      const deploymentConfig1: DeploymentConfig = {
-        runFromBlobUrl: true
-      } as any;
-      sls1.service.provider["deployment"] = deploymentConfig1
-      const service1 = new ConfigService(sls1, { } as any);
-      expect(service1.getDeploymentConfig().external).toBe(true);
-
-      const sls2 = createServerless();
-
-      const deploymentConfig2: DeploymentConfig = {
-        runFromBlobUrl: false
-      } as any;
-      sls2.service.provider["deployment"] = deploymentConfig2
-      const service2 = new ConfigService(sls2, { } as any);
+      const sls2 = MockFactory.createTestServerless();
+      sls2.service.provider["os"] = "windows";
+      const service2 = new ConfigService(sls2, {} as any);
       expect(service2.getDeploymentConfig().external).toBe(false);
     });
 
@@ -170,121 +151,136 @@ describe("Config Service", () => {
       new ConfigService(serverless, {} as any);
       expect(setDefaultValues).not.toBeCalled();
     });
-  });
   
-  describe("Service Principal Configuration", () => {
-    const cliSubscriptionId = "cli sub id";
-    const envVarSubscriptionId = "env var sub id";
-    const configSubscriptionId = "config sub id";
-    const loginResultSubscriptionId = "ABC123";
-  
-    it("use subscription ID from the CLI", () => {
-      process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
-      serverless.service.provider["subscriptionId"] = configSubscriptionId;
-      serverless.variables["subscriptionId"] = loginResultSubscriptionId
-      const service = new ConfigService(serverless, { subscriptionId: cliSubscriptionId } as any);
-      expect(service.getSubscriptionId()).toEqual(cliSubscriptionId);
-      expect(serverless.service.provider["subscriptionId"]).toEqual(cliSubscriptionId);
+    describe("Service Principal Configuration", () => {
+      const cliSubscriptionId = "cli sub id";
+      const envVarSubscriptionId = "env var sub id";
+      const configSubscriptionId = "config sub id";
+      const loginResultSubscriptionId = "ABC123";
+    
+      it("use subscription ID from the CLI", () => {
+        process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
+        serverless.service.provider["subscriptionId"] = configSubscriptionId;
+        serverless.variables["subscriptionId"] = loginResultSubscriptionId
+        const service = new ConfigService(serverless, { subscriptionId: cliSubscriptionId } as any);
+        expect(service.getSubscriptionId()).toEqual(cliSubscriptionId);
+        expect(serverless.service.provider["subscriptionId"]).toEqual(cliSubscriptionId);
+      });
+    
+      it("use subscription ID from environment variable", () => {
+        process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
+        serverless.service.provider["subscriptionId"] = configSubscriptionId;
+        serverless.variables["subscriptionId"] = loginResultSubscriptionId
+        const service = new ConfigService(serverless, { } as any);
+        expect(service.getSubscriptionId()).toEqual(envVarSubscriptionId);
+        expect(serverless.service.provider["subscriptionId"]).toEqual(envVarSubscriptionId);
+      });
+    
+      it("use subscription ID from config", () => {
+        delete process.env.AZURE_SUBSCRIPTION_ID;
+        serverless.service.provider["subscriptionId"] = configSubscriptionId;
+        serverless.variables["subscriptionId"] = loginResultSubscriptionId
+        const service = new ConfigService(serverless, { } as any);
+        expect(service.getSubscriptionId()).toEqual(configSubscriptionId);
+        expect(serverless.service.provider["subscriptionId"]).toEqual(configSubscriptionId);
+      });
+    
+      it("use subscription ID from login result", () => {
+        delete process.env.AZURE_SUBSCRIPTION_ID;
+        serverless.variables["subscriptionId"] = loginResultSubscriptionId
+        const service = new ConfigService(serverless, { } as any);
+        expect(service.getSubscriptionId()).toEqual(loginResultSubscriptionId);
+        expect(serverless.service.provider["subscriptionId"]).toEqual(loginResultSubscriptionId);
+      });
     });
-  
-    it("use subscription ID from environment variable", () => {
-      process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
-      serverless.service.provider["subscriptionId"] = configSubscriptionId;
-      serverless.variables["subscriptionId"] = loginResultSubscriptionId
-      const service = new ConfigService(serverless, { } as any);
-      expect(service.getSubscriptionId()).toEqual(envVarSubscriptionId);
-      expect(serverless.service.provider["subscriptionId"]).toEqual(envVarSubscriptionId);
-    });
-  
-    it("use subscription ID from config", () => {
-      delete process.env.AZURE_SUBSCRIPTION_ID;
-      serverless.service.provider["subscriptionId"] = configSubscriptionId;
-      serverless.variables["subscriptionId"] = loginResultSubscriptionId
-      const service = new ConfigService(serverless, { } as any);
-      expect(service.getSubscriptionId()).toEqual(configSubscriptionId);
-      expect(serverless.service.provider["subscriptionId"]).toEqual(configSubscriptionId);
-    });
-  
-    it("use subscription ID from login result", () => {
-      delete process.env.AZURE_SUBSCRIPTION_ID;
-      serverless.variables["subscriptionId"] = loginResultSubscriptionId
-      const service = new ConfigService(serverless, { } as any);
-      expect(service.getSubscriptionId()).toEqual(loginResultSubscriptionId);
-      expect(serverless.service.provider["subscriptionId"]).toEqual(loginResultSubscriptionId);
-    });
-  });
 
-  describe("Runtime version", () => {
-    it("throws error when invalid nodejs version in defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "nodejs10.6.1";
-      expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime nodejs10.6.1 is not supported");
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
+    describe("Runtime version", () => {
+      it("throws error when invalid nodejs version in defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "nodejs10.6.1";
+        expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime nodejs10.6.1 is not supported");
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
+      });
+    
+      it("throws error when incomplete nodejs version in defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "nodejs8";
+        expect(() => new ConfigService(sls, {} as any)).toThrowError("Invalid runtime: nodejs8");
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
+      });
+    
+      it("throws error when unsupported nodejs version in defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "nodejs5.x";
+        expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime nodejs5.x is not supported");
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
+      });
+    
+      it("Does not throw an error when valid nodejs version is defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "nodejs10.x";
+        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
+        const expectedRuntime: FunctionRuntime = {
+          language: SupportedRuntimeLanguage.NODE,
+          version: "10.15.2"
+        }
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
+      });
+    
+      it("Does not throw an error when nodejs version with major and minor is defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "nodejs6.9.x";
+        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
+        const expectedRuntime: FunctionRuntime = {
+          language: SupportedRuntimeLanguage.NODE,
+          version: "6.9.5"
+        }
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
+      });
+    
+      it("Does not throw an error when specific nodejs version is defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "nodejs10.6.0";
+        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
+        const expectedRuntime: FunctionRuntime = {
+          language: SupportedRuntimeLanguage.NODE,
+          version: "10.6.0"
+        }
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
+      });
+    
+      it("throws an error when no nodejs version is defined", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = undefined;
+        expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime version not specified in serverless.yml");
+        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
+      });
+    
+      it("does not throw an error with python3.6", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "python3.6";
+        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
+        const expectedRuntime: FunctionRuntime = {
+          language: SupportedRuntimeLanguage.PYTHON,
+          version: "3.6"
+        }
+        const provider = sls.service.provider as ServerlessAzureProvider
+        expect(provider.functionRuntime).toEqual(expectedRuntime);
+      });
+
+      it("forces python runtime to linux OS", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = "python3.6";
+        sls.service.provider["os"] = "windows";
+        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
+        const expectedRuntime: FunctionRuntime = {
+          language: SupportedRuntimeLanguage.PYTHON,
+          version: "3.6"
+        }
+        const provider = sls.service.provider as ServerlessAzureProvider
+        expect(provider.functionRuntime).toEqual(expectedRuntime);
+        expect(provider.os).toEqual(FunctionAppOS.LINUX);
+      });
     });
-  
-    it("throws error when incomplete nodejs version in defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "nodejs8";
-      expect(() => new ConfigService(sls, {} as any)).toThrowError("Invalid runtime: nodejs8");
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
-    });
-  
-    it("throws error when unsupported nodejs version in defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "nodejs5.x";
-      expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime nodejs5.x is not supported");
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
-    });
-  
-    it("Does not throw an error when valid nodejs version is defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "nodejs10.x";
-      expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-      const expectedRuntime: FunctionRuntime = {
-        language: SupportedRuntimeLanguage.NODE,
-        version: "10.15.2"
-      }
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
-    });
-  
-    it("Does not throw an error when nodejs version with major and minor is defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "nodejs6.9.x";
-      expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-      const expectedRuntime: FunctionRuntime = {
-        language: SupportedRuntimeLanguage.NODE,
-        version: "6.9.5"
-      }
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
-    });
-  
-    it("Does not throw an error when specific nodejs version is defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "nodejs10.6.0";
-      expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-      const expectedRuntime: FunctionRuntime = {
-        language: SupportedRuntimeLanguage.NODE,
-        version: "10.6.0"
-      }
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
-    });
-  
-    it("throws an error when no nodejs version is defined", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = undefined;
-      expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime version not specified in serverless.yml");
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
-    });
-  
-    it("does not throw an error with python3.6", () => {
-      const sls = MockFactory.createTestServerless();
-      sls.service.provider.runtime = "python3.6";
-      expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-      const expectedRuntime: FunctionRuntime = {
-        language: SupportedRuntimeLanguage.PYTHON,
-        version: "3.6"
-      }
-      expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
-    });
-  })
+  });
 });
