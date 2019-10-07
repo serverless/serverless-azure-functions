@@ -23,6 +23,8 @@ $ cd <appName>
 $ npm install
 ```
 
+The `serverless.yml` file contains the configuration for your service. For more details on its configuration, see [the docs](docs/CONFIG.md).
+
 ### Running Function App Locally (`offline` plugin)
 
 In order to run a Azure Function App locally, the `azure-functions-core-tools` package needs to be installed from NPM. Since it is only used for local development, we did not include it in the `devDependencies` of `package.json`. To install globally, run:

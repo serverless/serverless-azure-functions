@@ -419,9 +419,7 @@ describe("Function App Service", () => {
 
     it("updates WEBSITE_RUN_FROM_PACKAGE with SAS URL if configured to run from blob", async () => {
       const newSlsService = MockFactory.createTestService();
-      newSlsService.provider["deployment"] = {
-        external: true,
-      }
+      newSlsService.provider["os"] = "linux";
       const service = createService(MockFactory.createTestServerless({
         service: newSlsService,
       }));
@@ -436,9 +434,7 @@ describe("Function App Service", () => {
 
     it("does not upload directly to function app if configured to run from blob", async () => {
       const newSlsService = MockFactory.createTestService();
-      newSlsService.provider["deployment"] = {
-        external: true,
-      }
+      newSlsService.provider["os"] = "linux";
       const service = createService(MockFactory.createTestServerless({
         service: newSlsService,
       }));

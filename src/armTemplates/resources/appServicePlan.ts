@@ -1,9 +1,10 @@
 import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
-import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
+import { ResourceConfig, ServerlessAzureConfig, FunctionAppOS } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 interface AppServicePlanParams extends DefaultArmParams {
   appServicePlanName: ArmParameter;
+  kind: ArmParameter;
   appServicePlanSkuName: ArmParameter;
   appServicePlanSkuTier: ArmParameter;
 }
@@ -23,6 +24,10 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       appServicePlanName: {
         defaultValue: "",
         type: ArmParamType.String
+      },
+      kind: {
+        defaultValue: "",
+        type: ArmParamType.String,
       },
       location: {
         defaultValue: "",
@@ -49,6 +54,7 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
           "name": "[parameters('appServicePlanName')]",
           "type": "Microsoft.Web/serverfarms",
           "location": "[parameters('location')]",
+          "kind": "[parameters('kind')]",
           "properties": {
             "name": "[parameters('appServicePlanName')]",
             "workerSizeId": "3",
@@ -71,9 +77,14 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       ...config.provider.storageAccount,
     };
 
+    const { os } = config.provider;
+
     const params: AppServicePlanParams = {
       appServicePlanName: {
         value: AppServicePlanResource.getResourceName(config),
+      },
+      kind: {
+        value: (os === FunctionAppOS.LINUX) ? "Linux" : undefined,
       },
       appServicePlanSkuName: {
         value: resourceConfig.sku.name,

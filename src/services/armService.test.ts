@@ -258,11 +258,13 @@ describe("Arm Service", () => {
 
       sls.service.provider["environment"] = environmentConfig
       sls.service.provider.runtime = "nodejs10.x";
+      sls.service.provider["os"] = "windows";
 
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
       await service.deployTemplate(deployment);
 
-      const appSettings: any[] = jsonpath.query(deployment.template, "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings[*]");
+      const appSettings: any[] = jsonpath.query(deployment.template, "$.resources[?(@.type==\"Microsoft.Web/sites\")].properties.siteConfig.appSettings[*]");
+     
       expect(appSettings.find((setting) => setting.name === "PARAM_1")).toEqual({ name: "PARAM_1", value: environmentConfig.PARAM_1 });
       expect(appSettings.find((setting) => setting.name === "PARAM_2")).toEqual({ name: "PARAM_2", value: environmentConfig.PARAM_2 });
       expect(appSettings.find((setting) => setting.name === "PARAM_3")).toEqual({ name: "PARAM_3", value: environmentConfig.PARAM_3 });

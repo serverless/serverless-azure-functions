@@ -1,5 +1,5 @@
 import { AppServicePlanResource } from "./appServicePlan";
-import { ServerlessAzureConfig } from "../../models/serverless";
+import { ServerlessAzureConfig, FunctionAppOS } from "../../models/serverless";
 import md5 from "md5";
 import configConstants from "../../config";
 
@@ -9,6 +9,18 @@ describe("App Service Plan Resource", () => {
   const region = "eastus2";
   const stage = "prod";
 
+  const defaultConfig: ServerlessAzureConfig = {
+    provider: {
+      name: "azure",
+      prefix,
+      region,
+      stage,
+      resourceGroup: resourceGroupName,
+      runtime: "nodejs10.x"
+    },
+    service: ""
+  } as any;
+
   it("generates the correct resource name", () => {
     const resourceGroupHash = md5(resourceGroupName).substr(
       0,
@@ -16,16 +28,8 @@ describe("App Service Plan Resource", () => {
     );
 
     const config: ServerlessAzureConfig = {
-      provider: {
-        name: "azure",
-        prefix,
-        region,
-        stage,
-        resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
-      },
-      service: ""
-    } as any;
+      ...defaultConfig
+    };
 
     expect(AppServicePlanResource.getResourceName(config)).toEqual(
       `${prefix}-eus2-${stage}-${resourceGroupHash}-asp`
@@ -36,20 +40,29 @@ describe("App Service Plan Resource", () => {
     const appServicePlanName = "myAppServicePlan";
 
     const config: ServerlessAzureConfig = {
+      ...defaultConfig,
       provider: {
-        name: "azure",
-        prefix,
-        region,
-        stage,
-        resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x",
+        ...defaultConfig.provider,
         appServicePlan: {
           name: appServicePlanName,
         },
       },
-      service: "myapp",
-    } as any;
+    };
 
     expect(AppServicePlanResource.getResourceName(config)).toEqual(appServicePlanName);
+  });
+
+  it("gets the correct Linux pararameters", () => {
+    const config: ServerlessAzureConfig = {
+      ...defaultConfig,
+      provider: {
+        ...defaultConfig.provider,
+        os: FunctionAppOS.LINUX
+      }
+    }
+
+    const resource = new AppServicePlanResource();
+    const params = resource.getParameters(config);
+    expect(params.kind.value).toEqual("Linux");
   });
 });

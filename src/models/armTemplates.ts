@@ -29,6 +29,7 @@ export enum ArmParamType {
   String = "String",
   Int = "Int",
   SystemAssigned = "SystemAssigned",
+  Bool = "Bool",
 }
 
 /**
@@ -50,8 +51,8 @@ export interface ArmParameters {
 
 export interface ArmParameter {
   type?: ArmParamType;
-  value?: string | number;
-  defaultValue?: string | number;
+  value?: string | number | boolean;
+  defaultValue?: string | number | boolean;
 }
 
 export interface DefaultArmParams {

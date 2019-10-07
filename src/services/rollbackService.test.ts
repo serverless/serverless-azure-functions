@@ -2,10 +2,10 @@ import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
 import { ArmDeployment, ArmParamType } from "../models/armTemplates";
-import { DeploymentConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
 import fs from "fs";
+import configConstants from "../config";
 
 jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService";
@@ -18,7 +18,6 @@ import { FunctionAppService } from "./functionAppService";
 
 jest.mock("./armService");
 import { ArmService } from "./armService";
-import configConstants from "../config";
 
 describe("Rollback Service", () => {
 
@@ -116,10 +115,7 @@ describe("Rollback Service", () => {
 
   it("should deploy function app with SAS URL", async () => {
     const sls = MockFactory.createTestServerless();
-    const deploymentConfig: DeploymentConfig = {
-      external: true
-    }
-    sls.service.provider["deployment"] = deploymentConfig;
+    sls.service.provider["os"] = "linux";
     const service = createService(sls);
     await service.rollback();
     expect(AzureBlobStorageService.prototype.initialize).toBeCalled();

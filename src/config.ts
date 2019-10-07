@@ -1,3 +1,5 @@
+import { FunctionAppOS } from "./models/serverless";
+
 export const configConstants = {
   bearer: "Bearer ",
   deploymentConfig: {
@@ -40,7 +42,17 @@ export const configConstants = {
     stage: "dev",
     prefix: "sls",
     localPort: 7071,
+    os: FunctionAppOS.WINDOWS,
   },
+  dockerImages: {
+    node: {
+      "8": "DOCKER|microsoft/azure-functions-node8:2.0",
+      "10": "DOCKER|microsoft/azure-functions/node:2.0"
+    },
+    python: {
+      "3.6": "DOCKER|microsoft/azure-functions-python3.6:2.0"
+    }
+  }
 };
 
 export default configConstants;
