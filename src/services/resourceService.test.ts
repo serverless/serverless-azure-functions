@@ -18,6 +18,7 @@ describe("Resource Service", () => {
     ResourceManagementClient.prototype.resourceGroups = {
       createOrUpdate: jest.fn(),
       deleteMethod: jest.fn(),
+      get: jest.fn(),
     } as any;
 
     ResourceManagementClient.prototype.deployments = {
@@ -40,7 +41,7 @@ describe("Resource Service", () => {
     expect(() => new ResourceService(sls, options)).not.toThrowError();
   });
 
-  it("deploys a resource group", () => {
+  it("deploys a resource group", async () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup"
     const location = "West Us";
@@ -50,13 +51,87 @@ describe("Resource Service", () => {
     sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
-    service.deployResourceGroup();
+    await service.deployResourceGroup();
 
     expect(ResourceManagementClient.prototype.resourceGroups.createOrUpdate)
-      .toBeCalledWith(resourceGroup, { location: expectedLocation });
+      .toBeCalledWith(resourceGroup, {
+        location: expectedLocation,
+        tags: {}
+      });
   });
 
-  it("deletes a deployment", () => {
+  it("deploys a resource group with tags", async () => {
+    const tags = {
+      TAG_1: "tag 1 value",
+      TAG_2: "tag 2 value"
+    }
+    const resourceGroup = "resourceGroup";
+    const location = "West Us";
+    const expectedLocation = AzureNamingService.getNormalizedRegionName(location);
+    
+    const sls = MockFactory.createTestServerless();
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.service.provider.region = location;
+    sls.service.provider["tags"] = tags;
+    
+    const service = new ResourceService(sls, {} as any);
+
+    await service.deployResourceGroup();
+    expect(ResourceManagementClient.prototype.resourceGroups.createOrUpdate)
+      .toBeCalledWith(resourceGroup, {
+        location: expectedLocation,
+        tags
+      });
+  });
+
+  it("deploys a resource group with existing tags", async () => {
+    const existingTags = {
+      TAG_2: "2",
+      TAG_3: "3",
+    }
+
+    ResourceManagementClient.prototype.resourceGroups = {
+      createOrUpdate: jest.fn(),
+      deleteMethod: jest.fn(),
+      get: jest.fn(() => Promise.resolve({
+        tags: {
+          ...existingTags
+        }
+      })),
+    } as any;
+
+    const tags = {
+      TAG_1: "tag 1 value",
+      TAG_2: "tag 2 value"
+    }
+    const resourceGroup = "resourceGroup";
+    const location = "West Us";
+    const expectedLocation = AzureNamingService.getNormalizedRegionName(location);
+    
+    const sls = MockFactory.createTestServerless();
+    sls.service.provider["resourceGroup"] = resourceGroup
+    sls.service.provider.region = location;
+    sls.service.provider["tags"] = tags;
+    
+    const service = new ResourceService(sls, {} as any);
+
+    const expectedTags = {
+      TAG_1: "tag 1 value",
+      TAG_2: "tag 2 value",
+      TAG_3: "3",
+    }
+
+    await service.deployResourceGroup();
+    expect(ResourceManagementClient.prototype.resourceGroups.createOrUpdate)
+      .toBeCalledWith(resourceGroup, {
+        location: expectedLocation,
+        tags: {
+          ...expectedTags
+        }
+      });
+  });
+
+  it("deletes a deployment", async () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup";
     const deploymentName = "myDeployment";
@@ -65,21 +140,21 @@ describe("Resource Service", () => {
     sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
-    service.deleteDeployment();
+    await service.deleteDeployment();
     const call = (ResourceManagementClient.prototype.deployments.deleteMethod as any).mock.calls[0];
     expect(call[0]).toEqual(resourceGroup);
     const expectedDeploymentNameRegex = new RegExp(deploymentName + "-t([0-9]+)")
     expect(call[1]).toMatch(expectedDeploymentNameRegex)
   });
 
-  it("deletes a resource group", () => {
+  it("deletes a resource group", async () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup";
     sls.service.provider["resourceGroup"] = resourceGroup
     sls.variables["azureCredentials"] = "fake credentials"
     const options = MockFactory.createTestServerlessOptions();
     const service = new ResourceService(sls, options);
-    service.deleteResourceGroup();
+    await service.deleteResourceGroup();
     expect(ResourceManagementClient.prototype.resourceGroups.deleteMethod)
       .toBeCalledWith(resourceGroup);
   });
@@ -143,7 +218,7 @@ describe("Resource Service", () => {
     expect(deploymentString).toEqual(expectedDeploymentString);
   });
 
-  it("gets deployment template",async () => {
+  it("gets deployment template", async () => {
     const sls = MockFactory.createTestServerless();
     const resourceGroup = "myResourceGroup";
     sls.service.provider["resourceGroup"] = resourceGroup

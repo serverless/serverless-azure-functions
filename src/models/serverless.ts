@@ -40,6 +40,9 @@ export interface ServerlessAzureProvider {
   environment?: {
     [key: string]: any;
   };
+  tags?: {
+    [tagName: string]: string;
+  };
   deployment?: DeploymentConfig;
   deploymentName?: string;
   resourceGroup?: string;
