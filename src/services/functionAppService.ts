@@ -12,7 +12,7 @@ import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
 import configConstants from "../config";
-import { CoreToolsService } from "./coreToolsService";
+import { PublishService } from "./publishService";
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;
@@ -162,15 +162,8 @@ export class FunctionAppService extends BaseService {
     // Uploaded to blob storage as artifact for future reference
     await this.uploadZippedArtifactToBlobStorage(functionZipFile);
 
-    if (this.linuxTarget) {
-      /**
-       * When core tools supports publishing an existing package,
-       * use `functionZipFile` here
-       */
-      await CoreToolsService.publish(this.serverless, functionApp.name);
-    } else {
-      await this.publish(functionApp, functionZipFile);
-    }
+    const publishService = new PublishService(this.serverless, this.options, this);
+    await publishService.publish(functionApp, functionZipFile)
   }
 
   /**
