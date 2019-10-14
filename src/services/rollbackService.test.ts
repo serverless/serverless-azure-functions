@@ -6,10 +6,7 @@ import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
 import configConstants from "../config";
 
-let fs;
-jest.isolateModules(() => {
-  fs = require("fs");
-});
+import fs from "fs";
 
 jest.mock("./azureBlobStorageService");
 import { AzureBlobStorageService } from "./azureBlobStorageService";

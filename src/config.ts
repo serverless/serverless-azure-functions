@@ -59,13 +59,10 @@ export const configConstants = {
   },
   bindingsJsonUrl: "https://raw.githubusercontent.com/Azure/azure-functions-templates/master/Functions.Templates/Bindings/bindings.json",
   defaultFuncIgnore: [
-    "package.json",
-    "package-lock.json",
     "README.md",
     ".gitignore",
     ".git/**",
     ".vscode/**",
-    "node_modules/**",
     "local.settings.json",
     ".serverless/**",
   ],

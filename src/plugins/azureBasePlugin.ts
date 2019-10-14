@@ -10,10 +10,6 @@ export abstract class AzureBasePlugin<TOptions=Serverless.Options> {
   protected config: ServerlessAzureConfig;
   protected commands: ServerlessCommandMap;
   protected processedCommands: ServerlessCliCommand[];
-  /**
-   * Specifies if targeted runtime is linux
-   */
-  protected isLinuxTarget: boolean;
 
   public constructor(
     protected serverless: Serverless,
@@ -22,9 +18,6 @@ export abstract class AzureBasePlugin<TOptions=Serverless.Options> {
     Guard.null(serverless);
     this.config = serverless.service as any;
     this.processedCommands = (serverless as any as ServerlessObject).processedInput.commands;
-    const { provider } = serverless.service
-    this.isLinuxTarget = provider["os"] === FunctionAppOS.LINUX ||
-      provider.runtime.includes("python");
   }
 
   protected log(message: string) {

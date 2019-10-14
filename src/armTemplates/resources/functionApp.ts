@@ -4,15 +4,49 @@ import { AzureNamingService, AzureNamingServiceOptions } from "../../services/na
 import configConstants from "../../config";
 
 interface FunctionAppParams extends DefaultArmParams {
+  /**
+   * Name of function app
+   */
   functionAppName: ArmParameter;
+  /**
+   * Node version of function app
+   */
   functionAppNodeVersion: ArmParameter;
+  /**
+   * Kind of function app
+   * `functionapp` for Windows function app
+   * `functionapp,linux` for Linux function app
+   */
   functionAppKind: ArmParameter;
+  /**
+   * Needs to be `true` for Linux function apps
+   */
   functionAppReserved: ArmParameter;
+  /**
+   * Docker image for Linux function app
+   */
   linuxFxVersion: ArmParameter;
+  /**
+   * Runtime language. Supported values: `node` and `python`
+   */
   functionAppWorkerRuntime: ArmParameter;
+  /**
+   * Function app version. Default: `~2`
+   */
   functionAppExtensionVersion: ArmParameter;
+  /**
+   * Name of App Insights resource
+   */
   appInsightsName?: ArmParameter;
+  /**
+   * Indicates where function app code package is located
+   * `1` (default value) if uploaded directly to function app
+   * Could also be URL if running from external package
+   */
   functionAppRunFromPackage?: ArmParameter;
+  /**
+   * Name of storage account used by function app
+   */
   storageAccountName?: ArmParameter;
 }
 

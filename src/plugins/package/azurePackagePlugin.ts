@@ -1,6 +1,6 @@
 
 import Serverless from "serverless";
-import { ServerlessCliCommand } from "../../models/serverless";
+import { ServerlessCliCommand, FunctionAppOS } from "../../models/serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
@@ -8,6 +8,7 @@ import { AzureBasePlugin } from "../azureBasePlugin";
 export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;
   public provider: AzureProvider;
+  private isLinuxTarget: boolean;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {
     super(serverless, options);
@@ -16,6 +17,8 @@ export class AzurePackagePlugin extends AzureBasePlugin {
       "before:webpack:package:packageModules": this.webpack.bind(this),
       "after:package:finalize": this.finalize.bind(this),
     };
+    const { provider } = this.serverless.service;
+    this.isLinuxTarget = provider["os"] === FunctionAppOS.LINUX || provider.runtime.includes("python")
     if (this.isLinuxTarget) {
       /**
        * Replacing lifecycle event to build a deployment artifact with our own
