@@ -4,10 +4,7 @@ import { MockFactory } from "../test/mockFactory";
 import Serverless from "serverless";
 import { FuncService } from "./funcService";
 
-let fs;
-jest.isolateModules(() => {
-  fs = require("fs");
-});
+import fs from "fs";
 
 describe("Azure Func Service", () => {
 

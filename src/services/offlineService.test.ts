@@ -5,10 +5,7 @@ import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { OfflineService } from "./offlineService";
 
-let fs;
-jest.isolateModules(() => {
-  fs = require("fs");
-});
+import fs from "fs";
 
 describe("Offline Service", () => {
   let mySpawn;

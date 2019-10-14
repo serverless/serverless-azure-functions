@@ -3,10 +3,7 @@ import os from "os";
 import mockFs from "mock-fs";
 import { MockFactory } from "../../../test/mockFactory";
 import { SimpleFileTokenCache } from "./simpleFileTokenCache";
-let fs;
-jest.isolateModules(() => {
-  fs = require("fs");
-});
+import fs from "fs";
 
 describe("Simple File Token Cache", () => {
   const tokenFilePath = "slsTokenCache.json";
