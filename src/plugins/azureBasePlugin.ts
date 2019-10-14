@@ -1,6 +1,6 @@
 import Serverless from "serverless";
 import { ServerlessAzureConfig, ServerlessCliCommand,
-  ServerlessCommandMap, ServerlessHookMap, ServerlessObject, FunctionAppOS } from "../models/serverless";
+  ServerlessCommandMap, ServerlessHookMap, ServerlessObject } from "../models/serverless";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
 

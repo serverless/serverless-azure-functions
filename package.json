@@ -7,7 +7,7 @@
   "typings": "./lib/index.d.ts",
   "author": "Azure Functions",
   "scripts": {
-    "start": "jest --watch",
+    "start": "npm run test -- --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "pretest": "npm run lint",
