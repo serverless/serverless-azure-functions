@@ -154,7 +154,7 @@ export class PackageService extends BaseService {
     const functionJSON = functionMetadata.params.functionJson;
     const { entryPoint, handlerPath } = functionMetadata;
     functionJSON.entryPoint = entryPoint;
-    if (this.pythonTarget) {
+    if (this.configService.isPythonTarget()) {
       const index = (functionJSON.bindings as any[])
         .findIndex((binding) => (!binding.direction || binding.direction === "out"));
       functionJSON.bindings[index].name = "$return";

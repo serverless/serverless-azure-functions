@@ -55,7 +55,9 @@ export interface ServerlessAzureProvider {
   virtualNetwork?: ResourceConfig;
   armTemplate?: ArmTemplateConfig;
   keyVaultConfig?: AzureKeyVaultConfig;
+  /** Runtime setting within `serverless.yml` */
   runtime: string;
+  /** Only to be used internally. Derived from `runtime` property */
   functionRuntime?: FunctionRuntime;
   os?: FunctionAppOS;
 }

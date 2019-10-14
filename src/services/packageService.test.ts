@@ -253,8 +253,6 @@ describe("Package Service", () => {
     let functions: string[];
 
     beforeEach(() => {
-      
-      
       mySpawn = mockSpawn();
       require("child_process").spawn = mySpawn;
       mySpawn.setDefault(mySpawn.simple(0, "Exit code"));

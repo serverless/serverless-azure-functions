@@ -126,6 +126,20 @@ export class ConfigService {
   }
 
   /**
+   * Function app configured to run on Python
+   */
+  public isPythonTarget(): boolean {
+    return this.config.provider.functionRuntime.language === SupportedRuntimeLanguage.PYTHON;
+  }
+
+  /**
+   * Function app configured to run on Linux
+   */
+  public isLinuxTarget(): boolean {
+    return this.getOs() === FunctionAppOS.LINUX
+  }
+
+  /**
    * Set any default values required for service
    * @param config Current Serverless configuration
    */

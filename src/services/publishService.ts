@@ -1,59 +1,38 @@
 import { Site } from "@azure/arm-appservice/esm/models";
 import fs from "fs";
 import Serverless from "serverless";
-import configConstants from "../config";
-import { FunctionAppOS } from "../models/serverless";
-import { Guard } from "../shared/guard";
-import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
 import { CoreToolsService } from "./coreToolsService";
 import { FunctionAppService } from "./functionAppService";
 
 export class PublishService extends BaseService {
 
-  private blobService: AzureBlobStorageService;
+  private functionAppService: FunctionAppService;
 
-  public constructor(serverless: Serverless, options: Serverless.Options) {
+  public constructor(serverless: Serverless, options: Serverless.Options, functionAppService: FunctionAppService) {
     super(serverless, options);
-    this.blobService = new AzureBlobStorageService(serverless, options);
+    this.functionAppService = functionAppService;
   }
 
   public async publish(functionApp: Site, functionZipFile: string) {
-    if (this.config.provider.os === FunctionAppOS.LINUX) {
+    if (this.configService.isLinuxTarget()) {
       await this.linuxPublish(functionApp);
     } else {
       await this.windowsPublish(functionApp, functionZipFile);
     }
   }
 
-  private async windowsPublish(functionApp: Site, functionZipFile: string) {
-    const functionAppService = new FunctionAppService(this.serverless, this.options);
-    
+  private async windowsPublish(functionApp: Site, functionZipFile: string) {    
     this.log("Deploying serverless functions...");
-    if (this.config.provider.deployment.external) {
-      this.log("Updating function app setting to run from external package...");
-      const sasUrl = await this.blobService.generateBlobSasTokenUrl(
-        this.config.provider.deployment.container,
-        this.artifactName
-      );
-      const response = await functionAppService.updateFunctionAppSetting(
-        functionApp,
-        configConstants.runFromPackageSetting,
-        sasUrl
-      );
-      await functionAppService.syncTriggers(functionApp, response.properties);
-    } else {
-      await this.uploadZippedArtifactToFunctionApp(functionApp, functionZipFile);
-    }
-
+    await this.uploadZippedArtifactToFunctionApp(functionApp, functionZipFile);
     this.log("Deployed serverless functions:")
     const serverlessFunctions = this.serverless.service.getAllFunctions();
-    const deployedFunctions = await functionAppService.listFunctions(functionApp);
+    const deployedFunctions = await this.functionAppService.listFunctions(functionApp);
 
     // List functions that are part of the serverless yaml config
     deployedFunctions.forEach((functionConfig) => {
       if (serverlessFunctions.includes(functionConfig.name)) {
-        const httpConfig = functionAppService.getFunctionHttpTriggerConfig(functionApp, functionConfig);
+        const httpConfig = this.functionAppService.getFunctionHttpTriggerConfig(functionApp, functionConfig);
 
         if (httpConfig) {
           const method = httpConfig.methods[0].toUpperCase();

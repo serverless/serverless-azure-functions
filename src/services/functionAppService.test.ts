@@ -3,21 +3,25 @@ import MockAdapter from "axios-mock-adapter";
 import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
-import { MockFactory } from "../test/mockFactory";
-import { FunctionAppService } from "./functionAppService";
-import { ArmService } from "./armService";
 import { FunctionAppResource } from "../armTemplates/resources/functionApp";
-
-jest.mock("@azure/arm-appservice")
-import { WebSiteManagementClient } from "@azure/arm-appservice";
+import configConstants from "../config";
 import { ArmDeployment, ArmTemplateType } from "../models/armTemplates";
+import { ServerlessAzureConfig } from "../models/serverless";
+import { Utils } from "../shared/utils";
+import { MockFactory } from "../test/mockFactory";
+import { ArmService } from "./armService";
+import { FunctionAppService } from "./functionAppService";
+
+jest.mock("@azure/arm-appservice");
+import { WebSiteManagementClient } from "@azure/arm-appservice";
+
 jest.mock("@azure/arm-resources");
 
 jest.mock("./azureBlobStorageService");
-import { AzureBlobStorageService } from "./azureBlobStorageService"
-import configConstants from "../config";
-import { Utils } from "../shared/utils";
-import { ServerlessAzureConfig } from "../models/serverless";
+import { AzureBlobStorageService } from "./azureBlobStorageService";
+
+jest.mock("./publishService");
+import { PublishService } from "./publishService"
 
 describe("Function App Service", () => {
   const app = MockFactory.createTestSite();
@@ -255,23 +259,9 @@ describe("Function App Service", () => {
     });
   });
 
-  it("uploads functions to function app and blob storage", async () => {
-    const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
-    const expectedUploadUrl = `https://${scmDomain}/api/zipdeploy/`;
-
+  it("publishes functions and uploads to blob storage", async () => {
     const service = createService();
     await service.uploadFunctions(app);
-
-    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
-      method: "POST",
-      uri: expectedUploadUrl,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
-        Accept: "*/*",
-        ContentType: "application/octet-stream",
-      }
-    }, slsService["artifact"]);
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
     expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
       slsService["artifact"],
@@ -279,30 +269,17 @@ describe("Function App Service", () => {
       `${expectedArtifactName}.zip`,
     )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
-    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
+    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/);
+    expect(PublishService.prototype.publish).toBeCalledWith(app, "app.zip");
   });
 
-  it("uploads functions to function app and blob storage with default naming convention", async () => {
-    const scmDomain = app.enabledHostNames.find((hostname) => hostname.endsWith("scm.azurewebsites.net"));
-    const expectedUploadUrl = `https://${scmDomain}/api/zipdeploy/`;
-
+  it("publishes functions and uploads to blob storage with default naming convention", async () => {
     const sls = MockFactory.createTestServerless();
     delete sls.service["artifact"]
     const service = createService(sls);
     await service.uploadFunctions(app);
-
     const defaultArtifact = path.join(".serverless", `${sls.service.getServiceName()}.zip`);
-
-    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
-      method: "POST",
-      uri: expectedUploadUrl,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
-        Accept: "*/*",
-        ContentType: "application/octet-stream",
-      }
-    }, defaultArtifact);
+    expect(PublishService.prototype.publish).toBeCalledWith(app, defaultArtifact);
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
     expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
       defaultArtifact,
@@ -310,34 +287,9 @@ describe("Function App Service", () => {
       `${expectedArtifactName}.zip`,
     )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
-    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/)
+    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/);
   });
 
-  it("uploads functions with custom SCM domain (aka App service environments)", async () => {
-    const customApp = {
-      ...MockFactory.createTestSite("CustomAppWithinASE"),
-      enabledHostNames: [
-        "myapi.customase.p.azurewebsites.net",
-        "myapi.scm.customase.p.azurewebsites.net"
-      ],
-    }
-
-    const expectedUploadUrl = `https://${customApp.enabledHostNames[1]}/api/zipdeploy/`;
-
-    const service = createService();
-    await service.uploadFunctions(customApp);
-
-    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
-      method: "POST",
-      uri: expectedUploadUrl,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
-        Accept: "*/*",
-        ContentType: "application/octet-stream",
-      }
-    }, slsService["artifact"])
-  });
 
   it("uses default name when no artifact provided", async () => {
     const sls = MockFactory.createTestServerless();
@@ -399,60 +351,5 @@ describe("Function App Service", () => {
         }
       }
     );
-  });
-
-  describe("Updating Function App Settings", () => {
-
-    const sasUrl = "sasUrl"
-
-    beforeEach(() => {
-      FunctionAppService.prototype.updateFunctionAppSetting = jest.fn(() => {
-        return {
-          properties: appSettings
-        }
-      }) as any;
-      AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => Promise.resolve(sasUrl));
-    });
-
-    afterEach(() => {
-      (FunctionAppService.prototype.updateFunctionAppSetting as any).mockRestore();
-    });
-
-    it("does not upload directly to function app if configured to run on linux", async () => {
-      const newSlsService = MockFactory.createTestService();
-      newSlsService.provider["os"] = "linux";
-      const service = createService(MockFactory.createTestServerless({
-        service: newSlsService,
-      }));
-      FunctionAppService.prototype.uploadZippedArtifactToFunctionApp = jest.fn();
-      await service.uploadFunctions(app);
-      expect(AzureBlobStorageService.prototype.uploadFile).toBeCalled();
-      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
-      expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).not.toBeCalled();
-      (FunctionAppService.prototype.uploadZippedArtifactToFunctionApp as any).mockRestore();
-    });
-
-    it("uploads directly to function app if not configured to run from blob", async () => {
-      const newSlsService = MockFactory.createTestService();
-      newSlsService.provider["deployment"] = {
-        external: false,
-      }
-      const sls = MockFactory.createTestServerless({
-        service: newSlsService,
-      });
-      const service = createService(sls);
-      FunctionAppService.prototype.uploadZippedArtifactToFunctionApp = jest.fn();
-      await service.uploadFunctions(app);
-      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
-      expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).toBeCalled();
-      (FunctionAppService.prototype.uploadZippedArtifactToFunctionApp as any).mockRestore();
-    });
-
-    it("does not generate SAS URL or update WEBSITE_RUN_FROM_PACKAGE if not configured to run from blob", async() => {
-      const service = createService();
-      await service.uploadFunctions(app);
-      expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).not.toBeCalled();
-      expect(FunctionAppService.prototype.updateFunctionAppSetting).not.toBeCalled();
-    });
   });
 });

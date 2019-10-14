@@ -4,7 +4,7 @@ import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
-import { ServerlessAzureConfig, ServerlessAzureOptions, ServerlessLogOptions, FunctionRuntime, SupportedRuntimeLanguage, FunctionAppOS } from "../models/serverless";
+import { FunctionRuntime, ServerlessAzureConfig, ServerlessAzureOptions, ServerlessLogOptions } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
@@ -20,8 +20,6 @@ export abstract class BaseService {
   protected artifactName: string;
   protected storageAccountName: string;
   protected runtime: FunctionRuntime;
-  protected pythonTarget: boolean;
-  protected linuxTarget: boolean;
   protected config: ServerlessAzureConfig;
   protected configService: ConfigService;
 
@@ -42,8 +40,6 @@ export abstract class BaseService {
     this.deploymentName = this.configService.getDeploymentName();
     this.artifactName = this.configService.getArtifactName(this.deploymentName);
     this.runtime = this.configService.getRuntime();
-    this.pythonTarget = this.runtime.language === SupportedRuntimeLanguage.PYTHON;
-    this.linuxTarget = this.configService.getOs() === FunctionAppOS.LINUX;
     this.storageAccountName = StorageAccountResource.getResourceName(this.config);
 
     if (!this.credentials && authenticate) {
