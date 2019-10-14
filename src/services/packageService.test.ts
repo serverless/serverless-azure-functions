@@ -7,10 +7,7 @@ import { FunctionMetadata } from "../shared/utils";
 import { MockFactory } from "../test/mockFactory";
 import { PackageService } from "./packageService";
 
-let fs;
-jest.isolateModules(() => {
-  fs = require("fs");
-})
+import fs from "fs";
 
 jest.mock("rimraf");
 

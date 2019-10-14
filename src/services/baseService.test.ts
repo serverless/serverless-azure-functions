@@ -4,10 +4,7 @@ import { ServerlessAzureOptions } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
 
-let fs;
-jest.isolateModules(() => {
-  fs = require("fs");
-});
+import fs from "fs";
 
 jest.mock("axios", () => jest.fn());
 import axios from "axios";

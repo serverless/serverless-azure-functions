@@ -58,13 +58,10 @@ export const configConstants = {
     }
   },
   defaultFuncIgnore: [
-    "package.json",
-    "package-lock.json",
     "README.md",
     ".gitignore",
     ".git/**",
     ".vscode/**",
-    "node_modules/**",
     "local.settings.json",
     ".serverless/**",
   ]
