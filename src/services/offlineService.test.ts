@@ -40,9 +40,11 @@ describe("Offline Service", () => {
     expect(calls).toHaveLength(functionNames.length + 1);
     for (let i = 0; i < functionNames.length; i++) {
       const name = functionNames[i];
-      expect(calls[i][0]).toEqual(`${name}${path.sep}function.json`)
+      const call = calls.find((c) => c[0] === `${name}${path.sep}function.json`);
+      expect(call).toBeTruthy();
+      
       expect(
-        JSON.parse(calls[i][1])
+        JSON.parse(call[1])
       ).toEqual(
         MockFactory.createTestBindingsObject(`..${path.sep}${name}.js`)
       );

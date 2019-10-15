@@ -26,8 +26,8 @@ export class PackageService extends BaseService {
    */
   public async createBindings(): Promise<void> {
     const createEventsPromises = this.serverless.service.getAllFunctions()
-      .map((functionName) => {
-        const metaData = Utils.getFunctionMetaData(functionName, this.serverless);
+      .map(async (functionName) => {
+        const metaData = await Utils.getFunctionMetaData(functionName, this.serverless);
         return this.createBinding(functionName, metaData);
       });
 

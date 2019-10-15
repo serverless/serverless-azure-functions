@@ -1,16 +1,19 @@
 import Serverless from "serverless";
 import { constants } from "./constants";
-
-const bindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+import axios from "axios";
+import configConstants from "../config";
+const defaultBindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 export class BindingUtils {
-  public static getBindingsMetaData(serverless: Serverless) {
+  public static async getBindingsMetaData(serverless: Serverless) {
     const bindingDisplayNames = [];
     const bindingTypes = [];
     const bindingSettings = [];
     const bindingSettingsNames = [];
 
     serverless.cli.log("Parsing Azure Functions Bindings.json...");
+
+    const bindingsJson = await this.getBindingsJson();
 
     for (let bindingsIndex = 0; bindingsIndex < bindingsJson[constants.bindings].length; bindingsIndex++) {
       const settingsNames = [];
@@ -110,5 +113,21 @@ export class BindingUtils {
     }
 
     return binding;
+  }
+
+  /**
+   * Tries to fetch current bindings.json from GitHub
+   * If it can't be reached, it uses the local JSON file
+   */
+  private static async getBindingsJson() {
+    try {
+      const { data } = await axios({
+        method: "get",
+        url: configConstants.bindingsJsonUrl,
+      });
+      return data;
+    } catch (err) {
+      return defaultBindingsJson;
+    }    
   }
 }

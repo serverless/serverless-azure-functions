@@ -32,9 +32,9 @@ describe("Bindings", () => {
     });
   });
 
-  it("Gets the http binding with default settings", () => {
+  it("Gets the http binding with default settings", async () => {
     const serverless = MockFactory.createTestServerless();
-    const parsedBindings = BindingUtils.getBindingsMetaData(serverless);
+    const parsedBindings = await BindingUtils.getBindingsMetaData(serverless);
     const bindingType = "http";
 
     const bindingTypes = parsedBindings.bindingTypes;
@@ -50,9 +50,9 @@ describe("Bindings", () => {
     });
   });
 
-  it("Gets the http binding with custom name", () => {
+  it("Gets the http binding with custom name", async () => {
     const serverless = MockFactory.createTestServerless();
-    const parsedBindings = BindingUtils.getBindingsMetaData(serverless);
+    const parsedBindings = await BindingUtils.getBindingsMetaData(serverless);
     const bindingType = "http";
     const userSettings = { name: "custom" };
 

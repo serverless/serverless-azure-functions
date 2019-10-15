@@ -41,6 +41,7 @@ export const configConstants = {
     prefix: "sls",
     localPort: 7071,
   },
+  bindingsJsonUrl: "https://raw.githubusercontent.com/Azure/azure-functions-templates/master/Functions.Templates/Bindings/bindings.json"
 };
 
 export default configConstants;

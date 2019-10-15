@@ -57,122 +57,6 @@
       ]
     },
     {
-      "type": "eventHubTrigger",
-      "displayName": "$eventHubTrigger_displayName",
-      "direction": "trigger",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\eventHubTrigger.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "myEventHubMessage",
-          "required": true,
-          "label": "$eventHubTrigger_name_label",
-          "help": "$eventHubTrigger_name_help",
-          "validators": [
-            {
-              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "eventHubName",
-          "value": "string",
-          "defaultValue": "myeventhub",
-          "required": true,
-          "label": "$eventHubOut_path_label",
-          "help": "$eventHubTrigger_path_help",
-          "validators": [
-            {
-              "expression": "^[a-z0-9]$|^[a-z0-9][a-z0-9-_.]{0,48}[a-z0-9]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
-              "errorText": "$eventHubTrigger_path_errorText"
-            }
-          ]
-        },
-        {
-          "name": "consumerGroup",
-          "value": "string",
-          "defaultValue": "$Default",
-          "required": false,
-          "label": "$eventHubTrigger_consumerGroup_label",
-          "help": "$eventHubTrigger_consumerGroup_help",
-          "validators": [
-            {
-              "expression": "(^[a-z0-9]$|^[a-z0-9][a-z0-9-_.]{0,48}[a-z0-9]$)|^\\$Default$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
-              "errorText": "$eventHubTrigger_consumerGroup_errorText"
-            }
-          ]
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "EventHub",
-          "required": true,
-          "label": "$eventHubTrigger_connection_label",
-          "help": "$eventHubTrigger_connection_help",
-          "placeholder": "[variables('selectConnection')]"
-        }
-      ]
-    },
-    {
-      "type": "eventHub",
-      "displayName": "$eventHubOut_displayName",
-      "direction": "out",
-      "enabledInTryMode": false,
-      "actions": [
-        {
-          "template": "EventHubTrigger",
-          "binding": "eventHubTrigger",
-          "settings": [
-            "path",
-            "connection"
-          ]
-        }
-      ],
-      "documentation": "$content=Documentation\\eventHubOut.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "outputEventHubMessage",
-          "required": true,
-          "label": "$eventHubOut_name_label",
-          "help": "$eventHubOut_name_help",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "path",
-          "value": "string",
-          "defaultValue": "outeventhub",
-          "required": true,
-          "label": "$eventHubOut_path_label",
-          "help": "$eventHubOut_path_help",
-          "validators": [
-            {
-              "expression": "^[a-z0-9]$|^[a-z0-9][a-z0-9-_.]{0,48}[a-z0-9]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
-              "errorText": "$eventHubOut_path_errorText"
-            }
-          ]
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "EventHub",
-          "required": true,
-          "label": "$eventHubOut_connection_label",
-          "help": "$eventHubOut_connection_help",
-          "placeholder": "[variables('selectConnection')]"
-        }
-      ]
-    },
-    {
       "type": "queue",
       "displayName": "$queueOut_displayName",
       "direction": "out",
@@ -188,6 +72,10 @@
         }
       ],
       "documentation": "$content=Documentation\\queueOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -234,6 +122,10 @@
       "direction": "trigger",
       "enabledInTryMode": true,
       "documentation": "$content=Documentation\\queueTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -290,6 +182,10 @@
         }
       ],
       "documentation": "$content=Documentation\\blobOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -314,7 +210,7 @@
           "help": "$blobOut_path_help",
           "validators": [
             {
-              "expression": "^[a-z0-9{](?:[a-z0-9{}]|(?:\\-(?!\\-))){1,61}[a-z0-9{}][\\/](\\S){0,1023}[^\\/]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "((^[a-z0-9](?:[a-z0-9]|(?:\\-(?!\\-))){1,61}[a-z0-9])|(^[{][a-zA-Z0-9]{1,126}[}])|(^[%][a-zA-Z0-9]{1,126}[%]))[\\/](\\S){0,1023}[^\\/]$|(^[{][a-zA-Z0-9]{1,126}[}]$)|(^[%][a-zA-Z0-9]{1,126}[%]$)",
               "errorText": "$blobOut_path_errorText"
             }
           ]
@@ -336,6 +232,10 @@
       "direction": "in",
       "enabledInTryMode": true,
       "documentation": "$content=Documentation\\blobIn.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -360,7 +260,7 @@
           "help": "$blobIn_path_help",
           "validators": [
             {
-              "expression": "^[a-z0-9{](?:[a-z0-9{}]|(?:\\-(?!\\-))){1,61}[a-z0-9{}][\\/](\\S){0,1023}[^\\/]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "((^[a-z0-9](?:[a-z0-9]|(?:\\-(?!\\-))){1,61}[a-z0-9])|(^[{][a-zA-Z0-9]{1,126}[}])|(^[%][a-zA-Z0-9]{1,126}[%]))[\\/](\\S){0,1023}[^\\/]$|(^[{][a-zA-Z0-9]{1,126}[}]$)|(^[%][a-zA-Z0-9]{1,126}[%]$)",
               "errorText": "$blobIn_patherrorText"
             }
           ]
@@ -382,6 +282,10 @@
       "direction": "trigger",
       "enabledInTryMode": true,
       "documentation": "$content=Documentation\\blobTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -406,7 +310,7 @@
           "help": "$blobTrigger_path_help",
           "validators": [
             {
-              "expression": "(^[a-z0-9{](?:[a-z0-9{}]|(?:\\-(?!\\-))){1,61}[a-z0-9{}]$)|(^[a-z0-9{](?:[a-z0-9{}]|(?:\\-(?!\\-))){1,61}[a-z0-9{}][\\/](\\S){0,1023}[^\\/]$)|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "(((^[a-z0-9](?:[a-z0-9]|(?:\\-(?!\\-))){1,61}[a-z0-9])|(^[{][a-zA-Z0-9]{1,126}[}])|(^[%][a-zA-Z0-9]{1,126}[%]))[\\/](\\S){0,1023}[^\\/]$)|(((^[a-z0-9](?:[a-z0-9]|(?:\\-(?!\\-))){1,61}[a-z0-9]$)|(^[{][a-zA-Z0-9]{1,126}[}]$)|(^[%][a-zA-Z0-9]{1,126}[%]$)))",
               "errorText": "$blobTrigger_path_errorText"
             }
           ]
@@ -419,261 +323,6 @@
           "label": "[variables('storageConnStringLabel')]",
           "help": "[variables('appSettingsHelp')]",
           "placeholder": "[variables('selectConnection')]"
-        }
-      ]
-    },
-    {
-      "type": "apiHubFile",
-      "displayName": "$apiHubFileIn_displayName",
-      "direction": "in",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\apiHubFileIn.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "inputFile",
-          "required": true,
-          "label": "$apiHubFileIn_name_label",
-          "help": "$apiHubFileIn_name_help",
-          "validators": [
-            {
-              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "path",
-          "value": "string",
-          "defaultValue": "path/{file}",
-          "required": true,
-          "label": "$apiHubFileIn_path_label",
-          "help": "$apiHubFileIn_path_help",
-          "validators": []
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "ApiHub",
-          "required": true,
-          "label": "$apiHubFileIn_connection_label",
-          "help": "$apiHubFileIn_connection_help",
-          "metadata": {
-            "capability": "blob"
-          }
-        }
-      ]
-    },
-    {
-      "type": "apiHubFile",
-      "displayName": "$apiHubFileIn_displayName",
-      "direction": "out",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\apiHubFileOut.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "outputFile",
-          "required": true,
-          "label": "$apiHubFileIn_name_label",
-          "help": "$apiHubFileIn_name_help",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "path",
-          "value": "string",
-          "defaultValue": "path/{file}",
-          "required": true,
-          "label": "$apiHubFileIn_path_label",
-          "help": "$apiHubFileIn_path_help",
-          "validators": []
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "ApiHub",
-          "required": true,
-          "label": "$apiHubFileIn_connection_label",
-          "help": "$apiHubFileIn_connection_help",
-          "metadata": {
-            "capability": "blob"
-          }
-        }
-      ]
-    },
-    {
-      "type": "apiHubFileTrigger",
-      "displayName": "$apiHubFileTrigger_displayName",
-      "direction": "trigger",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\apiHubFileTrigger.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "inputFile",
-          "required": true,
-          "label": "$apiHubFileTrigger_name_label",
-          "help": "$apiHubFileTrigger_name_help",
-          "validators": [
-            {
-              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "path",
-          "value": "string",
-          "defaultValue": "path/{file}",
-          "required": true,
-          "label": "$apiHubFileTrigger_path_label",
-          "help": "$apiHubFileTrigger_path_help",
-          "validators": []
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "ApiHub",
-          "required": true,
-          "label": "$apiHubFileTrigger_connection_label",
-          "help": "$apiHubFileTrigger_connection_help",
-          "metadata": {
-            "capability": "blob",
-            "excluded": [
-              "googledrive",
-              "azureblob"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "type": "apiHubTable",
-      "displayName": "$apiHubTableIn_displayName",
-      "direction": "in",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\apiHubTable.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "inputTable",
-          "required": true,
-          "label": "[variables('paramNameLabel')]",
-          "help": "[variables('paramNameInputHelp')]",
-          "validators": [
-            {
-              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "dataSetName",
-          "value": "string",
-          "defaultValue": "default",
-          "required": false,
-          "label": "[variables('apiHubTableDataSetLabel')]",
-          "help": "[variables('apiHubTableDataSetHelp')]",
-          "validators": []
-        },
-        {
-          "name": "tableName",
-          "value": "string",
-          "defaultValue": null,
-          "required": false,
-          "label": "[variables('apiHubTableNameLabel')]",
-          "help": "[variables('apiHubTableHelp')]",
-          "validators": []
-        },
-        {
-          "name": "entityId",
-          "value": "string",
-          "defaultValue": null,
-          "required": false,
-          "label": "[variables('apiHubTableEntityLabel')]",
-          "help": "[variables('apiHubTableEntityHelp')]",
-          "validators": []
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "ApiHub",
-          "required": true,
-          "label": "[variables('apiHubTableConnectionLabel')]",
-          "help": "[variables('apiHubTableConnectionHelp')]",
-          "metadata": {
-            "capability": "tabular"
-          }
-        }
-      ]
-    },
-    {
-      "type": "apiHubTable",
-      "displayName": "$apiHubTableOut_displayName",
-      "direction": "out",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\apiHubTableOut.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "outputTable",
-          "required": true,
-          "label": "[variables('paramNameLabel')]",
-          "help": "[variables('paramNameOutputHelp')]",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "dataSetName",
-          "value": "string",
-          "defaultValue": "default",
-          "required": false,
-          "label": "[variables('apiHubTableDataSetLabel')]",
-          "help": "[variables('apiHubTableDataSetHelp')]",
-          "validators": []
-        },
-        {
-          "name": "tableName",
-          "value": "string",
-          "defaultValue": null,
-          "required": false,
-          "label": "[variables('apiHubTableNameLabel')]",
-          "help": "[variables('apiHubTableHelp')]",
-          "validators": []
-        },
-        {
-          "name": "entityId",
-          "value": "string",
-          "defaultValue": null,
-          "required": false,
-          "label": "[variables('apiHubTableEntityLabel')]",
-          "help": "[variables('apiHubTableEntityHelp')]",
-          "validators": []
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "ApiHub",
-          "required": true,
-          "label": "[variables('apiHubTableConnectionLabel')]",
-          "help": "[variables('apiHubTableConnectionHelp')]",
-          "metadata": {
-            "capability": "tabular"
-          }
         }
       ]
     },
@@ -705,26 +354,6 @@
           "label": "$httpTrigger_route_label",
           "help": "$httpTrigger_route_help",
           "validators": []
-        },
-        {
-          "name": "webHookType",
-          "value": "enum",
-          "enum": [
-            {
-              "value": "github",
-              "display": "GitHub"
-            },
-            {
-              "value": "genericJson",
-              "display": "Generic JSON"
-            },
-            {
-              "value": "slack",
-              "display": "Slack"
-            }
-          ],
-          "label": "$httpTrigger_webHookType_label",
-          "help": "$httpTrigger_webHookType_help"
         },
         {
           "name": "authLevel",
@@ -799,34 +428,6 @@
       ],
       "rules": [
         {
-          "name": "mode",
-          "type": "exclusivity",
-          "values": [
-            {
-              "value": "authLevel",
-              "display": "Standard",
-              "hiddenSettings": [
-                "webHookType"
-              ],
-              "shownSettings": [
-                "authLevel"
-              ]
-            },
-            {
-              "value": "webHookType",
-              "display": "Webhook",
-              "hiddenSettings": [
-                "authLevel"
-              ],
-              "shownSettings": [
-                "webHookType"
-              ]
-            }
-          ],
-          "label": "$httpTrigger_mode_label",
-          "help": "$httpTrigger_mode_help"
-        },
-        {
           "name": "methodRule",
           "type": "exclusivity",
           "values": [
@@ -881,6 +482,10 @@
       "direction": "trigger",
       "enabledInTryMode": false,
       "documentation": "$content=Documentation\\serviceBusTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.ServiceBus",
+        "version": "3.0.3"
+      },
       "settings": [
         {
           "name": "name",
@@ -897,15 +502,24 @@
           ]
         },
         {
+          "name": "connection",
+          "value": "string",
+          "resource": "ServiceBus",
+          "required": true,
+          "label": "$serviceBusTrigger_connection_label",
+          "help": "$serviceBusTrigger_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
+        {
           "name": "queueName",
           "value": "string",
           "defaultValue": "mysbqueue",
-          "required": false,
+          "required": true,
           "label": "$serviceBusTrigger_queueName_label",
           "help": "$serviceBusTrigger_queueName_help",
           "validators": [
             {
-              "expression": "^[0-9a-z][a-z0-9_.-]{1,48}[0-9a-z]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}([a-zA-Z0-9]$|[a-zA-Z0-9][\\/]\\$DeadLetterQueue$)|^[{][a-zA-Z0-9]{1,126}([}]$|[}][\\/]\\$DeadLetterQueue$)|^[%][a-zA-Z0-9]{1,126}([%]$|[%][\\/]\\$DeadLetterQueue$)",
               "errorText": "$serviceBusTrigger_queueName_errorText"
             }
           ]
@@ -914,12 +528,12 @@
           "name": "topicName",
           "value": "string",
           "defaultValue": "mysbtopic",
-          "required": false,
+          "required": true,
           "label": "$serviceBusTrigger_topicName_label",
           "help": "$serviceBusTrigger_topicName_help",
           "validators": [
             {
-              "expression": "^[0-9a-z][a-z0-9_.-]{1,48}[0-9a-z]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}[a-zA-Z0-9]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
               "errorText": "$serviceBusTrigger_topicName_errorText"
             }
           ]
@@ -928,40 +542,15 @@
           "name": "subscriptionName",
           "value": "string",
           "defaultValue": "mysubscription",
-          "required": false,
+          "required": true,
           "label": "$serviceBusTrigger_subscriptionName_label",
           "help": "$serviceBusTrigger_subscriptionName_help",
           "validators": [
             {
-              "expression": "^[0-9a-zA-Z][a-zA-Z0-9_.-]{1,48}[0-9a-zA-Z]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}([a-zA-Z0-9]$|[a-zA-Z0-9][\\/]\\$DeadLetterQueue$)|^[{][a-zA-Z0-9]{1,126}([}]$|[}][\\/]\\$DeadLetterQueue$)|^[%][a-zA-Z0-9]{1,126}([%]$|[%][\\/]\\$DeadLetterQueue$)",
               "errorText": "$serviceBusTrigger_subscriptionName_errorText"
             }
           ]
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "EventHub",
-          "required": true,
-          "label": "$serviceBusTrigger_connection_label",
-          "help": "$serviceBusTrigger_connection_help",
-          "placeholder": "[variables('selectConnection')]"
-        },
-        {
-          "name": "accessRights",
-          "value": "enum",
-          "enum": [
-            {
-              "value": "Manage",
-              "display": "Manage"
-            },
-            {
-              "value": "Listen",
-              "display": "Listen"
-            }
-          ],
-          "label": "$serviceBusTrigger_accessRights_label",
-          "help": "$serviceBusTrigger_accessRights_help"
         }
       ],
       "rules": [
@@ -1003,7 +592,20 @@
       "direction": "out",
       "enabledInTryMode": false,
       "documentation": "$content=Documentation\\serviceBusOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.ServiceBus",
+        "version": "3.0.3"
+      },
       "settings": [
+        {
+          "name": "connection",
+          "value": "string",
+          "resource": "ServiceBus",
+          "required": true,
+          "label": "$serviceBusOut_connection_label",
+          "help": "$serviceBusOut_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
         {
           "name": "name",
           "value": "string",
@@ -1027,7 +629,7 @@
           "help": "$serviceBusOut_queueName_help",
           "validators": [
             {
-              "expression": "^[0-9a-z][a-z0-9_.-]{1,48}[0-9a-z]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}([a-zA-Z0-9]$|[a-zA-Z0-9][\\/]\\$DeadLetterQueue$)|^[{][a-zA-Z0-9]{1,126}([}]$|[}][\\/]\\$DeadLetterQueue$)|^[%][a-zA-Z0-9]{1,126}([%]$|[%][\\/]\\$DeadLetterQueue$)",
               "errorText": "$serviceBusOut_queueName_errorText"
             }
           ]
@@ -1041,35 +643,10 @@
           "help": "$serviceBusOut_topicName_help",
           "validators": [
             {
-              "expression": "^[0-9a-z][a-z0-9_.-]{1,48}[0-9a-z]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}[a-zA-Z0-9]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
               "errorText": "$serviceBusOut_topicName_errorText"
             }
           ]
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "EventHub",
-          "required": true,
-          "label": "$serviceBusOut_connection_label",
-          "help": "$serviceBusOut_connection_help",
-          "placeholder": "[variables('selectConnection')]"
-        },
-        {
-          "name": "accessRights_",
-          "value": "enum",
-          "enum": [
-            {
-              "value": "Manage",
-              "display": "Manage"
-            },
-            {
-              "value": "Send",
-              "display": "Send"
-            }
-          ],
-          "label": "$serviceBusOut_accessRights_label",
-          "help": "$serviceBusOut_accessRights_help"
         }
       ],
       "rules": [
@@ -1104,34 +681,15 @@
       ]
     },
     {
-      "type": "manualTrigger",
-      "displayName": "Manual",
-      "direction": "trigger",
-      "enabledInTryMode": true,
-      "documentation": "$content=Documentation\\manualTrigger.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "input",
-          "required": true,
-          "label": "$manualTrigger_name_label",
-          "help": "$manualTrigger_name_help",
-          "validators": [
-            {
-              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "type": "table",
       "displayName": "$tableout_displayName",
       "direction": "out",
       "enabledInTryMode": true,
       "documentation": "$content=Documentation\\tableOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -1178,6 +736,10 @@
       "direction": "in",
       "enabledInTryMode": true,
       "documentation": "$content=Documentation\\tableIn.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Storage",
+        "version": "3.0.4"
+      },
       "settings": [
         {
           "name": "name",
@@ -1248,75 +810,23 @@
       ]
     },
     {
-      "type": "cosmosDB",
-      "displayName": "$cosmosDBOut_displayName",
-      "direction": "out",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\cosmosDBOut.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "outputDocument",
-          "required": true,
-          "label": "$cosmosDBOut_name_label",
-          "help": "$cosmosDBOut_name_help",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "databaseName",
-          "value": "string",
-          "defaultValue": "outDatabase",
-          "required": true,
-          "label": "$cosmosDBOut_databaseName_label",
-          "help": "$cosmosDBOut_databaseName_help"
-        },
-        {
-          "name": "collectionName",
-          "value": "string",
-          "defaultValue": "MyCollection",
-          "required": true,
-          "label": "$cosmosDBOut_collectionName_label",
-          "help": "$cosmosDBOut_collectionName_help"
-        },
-        {
-          "name": "createIfNotExists",
-          "value": "boolean",
-          "defaultValue": true,
-          "required": false,
-          "label": "$cosmosDBOut_createIfNotExists_label",
-          "help": "$cosmosDBOut_createIfNotExists_help"
-        },
-        {
-          "name": "connectionStringSetting",
-          "value": "string",
-          "resource": "CosmosDB",
-          "required": true,
-          "label": "$cosmosDBOut_connection_label",
-          "help": "$cosmosDBOut_connection_help",
-          "placeholder": "[variables('selectConnection')]"
-        }
-      ]
-    },
-    {
-      "type": "cosmosDBTrigger",
-      "displayName": "$cosmosDBIn_displayName",
+      "type": "eventHubTrigger",
+      "displayName": "$eventHubTrigger_displayName",
       "direction": "trigger",
       "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\cosmosDBTrigger.md",
+      "documentation": "$content=Documentation\\eventHubTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.EventHubs",
+        "version": "3.0.3"
+      },
       "settings": [
         {
           "name": "name",
           "value": "string",
-          "defaultValue": "inputDocument",
+          "defaultValue": "myEventHubMessage",
           "required": true,
-          "label": "$cosmosDBIn_name_label",
-          "help": "$cosmosDBIn_name_help",
+          "label": "$eventHubTrigger_name_label",
+          "help": "$eventHubTrigger_name_help",
           "validators": [
             {
               "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
@@ -1325,230 +835,119 @@
           ]
         },
         {
-          "name": "databaseName",
-          "value": "string",
-          "defaultValue": "inDatabase",
-          "required": true,
-          "label": "$cosmosDBIn_databaseName_label",
-          "help": "$cosmosDBIn_databaseName_help"
-        },
-        {
-          "name": "collectionName",
-          "value": "string",
-          "defaultValue": "MyCollection",
-          "required": true,
-          "label": "$cosmosDBIn_collectionName_label",
-          "help": "$cosmosDBIn_collectionName_help"
-        },
-        {
-          "name": "leaseCollectionName",
-          "value": "string",
-          "defaultValue": "leases",
-          "required": true,
-          "label": "$cosmosDBIn_leaseCollectionName_label",
-          "help": "$cosmosDBIn_leaseCollectionName_help"
-        },
-        {
-          "name": "createLeaseCollectionIfNotExists",
-          "value": "boolean",
-          "required": false,
-          "defaultValue": true,
-          "label": "$cosmosDBIn_createLeaseCollectionIfNotExists_label",
-          "help": "$cosmosDBIn_createLeaseCollectionIfNotExists_help"
-        },
-        {
-          "name": "connectionStringSetting",
-          "value": "string",
-          "resource": "CosmosDB",
-          "required": true,
-          "label": "$cosmosDBIn_connection_label",
-          "help": "$cosmosDBIn_connection_help",
-          "placeholder": "[variables('selectConnection')]"
-        }
-      ]
-    },
-    {
-      "type": "mobileTable",
-      "displayName": "$mobileTableOut_displayName",
-      "direction": "out",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\mobileTableOut.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "outputRecord",
-          "required": true,
-          "label": "$mobileTableOut_name_label",
-          "help": "$mobileTableOut_name_help",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "tableName",
-          "value": "string",
-          "defaultValue": "outTable",
-          "required": true,
-          "label": "$mobileTableOut_tableName_label",
-          "help": "$mobileTableOut_tableName_help"
-        },
-        {
           "name": "connection",
           "value": "string",
-          "defaultValue": "My_MobileApp_Uri",
+          "resource": "EventHub",
           "required": true,
-          "label": "$mobileTableOut_connection_label",
-          "help": "$mobileTableOut_connection_help"
-        },
-        {
-          "name": "apiKey",
-          "value": "string",
-          "required": false,
-          "label": "$mobileTableOut_apiKey_label",
-          "help": "$mobileTableOut_apiKey_help"
-        }
-      ]
-    },
-    {
-      "type": "mobileTable",
-      "displayName": "$mobileTableIn_displayName",
-      "direction": "in",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\mobileTableIn.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "inputRecord",
-          "required": true,
-          "label": "$mobileTableIn_name_label",
-          "help": "$mobileTableIn_name_help",
-          "validators": [
-            {
-              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "tableName",
-          "value": "string",
-          "defaultValue": "inTable",
-          "required": true,
-          "label": "$mobileTableIn_tableName_label",
-          "help": "$mobileTableIn_tableName_help"
-        },
-        {
-          "name": "id",
-          "value": "string",
-          "defaultValue": "{itemId}",
-          "required": true,
-          "label": "$mobileTableIn_id_label",
-          "help": "$mobileTableIn_id_help"
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "defaultValue": "My_MobileApp_Uri",
-          "required": true,
-          "label": "$mobileTableIn_connection_label",
-          "help": "$mobileTableIn_connection_help"
-        },
-        {
-          "name": "apiKey",
-          "value": "string",
-          "required": false,
-          "label": "$mobileTableIn_apiKey_label",
-          "help": "$mobileTableIn_apiKey_help"
-        }
-      ]
-    },
-    {
-      "type": "notificationHub",
-      "displayName": "$notificationHubOut_displayName",
-      "direction": "out",
-      "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\notificationHubOut.md",
-      "settings": [
-        {
-          "name": "name",
-          "value": "string",
-          "defaultValue": "notification",
-          "required": true,
-          "label": "$notificationHubOut_name_label",
-          "help": "$notificationHubOut_name_help",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
-        },
-        {
-          "name": "hubName",
-          "value": "string",
-          "required": true,
-          "label": "$notificationHubOut_hubName_label",
-          "help": "$notificationHubOut_hubName_help"
-        },
-        {
-          "name": "connection",
-          "value": "string",
-          "resource": "ServiceBus",
-          "required": true,
-          "label": "$notificationHubOut_connection_label",
-          "help": "$notificationHubOut_connection_help",
+          "label": "$eventHubTrigger_connection_label",
+          "help": "$eventHubTrigger_connection_help",
           "placeholder": "[variables('selectConnection')]"
         },
         {
-          "name": "tagExpression",
+          "name": "eventHubName",
           "value": "string",
-          "required": false,
-          "label": "$notificationHubOut_tagExpression_label",
-          "help": "$notificationHubOut_tagExpression_help"
+          "defaultValue": "myeventhub",
+          "required": true,
+          "label": "$eventHubOut_path_label",
+          "help": "$eventHubTrigger_path_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}[a-zA-Z0-9]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "errorText": "$eventHubTrigger_path_errorText"
+            }
+          ]
         },
         {
-          "name": "enableTestSend",
-          "value": "boolean",
+          "name": "consumerGroup",
+          "value": "string",
+          "defaultValue": "$Default",
           "required": false,
-          "label": "$notificationHubOut_enableTestSend_label",
-          "help": "$notificationHubOut_enableTestSend_help"
+          "label": "$eventHubTrigger_consumerGroup_label",
+          "help": "$eventHubTrigger_consumerGroup_help",
+          "validators": [
+            {
+              "expression": "(^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}[a-zA-Z0-9]$)|^\\$Default$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "errorText": "$eventHubTrigger_consumerGroup_errorText"
+            }
+          ]
         },
         {
-          "name": "platform",
+          "name": "cardinality",
           "value": "enum",
+          "required": false,
+          "defaultValue": "many",
           "enum": [
             {
-              "value": "",
-              "display": "Template"
+              "value": "one",
+              "display": "One"
             },
             {
-              "value": "apns",
-              "display": "Apple (APNS)"
-            },
-            {
-              "value": "adm",
-              "display": "Amazon (ADM)"
-            },
-            {
-              "value": "gcm",
-              "display": "Google (GCM)"
-            },
-            {
-              "value": "wns",
-              "display": "Windows (WNS)"
-            },
-            {
-              "value": "mpns",
-              "display": "Windows Phone (MPNS)"
+              "value": "many",
+              "display": "Many"
             }
           ],
-          "label": "$notificationHubOut_platform_label",
-          "help": "$notificationHubOut_platform_help"
+          "label": "$eventHubTrigger_cardinality_label",
+          "help": "$eventHubTrigger_cardinality_help"
+        }
+      ]
+    },
+    {
+      "type": "eventHub",
+      "displayName": "$eventHubOut_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "actions": [
+        {
+          "template": "EventHubTrigger",
+          "binding": "eventHubTrigger",
+          "settings": [
+            "connection",
+            "path"
+          ]
+        }
+      ],
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.EventHubs",
+        "version": "3.0.3"
+      },
+      "documentation": "$content=Documentation\\eventHubOut.md",
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "outputEventHubMessage",
+          "required": true,
+          "label": "$eventHubOut_name_label",
+          "help": "$eventHubOut_name_help",
+          "validators": [
+            {
+              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "connection",
+          "value": "string",
+          "resource": "EventHub",
+          "required": true,
+          "label": "$eventHubOut_connection_label",
+          "help": "$eventHubOut_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
+        {
+          "name": "eventHubName",
+          "value": "string",
+          "defaultValue": "outeventhub",
+          "required": true,
+          "label": "$eventHubOut_path_label",
+          "help": "$eventHubOut_path_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z0-9]$|^[a-zA-Z0-9][a-zA-Z0-9-_.]{0,48}[a-zA-Z0-9]$|^[{][a-zA-Z0-9]{1,126}[}]$|^[%][a-zA-Z0-9]{1,126}[%]$",
+              "errorText": "$eventHubOut_path_errorText"
+            }
+          ]
         }
       ]
     },
@@ -1558,6 +957,10 @@
       "direction": "out",
       "enabledInTryMode": false,
       "documentation": "$content=Documentation\\sendGridOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.SendGrid",
+        "version": "3.0.0"
+      },
       "settings": [
         {
           "name": "name",
@@ -1575,6 +978,7 @@
         },
         {
           "name": "apiKey",
+          "resource": "AppSetting",
           "value": "string",
           "defaultValue": "SendGridApiKey",
           "required": true,
@@ -1621,6 +1025,10 @@
       "direction": "out",
       "enabledInTryMode": false,
       "documentation": "$content=Documentation\\twilioSmsOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.Twilio",
+        "version": "3.0.0"
+      },
       "settings": [
         {
           "name": "name",
@@ -1637,7 +1045,7 @@
           ]
         },
         {
-          "name": "accountSid",
+          "name": "accountSidSetting",
           "value": "string",
           "defaultValue": "TwilioAccountSid",
           "required": true,
@@ -1645,20 +1053,12 @@
           "help": "$twilioSms_accountsid_help"
         },
         {
-          "name": "authToken",
+          "name": "authTokenSetting",
           "value": "string",
           "defaultValue": "TwilioAuthToken",
           "required": true,
           "label": "$twilioSms_authtoken_label",
           "help": "$twilioSms_authtoken_help"
-        },
-        {
-          "name": "to",
-          "value": "string",
-          "defaultValue": "",
-          "required": false,
-          "label": "$twilioSms_to_label",
-          "help": "$twilioSms_to_help"
         },
         {
           "name": "from",
@@ -1679,56 +1079,941 @@
       ]
     },
     {
-      "type": "bot",
-      "displayName": "$bot_out_displayName",
-      "direction": "out",
+      "type": "token",
+      "displayName": "$token_displayName",
+      "direction": "in",
       "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\botOut.md",
+      "documentation": "$content=Documentation\\Token.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.AuthTokens",
+        "version": "1.0.0-beta6"
+      },
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        }
+      ],
       "settings": [
         {
           "name": "name",
           "value": "string",
-          "defaultValue": "$return",
+          "defaultValue": "token",
           "required": true,
-          "label": "$bot_out_name_label",
-          "help": "$bot_out_name_help",
-          "validators": [
-            {
-              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
-              "errorText": "[variables('parameterName')]"
-            }
-          ]
+          "label": "$token_in_name_label",
+          "help": "$token_in_name_help"
         },
         {
-          "name": "botId",
+          "name": "resource",
           "value": "string",
           "required": true,
-          "label": "$bot_botId_label",
-          "help": "$bot_botId_help"
+          "label": "$token_in_resource_label",
+          "help": "$token_in_resource_help"
         },
         {
-          "name": "secret",
+          "name": "userId",
           "value": "string",
           "required": false,
-          "label": "$bot_out_secret_label",
-          "help": "$bot_out_secret_help"
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "required": false,
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
         }
       ]
     },
     {
-      "type": "bot",
-      "displayName": "$bot_in_displayName",
+      "type": "excel",
+      "displayName": "$excel_in_displayName",
       "direction": "in",
       "enabledInTryMode": false,
-      "documentation": "$content=Documentation\\botIn.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        },
+        {
+          "resourceAppId": "00000003-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "10465720-29dd-4523-a11a-6a75c743c9d9"
+            }
+          ]
+        }
+      ],
+      "documentation": "$content=Documentation\\ExcelIn.md",
       "settings": [
         {
           "name": "name",
           "value": "string",
-          "defaultValue": "bot",
+          "defaultValue": "inputTable",
           "required": true,
-          "label": "$bot_in_name_label",
-          "help": "$bot_in_name_help",
+          "label": "$excel_in_name_label",
+          "help": "$excel_in_name_help"
+        },
+        {
+          "name": "path",
+          "value": "string",
+          "defaultValue": "Workbook.xlsx",
+          "required": true,
+          "label": "$excel_in_path_label",
+          "help": "$excel_in_path_help"
+        },
+        {
+          "name": "worksheetName",
+          "value": "string",
+          "defaultValue": "Sheet1",
+          "label": "$excel_in_worksheetName_label",
+          "help": "$excel_in_worksheetName_help"
+        },
+        {
+          "name": "tableName",
+          "value": "string",
+          "defaultValue": "Table1",
+          "label": "$excel_in_tableName_label",
+          "help": "$excel_in_tableName_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
+        }
+      ]
+    },
+    {
+      "type": "excel",
+      "displayName": "$excel_out_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "documentation": "$content=Documentation\\ExcelOut.md",
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        },
+        {
+          "resourceAppId": "00000003-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "5c28f0bf-8a70-41f1-8ab2-9032436ddb65"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "outputTable",
+          "required": true,
+          "label": "$excel_out_name_label",
+          "help": "$excel_out_name_help"
+        },
+        {
+          "name": "path",
+          "value": "string",
+          "defaultValue": "path/to/file.xlsx",
+          "required": true,
+          "label": "$excel_out_path_label",
+          "help": "$excel_out_path_help"
+        },
+        {
+          "name": "worksheetName",
+          "value": "string",
+          "defaultValue": "Sheet1",
+          "label": "$excel_out_worksheetName_label",
+          "help": "$excel_out_worksheetName_help"
+        },
+        {
+          "name": "tableName",
+          "value": "string",
+          "defaultValue": "Table1",
+          "label": "$excel_out_tableName_label",
+          "help": "$excel_out_tableName_help"
+        },
+        {
+          "name": "updateType",
+          "value": "enum",
+          "defaultValue": "Append",
+          "enum": [
+            {
+              "value": "Append",
+              "display": "Append"
+            },
+            {
+              "value": "Update",
+              "display": "Update"
+            }
+          ],
+          "required": true,
+          "label": "$excel_out_updateType_label",
+          "help": "$excel_out_updateType_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
+        }
+      ]
+    },
+    {
+      "type": "outlook",
+      "displayName": "$outlook_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "documentation": "$content=Documentation\\OutlookOut.md",
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        },
+        {
+          "resourceAppId": "00000003-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "e383f46e-2787-4529-855e-0e479a3ffac0"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "email",
+          "required": true,
+          "label": "$outlook_out_name_label",
+          "help": "$outlook_out_name_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
+        }
+      ]
+    },
+    {
+      "type": "onedrive",
+      "displayName": "$oneDrive_in_displayName",
+      "direction": "in",
+      "enabledInTryMode": false,
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "documentation": "$content=Documentation\\OneDriveIn.md",
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        },
+        {
+          "resourceAppId": "00000003-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "10465720-29dd-4523-a11a-6a75c743c9d9"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "file",
+          "required": true,
+          "label": "$oneDrive_in_name_label",
+          "help": "$oneDrive_in_name_help"
+        },
+        {
+          "name": "path",
+          "value": "string",
+          "defaultValue": "Documents/test.txt",
+          "required": true,
+          "label": "$oneDrive_in_path_label",
+          "help": "$oneDrive_in_path_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
+        }
+      ]
+    },
+    {
+      "type": "onedrive",
+      "displayName": "$oneDrive_out_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "documentation": "$content=Documentation\\OneDriveOut.md",
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        },
+        {
+          "resourceAppId": "00000003-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "5c28f0bf-8a70-41f1-8ab2-9032436ddb65"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "file",
+          "required": true,
+          "label": "$oneDrive_out_name_label",
+          "help": "$oneDrive_out_name_help"
+        },
+        {
+          "name": "path",
+          "value": "string",
+          "defaultValue": "Documents/test.txt",
+          "required": true,
+          "label": "$oneDrive_out_path_label",
+          "help": "$oneDrive_out_path_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
+        }
+      ]
+    },
+    {
+      "type": "graphWebhookSubscription",
+      "displayName": "$MSGraphWebhook_displayName",
+      "direction": "in",
+      "enabledInTryMode": false,
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "documentation": "$content=Documentation\\GraphWebhookIn.md",
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "webhook",
+          "required": true,
+          "label": "$MSGraphWebhook_in_name_label",
+          "help": "$MSGraphWebhook_in_name_help"
+        },
+        {
+          "name": "filter",
+          "value": "string",
+          "label": "$GraphWebhookSubscription_in_filter_label",
+          "help": "$GraphWebhookSubscription_in_filter_help"
+        }
+      ]
+    },
+    {
+      "type": "graphWebhookSubscription",
+      "displayName": "$MSGraphWebhookCreator_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "documentation": "$content=Documentation\\GraphWebhookOut.md",
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "creator",
+          "required": true,
+          "label": "$MSGraphWebhookCreator_in_name_label",
+          "help": "$MSGraphWebhookCreator_in_name_help"
+        },
+        {
+          "name": "changeTypes",
+          "value": "checkBoxList",
+          "enum": [
+            {
+              "value": "created",
+              "display": "Created"
+            },
+            {
+              "value": "updated",
+              "display": "Updated"
+            },
+            {
+              "value": "deleted",
+              "display": "Deleted"
+            }
+          ],
+          "required": true,
+          "label": "$MSGraphWebhook_in_changeType_label",
+          "help": "$MSGraphWebhook_in_changeType_help"
+        },
+        {
+          "name": "action",
+          "value": "enum",
+          "enum": [
+            {
+              "value": "create",
+              "display": "Create"
+            },
+            {
+              "value": "refresh",
+              "display": "Refresh"
+            },
+            {
+              "value": "delete",
+              "display": "Delete"
+            }
+          ],
+          "label": "$MSGraphWebhook_out_action_label",
+          "help": "$MSGraphWebhook_out_action_help"
+        },
+        {
+          "name": "subscriptionResource",
+          "value": "string",
+          "label": "$MSGraphWebhook_in_listen_label",
+          "help": "$MSGraphWebhook_in_listen_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "label": "$userid_label",
+          "help": "$userid_help"
+        },
+        {
+          "name": "userToken",
+          "value": "string",
+          "label": "$usertoken_label",
+          "help": "$usertoken_help"
+        }
+      ],
+      "rules": [
+        {
+          "name": "identity",
+          "type": "exclusivitySave",
+          "values": [
+            {
+              "value": "UserFromRequest",
+              "display": "$identity_option_userFromRequest_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            },
+            {
+              "value": "userFromId",
+              "display": "$identity_option_userFromId_label",
+              "hiddenSettings": [
+                "userToken"
+              ],
+              "shownSettings": [
+                "userId"
+              ]
+            },
+            {
+              "value": "userFromToken",
+              "display": "$identity_option_userFromToken_label",
+              "hiddenSettings": [
+                "userId"
+              ],
+              "shownSettings": [
+                "userToken"
+              ]
+            },
+            {
+              "value": "ClientCredentials",
+              "display": "$identity_option_clientCredentials_label",
+              "hiddenSettings": [
+                "userId",
+                "userToken"
+              ],
+              "shownSettings": []
+            }
+          ],
+          "label": "$Identity_label",
+          "help": "$Identity_help"
+        }
+      ]
+    },
+    {
+      "type": "graphWebhookTrigger",
+      "direction": "trigger",
+      "displayName": "$MSGraphWebhookTrigger_displayName",
+      "documentation": "$content=Documentation\\GraphWebhookTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.MicrosoftGraph",
+        "version": "1.0.0-beta6"
+      },
+      "enabledInTryMode": false,
+      "AADPermissions": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "type": "Scope",
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6"
+            }
+          ]
+        }
+      ],
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "notification",
+          "required": true,
+          "label": "$MSGraphWebhookTrigger_in_name_label",
+          "help": "$MSGraphWebhookTrigger_in_help_label"
+        },
+        {
+          "name": "resourceType",
+          "value": "enum",
+          "required": true,
+          "label": "$MSGraphWebhook_in_listen_label",
+          "help": "$MSGraphWebhook_in_listen_help",
+          "enum": [
+            {
+              "value": "#Microsoft.Graph.Message",
+              "display": "Microsoft Graph Message"
+            },
+            {
+              "value": "#Microsoft.Graph.DriveItem",
+              "display": "Microsoft Graph DriveItem"
+            },
+            {
+              "value": "#Microsoft.Graph.Contact",
+              "display": "Microsoft Graph Contact"
+            },
+            {
+              "value": "#Microsoft.Graph.Event",
+              "display": "Microsoft Graph Event"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "activityTrigger",
+      "displayName": "$activityTrigger_displayName",
+      "direction": "trigger",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\activityTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.DurableTask",
+        "version": "1.8.2"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "context",
+          "required": true,
+          "label": "$activityTrigger_name_label",
+          "help": "$activityTrigger_name_help",
           "validators": [
             {
               "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
@@ -1737,11 +2022,407 @@
           ]
         },
         {
-          "name": "secret",
+          "name": "activity",
           "value": "string",
           "required": false,
-          "label": "$bot_in_secret_label",
-          "help": "$bot_in_secret_help"
+          "label": "$activityTrigger_activity_label",
+          "help": "$activityTrigger_activity_help"
+        }
+      ]
+    },
+    {
+      "type": "orchestrationTrigger",
+      "displayName": "$orchestrationTrigger_displayName",
+      "direction": "trigger",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\orchestrationTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.DurableTask",
+        "version": "1.8.2"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "context",
+          "required": true,
+          "label": "$orchestrationTrigger_name_label",
+          "help": "$orchestrationTrigger_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "orchestration",
+          "value": "string",
+          "required": false,
+          "label": "$orchestrationTrigger_orchestration_label",
+          "help": "$orchestrationTrigger_orchestration_help"
+        }
+      ]
+    },
+    {
+      "type": "orchestrationClient",
+      "displayName": "$orchestrationClientIn_displayName",
+      "direction": "in",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\orchestrationClientIn.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.DurableTask",
+        "version": "1.8.2"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "client",
+          "required": true,
+          "label": "$orchestrationClientIn_name_label",
+          "help": "$orchestrationClientIn_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "eventGridTrigger",
+      "displayName": "$eventGrid_trigger_displayName",
+      "direction": "trigger",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\eventGridTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.EventGrid",
+        "version": "2.0.0"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "EventGridTrigger",
+          "required": true,
+          "label": "$eventGrid_trigger_name_label",
+          "help": "$eventGrid_trigger_name_help",
+          "validators": [
+            {
+              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "cosmosDBTrigger",
+      "displayName": "$cosmosDB_trigger_displayName",
+      "direction": "trigger",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\cosmosDBTrigger.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.CosmosDB",
+        "version": "3.0.3"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "inputDocuments",
+          "required": true,
+          "label": "$cosmosDBIn_name_label",
+          "help": "$cosmosDBIn_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "connectionStringSetting",
+          "value": "string",
+          "required": true,
+          "resource": "DocumentDB",
+          "label": "$cosmosDBIn_connection_label",
+          "help": "$cosmosDBIn_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
+        {
+          "name": "databaseName",
+          "value": "string",
+          "defaultValue": "",
+          "required": true,
+          "label": "$cosmosDBIn_databaseName_label",
+          "help": "$cosmosDBIn_databaseName_help"
+        },
+        {
+          "name": "collectionName",
+          "value": "string",
+          "defaultValue": "",
+          "required": true,
+          "label": "$cosmosDBIn_collectionName_label",
+          "help": "$cosmosDBIn_collectionName_help"
+        },
+        {
+          "name": "leaseCollectionName",
+          "value": "string",
+          "required": true,
+          "label": "$cosmosDBIn_leaseCollectionName_label",
+          "help": "$cosmosDBIn_leaseCollectionName_help"
+        },
+        {
+          "name": "createLeaseCollectionIfNotExists",
+          "value": "boolean",
+          "defaultValue": true,
+          "required": true,
+          "label": "$cosmosDBIn_createIfNotExists_label",
+          "help": "$cosmosDBIn_createIfNotExists_help"
+        }
+      ]
+    },
+    {
+      "type": "cosmosDB",
+      "displayName": "$documentDBOut_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\documentDBOut.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.CosmosDB",
+        "version": "3.0.3"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "outputDocument",
+          "required": true,
+          "label": "$documentDBOut_name_label",
+          "help": "$documentDBOut_name_help",
+          "validators": [
+            {
+              "expression": "(^[a-zA-Z][a-zA-Z0-9]{0,127}$)|^\\$return$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "databaseName",
+          "value": "string",
+          "defaultValue": "outDatabase",
+          "required": true,
+          "label": "$documentDBOut_databaseName_label",
+          "help": "$documentDBOut_databaseName_help"
+        },
+        {
+          "name": "collectionName",
+          "value": "string",
+          "defaultValue": "MyCollection",
+          "required": true,
+          "label": "$documentDBOut_collectionName_label",
+          "help": "$documentDBOut_collectionName_help"
+        },
+        {
+          "name": "createIfNotExists",
+          "value": "boolean",
+          "defaultValue": false,
+          "required": true,
+          "label": "$documentDBOut_createIfNotExists_label",
+          "help": "$documentDBOut_createIfNotExists_help"
+        },
+        {
+          "name": "connectionStringSetting",
+          "value": "string",
+          "resource": "DocumentDB",
+          "required": true,
+          "label": "$documentDBOut_connection_label",
+          "help": "$documentDBOut_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
+        {
+          "name": "partitionKey",
+          "value": "string",
+          "required": false,
+          "label": "$documentDB_partitionKey_label",
+          "help": "$documentDBOut_partitionKey_help"
+        },
+        {
+          "name": "collectionThroughput",
+          "value": "int",
+          "required": false,
+          "label": "$cosmosDB_collectionThroughput_label",
+          "help": "$cosmosDBOut_collectionThroughput_help"
+        }
+      ]
+    },
+    {
+      "type": "cosmosDB",
+      "displayName": "$documentDBIn_displayName",
+      "direction": "in",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\documentDBIn.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.CosmosDB",
+        "version": "3.0.3"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "inputDocument",
+          "required": true,
+          "label": "$documentDBIn_name_label",
+          "help": "$documentDBIn_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "databaseName",
+          "value": "string",
+          "defaultValue": "inDatabase",
+          "required": true,
+          "label": "$documentDBIn_databaseName_label",
+          "help": "$documentDBIn_databaseName_help"
+        },
+        {
+          "name": "collectionName",
+          "value": "string",
+          "defaultValue": "MyCollection",
+          "required": true,
+          "label": "$documentDBIn_collectionName_label",
+          "help": "$documentDBIn_collectionName_help"
+        },
+        {
+          "name": "connectionStringSetting",
+          "value": "string",
+          "resource": "DocumentDB",
+          "required": true,
+          "label": "$documentDBIn_connection_label",
+          "help": "$documentDBIn_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
+        {
+          "name": "id",
+          "value": "string",
+          "defaultValue": "",
+          "required": false,
+          "label": "$documentDBIn_id_label",
+          "help": "$documentDBIn_id_help"
+        },
+        {
+          "name": "partitionKey",
+          "value": "string",
+          "required": false,
+          "label": "$documentDB_partitionKey_label",
+          "help": "$documentDBIn_partitionKey_help"
+        },
+        {
+          "name": "sqlQuery",
+          "value": "string",
+          "defaultValue": "",
+          "required": false,
+          "label": "$documentDBIn_sqlQuery_label",
+          "help": "$documentDBIn_sqlQuery_help"
+        }
+      ]
+    },
+    {
+      "type": "signalRConnectionInfo",
+      "displayName": "$signalRConnectionInfoIn_displayName",
+      "direction": "in",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\signalRConnectionInfo.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.SignalRService",
+        "version": "1.0.0"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "connectionInfo",
+          "required": true,
+          "label": "$signalRConnectionInfoIn_name_label",
+          "help": "$signalRConnectionInfoIn_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "hubName",
+          "value": "string",
+          "defaultValue": "chat",
+          "required": true,
+          "label": "$signalRConnectionInfoIn_hubName_label",
+          "help": "$signalRConnectionInfoIn_hubName_help"
+        },
+        {
+          "name": "userId",
+          "value": "string",
+          "defaultValue": "",
+          "required": false,
+          "label": "$signalRConnectionInfoIn_userId_label",
+          "help": "$signalRConnectionInfoIn_userId_help"
+        },
+        {
+          "name": "connectionStringSetting",
+          "value": "string",
+          "required": false,
+          "label": "$signalRConnectionInfoIn_connectionString_label",
+          "help": "$signalRConnectionInfoIn_connectionString_help"
+        }
+      ]
+    },
+    {
+      "type": "signalR",
+      "displayName": "$signalROut_displayName",
+      "direction": "out",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\signalR.md",
+      "extension": {
+        "id": "Microsoft.Azure.WebJobs.Extensions.SignalRService",
+        "version": "1.0.0"
+      },
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "signalRMessages",
+          "required": true,
+          "label": "$signalROut_name_label",
+          "help": "$signalROut_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "hubName",
+          "value": "string",
+          "defaultValue": "chat",
+          "required": true,
+          "label": "$signalROut_hubName_label",
+          "help": "$signalROut_hubName_help"
+        },
+        {
+          "name": "connectionStringSetting",
+          "value": "string",
+          "required": false,
+          "label": "$signalROut_connectionString_label",
+          "help": "$signalROut_connectionString_help"
         }
       ]
     }

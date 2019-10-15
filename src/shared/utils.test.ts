@@ -13,7 +13,7 @@ describe("utils", () => {
     Object.assign(sls.service, configService.getConfig());
   });
 
-  it("resolves handler when handler code is outside function folders", () => {
+  it("resolves handler when handler code is outside function folders", async () => {
     const handler = "src/handlers/hello.handler";
     const slsFunctions = sls.service["functions"];
     MockFactory.updateService(sls, {
@@ -26,7 +26,7 @@ describe("utils", () => {
     expect(sls.service["functions"].hello.handler).toEqual(handler);
 
     const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
+    const metadata = await Utils.getFunctionMetaData(functions[0], sls);
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
@@ -37,7 +37,7 @@ describe("utils", () => {
     expect(metadata).toEqual(expectedMetadata);
   });
 
-  it("resolves handler when code is in function folder", () => {
+  it("resolves handler when code is in function folder", async () => {
     const handler = "hello/index.handler";
     const slsFunctions = sls.service["functions"];
     MockFactory.updateService(sls, {
@@ -49,7 +49,7 @@ describe("utils", () => {
     });
 
     const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
+    const metadata = await Utils.getFunctionMetaData(functions[0], sls);
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
@@ -60,7 +60,7 @@ describe("utils", () => {
     expect(metadata).toEqual(expectedMetadata);
   });
 
-  it("resolves handler when code is at the project root", () => {
+  it("resolves handler when code is at the project root", async () => {
     const handler = "hello.handler";
     const slsFunctions = sls.service["functions"];
     MockFactory.updateService(sls, {
@@ -72,7 +72,7 @@ describe("utils", () => {
     });
 
     const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
+    const metadata = await Utils.getFunctionMetaData(functions[0], sls);
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
