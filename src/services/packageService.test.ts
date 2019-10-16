@@ -277,7 +277,6 @@ describe("Package Service", () => {
       mockFs.restore();
       calledWithArgs(writeSpy, [
         ".funcignore",
-        ...functions.map((name) => `${name}${path.sep}__init__.py`),
         ...functions.map((name) => `${name}${path.sep}function.json`)
       ]);
       writeSpy.mockRestore();
@@ -310,14 +309,12 @@ describe("Package Service", () => {
           "__pycache__": {
             "file.pyc": ""
           },
-          "__init__.py": "",
           "function.json": ""
         },
         "goodbye" : {
           "__pycache__": {
             "file.pyc": ""
           },
-          "__init__.py": "",
           "function.json": "",
         },
       });
@@ -325,7 +322,6 @@ describe("Package Service", () => {
       mockFs.restore();
       calledWithArgs(unlinkSpy, [
         ".funcignore",
-        ...functions.map((name) => `${name}${path.sep}__init__.py`),
         ...functions.map((name) => `${name}${path.sep}function.json`)
       ]);
       unlinkSpy.mockRestore();

@@ -90,7 +90,6 @@ export class PackageService extends BaseService {
   public cleanUp() {
     const functionFilesToRemove = [
       "function.json",
-      "__init__.py"
     ];
 
     const functionFoldersToRemove = [
@@ -143,10 +142,6 @@ export class PackageService extends BaseService {
     const functionDirPath = this.makeFunctionDir(functionName);
 
     fs.writeFileSync(path.join(functionDirPath, "function.json"), this.stringify(functionJSON));
-
-    if (this.runtime.language === SupportedRuntimeLanguage.PYTHON) {
-      fs.writeFileSync(path.join(functionDirPath, "__init__.py"), "");
-    }
     return Promise.resolve();
   }
 
