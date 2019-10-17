@@ -1,6 +1,6 @@
 module.exports = {
   "collectCoverageFrom": [
-    "src/**/*.{js,jsx,ts,tsx}",
+    "src/**/{!(mockFactory),}.{js,jsx,ts,tsx}",
     "!src/**/*.d.ts",
     "!/src/test/"
   ],
