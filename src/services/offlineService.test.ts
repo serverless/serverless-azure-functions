@@ -212,6 +212,25 @@ describe("Offline Service", () => {
     expect(rmdirCalls[1][0]).toBe("goodbye");
   });
 
+  it("adds additional arguments to spawned process if passed through Serverless args", async () => {
+    Object.defineProperty(process, "platform", {
+      value: "darwin",
+      writable: true,
+    });
+
+    const sls = MockFactory.createTestServerless();
+
+    const service = createService(sls, { "spawnargs": "--cors *"});
+
+    await service.start();
+
+    const calls = mySpawn.calls;
+    expect(calls).toHaveLength(1);
+    const call = calls[0];
+    expect(call.command).toEqual(path.join("node_modules", ".bin", "func"));
+    expect(call.args).toEqual(["host", "start", "--cors", "*"]);
+  });
+
   it("does not clean up after offline call if specified in options", async () => {
 
     Object.defineProperty(process, "platform", {

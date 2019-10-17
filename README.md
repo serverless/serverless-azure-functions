@@ -59,8 +59,16 @@ $ sls offline build
 To clean up files generated from the build, run:
 
 ```bash
-sls offline cleanup
+$ sls offline cleanup
 ```
+
+To pass additional arguments to the spawned `func host start` process, add them as the option `spawnargs` (shortcut `a`). Example:
+
+```bash
+$ sls offline -a "--cors *"
+```
+
+This works for `sls offline` or `sls offline start`
 
 ### Deploy Your Function App
 
