@@ -245,4 +245,12 @@ describe("Resource Service", () => {
     const expected = deployments[deployments.length - 1];
     expect(deployment).toEqual(expected);
   });
+
+  it("gets resource group name", () => {
+    const resourceGroup = "resource-group";
+    const sls = MockFactory.createTestServerless();
+    sls.service.provider["resourceGroup"] = resourceGroup;
+    const service = new ResourceService(sls, {} as any);
+    expect(service.getResourceGroupName()).toEqual(resourceGroup);
+  });
 });

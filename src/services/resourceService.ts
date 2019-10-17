@@ -16,6 +16,13 @@ export class ResourceService extends BaseService {
   }
 
   /**
+   * Name of configured resource group
+   */
+  public getResourceGroupName(): string {
+    return this.resourceGroup;
+  }
+
+  /**
    * Get all deployments for resource group sorted by timestamp (most recent first)
    */
   public async getDeployments() {
