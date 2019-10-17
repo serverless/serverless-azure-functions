@@ -22,7 +22,7 @@ export const constants = {
   xAzureSettings: "x-azure-settings",
   entryPoint: "entryPoint",
   variableKeys: {
-    config: "serverlessAzureConfig",
+    providerConfig: "serverlessAzureProviderConfig",
     subscriptionId: "subscriptionId",
     tenantId: "tenantId",
     appId: "appId",

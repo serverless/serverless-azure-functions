@@ -88,7 +88,7 @@ describe("Rollback Service", () => {
     const service = createService(sls, options);
     await service.rollback();
     const calls = (sls.cli.log as any).mock.calls;
-    expect(calls[0][0]).toEqual(`Couldn't find deployment with timestamp: ${timestamp}`);
+    expect(calls[1][0]).toEqual(`Couldn't find deployment with timestamp: ${timestamp}`);
   });
 
   it("should deploy blob package directly to function app", async () => {

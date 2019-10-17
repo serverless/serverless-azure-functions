@@ -10,15 +10,20 @@ describe("Config Service", () => {
 
   let serverless: Serverless;
 
-  beforeEach(() => {
-    serverless = MockFactory.createTestServerless();
-    const config = (serverless.service as any as ServerlessAzureConfig);
+  function createServerless() {
+    const sls = MockFactory.createTestServerless();
+    const config = (sls.service as any as ServerlessAzureConfig);
     config.service = serviceName;
 
     delete config.provider.resourceGroup;
     delete config.provider.region;
     delete config.provider.stage;
     delete config.provider.prefix;
+    return sls;
+  }
+
+  beforeEach(() => {
+    serverless = createServerless();
   });
 
   describe("Configurable Variables", () => {
@@ -120,35 +125,50 @@ describe("Config Service", () => {
     });
 
     it("Gets deployment config from SLS yaml using external property", () => {
+      const sls1 = createServerless();
       const deploymentConfig1: DeploymentConfig = {
         external: true
       }
-      serverless.service.provider["deployment"] = deploymentConfig1
-      const service1 = new ConfigService(serverless, { } as any);
+      sls1.service.provider["deployment"] = deploymentConfig1
+      const service1 = new ConfigService(sls1, { } as any);
       expect(service1.getDeploymentConfig().external).toBe(true);
+
+      const sls2 = createServerless();
 
       const deploymentConfig2: DeploymentConfig = {
         external: false
       }
-      serverless.service.provider["deployment"] = deploymentConfig2
-      const service2 = new ConfigService(serverless, { } as any);
+      sls2.service.provider["deployment"] = deploymentConfig2
+      const service2 = new ConfigService(sls2, { } as any);
       expect(service2.getDeploymentConfig().external).toBe(false);
     });
 
     it("Gets deployment config from SLS yaml using runFromBlobUrl property", () => {
-      const deploymentConfig1 = {
+      const sls1 = createServerless();
+      const deploymentConfig1: DeploymentConfig = {
         runFromBlobUrl: true
-      }
-      serverless.service.provider["deployment"] = deploymentConfig1
-      const service1 = new ConfigService(serverless, { } as any);
+      } as any;
+      sls1.service.provider["deployment"] = deploymentConfig1
+      const service1 = new ConfigService(sls1, { } as any);
       expect(service1.getDeploymentConfig().external).toBe(true);
 
-      const deploymentConfig2 = {
+      const sls2 = createServerless();
+
+      const deploymentConfig2: DeploymentConfig = {
         runFromBlobUrl: false
-      }
-      serverless.service.provider["deployment"] = deploymentConfig2
-      const service2 = new ConfigService(serverless, { } as any);
+      } as any;
+      sls2.service.provider["deployment"] = deploymentConfig2
+      const service2 = new ConfigService(sls2, { } as any);
       expect(service2.getDeploymentConfig().external).toBe(false);
+    });
+
+    it("caches the configuration and does not initialize if config is cached", () => {
+      const setDefaultValues = jest.spyOn(ConfigService.prototype as any, "setDefaultValues");
+      new ConfigService(serverless, {} as any);
+      expect(setDefaultValues).toBeCalled();
+      setDefaultValues.mockClear();
+      new ConfigService(serverless, {} as any);
+      expect(setDefaultValues).not.toBeCalled();
     });
   });
   
