@@ -48,6 +48,7 @@ export class OfflineService extends BaseService {
    * Spawn `func host start` from core func tools
    */
   public async start() {
+    const args: string = this.getOption("spawnargs");
     await CoreToolsService.start(this.serverless, async () => {
       try {
         if (this.getOption("nocleanup")) {
@@ -61,6 +62,6 @@ export class OfflineService extends BaseService {
       } finally {
         process.exit();
       }
-    });
+    }, (args) ? args.split(" ") : undefined);
   }
 }

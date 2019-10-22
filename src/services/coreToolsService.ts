@@ -3,11 +3,12 @@ import { Utils } from "../shared/utils"
 import configConstants from "../config";
 
 export class CoreToolsService {
-  public static async start(serverless: Serverless, onFinish: () => void) {
+  public static async start(serverless: Serverless, onFinish: () => void, additionalArgs?: string[]) {
+    const defaultArgs = configConstants.func.start;
     await Utils.spawn({
       serverless: serverless,
       command: configConstants.func.command,
-      commandArgs: configConstants.func.start,
+      commandArgs: (additionalArgs) ? defaultArgs.concat(additionalArgs) : defaultArgs,
       onSigInt: onFinish
     });
   }
