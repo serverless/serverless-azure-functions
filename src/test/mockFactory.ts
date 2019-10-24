@@ -11,7 +11,7 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
+import { ApiCorsPolicy, ApiManagementConfig, ApiJwtPolicy } from "../models/apiManagement";
 import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
@@ -613,6 +613,17 @@ export class MockFactory {
       allowedHeaders: ["*"],
       exposeHeaders: ["*"],
       allowedMethods: ["GET", "POST"],
+    };
+  }
+
+  public static createTestMockApiJwtPolicy(): ApiJwtPolicy {
+    return {
+      headerName: "authorization",
+      scheme: "bearer",
+      audiences: ["audience1"],
+      issuers: ["issuer1"],
+      failedStatusCode: 401,
+      failedErrorMessage: "Authorization required!"
     };
   }
 

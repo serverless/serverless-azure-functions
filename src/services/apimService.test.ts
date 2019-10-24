@@ -17,6 +17,8 @@ import {
   ApiManagementServiceGetResponse,
   OperationContract,
   ApiPolicyCreateOrUpdateResponse,
+  PolicyContract,
+  ApiPolicyGetResponse
 } from "@azure/arm-apimanagement/esm/models";
 import { AzureNamingService } from "./namingService";
 import { ApiManagementConfig } from "../models/apiManagement";
@@ -56,6 +58,15 @@ describe("APIM Service", () => {
       azureCredentials: MockFactory.createTestAzureCredentials(),
       subscriptionId: "ABC123",
     };
+
+    const expectedPolicy: PolicyContract = {
+      name: "policy",
+      type: "Microsoft.ApiManagement/service/apis/policies",
+      format: "rawxml",
+      value: "<policies><inbound><base /></inbound><backend><base /></backend><outbound><base /></outbound><on-error><base /></on-error></policies>"
+    };
+
+    ApiPolicy.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyGetResponse>(expectedPolicy, 200));
   });
   it("is defined", () => {
     expect(ApimService).toBeDefined();
@@ -301,6 +312,36 @@ describe("APIM Service", () => {
         {
           format: "rawxml",
           value: expect.stringContaining("cors"),
+        }
+      );
+    });
+
+    it("deploys API JWT policy when defined within configuration", async () => {
+      Api.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+      Backend.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+      Property.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+      ApiPolicy.prototype.createOrUpdate =
+        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+
+      const jwtPolicy = MockFactory.createTestMockApiJwtPolicy();
+      const corsPolicy = MockFactory.createTestMockApiCorsPolicy();
+      serverless.service.provider["apim"]["cors"] = corsPolicy;
+      serverless.service.provider["apim"]["jwt"] = jwtPolicy;
+
+      const apimService = new ApimService(serverless);
+      const result = await apimService.deploy();
+
+      expect(result).not.toBeNull();
+      expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+        resourceGroupName,
+        serviceName,
+        apiName,
+        {
+          format: "rawxml",
+          value: expect.stringContaining("validate-jwt"),
         }
       );
     });

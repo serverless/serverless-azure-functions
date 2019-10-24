@@ -12,6 +12,8 @@ export interface ApiManagementConfig {
   backends?: BackendContract[];
   /** The API's CORS policy */
   cors?: ApiCorsPolicy;
+  /** The API's JWT validation policy */
+  jwt?: ApiJwtPolicy;
   sku?: {
     name?: string;
     capacity?: number;
@@ -34,4 +36,28 @@ export interface ApiCorsPolicy {
   allowedHeaders: string[];
   /** A list of headers exposed during OPTION preflight requests */
   exposeHeaders: string[];
+}
+
+export interface ApiJwtPolicy {
+  headerName: string;
+  scheme: string;
+  failedStatusCode: number;
+  failedErrorMessage: string;
+  requireExpirationTime?: boolean;
+  requireSignedTokens?: boolean;
+  clockSkew?: number;
+  outputTokenVariableName?: string;
+  openId?: {
+    metadataUrl: string;
+  };
+  issuerSigningKeys?: string[];
+  decryptionKeys?: string[];
+  audiences?: string[];
+  issuers?: string[];
+  requiredClaims?: ApiJwtClaim[]
+}
+
+export interface ApiJwtClaim {
+  name: string;
+  match: string;
 }

@@ -3,7 +3,7 @@ import xml from "xml";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
-import { ApiManagementConfig, ApiCorsPolicy } from "../models/apiManagement";
+import { ApiManagementConfig, ApiCorsPolicy, ApiJwtPolicy } from "../models/apiManagement";
 import {
   ApiContract, OperationContract,
   PropertyContract, ApiManagementServiceResource, BackendContract,
@@ -12,6 +12,7 @@ import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ApimResource } from "../armTemplates/resources/apim";
 import { ServerlessExtraAzureSettingsConfig } from "../models/serverless";
+import { Builder, Parser } from "xml2js"
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -147,7 +148,7 @@ export class ApimService extends BaseService {
 
     // Default to GET method if not specified
     if (!httpConfig.methods) {
-      httpConfig.methods = [ "GET" ]
+      httpConfig.methods = ["GET"]
     }
 
     // Infer APIM operation configuration from HTTP event if not already set
@@ -219,14 +220,7 @@ export class ApimService extends BaseService {
         isCurrent: true,
       });
 
-      if (this.apimConfig.cors) {
-        this.log(`-> Deploying CORS policy: ${apiContract.name}`);
-
-        await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
-          format: "rawxml",
-          value: this.createCorsXmlPolicy(this.apimConfig.cors)
-        });
-      }
+      await this.setApiPolicies(apiContract);
 
       return api;
     } catch (e) {
@@ -288,7 +282,7 @@ export class ApimService extends BaseService {
         responses: operation.responses || [],
       };
 
-      // Ensure a single path seperator in the operation path
+      // Ensure a single path separator in the operation path
       const operationPath = `/${api.path}/${operationConfig.urlTemplate}`.replace(/\/+/g, "/");
       const operationUrl = `${resource.gatewayUrl}${operationPath}`;
       this.log(`--> ${operationConfig.name}: [${operationConfig.method.toUpperCase()}] ${operationUrl}`);
@@ -367,38 +361,101 @@ export class ApimService extends BaseService {
   }
 
   /**
+   * Sets policies on the API from serverless configuration
+   * @param apiContract The API contract
+   */
+  private async setApiPolicies(apiContract: ApiContract) {
+    // Get existing policy
+    let requireUpdate = false;
+    const existingPolicy = await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
+
+    // Update policy based on configuration
+    const parser = new Parser();
+    const builder = new Builder();
+    const policyRoot = await parser.parseStringPromise(existingPolicy.value);
+
+    if (this.apimConfig.cors) {
+      this.appendCorsPolicy(policyRoot, this.apimConfig.cors);
+      requireUpdate = true;
+    }
+
+    if (this.apimConfig.jwt) {
+      this.appendJwtPolicy(policyRoot, this.apimConfig.jwt);
+      requireUpdate = true;
+    }
+
+    if (requireUpdate) {
+      // Store updated policy
+      const policyXml = builder.buildObject(policyRoot);
+
+      await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
+        format: "rawxml",
+        value: policyXml
+      });
+    }
+  }
+
+  /**
    * Creates the XML payload that defines the specified CORS policy
    * @param corsPolicy The CORS policy
    */
-  private createCorsXmlPolicy(corsPolicy: ApiCorsPolicy): string {
-    const origins = corsPolicy.allowedOrigins ? corsPolicy.allowedOrigins.map((origin) => ({ origin })) : null;
-    const methods = corsPolicy.allowedMethods ? corsPolicy.allowedMethods.map((method) => ({ method })) : null;
-    const allowedHeaders = corsPolicy.allowedHeaders ? corsPolicy.allowedHeaders.map((header) => ({ header })) : null;
-    const exposeHeaders = corsPolicy.exposeHeaders ? corsPolicy.exposeHeaders.map((header) => ({ header })) : null;
+  private appendCorsPolicy(policyRoot: any, corsPolicy: ApiCorsPolicy) {
+    const origins = corsPolicy.allowedOrigins ? [corsPolicy.allowedOrigins.map((origin) => ({ origin }))] : null;
+    const methods = corsPolicy.allowedMethods ? [corsPolicy.allowedMethods.map((method) => ({ method }))] : null;
+    const allowedHeaders = corsPolicy.allowedHeaders ? [corsPolicy.allowedHeaders.map((header) => ({ header }))] : null;
+    const exposeHeaders = corsPolicy.exposeHeaders ? [corsPolicy.exposeHeaders.map((header) => ({ header }))] : null;
 
-    const policy = [{
-      policies: [
-        {
-          inbound: [
-            { base: null },
-            {
-              cors: [
-                { "_attr": { "allow-credentials": corsPolicy.allowCredentials } },
-                { "allowed-origins": origins },
-                { "allowed-methods": methods },
-                { "allowed-headers": allowedHeaders },
-                { "expose-headers": exposeHeaders },
-              ]
-            }
-          ],
-        },
-        { backend: [{ base: null }] },
-        { outbound: [{ base: null }] },
-        { "on-error": [{ base: null }] },
-      ]
-    }];
+    policyRoot.policies.inbound[0].cors = [
+      {
+        $: { "allow-credentials": !!corsPolicy.allowCredentials },
+        "allowed-origins": origins,
+        "allowed-methods": methods,
+        "allowed-headers": allowedHeaders,
+        "expose-headers": exposeHeaders
+      }
+    ];
+  }
 
-    return xml(policy, { indent: "\t" });
+  private appendJwtPolicy(policyRoot: any, jwtPolicy: ApiJwtPolicy) {
+    const signingKeys = jwtPolicy.issuerSigningKeys ? [jwtPolicy.issuerSigningKeys.map((key) => ({ key }))] : null;
+    const decryptionKeys = jwtPolicy.decryptionKeys ? [jwtPolicy.decryptionKeys.map((key) => ({ key }))] : null;
+    const audiences = jwtPolicy.audiences ? [jwtPolicy.audiences.map((audience) => ({ audience }))] : null;
+    const issuers = jwtPolicy.issuers ? [jwtPolicy.issuers.map((issuer) => ({ issuer }))] : null;
+    const claims = jwtPolicy.requiredClaims ? [jwtPolicy.requiredClaims.map((claim) => ({ claim: [{ $: { name: claim.name, match: claim.match } }] }))] : null;
+    const oidConfig = jwtPolicy.openId
+      ? [{ $: { url: jwtPolicy.openId.metadataUrl } }]
+      : null;
+
+    const attributeMap = {
+      headerName: "header-name",
+      failedStatusCode: "failed-validation-httpcode",
+      failedErrorMessage: "failed-validation-error-message",
+      requireExpirationTime: "require-expiration-time",
+      scheme: "require-scheme",
+      requireSignedTokens: "require-signed-tokens",
+      clockSkew: "clock-skew",
+      outputTokenVariableName: "output-token-variable-name"
+    };
+
+    const attributes = {};
+
+    Object.keys(attributeMap).forEach((key) => {
+      if (jwtPolicy[key]) {
+        attributes[attributeMap[key]] = jwtPolicy[key];
+      }
+    });
+
+    policyRoot.inbound["validate-jwt"] = [
+      {
+        $: attributes,
+        "openid-config": oidConfig,
+        "issuer-signing-keys": signingKeys,
+        "decryption-keys": decryptionKeys,
+        "audiences": audiences,
+        "issuers": issuers,
+        "required-claims": claims
+      }
+    ];
   }
 
   /**
