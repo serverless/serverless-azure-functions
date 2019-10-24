@@ -6,6 +6,10 @@ interface AppServicePlanParams extends DefaultArmParams {
   appServicePlanName: ArmParameter;
   appServicePlanSkuName: ArmParameter;
   appServicePlanSkuTier: ArmParameter;
+  appServicePlanWorkerSizeId: ArmParameter;
+  appServicePlanMinWorkerCount: ArmParameter;
+  appServicePlanMaxWorkerCount: ArmParameter;
+  appServicePlanHostingEnvironment: ArmParameter;
 }
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
@@ -35,6 +39,22 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       appServicePlanSkuTier: {
         defaultValue: "ElasticPremium",
         type: ArmParamType.String
+      },
+      appServicePlanWorkerSizeId: {
+        defaultValue: "3",
+        type: ArmParamType.String
+      },
+      appServicePlanMinWorkerCount: {
+        defaultValue: 1,
+        type: ArmParamType.Int,
+      },
+      appServicePlanMaxWorkerCount: {
+        defaultValue: 10,
+        type: ArmParamType.Int
+      },
+      appServicePlanHostingEnvironment: {
+        defaultValue: "",
+        type: ArmParamType.String
       }
     };
 
@@ -51,10 +71,10 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
           "location": "[parameters('location')]",
           "properties": {
             "name": "[parameters('appServicePlanName')]",
-            "workerSizeId": "3",
-            "numberOfWorkers": "1",
-            "maximumElasticWorkerCount": "10",
-            "hostingEnvironment": ""
+            "workerSizeId": "[parameters('appServicePlanWorkerSizeId')]",
+            "numberOfWorkers": "[parameters('appServicePlanMinWorkerCount')]",
+            "maximumElasticWorkerCount": "[parameters('appServicePlanMaxWorkerCount')]",
+            "hostingEnvironment": "[parameters('appServicePlanHostingEnvironment')]"
           },
           "sku": {
             "name": "[parameters('appServicePlanSkuName')]",
@@ -68,7 +88,8 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   public getParameters(config: ServerlessAzureConfig): ArmParameters {
     const resourceConfig: ResourceConfig = {
       sku: {},
-      ...config.provider.storageAccount,
+      scale: {},
+      ...config.provider.appServicePlan,
     };
 
     const params: AppServicePlanParams = {
@@ -80,9 +101,21 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       },
       appServicePlanSkuTier: {
         value: resourceConfig.sku.tier,
+      },
+      appServicePlanWorkerSizeId: {
+        value: resourceConfig.scale.workerSizeId
+      },
+      appServicePlanMinWorkerCount: {
+        value: resourceConfig.scale.minWorkerCount
+      },
+      appServicePlanMaxWorkerCount: {
+        value: resourceConfig.scale.maxWorkerCount
+      },
+      appServicePlanHostingEnvironment: {
+        value: resourceConfig.hostingEnvironment
       }
     }
 
-    return params as unknown as ArmParameters;
+    return params;
   }
 }

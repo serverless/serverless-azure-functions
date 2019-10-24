@@ -54,7 +54,7 @@ export interface ArmParameter {
   defaultValue?: string | number;
 }
 
-export interface DefaultArmParams {
+export interface DefaultArmParams extends ArmParameters {
   location?: ArmParameter;
 }
 
