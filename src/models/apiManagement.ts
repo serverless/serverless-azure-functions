@@ -14,11 +14,18 @@ export interface ApiManagementConfig {
   cors?: ApiCorsPolicy;
   /** The API's JWT validation policy */
   jwt?: ApiJwtPolicy;
+  /** The API's IP Filter policy */
+  ipFilter: ApiIpFilterPolicy;
+  /** The pricing SKU for the APIM instance */
   sku?: {
+    /** The SKU name, (consumption | developer | basic | standard | premium) */
     name?: string;
+    /** The max number of reserved nodes for the specified SKU */
     capacity?: number;
   };
+  /** The publisher e-mail associated with the APIM instance */
   publisherEmail?: string;
+  /** The publisher name associated with the APIM instance */
   publisherName?: string;
 }
 
@@ -38,30 +45,72 @@ export interface ApiCorsPolicy {
   exposeHeaders: string[];
 }
 
+/**
+ * Defines an APIM JWT validation policy
+ * See https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies#ValidateJWT for more information
+ */
 export interface ApiJwtPolicy {
+  /** The name of the query string parameter that contains the JWT token */
   queryParamName?: string;
+  /** The name of the HTTP header that contains the JWT token */
   headerName?: string;
+  /** An explicit JWT token value to validate */
   tokenValue?: string;
+  /** The authorization scheme to acceept (ex. bearer) */
   scheme?: string;
+  /** The HTTP status code to return for a failed response */
   failedStatusCode?: number;
+  /** The error message to return for a failed response */
   failedErrorMessage?: string;
+  /** Whether or not an expiration claim is required in the token */
   requireExpirationTime?: boolean;
+  /** Whether or not tokens must be signed */
   requireSignedTokens?: boolean;
+  /** Number of seconds to skew the clock */
   clockSkew?: number;
+  /** String. Name of context variable that will receive token value as an object of type Jwt upon successful token validation */
   outputTokenVariableName?: string;
+  /** Specifies the OpenID configuration used to validate the JWT token */
   openId?: {
+    /** Link to the OpenID metadata url */
     metadataUrl: string;
   };
+  /** List of valid Base64 encoded signing keys */
   signingKeys?: string[];
+  /** List of valie Base64 encoded decryption keys */
   decryptionKeys?: string[];
+  /** List of valid audiences for the token */
   audiences?: string[];
+  /** List of valid issuers for the token */
   issuers?: string[];
+  /** List of claims that must exist within the token */
   requiredClaims?: ApiJwtClaim[];
 }
 
+/**
+ * A JWT validation claim
+ */
 export interface ApiJwtClaim {
+  /** The name of the claim to validate */
   name: string;
-  match: string;
+  /** Whether the claim value must contain all or any value */
+  match: "all" | "any";
+  /** The seperator used to parse multi-valued claims */
   separator?: string;
+  /** The values to match against */
   values?: string[];
+}
+
+/**
+ * A IP Filter validation policy
+ */
+export interface ApiIpFilterPolicy {
+  /** Whether the policy should allow or forbid the address specification */
+  action: "allow" | "forbid";
+  addresses?: string[];
+  /** The range of IP addresses to apply to the policy */
+  addressRange?: {
+    from: string;
+    to: string;
+  };
 }

@@ -1,7 +1,10 @@
-import { ApiJwtPolicy, ApiJwtClaim, ApiCorsPolicy } from "../models/apiManagement";
+import { ApiJwtPolicy, ApiJwtClaim, ApiCorsPolicy, ApiIpFilterPolicy } from "../models/apiManagement";
 import { Guard } from "../shared/guard";
 import { Builder, Parser } from "xml2js";
 
+/**
+ * APIM Policy build that can be used to build polices for APIs, Backends & operations
+ */
 export class ApimPolicyBuilder {
   private policyRoot: any = {};
 
@@ -9,6 +12,10 @@ export class ApimPolicyBuilder {
     this.init();
   }
 
+  /**
+   * Parses an APIM xml policy and loads it into a Policy Bulder
+   * @param xml The xml policy
+   */
   public static async parse(xml: string): Promise<ApimPolicyBuilder> {
     const parser = new Parser();
     const builder = new ApimPolicyBuilder();
@@ -17,15 +24,18 @@ export class ApimPolicyBuilder {
     return builder;
   }
 
+  /**
+   * Generates the XML policy that is compatible with APIM
+   */
   public build(): string {
     const builder = new Builder();
     return builder.buildObject(this.policyRoot);
   }
 
-  public toObject(): any {
-    return { ...this.policyRoot };
-  }
-
+  /**
+   * Adds a policy to specify the APIM backend to use for an operation
+   * @param backendId The APIM backend id
+   */
   public setBackendService(backendId: string): ApimPolicyBuilder {
     Guard.empty(backendId);
 
@@ -36,6 +46,10 @@ export class ApimPolicyBuilder {
     return this;
   }
 
+  /**
+   * Applies the CORS policy to an APIM API
+   * @param corsConfig The APIM CORS configuration
+   */
   public cors(corsConfig: ApiCorsPolicy): ApimPolicyBuilder {
     Guard.null(corsConfig);
 
@@ -57,6 +71,32 @@ export class ApimPolicyBuilder {
     return this;
   }
 
+  /**
+   * Applies an IP filter configuration policy to an APIM API
+   * @param ipConfig The IP configuration policy
+   */
+  public ipFilter(ipConfig: ApiIpFilterPolicy): ApimPolicyBuilder {
+    const element = {
+      $: { action: ipConfig.action },
+      addressRange: ipConfig.addressRange,
+      address: ipConfig.addresses
+    }
+
+    Object.keys(element).forEach((key) => {
+      if (!element[key]) {
+        delete element[key];
+      }
+    });
+
+    this.policyRoot.policies.inbound[0]["ip-filter"] = [element];
+
+    return this;
+  }
+
+  /**
+   * Applies the JWT validation policy to an APIM API
+   * @param jwtPolicy The JWT validation configuration
+   */
   public jwtValidate(jwtPolicy: ApiJwtPolicy): ApimPolicyBuilder {
     Guard.null(jwtPolicy);
 
@@ -109,6 +149,9 @@ export class ApimPolicyBuilder {
     return this;
   }
 
+  /**
+   * Initializes an empty APIM policy
+   */
   private init(): void {
     this.policyRoot = {
       policies:
@@ -121,6 +164,10 @@ export class ApimPolicyBuilder {
     }
   }
 
+  /**
+   * Create a claim element for a JWT validation policy
+   * @param claim The JWT claim
+   */
   private createClaimElement(claim: ApiJwtClaim) {
     return {
       claim: {
