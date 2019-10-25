@@ -11,7 +11,7 @@ export interface FunctionMetadata {
 }
 
 export class Utils {
-  public static getFunctionMetaData(functionName: string, serverless: Serverless): FunctionMetadata {
+  public static async getFunctionMetaData(functionName: string, serverless: Serverless): Promise<FunctionMetadata> {
     const config: ServerlessAzureConfig = serverless.service as any;
     const bindings = [];
     let bindingSettingsNames = [];
@@ -26,7 +26,7 @@ export class Utils {
       functionJson: null
     };
 
-    const parsedBindings = BindingUtils.getBindingsMetaData(serverless);
+    const parsedBindings = await BindingUtils.getBindingsMetaData(serverless);
 
     const bindingTypes = parsedBindings.bindingTypes;
     const bindingDisplayNames = parsedBindings.bindingDisplayNames;
