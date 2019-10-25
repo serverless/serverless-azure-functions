@@ -157,7 +157,8 @@ describe("Function App Service", () => {
     const logCalls = (sls.cli.log as any).mock.calls as any[];
     for (let i = 0; i < functionNames.length; i++) {
       const functionName = functionNames[i];
-      expect(logCalls[i + 1][0]).toEqual(`-> Deleting function: ${functionName}`);
+      const call = logCalls.find((c) => c[0] === `-> Deleting function: ${functionName}`);
+      expect(call).toBeTruthy();
     }
   });
 

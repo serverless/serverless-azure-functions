@@ -145,6 +145,12 @@ export class ConfigService {
    */
   private initializeConfig(service: Service): ServerlessAzureConfig {
     const config: ServerlessAzureConfig = service as any;
+    const providerConfig = Utils.get(this.serverless.variables, constants.variableKeys.providerConfig);
+    if (providerConfig) {
+      config.provider = providerConfig;
+      return config;
+    }
+    this.serverless.cli.log("Initializing provider configuration...");
     this.setDefaultValues(config);
 
     const {
@@ -184,7 +190,7 @@ export class ConfigService {
       this.getOption("resourceGroup", config.provider.resourceGroup)
     ) || AzureNamingService.getResourceName(options);
 
-    // Get property from `runFromBlobUrl` for backwards compatability
+    // Get property from `runFromBlobUrl` for backwards compatibility
     if (deployment && deployment.external === undefined && deployment["runFromBlobUrl"] !== undefined) {
       deployment.external = deployment["runFromBlobUrl"];
     }
@@ -194,8 +200,9 @@ export class ConfigService {
       ...deployment
     }
 
-    config.provider.functionRuntime = this.getRuntime(runtime)
+    config.provider.functionRuntime = this.getRuntime(runtime);
 
+    this.serverless.variables[constants.variableKeys.providerConfig] = config.provider;
     return config;
   }
 
