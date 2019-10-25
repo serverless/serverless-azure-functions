@@ -1,0 +1,13 @@
+name: "Add new issues to 'To triage' column"
+on:
+  issues:
+    types: [opened]
+jobs:
+  Add_New_Issue_To_Project:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: konradpabjan/actions-add-new-issue-to-column@v1.1
+      with:
+        action-token: "${{ secrets.ACCESS_TOKEN }}"
+        project-url: "https://github.com/serverless/serverless-azure-functions/projects/1"
+        column-name: "To triage"
