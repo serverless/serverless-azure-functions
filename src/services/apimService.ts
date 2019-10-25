@@ -86,20 +86,6 @@ export class ApimService extends BaseService {
   }
 
   /**
-   * Gets the API policy associated with the specified API
-   * @param apiContract The API to query for policies
-   */
-  public async getApiPolicy(apiContract: ApiContract): Promise<PolicyContract> {
-    Guard.null(apiContract);
-
-    try {
-      return await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
-    } catch (err) {
-      return null;
-    }
-  }
-
-  /**
    * Deploys the APIM top level api
    */
   public async deploy() {
@@ -308,7 +294,12 @@ export class ApimService extends BaseService {
         operationConfig,
       );
 
-      const policyBuilder = new ApimPolicyBuilder();
+      // Get any existing operation policy merge in backend service
+      const operationPolicy = await this.getApiOperationPolicy(api, operationConfig);
+      const policyBuilder = operationPolicy
+        ? await ApimPolicyBuilder.parse(operationPolicy.value)
+        : new ApimPolicyBuilder();
+
       const policyXml = policyBuilder
         .setBackendService(backend.name)
         .build();
@@ -382,6 +373,36 @@ export class ApimService extends BaseService {
         format: "rawxml",
         value: policyXml
       });
+    }
+  }
+
+  /**
+   * Gets the API policy associated with the specified API
+   * @param apiContract The API to query for policies
+   */
+  private async getApiPolicy(apiContract: ApiContract): Promise<PolicyContract> {
+    Guard.null(apiContract);
+
+    try {
+      return await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  /**
+   * Gets the API operation policy associated with the specified operation
+   * @param apiContract The API associated with the operation
+   * @param operationContract The API operation to query for policies
+   */
+  private async getApiOperationPolicy(apiContract: ApiContract, operationContract: OperationContract): Promise<PolicyContract> {
+    Guard.null(apiContract);
+    Guard.null(operationContract);
+
+    try {
+      return await this.apimClient.apiOperationPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name, operationContract.name);
+    } catch (err) {
+      return null;
     }
   }
 
