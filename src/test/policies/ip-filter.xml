@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<policies>
+  <inbound>
+    <base/>
+    <ip-filter action="allow">
+      <addressRange>
+        <from>1.1.1.1</from>
+        <to>1.1.1.255</to>
+      </addressRange>
+      <address>2.2.2.2</address>
+      <address>3.3.3.3</address>
+    </ip-filter>
+  </inbound>
+  <backend>
+    <base/>
+  </backend>
+  <outbound>
+    <base/>
+  </outbound>
+  <on-error>
+    <base/>
+  </on-error>
+</policies>
