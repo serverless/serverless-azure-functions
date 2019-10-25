@@ -1,4 +1,4 @@
-import { ApiJwtPolicy, ApiJwtClaim, ApiCorsPolicy, ApiIpFilterPolicy } from "../models/apiManagement";
+import { ApiJwtValidatePolicy, ApiJwtClaim, ApiCorsPolicy, ApiIpFilterPolicy } from "../models/apiManagement";
 import { Guard } from "../shared/guard";
 import { Builder, Parser } from "xml2js";
 
@@ -97,7 +97,7 @@ export class ApimPolicyBuilder {
    * Applies the JWT validation policy to an APIM API
    * @param jwtPolicy The JWT validation configuration
    */
-  public jwtValidate(jwtPolicy: ApiJwtPolicy): ApimPolicyBuilder {
+  public jwtValidate(jwtPolicy: ApiJwtValidatePolicy): ApimPolicyBuilder {
     Guard.null(jwtPolicy);
 
     const signingKeys = jwtPolicy.signingKeys ? [jwtPolicy.signingKeys.map((key) => ({ key }))] : null;

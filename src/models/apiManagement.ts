@@ -13,9 +13,9 @@ export interface ApiManagementConfig {
   /** The API's CORS policy */
   cors?: ApiCorsPolicy;
   /** The API's JWT validation policy */
-  jwt?: ApiJwtPolicy;
+  jwtValidate?: ApiJwtValidatePolicy;
   /** The API's IP Filter policy */
-  ipFilter: ApiIpFilterPolicy;
+  ipFilter?: ApiIpFilterPolicy;
   /** The pricing SKU for the APIM instance */
   sku?: {
     /** The SKU name, (consumption | developer | basic | standard | premium) */
@@ -49,7 +49,7 @@ export interface ApiCorsPolicy {
  * Defines an APIM JWT validation policy
  * See https://docs.microsoft.com/en-us/azure/api-management/api-management-access-restriction-policies#ValidateJWT for more information
  */
-export interface ApiJwtPolicy {
+export interface ApiJwtValidatePolicy {
   /** The name of the query string parameter that contains the JWT token */
   queryParamName?: string;
   /** The name of the HTTP header that contains the JWT token */

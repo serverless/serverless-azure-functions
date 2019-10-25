@@ -21,7 +21,8 @@ import {
   ApiPolicyGetResponse
 } from "@azure/arm-apimanagement/esm/models";
 import { AzureNamingService } from "./namingService";
-import { ApiManagementConfig } from "../models/apiManagement";
+import { ApiManagementConfig, ApiIpFilterPolicy } from "../models/apiManagement";
+import { ApimPolicyBuilder } from "./apimPolicyBuilder";
 
 describe("APIM Service", () => {
   let apimConfig: ApiManagementConfig;
@@ -288,78 +289,104 @@ describe("APIM Service", () => {
       );
     });
 
-    it("deploys API CORS policy when defined within configuration", async () => {
-      Api.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
-      Backend.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
-      Property.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
-      ApiPolicy.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+    describe("API Policies", () => {
+      beforeEach(() => {
+        Api.prototype.createOrUpdate =
+          jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
+        Backend.prototype.createOrUpdate =
+          jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
+        Property.prototype.createOrUpdate =
+          jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
+        ApiPolicy.prototype.createOrUpdate =
+          jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+      });
 
-      const corsPolicy = MockFactory.createTestMockApiCorsPolicy();
-      serverless.service.provider["apim"]["cors"] = corsPolicy;
+      it("deploys API CORS policy when defined within configuration", async () => {
+        jest.spyOn(ApimPolicyBuilder.prototype, "cors");
 
-      const apimService = new ApimService(serverless);
-      const result = await apimService.deploy();
+        const corsPolicy = MockFactory.createTestMockApiCorsPolicy();
+        serverless.service.provider["apim"]["cors"] = corsPolicy;
 
-      expect(result).not.toBeNull();
-      expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
-        resourceGroupName,
-        serviceName,
-        apiName,
-        {
-          format: "rawxml",
-          value: expect.stringContaining("cors"),
+        const apimService = new ApimService(serverless);
+        await apimService.deploy();
+
+        expect(ApimPolicyBuilder.prototype.cors).toBeCalledWith(corsPolicy);
+        expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+          resourceGroupName,
+          serviceName,
+          apiName,
+          {
+            format: "rawxml",
+            value: expect.stringContaining("cors"),
+          }
+        );
+      });
+
+      it("deploys API JWT policy when defined within configuration", async () => {
+        jest.spyOn(ApimPolicyBuilder.prototype, "jwtValidate");
+
+        const jwtPolicy = MockFactory.createTestMockApiJwtPolicy();
+        jwtPolicy.openId = {
+          metadataUrl: "https://someurl"
+        };
+        jwtPolicy.requiredClaims = [
+          {
+            name: "aud",
+            match: "all",
+            separator: ":",
+            values: ["value1", "value2", "value3"]
+          },
+          {
+            name: "sub",
+            match: "any",
+            separator: ":",
+            values: ["value4", "value5", "value6"]
+          }
+        ]
+        serverless.service.provider["apim"]["jwtValidate"] = jwtPolicy;
+
+        const apimService = new ApimService(serverless);
+        await apimService.deploy();
+
+        expect(ApimPolicyBuilder.prototype.jwtValidate).toBeCalledWith(jwtPolicy);
+        expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+          resourceGroupName,
+          serviceName,
+          apiName,
+          {
+            format: "rawxml",
+            value: expect.stringContaining("validate-jwt"),
+          }
+        );
+      });
+
+      it("deploys API IP filter policy when defined within configuration", async () => {
+        jest.spyOn(ApimPolicyBuilder.prototype, "ipFilter");
+
+        const ipFilterPolicy: ApiIpFilterPolicy = {
+          action: "allow",
+          addresses: [
+            "1.1.1.1",
+            "2.2.2.2"
+          ]
         }
-      );
-    });
 
-    it("deploys API JWT policy when defined within configuration", async () => {
-      Api.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiCreateOrUpdateResponse>(expectedApiResult, 201));
-      Backend.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<BackendCreateOrUpdateResponse>(expectedBackend, 201));
-      Property.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<PropertyCreateOrUpdateResponse>(expectedProperty, 201));
-      ApiPolicy.prototype.createOrUpdate =
-        jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
+        serverless.service.provider["apim"]["ipFilter"] = ipFilterPolicy;
 
-      const jwtPolicy = MockFactory.createTestMockApiJwtPolicy();
-      jwtPolicy.openId = {
-        metadataUrl: "https://someurl"
-      };
-      jwtPolicy.requiredClaims = [
-        {
-          name: "aud",
-          match: "all",
-          separator: ":",
-          values: ["value1", "value2", "value3"]
-        },
-        {
-          name: "sub",
-          match: "any",
-          separator: ":",
-          values: ["value4", "value5", "value6"]
-        }
+        const apimService = new ApimService(serverless);
+        await apimService.deploy();
 
-      ]
-      serverless.service.provider["apim"]["jwt"] = jwtPolicy;
-
-      const apimService = new ApimService(serverless);
-      const result = await apimService.deploy();
-
-      expect(result).not.toBeNull();
-      expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
-        resourceGroupName,
-        serviceName,
-        apiName,
-        {
-          format: "rawxml",
-          value: expect.stringContaining("validate-jwt"),
-        }
-      );
+        expect(ApimPolicyBuilder.prototype.ipFilter).toBeCalledWith(ipFilterPolicy);
+        expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+          resourceGroupName,
+          serviceName,
+          apiName,
+          {
+            format: "rawxml",
+            value: expect.stringContaining("ip-filter"),
+          }
+        );
+      });
     });
 
     it("returns null when APIM is not configured", async () => {

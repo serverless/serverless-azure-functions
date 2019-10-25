@@ -11,7 +11,7 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { ApiCorsPolicy, ApiManagementConfig, ApiJwtPolicy } from "../models/apiManagement";
+import { ApiCorsPolicy, ApiManagementConfig, ApiJwtValidatePolicy } from "../models/apiManagement";
 import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
@@ -616,7 +616,7 @@ export class MockFactory {
     };
   }
 
-  public static createTestMockApiJwtPolicy(): ApiJwtPolicy {
+  public static createTestMockApiJwtPolicy(): ApiJwtValidatePolicy {
     return {
       headerName: "authorization",
       scheme: "bearer",

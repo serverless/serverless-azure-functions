@@ -1,12 +1,12 @@
 import Serverless from "serverless";
-import { ApiManagementClient } from "@azure/arm-apimanagement";
+import { ApiManagementClient, ApiPolicy } from "@azure/arm-apimanagement";
 import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
 import { ApiManagementConfig } from "../models/apiManagement";
 import { ApimPolicyBuilder } from "../services/apimPolicyBuilder";
 import {
   ApiContract, OperationContract,
-  PropertyContract, ApiManagementServiceResource, BackendContract,
+  PropertyContract, ApiManagementServiceResource, BackendContract, PolicyContract,
 } from "@azure/arm-apimanagement/esm/models";
 import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
@@ -80,6 +80,20 @@ export class ApimService extends BaseService {
 
     try {
       return await this.apimClient.api.get(this.resourceGroup, this.apimConfig.name, apiName);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  /**
+   * Gets the API policy associated with the specified API
+   * @param apiContract The API to query for policies
+   */
+  public async getApiPolicy(apiContract: ApiContract): Promise<PolicyContract> {
+    Guard.null(apiContract);
+
+    try {
+      return await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
     } catch (err) {
       return null;
     }
@@ -339,25 +353,29 @@ export class ApimService extends BaseService {
    * @param apiContract The API contract
    */
   private async setApiPolicies(apiContract: ApiContract) {
-    // Get existing policy
     let requireUpdate = false;
-    const existingPolicy = await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
+    const existingPolicy = await this.getApiPolicy(apiContract);
 
-    // Update policy based on configuration
-    const builder = await ApimPolicyBuilder.parse(existingPolicy.value);
+    const builder = existingPolicy
+      ? await ApimPolicyBuilder.parse(existingPolicy.value)
+      : new ApimPolicyBuilder();
 
     if (this.apimConfig.cors) {
       builder.cors(this.apimConfig.cors);
       requireUpdate = true;
     }
 
-    if (this.apimConfig.jwt) {
-      builder.jwtValidate(this.apimConfig.jwt);
+    if (this.apimConfig.jwtValidate) {
+      builder.jwtValidate(this.apimConfig.jwtValidate);
+      requireUpdate = true;
+    }
+
+    if (this.apimConfig.ipFilter) {
+      builder.ipFilter(this.apimConfig.ipFilter);
       requireUpdate = true;
     }
 
     if (requireUpdate) {
-      // Store updated policy
       const policyXml = builder.build();
 
       await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
