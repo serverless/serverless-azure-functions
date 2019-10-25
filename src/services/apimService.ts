@@ -1,9 +1,9 @@
 import Serverless from "serverless";
-import xml from "xml";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
-import { ApiManagementConfig, ApiCorsPolicy, ApiJwtPolicy } from "../models/apiManagement";
+import { ApiManagementConfig } from "../models/apiManagement";
+import { ApimPolicyBuilder } from "../services/apimPolicyBuilder";
 import {
   ApiContract, OperationContract,
   PropertyContract, ApiManagementServiceResource, BackendContract,
@@ -12,7 +12,6 @@ import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ApimResource } from "../armTemplates/resources/apim";
 import { ServerlessExtraAzureSettingsConfig } from "../models/serverless";
-import { Builder, Parser } from "xml2js"
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -295,9 +294,14 @@ export class ApimService extends BaseService {
         operationConfig,
       );
 
+      const policyBuilder = new ApimPolicyBuilder();
+      const policyXml = policyBuilder
+        .setBackendService(backend.name)
+        .build();
+
       await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, api.name, operationConfig.name, {
         format: "rawxml",
-        value: this.createApiOperationXmlPolicy(backend.name),
+        value: policyXml,
       });
 
       return result;
@@ -331,36 +335,6 @@ export class ApimService extends BaseService {
   }
 
   /**
-   * Creates the XML payload that defines the API operation policy to link to the configured backend
-   */
-  private createApiOperationXmlPolicy(backendId: string): string {
-    const operationPolicy = [{
-      policies: [
-        {
-          inbound: [
-            { base: null },
-            {
-              "set-backend-service": [
-                {
-                  "_attr": {
-                    "id": "apim-generated-policy",
-                    "backend-id": backendId,
-                  }
-                },
-              ],
-            },
-          ],
-        },
-        { backend: [{ base: null }] },
-        { outbound: [{ base: null }] },
-        { "on-error": [{ base: null }] },
-      ]
-    }];
-
-    return xml(operationPolicy);
-  }
-
-  /**
    * Sets policies on the API from serverless configuration
    * @param apiContract The API contract
    */
@@ -370,92 +344,27 @@ export class ApimService extends BaseService {
     const existingPolicy = await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
 
     // Update policy based on configuration
-    const parser = new Parser();
-    const builder = new Builder();
-    const policyRoot = await parser.parseStringPromise(existingPolicy.value);
+    const builder = await ApimPolicyBuilder.parse(existingPolicy.value);
 
     if (this.apimConfig.cors) {
-      this.appendCorsPolicy(policyRoot, this.apimConfig.cors);
+      builder.cors(this.apimConfig.cors);
       requireUpdate = true;
     }
 
     if (this.apimConfig.jwt) {
-      this.appendJwtPolicy(policyRoot, this.apimConfig.jwt);
+      builder.jwtValidate(this.apimConfig.jwt);
       requireUpdate = true;
     }
 
     if (requireUpdate) {
       // Store updated policy
-      const policyXml = builder.buildObject(policyRoot);
+      const policyXml = builder.build();
 
       await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
         format: "rawxml",
         value: policyXml
       });
     }
-  }
-
-  /**
-   * Creates the XML payload that defines the specified CORS policy
-   * @param corsPolicy The CORS policy
-   */
-  private appendCorsPolicy(policyRoot: any, corsPolicy: ApiCorsPolicy) {
-    const origins = corsPolicy.allowedOrigins ? [corsPolicy.allowedOrigins.map((origin) => ({ origin }))] : null;
-    const methods = corsPolicy.allowedMethods ? [corsPolicy.allowedMethods.map((method) => ({ method }))] : null;
-    const allowedHeaders = corsPolicy.allowedHeaders ? [corsPolicy.allowedHeaders.map((header) => ({ header }))] : null;
-    const exposeHeaders = corsPolicy.exposeHeaders ? [corsPolicy.exposeHeaders.map((header) => ({ header }))] : null;
-
-    policyRoot.policies.inbound[0].cors = [
-      {
-        $: { "allow-credentials": !!corsPolicy.allowCredentials },
-        "allowed-origins": origins,
-        "allowed-methods": methods,
-        "allowed-headers": allowedHeaders,
-        "expose-headers": exposeHeaders
-      }
-    ];
-  }
-
-  private appendJwtPolicy(policyRoot: any, jwtPolicy: ApiJwtPolicy) {
-    const signingKeys = jwtPolicy.issuerSigningKeys ? [jwtPolicy.issuerSigningKeys.map((key) => ({ key }))] : null;
-    const decryptionKeys = jwtPolicy.decryptionKeys ? [jwtPolicy.decryptionKeys.map((key) => ({ key }))] : null;
-    const audiences = jwtPolicy.audiences ? [jwtPolicy.audiences.map((audience) => ({ audience }))] : null;
-    const issuers = jwtPolicy.issuers ? [jwtPolicy.issuers.map((issuer) => ({ issuer }))] : null;
-    const claims = jwtPolicy.requiredClaims ? [jwtPolicy.requiredClaims.map((claim) => ({ claim: [{ $: { name: claim.name, match: claim.match } }] }))] : null;
-    const oidConfig = jwtPolicy.openId
-      ? [{ $: { url: jwtPolicy.openId.metadataUrl } }]
-      : null;
-
-    const attributeMap = {
-      headerName: "header-name",
-      failedStatusCode: "failed-validation-httpcode",
-      failedErrorMessage: "failed-validation-error-message",
-      requireExpirationTime: "require-expiration-time",
-      scheme: "require-scheme",
-      requireSignedTokens: "require-signed-tokens",
-      clockSkew: "clock-skew",
-      outputTokenVariableName: "output-token-variable-name"
-    };
-
-    const attributes = {};
-
-    Object.keys(attributeMap).forEach((key) => {
-      if (jwtPolicy[key]) {
-        attributes[attributeMap[key]] = jwtPolicy[key];
-      }
-    });
-
-    policyRoot.inbound["validate-jwt"] = [
-      {
-        $: attributes,
-        "openid-config": oidConfig,
-        "issuer-signing-keys": signingKeys,
-        "decryption-keys": decryptionKeys,
-        "audiences": audiences,
-        "issuers": issuers,
-        "required-claims": claims
-      }
-    ];
   }
 
   /**

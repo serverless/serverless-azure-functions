@@ -327,8 +327,24 @@ describe("APIM Service", () => {
         jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyCreateOrUpdateResponse>(expectedProperty, 201));
 
       const jwtPolicy = MockFactory.createTestMockApiJwtPolicy();
-      const corsPolicy = MockFactory.createTestMockApiCorsPolicy();
-      serverless.service.provider["apim"]["cors"] = corsPolicy;
+      jwtPolicy.openId = {
+        metadataUrl: "https://someurl"
+      };
+      jwtPolicy.requiredClaims = [
+        {
+          name: "aud",
+          match: "all",
+          separator: ":",
+          values: ["value1", "value2", "value3"]
+        },
+        {
+          name: "sub",
+          match: "any",
+          separator: ":",
+          values: ["value4", "value5", "value6"]
+        }
+
+      ]
       serverless.service.provider["apim"]["jwt"] = jwtPolicy;
 
       const apimService = new ApimService(serverless);

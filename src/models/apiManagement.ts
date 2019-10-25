@@ -39,10 +39,12 @@ export interface ApiCorsPolicy {
 }
 
 export interface ApiJwtPolicy {
-  headerName: string;
-  scheme: string;
-  failedStatusCode: number;
-  failedErrorMessage: string;
+  queryParamName?: string;
+  headerName?: string;
+  tokenValue?: string;
+  scheme?: string;
+  failedStatusCode?: number;
+  failedErrorMessage?: string;
   requireExpirationTime?: boolean;
   requireSignedTokens?: boolean;
   clockSkew?: number;
@@ -50,14 +52,16 @@ export interface ApiJwtPolicy {
   openId?: {
     metadataUrl: string;
   };
-  issuerSigningKeys?: string[];
+  signingKeys?: string[];
   decryptionKeys?: string[];
   audiences?: string[];
   issuers?: string[];
-  requiredClaims?: ApiJwtClaim[]
+  requiredClaims?: ApiJwtClaim[];
 }
 
 export interface ApiJwtClaim {
   name: string;
   match: string;
+  separator?: string;
+  values?: string[];
 }
