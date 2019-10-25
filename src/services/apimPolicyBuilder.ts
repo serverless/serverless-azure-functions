@@ -17,6 +17,8 @@ export class ApimPolicyBuilder {
    * @param xml The xml policy
    */
   public static async parse(xml: string): Promise<ApimPolicyBuilder> {
+    Guard.empty(xml, "xml");
+
     const parser = new Parser();
     const builder = new ApimPolicyBuilder();
     builder.policyRoot = await parser.parseStringPromise(xml);
@@ -37,7 +39,7 @@ export class ApimPolicyBuilder {
    * @param backendId The APIM backend id
    */
   public setBackendService(backendId: string): ApimPolicyBuilder {
-    Guard.empty(backendId);
+    Guard.empty(backendId, "backendId");
 
     this.policyRoot.policies.inbound[0]["set-backend-service"] = [
       { $: { "id": "apim-generated-policy", "backend-id": backendId } }
@@ -51,7 +53,7 @@ export class ApimPolicyBuilder {
    * @param corsConfig The APIM CORS configuration
    */
   public cors(corsConfig: ApiCorsPolicy): ApimPolicyBuilder {
-    Guard.null(corsConfig);
+    Guard.null(corsConfig, "corsConfig");
 
     const origins = corsConfig.allowedOrigins ? [corsConfig.allowedOrigins.map((origin) => ({ origin }))] : null;
     const methods = corsConfig.allowedMethods ? [corsConfig.allowedMethods.map((method) => ({ method }))] : null;
@@ -76,6 +78,8 @@ export class ApimPolicyBuilder {
    * @param ipConfig The IP configuration policy
    */
   public ipFilter(ipConfig: ApiIpFilterPolicy): ApimPolicyBuilder {
+    Guard.null(ipConfig, "ipConfig");
+
     const element = {
       $: { action: ipConfig.action },
       addressRange: ipConfig.addressRange,
@@ -98,7 +102,7 @@ export class ApimPolicyBuilder {
    * @param jwtPolicy The JWT validation configuration
    */
   public jwtValidate(jwtPolicy: ApiJwtValidatePolicy): ApimPolicyBuilder {
-    Guard.null(jwtPolicy);
+    Guard.null(jwtPolicy, "jwtPolicy");
 
     const signingKeys = jwtPolicy.signingKeys ? [jwtPolicy.signingKeys.map((key) => ({ key }))] : null;
     const decryptionKeys = jwtPolicy.decryptionKeys ? [jwtPolicy.decryptionKeys.map((key) => ({ key }))] : null;
