@@ -1,5 +1,5 @@
 import Serverless from "serverless";
-import { ApiManagementClient, ApiPolicy } from "@azure/arm-apimanagement";
+import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
 import { ApiManagementConfig } from "../models/apiManagement";

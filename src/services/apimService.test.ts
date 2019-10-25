@@ -68,6 +68,7 @@ describe("APIM Service", () => {
     };
 
     ApiPolicy.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyGetResponse>(expectedPolicy, 200));
+    ApiOperationPolicy.prototype.get = jest.fn(() => MockFactory.createTestArmSdkResponse<ApiPolicyGetResponse>(expectedPolicy, 200));
   });
   it("is defined", () => {
     expect(ApimService).toBeDefined();
