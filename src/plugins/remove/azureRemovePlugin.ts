@@ -48,7 +48,8 @@ export class AzureRemovePlugin extends AzureBasePlugin {
       this.log(`Resource group "${rgName}" does not exist in your Azure subscription`)
       return;
     }
-    this.log(`This command will delete your entire resource group (${resourceService.getResourceGroupName()}). ` +
+    this.log(`This command will delete your ENTIRE resource group (${resourceService.getResourceGroupName()}). ` +
+      "and ALL the Azure resources that it contains " +
       "Are you sure you want to proceed? If so, enter the full name of the resource group :");
     const input = await Utils.waitForUserInput();
     if (input === resourceService.getResourceGroupName()) {
