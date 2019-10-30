@@ -104,6 +104,11 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       appServicePlanName: {
         value: AppServicePlanResource.getResourceName(config),
       },
+      /**
+       * `kind` only required for Linux Function Apps
+       * `undefined` values get removed from parameters by armService
+       * before deployment
+       */
       kind: {
         value: (os === FunctionAppOS.LINUX) ? "Linux" : undefined,
       },

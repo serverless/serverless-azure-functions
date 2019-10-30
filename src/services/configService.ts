@@ -217,7 +217,8 @@ export class ConfigService {
     ) || AzureNamingService.getResourceName(options);
     
     const functionRuntime = this.getFunctionRuntime(runtime);
-    if (functionRuntime.language === SupportedRuntimeLanguage.PYTHON) {
+    if (functionRuntime.language === SupportedRuntimeLanguage.PYTHON && os !== FunctionAppOS.LINUX) {
+      this.serverless.cli.log("Python functions can ONLY run on Linux Function Apps. Switching now");
       config.provider.os = FunctionAppOS.LINUX;
     } 
 
