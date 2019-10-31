@@ -52,7 +52,7 @@ describe("Azure Func Service", () => {
       const service = createService(sls, options);
       await service.add();
 
-      expect(sls.cli.log).toBeCalledWith("Function hello already exists");
+      expect(sls.cli.log).toBeCalledWith("Function hello already exists", undefined, undefined);
     });
 
     it("creates function handler and updates serverless.yml", async () => {

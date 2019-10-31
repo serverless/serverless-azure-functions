@@ -27,7 +27,7 @@ export class InvokeService extends BaseService {
     const functionObject = this.configService.getFunctionConfig()[functionName];
     /* accesses the admin key */
     if (!functionObject) {
-      this.serverless.cli.log(`Function ${functionName} does not exist`);
+      this.log(`Function ${functionName} does not exist`);
       return;
     }
 

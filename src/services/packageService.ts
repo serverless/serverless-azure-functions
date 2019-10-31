@@ -51,7 +51,7 @@ export class PackageService extends BaseService {
       }
     });
 
-    this.serverless.cli.log("Copying files for webpack");
+    this.log("Copying files for webpack");
     filesToCopy.forEach((filePath) => {
       const destinationPath = path.join(".webpack", "service", filePath);
       const destinationDirectory = path.dirname(destinationPath);
@@ -59,7 +59,7 @@ export class PackageService extends BaseService {
         fs.mkdirSync(destinationDirectory);
       }
       fs.copyFileSync(filePath, destinationPath);
-      this.serverless.cli.log(`-> ${destinationPath}`);
+      this.log(`-> ${destinationPath}`);
     });
 
     return Promise.resolve();

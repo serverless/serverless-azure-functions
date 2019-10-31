@@ -57,17 +57,12 @@ export class SimpleFileTokenCache implements adal.TokenCache {
 
   public addSubs(subscriptions: any) {
     this.subscriptions.push(...subscriptions);
-    this.subscriptions = this.subscriptions.reduce((accumulator , current) => {
-      const x = accumulator .find(item => item.id === current.id);
-      if (!x) {
-        return accumulator .concat([current]);
-      } else {
-        return accumulator ;
-      }
+    this.subscriptions = this.subscriptions.reduce((accumulator, current) => {
+      const x = accumulator.find(item => item.id === current.id);
+      return (!x) ? accumulator.concat([current]) : accumulator;
     }, []);
     this.save();
   }
-
 
   public clear(callback: any) {
     this.entries = [];
