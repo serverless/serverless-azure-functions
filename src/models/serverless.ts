@@ -30,7 +30,6 @@ export interface DeploymentConfig {
 }
 
 export interface ServerlessAzureProvider {
-  slot?: any;
   type?: string;
   prefix?: string;
   region: string;

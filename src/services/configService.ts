@@ -138,8 +138,8 @@ export class ConfigService {
       config.provider.prefix = prefix;
     }
 
-    if (!config.provider.slot) {
-      config.provider.slot = slot;
+    if (!config.provider.deployment.slot) {
+      config.provider.deployment.slot = slot;
     }
   }
 
