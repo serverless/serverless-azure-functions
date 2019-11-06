@@ -4,7 +4,7 @@ export const configConstants = {
     container: "deployment-artifacts",
     rollback: true,
     external: false,
-    slot: 'staging'
+    slot: "staging"
   },
   naming: {
     maxLength: {
