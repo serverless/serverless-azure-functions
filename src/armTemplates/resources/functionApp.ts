@@ -25,6 +25,11 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     return AzureNamingService.getResourceName(options);
   }
 
+  public static getResourceSlot(config: ServerlessAzureConfig) {
+    const safeSlotName = config.provider.deployment.slot.replace(/\s/g, "-");
+    return safeSlotName;
+  }
+
   public getTemplate(): ArmResourceTemplate {
     const parameters: FunctionAppParams = {
       functionAppRunFromPackage: {
@@ -32,6 +37,10 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         type: ArmParamType.String
       },
       functionAppName: {
+        defaultValue: "",
+        type: ArmParamType.String
+      },
+      functionAppSlot: {
         defaultValue: "",
         type: ArmParamType.String
       },
@@ -69,7 +78,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         {
           "type": "Microsoft.Web/sites",
           "apiVersion": "2016-03-01",
-          "name": "[parameters('functionAppName')]",
+          "name": "[concat(parameters('functionAppName'), concat(parameters('functionAppSlot'))]",
           "location": "[parameters('location')]",
           "identity": {
             "type": ArmParamType.SystemAssigned
@@ -135,6 +144,9 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     const params: FunctionAppParams = {
       functionAppName: {
         value: FunctionAppResource.getResourceName(config),
+      },
+      functionAppSlot: {
+        value: FunctionAppResource.getResourceSlot(config),
       },
       functionAppNodeVersion: {
         value: (functionRuntime.language === SupportedRuntimeLanguage.NODE)

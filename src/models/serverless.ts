@@ -1,5 +1,5 @@
-import { ApiManagementConfig } from "./apiManagement";
 import Serverless from "serverless";
+import { ApiManagementConfig } from "./apiManagement";
 import { ArmParameters } from "./armTemplates";
 
 export interface ArmTemplateConfig {
@@ -26,6 +26,7 @@ export interface DeploymentConfig {
   rollback?: boolean;
   container?: string;
   external?: boolean;
+  slot?: string;
 }
 
 export interface ServerlessAzureProvider {

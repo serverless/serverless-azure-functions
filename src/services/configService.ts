@@ -2,8 +2,7 @@ import semver from "semver";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import configConstants from "../config";
-import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, 
-  ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
+import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
@@ -164,6 +163,10 @@ export class ConfigService {
       runtime
     } = config.provider;
 
+    const {
+      slot
+    } = config.provider.deployment;
+
     const options: AzureNamingServiceOptions = {
       config: config,
       suffix: `${config.service}-rg`,
@@ -197,8 +200,9 @@ export class ConfigService {
 
     config.provider.deployment = {
       ...configConstants.deploymentConfig,
-      ...deployment
-    }
+      ...deployment,
+      slot: this.getOption("slot") || slot
+    };
 
     config.provider.functionRuntime = this.getRuntime(runtime);
 
