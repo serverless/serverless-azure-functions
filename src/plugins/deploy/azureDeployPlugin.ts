@@ -38,6 +38,10 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
       function: {
         usage: "Deployment of individual function - NOT SUPPORTED",
         shortcut: "f",
+      },
+      slot: {
+        usage: "Slot used for deployment",
+        shortcut: "l",
       }
     }
 

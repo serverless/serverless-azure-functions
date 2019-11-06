@@ -123,18 +123,23 @@ export class ConfigService {
    */
   private setDefaultValues(config: ServerlessAzureConfig) {
     const { awsRegion, region, stage, prefix } = configConstants.defaults;
+    const { slot } = configConstants.deploymentConfig;
     const providerRegion = config.provider.region;
 
     if (!providerRegion || providerRegion === awsRegion) {
       config.provider.region = this.serverless.service.provider["location"] || region;
     }
- 
+
     if (!config.provider.stage) {
       config.provider.stage = stage;
     }
 
     if (!config.provider.prefix) {
       config.provider.prefix = prefix;
+    }
+
+    if (!config.provider.slot) {
+      config.provider.slot = slot;
     }
   }
 
@@ -247,7 +252,7 @@ export class ConfigService {
       "nodejs": SupportedRuntimeLanguage.NODE,
       "python": SupportedRuntimeLanguage.PYTHON
     }[languageInput];
-    
+
     return {
       language,
       version
