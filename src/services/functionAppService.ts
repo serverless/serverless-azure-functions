@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import Serverless from "serverless";
 import { FunctionAppResource } from "../armTemplates/resources/functionApp";
+import configConstants from "../config";
 import { ArmDeployment } from "../models/armTemplates";
 import { FunctionAppHttpTriggerConfig } from "../models/functionApp";
 import { Guard } from "../shared/guard";
@@ -11,7 +12,6 @@ import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
-import configConstants from "../config";
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;

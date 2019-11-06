@@ -26,7 +26,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   }
 
   public static getResourceSlot(config: ServerlessAzureConfig) {
-    const safeSlotName = config.provider.deployment.slot.replace(/\s/g, "-");
+    const safeSlotName = config.provider.deployment.slot ? config.provider.deployment.slot.replace(/\s/g, "-") : null;
     return safeSlotName;
   }
 
@@ -76,9 +76,66 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       "variables": {},
       "resources": [
         {
+          "type": "Microsoft.Web/sites/slots",
+          "apiVersion": "2016-03-01",
+          // "name": "[concat(parameters('functionAppName'), '/', parameters('functionAppSlot'))]",
+          "name": "[concat(parameters('functionAppName'), '/staging')]",
+          "location": "[parameters('location')]",
+          "kind": "functionapp",
+          "identity": {
+            "type": ArmParamType.SystemAssigned
+          },
+          "dependsOn": [
+            "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+            "[concat('microsoft.insights/components/', parameters('appInsightsName'))]"
+          ],
+          "properties": {
+            "siteConfig": {
+              "appSettings": [
+                {
+                  "name": "FUNCTIONS_WORKER_RUNTIME",
+                  "value": "[parameters('functionAppWorkerRuntime')]"
+                },
+                {
+                  "name": "FUNCTIONS_EXTENSION_VERSION",
+                  "value": "[parameters('functionAppExtensionVersion')]"
+                },
+                {
+                  "name": "AzureWebJobsStorage",
+                  "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2016-01-01').keys[0].value)]"
+                },
+                {
+                  "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                  "value": "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2016-01-01').keys[0].value)]"
+                },
+                {
+                  "name": "WEBSITE_CONTENTSHARE",
+                  "value": "[toLower(parameters('functionAppName'))]"
+                },
+                {
+                  "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                  "value": "[parameters('functionAppNodeVersion')]"
+                },
+                {
+                  "name": "WEBSITE_RUN_FROM_PACKAGE",
+                  "value": "[parameters('functionAppRunFromPackage')]"
+                },
+                {
+                  "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                  "value": "[reference(concat('microsoft.insights/components/', parameters('appInsightsName'))).InstrumentationKey]"
+                }
+              ]
+            },
+            // "name": "[parameters('functionAppName')]",
+            "name": "[concat(parameters('functionAppName'), '(staging)')]",
+            "clientAffinityEnabled": false,
+            "hostingEnvironment": ""
+          }
+        },
+        {
           "type": "Microsoft.Web/sites",
           "apiVersion": "2016-03-01",
-          "name": "[concat(parameters('functionAppName'), concat(parameters('functionAppSlot'))]",
+          "name": "[parameters('functionAppName')]",
           "location": "[parameters('location')]",
           "identity": {
             "type": ArmParamType.SystemAssigned

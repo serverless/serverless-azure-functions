@@ -73,6 +73,13 @@ export class ConfigService {
     )
   }
 
+  /**
+   * Name of deployment slot
+   */
+  public getDeploymentSlot(): string {
+    return this.config.provider.deployment.slot;
+  }
+
   public getDeploymentConfig(): DeploymentConfig {
     return this.config.provider.deployment;
   }
@@ -123,7 +130,6 @@ export class ConfigService {
    */
   private setDefaultValues(config: ServerlessAzureConfig) {
     const { awsRegion, region, stage, prefix } = configConstants.defaults;
-    const { slot } = configConstants.deploymentConfig;
     const providerRegion = config.provider.region;
 
     if (!providerRegion || providerRegion === awsRegion) {
@@ -138,8 +144,12 @@ export class ConfigService {
       config.provider.prefix = prefix;
     }
 
+    if (!config.provider.deployment) {
+      config.provider.deployment = {};
+    }
+
     if (!config.provider.deployment.slot) {
-      config.provider.deployment.slot = slot;
+      config.provider.deployment.slot = configConstants.defaults.slot;
     }
   }
 

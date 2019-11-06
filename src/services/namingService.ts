@@ -1,7 +1,7 @@
-import { ServerlessAzureConfig, ResourceConfig } from "../models/serverless"
-import { Guard } from "../shared/guard"
-import configConstants from "../config";
 import md5 from "md5";
+import configConstants from "../config";
+import { ResourceConfig, ServerlessAzureConfig } from "../models/serverless";
+import { Guard } from "../shared/guard";
 
 export interface AzureNamingServiceOptions {
   config: ServerlessAzureConfig;
@@ -45,6 +45,12 @@ export class AzureNamingService {
     if (options.suffix) {
       name += `-${options.suffix}`;
     }
+
+    // const slot = (options.config.provider.deployment && options.config.provider.deployment.slot) ? options.config.provider.deployment.slot : null;
+    // // TODO: Consider extracting these two strings out to someplace else
+    // if (slot && !["prod", "production"].includes(slot)) {
+    //   name += `/${slot}`;
+    // }
 
     return name.toLowerCase();
   }

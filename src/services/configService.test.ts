@@ -30,9 +30,11 @@ describe("Config Service", () => {
     it("returns default values if not specified", () => {
       const service = new ConfigService(serverless, {} as any);
       const { prefix, region, stage } = configConstants.defaults;
+      const { slot } = configConstants.defaults;
       expect(service.getPrefix()).toEqual(prefix);
       expect(service.getStage()).toEqual(stage);
       expect(service.getRegion()).toEqual(region);
+      expect(service.getDeploymentSlot()).toEqual(slot);
     });
 
     it("use prefix from the CLI over the SLS yml config", () => {
