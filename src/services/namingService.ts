@@ -46,12 +46,6 @@ export class AzureNamingService {
       name += `-${options.suffix}`;
     }
 
-    // const slot = (options.config.provider.deployment && options.config.provider.deployment.slot) ? options.config.provider.deployment.slot : null;
-    // // TODO: Consider extracting these two strings out to someplace else
-    // if (slot && !["prod", "production"].includes(slot)) {
-    //   name += `/${slot}`;
-    // }
-
     return name.toLowerCase();
   }
 

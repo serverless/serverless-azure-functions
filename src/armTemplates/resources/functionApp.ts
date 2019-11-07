@@ -78,8 +78,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         {
           "type": "Microsoft.Web/sites/slots",
           "apiVersion": "2016-03-01",
-          // "name": "[concat(parameters('functionAppName'), '/', parameters('functionAppSlot'))]",
-          "name": "[concat(parameters('functionAppName'), '/staging')]",
+          "name": "[concat(parameters('functionAppName'), '/', parameters('functionAppSlot'))]",
           "location": "[parameters('location')]",
           "kind": "functionapp",
           "identity": {
@@ -87,7 +86,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           },
           "dependsOn": [
             "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
-            "[concat('microsoft.insights/components/', parameters('appInsightsName'))]"
+            "[concat('microsoft.insights/components/', parameters('appInsightsName'))]",
+            "[resourceId('Microsoft.Web/Sites', parameters('functionAppName'))]"
           ],
           "properties": {
             "siteConfig": {
@@ -110,7 +110,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 },
                 {
                   "name": "WEBSITE_CONTENTSHARE",
-                  "value": "[toLower(parameters('functionAppName'))]"
+                  // samenden-wus2-dev-sls-hello-world-3-staging
+                  "value": "[concat(toLower(parameters('functionAppName')), '-', parameters('functionAppSlot'))]"
                 },
                 {
                   "name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -127,7 +128,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
               ]
             },
             // "name": "[parameters('functionAppName')]",
-            "name": "[concat(parameters('functionAppName'), '(staging)')]",
+            // "name": "[concat(parameters('functionAppName'), '(staging)')]",
+            "name": "[concat(parameters('functionAppName'), '(', parameters('functionAppSlot'), ')')]",
             "clientAffinityEnabled": false,
             "hostingEnvironment": ""
           }

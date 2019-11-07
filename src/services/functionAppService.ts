@@ -232,12 +232,13 @@ export class FunctionAppService extends BaseService {
       throw new Error("No zip file found for function app");
     }
 
-    this.log(`-> Deploying service package @ ${functionZipFile}`);
+    const uri = `https://${scmDomain}/api/zipdeploy/`;
+    this.log(`-> Deploying service package @ ${functionZipFile} to ${uri}`);
 
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
       method: "POST",
-      uri: `https://${scmDomain}/api/zipdeploy/`,
+      uri,
       json: true,
       headers: {
         Authorization: `Bearer ${await this.getAccessToken()}`,
