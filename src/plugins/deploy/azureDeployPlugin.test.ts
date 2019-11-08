@@ -1,17 +1,17 @@
 import { Site } from "@azure/arm-appservice/esm/models";
+import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { ServerlessAzureOptions, ServerlessAzureConfig } from "../../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureOptions } from "../../models/serverless";
+import { ApimService } from "../../services/apimService";
+import { FunctionAppService } from "../../services/functionAppService";
+import { ResourceService } from "../../services/resourceService";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzureDeployPlugin } from "./azureDeployPlugin";
-import mockFs  from "mock-fs"
 
 jest.mock("../../services/functionAppService");
-import { FunctionAppService } from "../../services/functionAppService";
 
 jest.mock("../../services/resourceService");
-import { ResourceService } from "../../services/resourceService";
-import { ApimService } from "../../services/apimService";
 
 describe("Deploy plugin", () => {
   let sls: Serverless;

@@ -35,7 +35,7 @@ export class AzureNamingService {
     let name = [
       prefix,
       this.createShortAzureRegionName(region),
-      this.createShortStageName(stage),
+      this.createShortStageName(stage)
     ].join("-");
 
     if(options.includeHash) {

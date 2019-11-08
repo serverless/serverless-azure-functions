@@ -13,7 +13,7 @@ interface FunctionAppParams extends DefaultArmParams {
 }
 
 export class FunctionAppResource implements ArmResourceTemplateGenerator {
-  public static getResourceName(config: ServerlessAzureConfig) {
+  public static getResourceName(config: ServerlessAzureConfig, deploymentSlot?: string) {
     const safeServiceName = config.service.replace(/\s/g, "-");
     const options: AzureNamingServiceOptions = {
       config,
@@ -22,11 +22,15 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       includeHash: false,
     }
 
-    return AzureNamingService.getResourceName(options);
+    // deploymentSlot = deploymentSlot || FunctionAppResource.getFunctionSlot(config);
+    const name = (deploymentSlot && !["prod", "production"].includes(deploymentSlot)) 
+      ? `${AzureNamingService.getResourceName(options)}-${deploymentSlot}` 
+      : AzureNamingService.getResourceName(options);
+    return name;
   }
 
-  public static getResourceSlot(config: ServerlessAzureConfig) {
-    const safeSlotName = config.provider.deployment.slot ? config.provider.deployment.slot.replace(/\s/g, "-") : null;
+  public static getFunctionSlot(config: ServerlessAzureConfig) {
+    const safeSlotName = (config.provider.functionApp && config.provider.functionApp.slot) ? config.provider.functionApp.slot.replace(/\s/g, "-") : null;
     return safeSlotName;
   }
 
@@ -205,7 +209,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         value: FunctionAppResource.getResourceName(config),
       },
       functionAppSlot: {
-        value: FunctionAppResource.getResourceSlot(config),
+        value: FunctionAppResource.getFunctionSlot(config),
       },
       functionAppNodeVersion: {
         value: (functionRuntime.language === SupportedRuntimeLanguage.NODE)

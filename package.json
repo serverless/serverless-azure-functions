@@ -52,6 +52,7 @@
     "acorn": "^7.0.0",
     "axios": "^0.18.0",
     "azure-functions-core-tools": "^2.7.1575",
+    "callsites": "^3.1.0",
     "deep-equal": "^1.0.1",
     "js-yaml": "^3.13.1",
     "jsonpath": "^1.0.1",

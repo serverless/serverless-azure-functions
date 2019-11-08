@@ -26,11 +26,12 @@ export class FunctionAppService extends BaseService {
     this.blobService = new AzureBlobStorageService(serverless, options);
   }
 
-  public async get(): Promise<Site> {
-    const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
+  public async get(slot?: string): Promise<Site> {
+    const name = FunctionAppResource.getResourceName(this.config, slot);
+    const response: any = await this.webClient.webApps.get(this.resourceGroup, name);
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
       this.serverless.cli.log(this.resourceGroup);
-      this.serverless.cli.log(FunctionAppResource.getResourceName(this.config));
+      this.serverless.cli.log(FunctionAppResource.getResourceName(this.config, slot));
       this.serverless.cli.log(JSON.stringify(response));
       return null;
     }
@@ -158,6 +159,7 @@ export class FunctionAppService extends BaseService {
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
 
+    this.log(`TODO: REMOVE: ${new Error().stack}`);
     this.log("Deploying serverless functions...");
 
     const functionZipFile = this.getFunctionZipFile();
@@ -208,8 +210,8 @@ export class FunctionAppService extends BaseService {
    * create all necessary resources as defined in src/provider/armTemplates
    *    resource-group, storage account, app service plan, and app service at the minimum
    */
-  public async deploy() {
-    this.log(`Creating function app: ${FunctionAppResource.getResourceName(this.config)}`);
+  public async deploy(deploymentSlot: string) {
+    this.log(`Creating function app: ${FunctionAppResource.getResourceName(this.config, null)}`);
 
     const armService = new ArmService(this.serverless, this.options);
     const { armTemplate, type } = this.config.provider;
@@ -219,8 +221,9 @@ export class FunctionAppService extends BaseService {
 
     await armService.deployTemplate(deployment);
 
-    // Return function app
-    return await this.get();
+    // Return function app, respect the given deployment slot
+    // as the returned Site will be the one deployed to.
+    return await this.get(deploymentSlot);
   }
 
   public async uploadZippedArfifactToFunctionApp(functionApp: Site, functionZipFile: string) {
@@ -331,8 +334,10 @@ export class FunctionAppService extends BaseService {
    * @param functionApp The function app / web site
    */
   private getScmDomain(functionApp: Site) {
-    return functionApp.enabledHostNames.find((hostName: string) => {
+    const domain = functionApp.enabledHostNames.find((hostName: string) => {
       return hostName.includes(".scm.") && hostName.endsWith(".azurewebsites.net");
     });
+
+    return domain;
   }
 }

@@ -148,8 +148,16 @@ export class ConfigService {
       config.provider.deployment = {};
     }
 
+    if (!config.provider.functionApp) {
+      config.provider.functionApp = {};
+    }
+
     if (!config.provider.deployment.slot) {
-      config.provider.deployment.slot = configConstants.defaults.slot;
+      config.provider.deployment.slot = configConstants.deploymentConfig.slot;
+    }
+
+    if (!config.provider.functionApp.slot) {
+      config.provider.functionApp.slot = configConstants.defaults.slot;
     }
   }
 

@@ -1,10 +1,10 @@
 import fs from "fs";
 import Serverless from "serverless";
+import { ApimService } from "../../services/apimService";
 import { FunctionAppService } from "../../services/functionAppService";
 import { AzureLoginOptions } from "../../services/loginService";
 import { ResourceService } from "../../services/resourceService";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import { ApimService } from "../../services/apimService";
 
 export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   public commands: any;
@@ -83,7 +83,9 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
       throw new Error(`Function app zip file '${zipFile}' does not exist`);
     }
     await resourceService.deployResourceGroup();
-    const functionApp = await functionAppService.deploy();
+    // const deploymentSlot = this.getOption("slot");
+    const deploymentSlot = this.config.provider.deployment ? this.config.provider.deployment.slot : null;
+    const functionApp = await functionAppService.deploy(deploymentSlot);
     await functionAppService.uploadFunctions(functionApp);
   }
 

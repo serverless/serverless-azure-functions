@@ -40,7 +40,7 @@ describe("Function App Resource", () => {
         resourceGroup: resourceGroupName,
         runtime: "nodejs10.x",
         functionApp: {
-          name: serviceName,
+          name: serviceName
         },
       },
       service: serviceName
@@ -50,13 +50,15 @@ describe("Function App Resource", () => {
   });
 
   it.each([
-      ['staging', `${prefix}-wus-${stage}`],
-      ['canary', `${prefix}-wus-${stage}`],
-      ['prod', `${prefix}-wus-${stage}`],
-      ['production', `${prefix}-wus-${stage}`],
-      ['', `${prefix}-wus-${stage}`],
-      [null, `${prefix}-wus-${stage}`]
-  ])(`given slot name: %s, expect resource name: %s`, (slotName: string, expectedResourceName: string) => {
+      ['staging', 'staging', `${prefix}-wus-${stage}-staging`],
+      ['staging', 'production', `${prefix}-wus-${stage}`],
+      ['canary', 'canary', `${prefix}-wus-${stage}-canary`],
+      ['canary', 'production', `${prefix}-wus-${stage}`],
+      ['prod', 'prod', `${prefix}-wus-${stage}`],
+      ['production', 'production', `${prefix}-wus-${stage}`],
+      ['', '', `${prefix}-wus-${stage}`],
+      [null, null, `${prefix}-wus-${stage}`]
+  ])(`given slot name: %s, expect resource name: %s`, (slotName: string, deploymentSlot: string, expectedResourceName: string) => {
     const config = {
       provider: {
         name: "azure",
@@ -66,13 +68,16 @@ describe("Function App Resource", () => {
         resourceGroup: resourceGroupName,
         runtime: "nodejs10.x",
         deployment: {
+          slot: deploymentSlot
+        },
+        functionApp: {
           slot: slotName
         }
       },
       service: ""
     } as ServerlessAzureConfig;
 
-    expect(FunctionAppResource.getResourceName(config)).toEqual(expectedResourceName);
+    expect(FunctionAppResource.getResourceName(config, deploymentSlot)).toEqual(expectedResourceName);
   });
 
   it.each([
@@ -93,12 +98,15 @@ describe("Function App Resource", () => {
         resourceGroup: resourceGroupName,
         runtime: "nodejs10.x",
         deployment: {
+          slot: 'doesnotexist'
+        },
+        functionApp: {
           slot: slotName
         }
       },
       service: ""
     } as ServerlessAzureConfig;
 
-    expect(FunctionAppResource.getResourceSlot(config)).toEqual(expectedSlot);
+    expect(FunctionAppResource.getFunctionSlot(config)).toEqual(expectedSlot);
   });
 });

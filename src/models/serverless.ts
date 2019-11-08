@@ -20,6 +20,7 @@ export interface FunctionAppConfig extends ResourceConfig {
   nodeVersion?: string;
   workerRuntime?: string;
   extensionVersion?;
+  slot?: string;
 }
 
 export interface DeploymentConfig {
