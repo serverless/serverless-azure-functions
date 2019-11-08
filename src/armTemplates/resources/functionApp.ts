@@ -113,7 +113,6 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 },
                 {
                   "name": "WEBSITE_CONTENTSHARE",
-                  // samenden-wus2-dev-sls-hello-world-3-staging
                   "value": "[concat(toLower(parameters('functionAppName')), '-', parameters('functionAppSlot'))]"
                 },
                 {
@@ -130,8 +129,6 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
                 }
               ]
             },
-            // "name": "[parameters('functionAppName')]",
-            // "name": "[concat(parameters('functionAppName'), '(staging)')]",
             "name": "[concat(parameters('functionAppName'), '(', parameters('functionAppSlot'), ')')]",
             "clientAffinityEnabled": false,
             "hostingEnvironment": ""
