@@ -50,9 +50,9 @@ describe("Function App Resource", () => {
   });
 
   it.each([
-      ['staging', 'staging', `${prefix}-wus-${stage}-staging`],
+      ['staging', 'staging', `${prefix}-wus-${stage}/slots/staging`],
       ['staging', 'production', `${prefix}-wus-${stage}`],
-      ['canary', 'canary', `${prefix}-wus-${stage}-canary`],
+      ['canary', 'canary', `${prefix}-wus-${stage}/slots/canary`],
       ['canary', 'production', `${prefix}-wus-${stage}`],
       ['prod', 'prod', `${prefix}-wus-${stage}`],
       ['production', 'production', `${prefix}-wus-${stage}`],

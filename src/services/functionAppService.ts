@@ -159,7 +159,6 @@ export class FunctionAppService extends BaseService {
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
 
-    this.log(`TODO: REMOVE: ${new Error().stack}`);
     this.log("Deploying serverless functions...");
 
     const functionZipFile = this.getFunctionZipFile();
@@ -210,8 +209,8 @@ export class FunctionAppService extends BaseService {
    * create all necessary resources as defined in src/provider/armTemplates
    *    resource-group, storage account, app service plan, and app service at the minimum
    */
-  public async deploy(deploymentSlot: string) {
-    this.log(`Creating function app: ${FunctionAppResource.getResourceName(this.config, null)}`);
+  public async deploy(deploymentSlot?: string) {
+    this.log(`Creating function app: ${FunctionAppResource.getResourceName(this.config, deploymentSlot)}`);
 
     const armService = new ArmService(this.serverless, this.options);
     const { armTemplate, type } = this.config.provider;

@@ -22,9 +22,8 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       includeHash: false,
     }
 
-    // deploymentSlot = deploymentSlot || FunctionAppResource.getFunctionSlot(config);
     const name = (deploymentSlot && !["prod", "production"].includes(deploymentSlot)) 
-      ? `${AzureNamingService.getResourceName(options)}-${deploymentSlot}` 
+      ? `${AzureNamingService.getResourceName(options)}/slots/${deploymentSlot}` 
       : AzureNamingService.getResourceName(options);
     return name;
   }
