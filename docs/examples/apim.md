@@ -111,6 +111,54 @@ provider:
       exposeHeaders:
         - "*"
 
+    # JWT validation APIM policy
+    jwtValidate:
+      headerName: authorization
+      scheme: bearer
+      failedStatusCode: 401
+      failedErrorMessage: "Authorization token is missing or invalid"
+      openId:
+        metadataUrl: "https://path/to/openid/metadata/config"
+      audiences:
+        - "audience1"
+        - "audience2"
+      issuers:
+        - "https://path/to/openid/issuer"
+
+    # Header validation APIM policy
+    checkHeaders:
+      - headerName: x-example-header-1
+        failedStatusCode: 400
+        failedErrorMessage: Not Authorized
+        values: # List of allowed values, otherwise returns error code/message
+          - value1
+          - value2
+      - headerName: x-example-header-2
+        failedStatusCode: 403
+        failedErrorMessage: Forbidden
+        values: # List of allowed values, otherwise returns error code/message
+          - value1
+          - value2
+
+    # IP Validation APIM policies
+    ipFilters:
+      - action: allow
+        addresses: # List of allowed IP addresses
+          - 1.1.1.1
+          - 2.2.2.2
+        addressRange: # Also optionally support range of IP addresses
+          from: 1.1.1.1
+          to: 2.2.2.2
+      - actdion: forbid
+        addresses: # List of forbidden IP addresses
+          - 3.3.3.3
+          - 4.4.4.4
+        addressRange: # Also optionally support range of IP addresses
+          from: 3.3.3.3
+          to: 4.4.4.4
+
+
+
 plugins:
   - serverless-azure-functions
 
