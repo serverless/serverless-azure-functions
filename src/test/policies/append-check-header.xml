@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<policies>
+  <inbound>
+    <base/>
+    <check-header name="authorization" failed-check-httpcode="401" failed-check-error-message="The authorization header is either missing or invalid" ignore-case="true">
+      <value>value1</value>
+      <value>value2</value>
+      <value>value3</value>
+    </check-header>
+    <check-header name="foo" failed-check-httpcode="400" failed-check-error-message="Bad Request" ignore-case="true">
+      <value>bar</value>
+    </check-header>
+  </inbound>
+  <backend>
+    <base/>
+  </backend>
+  <outbound>
+    <base/>
+  </outbound>
+  <on-error>
+    <base/>
+  </on-error>
+</policies>

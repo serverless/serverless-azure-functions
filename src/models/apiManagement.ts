@@ -102,7 +102,7 @@ export interface ApiJwtClaim {
 }
 
 /**
- * A IP Filter validation policy
+ * An IP Filter validation policy
  */
 export interface ApiIpFilterPolicy {
   /** Whether the policy should allow or forbid the address specification */
@@ -113,4 +113,20 @@ export interface ApiIpFilterPolicy {
     from: string;
     to: string;
   };
+}
+
+/**
+ * A header validation policy
+ */
+export interface ApiCheckHeaderPolicy {
+  /** The name of the HTTP header that to validate */
+  headerName: string;
+  /** The HTTP status code to return for a failed response */
+  failedStatusCode?: number;
+  /** The error message to return for a failed response */
+  failedErrorMessage?: string;
+  /** Performs a case insensitive comparison to the allowed values */
+  ignoreCase?: boolean;
+  /** List of allowed values to compare against */
+  values: string[];
 }

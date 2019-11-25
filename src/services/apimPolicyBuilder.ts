@@ -1,6 +1,8 @@
-import { ApiJwtValidatePolicy, ApiJwtClaim, ApiCorsPolicy, ApiIpFilterPolicy } from "../models/apiManagement";
+import { ApiJwtValidatePolicy, ApiJwtClaim, ApiCorsPolicy, ApiIpFilterPolicy, ApiCheckHeaderPolicy } from "../models/apiManagement";
 import { Guard } from "../shared/guard";
 import { Builder, Parser } from "xml2js";
+
+declare type PolicyType = "inbound" | "outbound" | "backend" | "on-error";
 
 /**
  * APIM Policy build that can be used to build polices for APIs, Backends & operations
@@ -80,19 +82,19 @@ export class ApimPolicyBuilder {
   public ipFilter(ipConfig: ApiIpFilterPolicy): ApimPolicyBuilder {
     Guard.null(ipConfig, "ipConfig");
 
-    const element = {
+    const policy = {
       $: { action: ipConfig.action },
       addressRange: ipConfig.addressRange,
       address: ipConfig.addresses
     }
 
-    Object.keys(element).forEach((key) => {
-      if (!element[key]) {
-        delete element[key];
+    Object.keys(policy).forEach((key) => {
+      if (!policy[key]) {
+        delete policy[key];
       }
     });
 
-    this.policyRoot.policies.inbound[0]["ip-filter"] = [element];
+    this.policyRoot.policies.inbound[0]["ip-filter"] = [policy];
 
     return this;
   }
@@ -132,7 +134,7 @@ export class ApimPolicyBuilder {
       }
     });
 
-    const elements = {
+    const policy = {
       $: attributes,
       "openid-config": oidConfig,
       "issuer-signing-keys": signingKeys,
@@ -142,13 +144,47 @@ export class ApimPolicyBuilder {
       "required-claims": claims
     };
 
-    Object.keys(elements).forEach((key) => {
-      if (!elements[key]) {
-        delete elements[key];
+    Object.keys(policy).forEach((key) => {
+      if (!policy[key]) {
+        delete policy[key];
       }
     });
 
-    this.policyRoot.policies.inbound[0]["validate-jwt"] = [elements];
+    this.policyRoot.policies.inbound[0]["validate-jwt"] = [policy];
+
+    return this;
+  }
+
+  public checkHeader(checkHeaderPolicy: ApiCheckHeaderPolicy): ApimPolicyBuilder {
+    Guard.null(checkHeaderPolicy, "checkHeaderPolicy");
+
+    const attributeMap = {
+      headerName: "name",
+      failedStatusCode: "failed-check-httpcode",
+      failedErrorMessage: "failed-check-error-message",
+      ignoreCase: "ignore-case"
+    };
+
+    const attributes = {};
+
+    Object.keys(attributeMap).forEach((key) => {
+      if (checkHeaderPolicy[key]) {
+        attributes[attributeMap[key]] = checkHeaderPolicy[key];
+      }
+    });
+
+    const policy = {
+      $: attributes,
+      value: checkHeaderPolicy.values
+    };
+
+    this.updatePolicy(
+      "inbound",
+      "check-header",
+      policy,
+      // We are keying the check-header policy by header name
+      (policy) => policy.$.name === checkHeaderPolicy.headerName
+    );
 
     return this;
   }
@@ -166,6 +202,35 @@ export class ApimPolicyBuilder {
         "on-error": [{ base: null }]
       }
     }
+  }
+
+  /**
+   * Updates the matching policy or appends a new policy
+   * @param policyType The policy type (inbound | outbound | backend | on-error)
+   * @param policyName The xml element name of the policy
+   * @param newPolicy The new policy XML object
+   * @param predicate The condition to check for existing policy
+   */
+  private updatePolicy(policyType: PolicyType, policyName: string, newPolicy: any, predicate: (policy: any) => boolean): void {
+    const existing = this.policyRoot.policies[policyType][0][policyName];
+
+    // Add new policy to empty list
+    if (!existing) {
+      this.policyRoot.policies[policyType][0][policyName] = [newPolicy];
+      return;
+    }
+
+    // Find and replace the first matching policy
+    for (let i = 0; i < existing.length; i++) {
+      const policy = existing[i];
+      if (predicate(policy)) {
+        existing[i] = newPolicy;
+        return;
+      }
+    }
+
+    // Append new policy if not found
+    existing.push(newPolicy);
   }
 
   /**

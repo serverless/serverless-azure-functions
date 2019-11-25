@@ -1,7 +1,7 @@
 import { MockFactory } from "../test/mockFactory";
 import { ApimPolicyBuilder } from "./apimPolicyBuilder";
 import fs from "fs";
-import { ApiIpFilterPolicy } from "../models/apiManagement";
+import { ApiIpFilterPolicy, ApiCheckHeaderPolicy } from "../models/apiManagement";
 
 declare global {
   interface String {
@@ -121,6 +121,54 @@ describe("APIM PolicyBuilder", () => {
     const policyBuilder = new ApimPolicyBuilder();
     const actual = policyBuilder
       .ipFilter(ipPolicy)
+      .build()
+      .cleanXml();
+
+    expect(actual).toEqual(expected);
+  });
+
+  it("can create a check header policy", () => {
+    const expected = fs.readFileSync(`${process.cwd()}/src/test/policies/check-header.xml`)
+      .toString()
+      .trim()
+      .cleanXml();
+
+    const checkHeaderPolicy: ApiCheckHeaderPolicy = {
+      headerName: "authorization",
+      failedStatusCode: 401,
+      failedErrorMessage: "The authorization header is either missing or invalid",
+      values: ["value1", "value2", "value3"],
+      ignoreCase: true
+    };
+
+    const policyBuilder = new ApimPolicyBuilder();
+    const actual = policyBuilder
+      .checkHeader(checkHeaderPolicy)
+      .build()
+      .cleanXml();
+
+    expect(actual).toEqual(expected);
+  });
+
+  it("can append a new check header policy", async () => {
+    const expected = fs.readFileSync(`${process.cwd()}/src/test/policies/append-check-header.xml`)
+      .toString()
+      .trim()
+      .cleanXml();
+
+    const policyXml = fs.readFileSync(`${process.cwd()}/src/test/policies/check-header.xml`).toString();
+    const policyBuilder = await ApimPolicyBuilder.parse(policyXml);
+
+    const anotherPolicy: ApiCheckHeaderPolicy = {
+      headerName: "foo",
+      values: ["bar"],
+      failedStatusCode: 400,
+      failedErrorMessage: "Bad Request",
+      ignoreCase: true
+    };
+
+    const actual = policyBuilder
+      .checkHeader(anotherPolicy)
       .build()
       .cleanXml();
 
