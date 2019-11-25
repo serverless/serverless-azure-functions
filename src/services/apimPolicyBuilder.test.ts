@@ -100,8 +100,8 @@ describe("APIM PolicyBuilder", () => {
     expect(actual).toEqual(expected);
   });
 
-  it("can create an IP filter API policy", () => {
-    const expected = fs.readFileSync(`${process.cwd()}/src/test/policies/ip-filter.xml`)
+  it("can create an IP filter API allow policy", () => {
+    const expected = fs.readFileSync(`${process.cwd()}/src/test/policies/ip-filter-allow.xml`)
       .toString()
       .trim()
       .cleanXml();
@@ -121,6 +121,58 @@ describe("APIM PolicyBuilder", () => {
     const policyBuilder = new ApimPolicyBuilder();
     const actual = policyBuilder
       .ipFilter(ipPolicy)
+      .build()
+      .cleanXml();
+
+    expect(actual).toEqual(expected);
+  });
+
+  it("can create an IP filter API forbid policy", () => {
+    const expected = fs.readFileSync(`${process.cwd()}/src/test/policies/ip-filter-forbid.xml`)
+      .toString()
+      .trim()
+      .cleanXml();
+
+    const ipPolicy: ApiIpFilterPolicy = {
+      action: "forbid",
+      addressRange: {
+        from: "1.1.1.1",
+        to: "1.1.1.255"
+      },
+      addresses: [
+        "2.2.2.2",
+        "3.3.3.3"
+      ]
+    };
+
+    const policyBuilder = new ApimPolicyBuilder();
+    const actual = policyBuilder
+      .ipFilter(ipPolicy)
+      .build()
+      .cleanXml();
+
+    expect(actual).toEqual(expected);
+  });
+
+  it("can create a policy with allow and forbid constraints", () => {
+    const expected = fs.readFileSync(`${process.cwd()}/src/test/policies/ip-filter-combined.xml`)
+      .toString()
+      .trim()
+      .cleanXml();
+
+    const allowPolicy: ApiIpFilterPolicy = {
+      action: "allow",
+      addresses: ["1.1.1.1"]
+    };
+    const forbidPolicy: ApiIpFilterPolicy = {
+      action: "forbid",
+      addresses: ["2.2.2.2"]
+    };
+
+    const policyBuilder = new ApimPolicyBuilder();
+    const actual = policyBuilder
+      .ipFilter(allowPolicy)
+      .ipFilter(forbidPolicy)
       .build()
       .cleanXml();
 

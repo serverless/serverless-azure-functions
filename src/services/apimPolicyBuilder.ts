@@ -94,7 +94,12 @@ export class ApimPolicyBuilder {
       }
     });
 
-    this.policyRoot.policies.inbound[0]["ip-filter"] = [policy];
+    this.updatePolicy(
+      "inbound",
+      "ip-filter",
+      policy,
+      (policy) => policy.$.action === ipConfig.action
+    );
 
     return this;
   }

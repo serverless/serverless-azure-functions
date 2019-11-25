@@ -21,7 +21,7 @@ import {
   ApiPolicyGetResponse
 } from "@azure/arm-apimanagement/esm/models";
 import { AzureNamingService } from "./namingService";
-import { ApiManagementConfig, ApiIpFilterPolicy } from "../models/apiManagement";
+import { ApiManagementConfig, ApiIpFilterPolicy, ApiCheckHeaderPolicy } from "../models/apiManagement";
 import { ApimPolicyBuilder } from "./apimPolicyBuilder";
 
 describe("APIM Service", () => {
@@ -385,6 +385,61 @@ describe("APIM Service", () => {
           {
             format: "rawxml",
             value: expect.stringContaining("ip-filter"),
+          }
+        );
+      });
+
+      it("deploys API IP filter policies when defined within configuration", async () => {
+        jest.spyOn(ApimPolicyBuilder.prototype, "ipFilter");
+
+        const ipFilterPolicy: ApiIpFilterPolicy = {
+          action: "allow",
+          addresses: [
+            "1.1.1.1",
+            "2.2.2.2"
+          ]
+        }
+
+        serverless.service.provider["apim"]["ipFilters"] = [ipFilterPolicy];
+
+        const apimService = new ApimService(serverless);
+        await apimService.deploy();
+
+        expect(ApimPolicyBuilder.prototype.ipFilter).toBeCalledWith(ipFilterPolicy);
+        expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+          resourceGroupName,
+          serviceName,
+          apiName,
+          {
+            format: "rawxml",
+            value: expect.stringContaining("ip-filter"),
+          }
+        );
+      });
+
+      it("deploys API check header policies when defined within configuration", async () => {
+        jest.spyOn(ApimPolicyBuilder.prototype, "checkHeader");
+
+        const checkHeaderPolicy: ApiCheckHeaderPolicy = {
+          headerName: "authorization",
+          failedStatusCode: 401,
+          failedErrorMessage: "Not Authorized",
+          values: ["value1"]
+        };
+
+        serverless.service.provider["apim"]["checkHeaders"] = [checkHeaderPolicy];
+
+        const apimService = new ApimService(serverless);
+        await apimService.deploy();
+
+        expect(ApimPolicyBuilder.prototype.checkHeader).toBeCalledWith(checkHeaderPolicy);
+        expect(ApiPolicy.prototype.createOrUpdate).toBeCalledWith(
+          resourceGroupName,
+          serviceName,
+          apiName,
+          {
+            format: "rawxml",
+            value: expect.stringContaining("check-header"),
           }
         );
       });

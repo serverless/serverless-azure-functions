@@ -16,6 +16,10 @@ export interface ApiManagementConfig {
   jwtValidate?: ApiJwtValidatePolicy;
   /** The API's IP Filter policy */
   ipFilter?: ApiIpFilterPolicy;
+  /** The API's IP Filter policies */
+  ipFilters?: ApiIpFilterPolicy[];
+  /** The API's header policies */
+  checkHeaders?: ApiCheckHeaderPolicy[];
   /** The pricing SKU for the APIM instance */
   sku?: {
     /** The SKU name, (consumption | developer | basic | standard | premium) */
