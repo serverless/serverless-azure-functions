@@ -172,14 +172,33 @@ The getting started walkthrough illustrates the interactive login experience, wh
 ##### Creating a Service Principal
 
 1. [Install the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
-2. Login via Azure CLI and set subscription
+2. Login via Azure CLI
     ```bash
     # Login to Azure
     $ az login
-    # Set Azure Subscription for which to create Service Principal
+    ```
+    This will yield something like:
+    ```json
+    [
+      {
+        "cloudName": "<cloudName>",
+        "id": "<subscription-id>",
+        "isDefault": true,
+        "name": "<name>",
+        "state": "<state>",
+        "tenantId": "<tenantId>",
+        "user": {
+          "name": "<name>",
+          "type": "<user>"
+        }
+      }
+    ]
+    ```
+3. Set Azure Subscription for which to create Service Principal
+    ```bash
     $ az account set -s <subscription-id>
     ```
-3. Generate Service Principal for Azure Subscription
+4. Generate Service Principal for Azure Subscription
     ```bash
     # Create SP with unique name
     $ az ad sp create-for-rbac --name <my-unique-name>
@@ -194,7 +213,7 @@ The getting started walkthrough illustrates the interactive login experience, wh
       "tenant": "<tenantId>"
     }
     ```
-4. Set environment variables **with values from above service principal**
+5. Set environment variables **with values from above service principal**
 
     **Bash**
     ```bash
