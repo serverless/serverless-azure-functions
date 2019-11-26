@@ -149,7 +149,7 @@ provider:
         addressRange: # Also optionally support range of IP addresses
           from: 1.1.1.1
           to: 2.2.2.2
-      - actdion: forbid
+      - action: forbid
         addresses: # List of forbidden IP addresses
           - 3.3.3.3
           - 4.4.4.4
