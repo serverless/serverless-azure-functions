@@ -361,9 +361,23 @@ export class ApimService extends BaseService {
       requireUpdate = true;
     }
 
+    // Support backwards compatibility for single IP filter
     if (this.apimConfig.ipFilter) {
-      builder.ipFilter(this.apimConfig.ipFilter);
-      requireUpdate = true;
+      this.apimConfig.ipFilters = [this.apimConfig.ipFilter];
+    }
+
+    if (this.apimConfig.ipFilters) {
+      this.apimConfig.ipFilters.forEach((policy) => {
+        builder.ipFilter(policy);
+        requireUpdate = true;
+      });
+    }
+
+    if (this.apimConfig.checkHeaders) {
+      this.apimConfig.checkHeaders.forEach((policy) => {
+        builder.checkHeader(policy);
+        requireUpdate = true;
+      });
     }
 
     if (requireUpdate) {
