@@ -15,7 +15,7 @@ export class ApimPolicyBuilder {
   }
 
   /**
-   * Parses an APIM xml policy and loads it into a Policy Bulder
+   * Parses an APIM xml policy and loads it into a Policy Builder
    * @param xml The xml policy
    */
   public static async parse(xml: string): Promise<ApimPolicyBuilder> {
@@ -88,16 +88,13 @@ export class ApimPolicyBuilder {
       address: ipConfig.addresses
     }
 
-    Object.keys(policy).forEach((key) => {
-      if (!policy[key]) {
-        delete policy[key];
-      }
-    });
+    ApimPolicyBuilder.cleanElement(policy);
 
     this.updatePolicy(
       "inbound",
       "ip-filter",
       policy,
+      // We are keying the ipFilter policy by action
       (policy) => policy.$.action === ipConfig.action
     );
 
@@ -116,8 +113,9 @@ export class ApimPolicyBuilder {
     const audiences = jwtPolicy.audiences ? [jwtPolicy.audiences.map((audience) => ({ audience }))] : null;
     const issuers = jwtPolicy.issuers ? [jwtPolicy.issuers.map((issuer) => ({ issuer }))] : null;
     const oidConfig = jwtPolicy.openId && jwtPolicy.openId.metadataUrl ? [{ $: { url: jwtPolicy.openId.metadataUrl } }] : null;
-    const claims = jwtPolicy.requiredClaims ? [jwtPolicy.requiredClaims.map(this.createClaimElement)] : null;
+    const claims = jwtPolicy.requiredClaims ? [jwtPolicy.requiredClaims.map(ApimPolicyBuilder.createClaimElement)] : null;
 
+    // Maps yaml config names to xml attribute names
     const attributeMap = {
       headerName: "header-name",
       tokenValue: "token-value",
@@ -131,13 +129,7 @@ export class ApimPolicyBuilder {
       outputTokenVariableName: "output-token-variable-name"
     };
 
-    const attributes = {};
-
-    Object.keys(attributeMap).forEach((key) => {
-      if (jwtPolicy[key]) {
-        attributes[attributeMap[key]] = jwtPolicy[key];
-      }
-    });
+    const attributes = ApimPolicyBuilder.createAttributes(attributeMap, jwtPolicy);
 
     const policy = {
       $: attributes,
@@ -149,12 +141,7 @@ export class ApimPolicyBuilder {
       "required-claims": claims
     };
 
-    Object.keys(policy).forEach((key) => {
-      if (!policy[key]) {
-        delete policy[key];
-      }
-    });
-
+    ApimPolicyBuilder.cleanElement(policy);
     this.policyRoot.policies.inbound[0]["validate-jwt"] = [policy];
 
     return this;
@@ -163,6 +150,7 @@ export class ApimPolicyBuilder {
   public checkHeader(checkHeaderPolicy: ApiCheckHeaderPolicy): ApimPolicyBuilder {
     Guard.null(checkHeaderPolicy, "checkHeaderPolicy");
 
+    // Maps yaml config names to xml attribute names
     const attributeMap = {
       headerName: "name",
       failedStatusCode: "failed-check-httpcode",
@@ -170,13 +158,7 @@ export class ApimPolicyBuilder {
       ignoreCase: "ignore-case"
     };
 
-    const attributes = {};
-
-    Object.keys(attributeMap).forEach((key) => {
-      if (checkHeaderPolicy[key]) {
-        attributes[attributeMap[key]] = checkHeaderPolicy[key];
-      }
-    });
+    const attributes = ApimPolicyBuilder.createAttributes(attributeMap, checkHeaderPolicy);
 
     const policy = {
       $: attributes,
@@ -239,10 +221,39 @@ export class ApimPolicyBuilder {
   }
 
   /**
+   * Creates a map of XML attributes for the APIM policy
+   * @param attributeMap The attribute mapping from yaml -> xml
+   * @param policy The APIM yaml policy
+   */
+  private static createAttributes(attributeMap: any, policy: any): any {
+    const attributes = {};
+
+    Object.keys(attributeMap).forEach((key) => {
+      if (policy[key]) {
+        attributes[attributeMap[key]] = policy[key];
+      }
+    });
+
+    return attributes;
+  }
+
+  /**
+   * Cleans an element so that when its converted to XML it doesn't generate empty tags
+   * @param element The pseudo XML element to clean
+   */
+  private static cleanElement(element: any) {
+    Object.keys(element).forEach((key) => {
+      if (!element[key]) {
+        delete element[key];
+      }
+    });
+  }
+
+  /**
    * Create a claim element for a JWT validation policy
    * @param claim The JWT claim
    */
-  private createClaimElement(claim: ApiJwtClaim) {
+  private static createClaimElement(claim: ApiJwtClaim) {
     return {
       claim: {
         $: { name: claim.name, match: claim.match, separator: claim.separator },
