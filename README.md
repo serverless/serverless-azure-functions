@@ -173,27 +173,27 @@ The getting started walkthrough illustrates the interactive login experience, wh
 
 1. [Install the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 2. Login via Azure CLI
-    ```bash
-    # Login to Azure
-    $ az login
-    ```
-    This will yield something like:
-    ```json
-    [
-      {
-        "cloudName": "<cloudName>",
-        "id": "<subscription-id>",
-        "isDefault": true,
-        "name": "<name>",
-        "state": "<state>",
-        "tenantId": "<tenantId>",
-        "user": {
-          "name": "<name>",
-          "type": "<user>"
-        }
-      }
-    ]
-    ```
+   ```bash
+   # Login to Azure
+   $ az login
+   ```
+   This will yield something like:
+   ```json
+   [
+     {
+       "cloudName": "<cloudName>",
+       "id": "<subscription-id>",
+       "isDefault": true,
+       "name": "<name>",
+       "state": "<state>",
+       "tenantId": "<tenantId>",
+       "user": {
+         "name": "<name>",
+         "type": "<user>"
+       }
+     }
+   ]
+   ```
 3. Set Azure Subscription for which to create Service Principal
     ```bash
     $ az account set -s <subscription-id>
