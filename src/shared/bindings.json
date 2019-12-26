@@ -1305,7 +1305,7 @@
     },
     {
       "type": "cosmosDBTrigger",
-      "displayName": "$cosmosDBIn_displayName",
+      "displayName": "$cosmosDBTriggerIn_displayName",
       "direction": "trigger",
       "enabledInTryMode": false,
       "documentation": "$content=Documentation\\cosmosDBTrigger.md",
