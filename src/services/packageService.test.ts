@@ -63,6 +63,21 @@ describe("Package Service", () => {
     rmdirSpy.mockRestore();
   });
 
+  it("does not clean up function folder if non-existent", async () => {
+    mockFs({});
+
+    const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+    const rmdirSpy = jest.spyOn(fs, "rmdirSync");
+
+    packageService.cleanUp();
+
+    expect(unlinkSpy).not.toBeCalled();
+    expect(rmdirSpy).not.toBeCalled();
+
+    unlinkSpy.mockRestore();
+    rmdirSpy.mockRestore();
+  });
+
   it("cleans up function.json but does not delete function folder", async () => {
     const fsConfig = {};
 

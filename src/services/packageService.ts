@@ -76,7 +76,11 @@ export class PackageService extends BaseService {
         fs.unlinkSync(filePath);
       }
 
-      // Delete function folder if empty
+      // Delete function folder if exists and empty
+      if (!fs.existsSync(functionName)) {
+        return;
+      }
+
       const items = fs.readdirSync(functionName);
       if (items.length === 0) {
         fs.rmdirSync(functionName);
