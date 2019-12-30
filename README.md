@@ -172,47 +172,69 @@ The getting started walkthrough illustrates the interactive login experience, wh
 ##### Creating a Service Principal
 
 1. [Install the Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
-2. Login via Azure CLI and set subscription
-    ```bash
-    # Login to Azure
-    $ az login
-    # Set Azure Subscription for which to create Service Principal
-    $ az account set -s <subscription-id>
-    ```
-3. Generate Service Principal for Azure Subscription
-    ```bash
-    # Create SP with unique name
-    $ az ad sp create-for-rbac --name <my-unique-name>
-    ```
-    This will yield something like:
-    ```json
-    {
-      "appId": "<servicePrincipalId>",
-      "displayName": "<name>",
-      "name": "<name>",
-      "password": "<password>",
-      "tenant": "<tenantId>"
-    }
-    ```
-4. Set environment variables **with values from above service principal**
+2. Login via Azure CLI
+   ```bash
+   # Login to Azure
+   $ az login
+   ```
+   This will yield something like:
+   ```json
+   [
+     {
+       "cloudName": "<cloudName>",
+       "id": "<subscription-id>",
+       "isDefault": true,
+       "name": "<name>",
+       "state": "<state>",
+       "tenantId": "<tenantId>",
+       "user": {
+         "name": "<name>",
+         "type": "<user>"
+       }
+     }
+   ]
+   ```
+3. Set Azure Subscription for which to create Service Principal
+   ```bash
+   $ az account set -s <subscription-id>
+   ```
+4. Generate Service Principal for Azure Subscription
+   ```bash
+   # Create SP with unique name
+   $ az ad sp create-for-rbac --name <my-unique-name>
+   ```
+   This will yield something like:
+   ```json
+   {
+     "appId": "<servicePrincipalId>",
+     "displayName": "<name>",
+     "name": "<name>",
+     "password": "<password>",
+     "tenant": "<tenantId>"
+   }
+   ```
+5. Set environment variables **with values from above service principal**
 
-    **Bash**
-    ```bash
-    $ export AZURE_SUBSCRIPTION_ID='<subscriptionId (see above, step 2)>'
-    $ export AZURE_TENANT_ID='<tenantId>'
-    $ export AZURE_CLIENT_ID='<servicePrincipalId>'
-    $ export AZURE_CLIENT_SECRET='<password>'
-    ```
+   **Bash**
 
-    **Powershell**
-    ```powershell
-    $env:AZURE_SUBSCRIPTION_ID='<subscriptionId (see above, step 2)>'
-    $env:AZURE_TENANT_ID='<tenantId>'
-    $env:AZURE_CLIENT_ID='<servicePrincipalId>'
-    $env:AZURE_CLIENT_SECRET='<password>'
-    ```
+   ```bash
+   $ export AZURE_SUBSCRIPTION_ID='<subscriptionId (see above, step 2)>'
+   $ export AZURE_TENANT_ID='<tenantId>'
+   $ export AZURE_CLIENT_ID='<servicePrincipalId>'
+   $ export AZURE_CLIENT_SECRET='<password>'
+   ```
+
+   **Powershell**
+
+   ```powershell
+   $env:AZURE_SUBSCRIPTION_ID='<subscriptionId (see above, step 2)>'
+   $env:AZURE_TENANT_ID='<tenantId>'
+   $env:AZURE_CLIENT_ID='<servicePrincipalId>'
+   $env:AZURE_CLIENT_SECRET='<password>'
+   ```
 
 ### Example Usage
+
 - **[Visit our sample repos](docs/examples/samples.md) for full projects with different use cases**
 - [Configuring API Management](docs/examples/apim.md) that sits in front of function app
 
