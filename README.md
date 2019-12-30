@@ -216,6 +216,15 @@ The getting started walkthrough illustrates the interactive login experience, wh
 - **[Visit our sample repos](docs/examples/samples.md) for full projects with different use cases**
 - [Configuring API Management](docs/examples/apim.md) that sits in front of function app
 
+### Logging Verbosity
+
+You can set the logging verbosity with the `--verbose` flag (`-v` for short). If the `--verbose` flag is set with no value, logging will be as verbose as possible (debug mode). You can also provide a value with the flag to set the verbosity to a specific level:
+
+- `-v error` - Only error messages printed
+- `-v warn` - Only error and warning messages printed
+- `-v info` - Only error, warning and info messages printed
+- `-v debug` - All messages printed
+
 ### Contributing
 
 Please create issues in this repo for any problems or questions you find. Before sending a PR for any major changes, please create an issue to discuss.

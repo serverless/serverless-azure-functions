@@ -41,7 +41,7 @@ describe("Azure Func Service", () => {
       const service = createService(sls, options);
       await service.add();
 
-      expect(sls.cli.log).toBeCalledWith("Need to provide a name of function to add", undefined, undefined);
+      expect(sls.cli.log).lastCalledWith("Need to provide a name of function to add");
     });
 
     it("returns with pre-existing function", async () => {
@@ -94,11 +94,7 @@ describe("Azure Func Service", () => {
       const options = MockFactory.createTestServerlessOptions();
       const service = createService(sls, options);
       await service.remove();
-      expect(sls.cli.log).toBeCalledWith(
-        "Need to provide a name of function to remove",
-        undefined,
-        undefined
-      )
+      expect(sls.cli.log).lastCalledWith("Need to provide a name of function to remove");
     });
 
     it("returns with non-existing function", async () => {
@@ -107,10 +103,7 @@ describe("Azure Func Service", () => {
       options["name"] = "myNonExistingFunction";
       const service = createService(sls, options);
       await service.remove();
-      expect(sls.cli.log).toBeCalledWith("Function myNonExistingFunction does not exist",
-        undefined,
-        undefined
-      );
+      expect(sls.cli.log).lastCalledWith("Function myNonExistingFunction does not exist");
     });
 
     it("deletes directory and updates serverless.yml", async () => {
