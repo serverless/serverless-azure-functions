@@ -339,15 +339,15 @@ export class MockFactory {
     };
   }
 
-  public static createTestFunctionMetadata(name: string): ServerlessAzureFunctionConfig {
+  public static createTestFunctionMetadata(name: string, xAzureSettings: boolean = true): ServerlessAzureFunctionConfig {
     return {
       "handler": `${name}.handler`,
-      "events": MockFactory.createTestFunctionEvents(),
+      "events": MockFactory.createTestFunctionEvents(xAzureSettings),
     }
   }
 
-  public static createTestFunctionEvents(): ServerlessAzureFunctionBindingConfig[] {
-    return [
+  public static createTestFunctionEvents(xAzureSettings: boolean = true): ServerlessAzureFunctionBindingConfig[] {
+    return (xAzureSettings) ? [
       {
         "http": true,
         "x-azure-settings": {
@@ -360,6 +360,16 @@ export class MockFactory {
           "direction": "out",
           "name": "res"
         }
+      }
+    ] : [
+      {
+        "http": true,
+        "authLevel": "anonymous"
+      },
+      {
+        "http": true,
+        "direction": "out",
+        "name": "res"
       }
     ]
   }
@@ -431,16 +441,33 @@ export class MockFactory {
     return bindings;
   }
 
-  public static createTestAzureFunctionConfig(route?: string): ServerlessAzureFunctionConfig {
+  public static createTestAzureFunctionConfig(route?: string, excludeDirection?: boolean): ServerlessAzureFunctionConfig {
     return {
       events: [
         {
           http: true,
-          "x-azure-settings": MockFactory.createTestHttpBinding("in", route),
+          "x-azure-settings": MockFactory.createTestHttpBinding((excludeDirection) ? undefined : "in", route),
         },
         {
           http: true,
           "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+        }
+      ],
+      handler: "handler.js",
+    }
+  }
+
+  public static createTestAzureFunctionConfigWithoutXAzureSettings(
+    route?: string, excludeDirection?: boolean): ServerlessAzureFunctionConfig {
+    return {
+      events: [
+        {
+          http: true,
+          ...MockFactory.createTestHttpBinding((excludeDirection) ? undefined : "in", route)
+        },
+        {
+          http: true,
+          ...MockFactory.createTestHttpBinding("out"),
         }
       ],
       handler: "handler.js",
@@ -464,8 +491,8 @@ export class MockFactory {
     return MockFactory.createTestHttpBinding();
   }
 
-  public static createTestHttpBinding(direction: string = "in", route?: string) {
-    if (direction === "in") {
+  public static createTestHttpBinding(direction?: string, route?: string) {
+    if (!direction || direction === "in") {
       return {
         authLevel: "anonymous",
         type: "httpTrigger",
@@ -504,14 +531,14 @@ export class MockFactory {
     }
   }
 
-  public static createTestSlsFunctionConfig() {
+  public static createTestSlsFunctionConfig(xAzureSettings: boolean = true) {
     return {
       hello: {
-        ...MockFactory.createTestFunctionMetadata("hello"),
+        ...MockFactory.createTestFunctionMetadata("hello", xAzureSettings),
         ...MockFactory.createTestFunctionApimConfig("hello"),
       },
       goodbye: {
-        ...MockFactory.createTestFunctionMetadata("goodbye"),
+        ...MockFactory.createTestFunctionMetadata("goodbye", xAzureSettings),
         ...MockFactory.createTestFunctionApimConfig("goodbye"),
       },
     };

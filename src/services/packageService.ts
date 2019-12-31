@@ -143,7 +143,9 @@ export class PackageService extends BaseService {
     functionJSON.scriptFile = handlerPath;
 
     const functionObject = this.configService.getFunctionConfig()[functionName];
-    const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
+    const incomingBinding = Utils.getIncomingBindingConfig(functionObject);
+    
+    const bindingAzureSettings = Utils.get(incomingBinding, "x-azure-settings", incomingBinding);
 
     if (bindingAzureSettings.route) {
       // Find incoming binding within functionJSON and set the route

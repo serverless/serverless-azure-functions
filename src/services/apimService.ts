@@ -12,6 +12,7 @@ import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ApimResource } from "../armTemplates/resources/apim";
 import { ServerlessExtraAzureSettingsConfig } from "../models/serverless";
+import { Utils } from "../shared/utils";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -143,7 +144,7 @@ export class ApimService extends BaseService {
       return;
     }
 
-    const httpConfig: ServerlessExtraAzureSettingsConfig = httpEvent["x-azure-settings"];
+    const httpConfig: ServerlessExtraAzureSettingsConfig = Utils.get(httpEvent, "x-azure-settings", httpEvent);
 
     // Default to GET method if not specified
     if (!httpConfig.methods) {

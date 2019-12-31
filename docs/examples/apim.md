@@ -29,10 +29,9 @@ functions:
     handler: src/handlers/hello.handler
     events:
       - http: true
-        x-azure-settings:
-          methods:
-            - GET
-          authLevel : function
+        methods:
+          - GET
+        authLevel : function
 ```
 
 ## Full Configuration
@@ -181,10 +180,9 @@ functions:
           displayName: GetProducts
     events:
       - http: true
-        x-azure-settings:
-          methods:
-            - GET
-          authLevel : function
+        methods:
+          - GET
+        authLevel : function
   getCategories:
     handler: src/handlers/getCategories.handler
 
@@ -203,8 +201,7 @@ functions:
           displayName: GetCategories
     events:
       - http: true
-        x-azure-settings:
-          methods:
-            - GET
-          authLevel : function
+        methods:
+          - GET
+        authLevel : function
 ```

@@ -156,14 +156,14 @@ export class Utils {
 
   public static getIncomingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
     return functionConfig.events.find((event) => {
-      const settings = event["x-azure-settings"]
+      const settings = Utils.get(event, constants.xAzureSettings, event);
       return settings && (!settings.direction || settings.direction === "in");
     });
   }
 
-  public static getOutgoingBinding(functionConfig: ServerlessAzureFunctionConfig) {
+  public static getOutgoingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
     return functionConfig.events.find((event) => {
-      const settings = event["x-azure-settings"]
+      const settings = Utils.get(event, constants.xAzureSettings, event);
       return settings && settings.direction === "out";
     });
   }
