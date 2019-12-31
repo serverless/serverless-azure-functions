@@ -41,7 +41,7 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
       },
       slot: {
         usage: "Slot used for deployment",
-        shortcut: "l",
+        shortcut: "l"
       }
     }
 
@@ -76,6 +76,7 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
 
   private async deploy() {
     this.checkForIndividualFunctionDeploy();
+    this.checkDeploymentSlot();
     const resourceService = new ResourceService(this.serverless, this.options);
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const zipFile = functionAppService.getFunctionZipFile();
@@ -114,6 +115,19 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
     if (this.options.function) {
       throw new Error("The Azure Functions plugin does not currently support deployments of individual functions. " +
         "Azure Functions are zipped up as a package and deployed together as a unit");
+    }
+  }
+
+  /**
+   * Check to see if the slot the user specified was either configured in the serverless.yml already
+   * Or is production, otherwise throw an error since it won't have been created by the ARM templates
+   */
+  private checkDeploymentSlot() {
+    const functionAppSlot = this.config.provider.functionApp ? this.config.provider.functionApp.slot : null;
+    if (this.options.slot && functionAppSlot && !["prod", "production"].includes(this.options.slot) && this.options.slot !== functionAppSlot) {
+      throw new Error(`You are attempting to deploy to the ${this.options.slot} slot however no such slot has been cofigured in the serverless.yml deployment config.`
+      + " If no deployment slot is configured, a default one of 'staging' is configured for you."
+      + ` In the serverless.yaml please consider adding the following: \nprovider:\n\t...\n\tdeployment: ${this.options.slot}\n\n`);
     }
   }
 }

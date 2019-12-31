@@ -11,12 +11,12 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { ApiCorsPolicy, ApiManagementConfig, ApiJwtValidatePolicy } from "../models/apiManagement";
-import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
+import configConstants from "../config";
+import { ApiCorsPolicy, ApiJwtValidatePolicy, ApiManagementConfig } from "../models/apiManagement";
+import { ArmDeployment, ArmParameters, ArmParamType, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig } from "../models/serverless";
-import configConstants from "../config";
+import { ServerlessAzureConfig, ServerlessAzureFunctionBindingConfig, ServerlessAzureFunctionConfig, ServerlessAzureProvider, ServerlessCliCommand } from "../models/serverless";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -26,13 +26,13 @@ function getAttribute(object: any, prop: string, defaultValue: any): any {
 }
 
 export class MockFactory {
-  public static createTestServerless(config?: any): Serverless {
+  public static createTestServerless(config?: any, provider?: ServerlessAzureProvider): Serverless {
     const sls = new Serverless(config);
     sls.utils = getAttribute(config, "utils", MockFactory.createTestUtils());
     sls.cli = getAttribute(config, "cli", MockFactory.createTestCli());
     sls.pluginManager = getAttribute(config, "pluginManager", MockFactory.createTestPluginManager());
     sls.variables = getAttribute(config, "variables", MockFactory.createTestVariables());
-    sls.service = getAttribute(config, "service", MockFactory.createTestService());
+    sls.service = getAttribute(config, "service", MockFactory.createTestService(null, provider));
     sls.config.servicePath = "";
     sls.setProvider = jest.fn();
     sls["processedInput"] = {
@@ -42,7 +42,7 @@ export class MockFactory {
     return sls;
   }
 
-  public static createTestService(functions?): Service {
+  public static createTestService(functions?, provider?: ServerlessAzureProvider): Service {
     if (!functions) {
       functions = MockFactory.createTestSlsFunctionConfig()
     }
@@ -60,7 +60,7 @@ export class MockFactory {
       update: jest.fn(),
       validate: jest.fn(),
       custom: null,
-      provider: MockFactory.createTestAzureServiceProvider(),
+      provider: MockFactory.createTestAzureServiceProvider(provider),
       service: serviceName,
       artifact: "app.zip",
       functions
@@ -85,6 +85,7 @@ export class MockFactory {
       region: null,
       stage: null,
       watch: null,
+      slot: null,
       ...options
     };
   }
@@ -368,8 +369,8 @@ export class MockFactory {
     return result;
   }
 
-  public static createTestAzureServiceProvider(): ServerlessAzureProvider {
-    return {
+  public static createTestAzureServiceProvider(provider?: ServerlessAzureProvider): ServerlessAzureProvider {
+    const args = {
       name: "azure",
       prefix: "sls",
       resourceGroup: "myResourceGroup",
@@ -377,7 +378,9 @@ export class MockFactory {
       region: "eastus2",
       stage: "dev",
       runtime: "nodejs10.x",
-    }
+      ...provider
+    } as ServerlessAzureProvider
+    return args;
   }
 
   public static createTestServicePrincipalEnvVariables(): ServicePrincipalEnvVariables {

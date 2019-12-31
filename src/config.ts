@@ -41,7 +41,7 @@ export const configConstants = {
     stage: "dev",
     prefix: "sls",
     localPort: 7071,
-    slot: 'staging'
+    slot: "staging"
   },
   bindingsJsonUrl: "https://raw.githubusercontent.com/Azure/azure-functions-templates/master/Functions.Templates/Bindings/bindings.json"
 };
