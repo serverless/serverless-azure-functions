@@ -13,7 +13,7 @@ export class AzureApimPlugin extends AzureBasePlugin {
 
   private async deploy() {
     const apimConfig = this.serverless.service.provider["apim"];
-    if (!apimConfig) {
+    if (!apimConfig || this.getOption("dryrun")) {
       return Promise.resolve();
     }
 

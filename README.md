@@ -70,6 +70,23 @@ $ sls offline -a "--cors *"
 
 This works for `sls offline` or `sls offline start`
 
+### Dry-Run Deployment
+
+Before you deploy your new function app, you may want to double check the resources that will be created, their generated names and other basic configuration info. You can run:
+
+```bash
+# -d is short for --dryrun
+$ sls deploy --dryrun
+```
+
+This will print out a basic summary of what your deployed service will look like.
+
+For a more detailed look into the generated ARM template for your resource group, add the `--arm` (or `-a`) flag:
+
+```bash
+$ sls deploy --dryrun --arm
+```
+
 ### Deploy Your Function App
 
 Deploy your new service to Azure! The first time you do this, you will be asked to authenticate with your Azure account, so the `serverless` CLI can manage Functions on your behalf. Simply follow the provided instructions, and the deployment will continue as soon as the authentication process is completed.
@@ -79,6 +96,26 @@ $ sls deploy
 ```
 
 For more advanced deployment scenarios, see our [deployment docs](docs/DEPLOY.md)
+
+### Get a Summary of Your Deployed Function App
+
+To see a basic summary of your application (same format as the dry-run summary above), run:
+
+```bash
+$ sls info
+```
+
+To look at the ARM template for the last successful deployment, add the `--arm` (or `-a`) flag:
+
+```bash
+$ sls info --arm
+```
+
+You can also get information services with different stages, regions or resource groups by passing any of those flags. Example:
+
+```bash
+$ sls info --stage prod --region westus2
+```
 
 ### Test Your Function App
 

@@ -1,7 +1,7 @@
-import { ApiManagementConfig } from "./apiManagement";
 import Serverless from "serverless";
-import { ArmParameters } from "./armTemplates";
-import { Runtime, FunctionAppOS } from "../config/runtime";
+import { FunctionAppOS, Runtime } from "../config/runtime";
+import { ApiManagementConfig } from "./apiManagement";
+import { ArmDeployment, ArmParameters } from "./armTemplates";
 
 export interface ArmTemplateConfig {
   file: string;
@@ -196,4 +196,28 @@ export interface ServerlessLogOptions {
   underline?: boolean;
   bold?: boolean;
   color?: string;
+}
+
+export interface AzureResourceInfo {
+  name: string;
+  resourceType: string;
+  region: string;
+}
+
+export interface AzureFunctionAppInfo {
+  name: string;
+  functions: string[];
+}
+
+export interface AzureFunctionInfo {
+  name: string;
+  enabled?: boolean;
+}
+
+export interface ServiceInfo {
+  resourceGroup: string;
+  isDryRun: boolean;
+  resources: AzureResourceInfo[];
+  functionApp?: AzureFunctionAppInfo;
+  deployment?: ArmDeployment;
 }

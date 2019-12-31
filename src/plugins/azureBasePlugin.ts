@@ -63,6 +63,14 @@ export abstract class AzureBasePlugin<TOptions=Serverless.Options> {
     this.loggingService.debug(message);
   }
 
+  protected prettyPrint(object: any) {
+    this.log(this.stringify(object));
+  }
+
+  protected stringify(object: any): string {
+    return JSON.stringify(object, null, 2);
+  }
+
   protected getOption(key: string, defaultValue?: any): string {
     return Utils.get(this.options, key, defaultValue);
   }

@@ -2,6 +2,7 @@ import Serverless from "serverless";
 import { ResourceService } from "../../services/resourceService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 import { Utils } from "../../shared/utils";
+import { constants } from "../../shared/constants";
 
 export class AzureRemovePlugin extends AzureBasePlugin {
 
@@ -15,22 +16,7 @@ export class AzureRemovePlugin extends AzureBasePlugin {
           "remove"
         ],
         options: {
-          resourceGroup: {
-            usage: "Resource group for the service",
-            shortcut: "g",
-          },
-          stage: {
-            usage: "Stage of service",
-            shortcut: "s"
-          },
-          region: {
-            usage: "Region of service",
-            shortcut: "r"
-          },
-          subscriptionId: {
-            usage: "Sets the Azure subscription ID",
-            shortcut: "i",
-          },
+          ...constants.deployedServiceOptions
         }
       }
     }

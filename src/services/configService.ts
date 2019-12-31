@@ -58,7 +58,10 @@ export class ConfigService {
    * Azure Subscription ID
    */
   public getSubscriptionId(): string {
-    return this.config.provider.subscriptionId;
+    return this.getOption(constants.variableKeys.subscriptionId)
+      || process.env.AZURE_SUBSCRIPTION_ID
+      || this.config.provider.subscriptionId
+      || this.serverless.variables[constants.variableKeys.subscriptionId]
   }
 
   /**
@@ -158,6 +161,10 @@ export class ConfigService {
 
     if (!config.provider.os) {
       config.provider.os = os;
+    }
+    
+    if (!config.provider.type) {
+      config.provider.type = "consumption"
     }
   }
 

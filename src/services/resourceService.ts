@@ -114,6 +114,14 @@ export class ResourceService extends BaseService {
     }
   }
 
+  public async getResources() {
+    try {
+      return await this.resourceClient.resources.listByResourceGroup(this.resourceGroup);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   public async deleteDeployment() {
     this.log(`Deleting deployment: ${this.deploymentName}`);
     return await this.resourceClient.deployments.deleteMethod(this.resourceGroup, this.deploymentName);

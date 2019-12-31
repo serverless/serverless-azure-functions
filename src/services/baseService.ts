@@ -38,7 +38,7 @@ export abstract class BaseService {
     this.baseUrl = "https://management.azure.com";
     this.serviceName = this.configService.getServiceName();
     this.credentials = serverless.variables[constants.variableKeys.azureCredentials];
-    this.subscriptionId = this.config.provider.subscriptionId;
+    this.subscriptionId = this.configService.getSubscriptionId();
     this.resourceGroup = this.configService.getResourceGroupName();
     this.deploymentName = this.configService.getDeploymentName();
     this.artifactName = this.configService.getArtifactName(this.deploymentName);
