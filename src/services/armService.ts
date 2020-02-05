@@ -160,7 +160,7 @@ export class ArmService extends BaseService {
 
     const paramsNormalizer = (params: ArmParameters): ArmParameters => {
       const normalized = {};
-      const keys = Object.keys(params);
+      const keys = Object.keys(params || {});
       for (const key of keys) {
         const original = params[key];
         normalized[key] = {
