@@ -167,7 +167,16 @@ describe("Arm Service", () => {
         template: MockFactory.createTestArmTemplate()
       };
       await service.deployTemplate(deployment);
-      expect(Deployments.prototype.createOrUpdate).not.toBeCalled()
+      expect(Deployments.prototype.createOrUpdate).not.toBeCalled();
+    });
+
+    it("Does not crash if deployment parameters are undefined", async () => {
+      const deployment: ArmDeployment = {
+        parameters: undefined,
+        template: MockFactory.createTestArmTemplate(),
+      };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).toBeCalled();
     });
 
     it("Does not deploy if identity is only difference between deployments", async () => {

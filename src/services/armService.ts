@@ -101,6 +101,8 @@ export class ArmService extends BaseService {
       return;
     }
 
+    deployment.parameters = deployment.parameters || {};
+    
     for (const key of Object.keys(deployment.parameters)) {
       if (!deployment.parameters[key].value) {
         delete deployment.parameters[key];
@@ -160,6 +162,9 @@ export class ArmService extends BaseService {
 
     const paramsNormalizer = (params: ArmParameters): ArmParameters => {
       const normalized = {};
+      if (!params) {
+        return normalized;
+      }
       const keys = Object.keys(params);
       for (const key of keys) {
         const original = params[key];
@@ -207,6 +212,8 @@ export class ArmService extends BaseService {
    */
   private mergeDefaultParams(parameters: ArmParameters, defaultParameters: ArmParameters): ArmParameters {
     const mergedParams: ArmParameters = {}
+    parameters = parameters || {};
+    defaultParameters = defaultParameters || {};
     Object.keys(defaultParameters).forEach((key) => {
       const defaultParam = defaultParameters[key];
       const param = parameters[key];
