@@ -234,7 +234,7 @@ export class ArmService extends BaseService {
     // added to the ARM template used in the deployment.
     const environmentVariables = this.config.provider.environment;
     if (environmentVariables) {
-      this.serverless.cli.log("-> Merging environment configuration");
+      this.log("-> Merging environment configuration");
 
       // This is a json path expression
       // Learn more @ https://goessner.net/articles/JsonPath/index.html#e2

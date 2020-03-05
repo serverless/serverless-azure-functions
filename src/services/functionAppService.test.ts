@@ -33,6 +33,7 @@ describe("Function App Service", () => {
   const deleteFunctionMessage = "delete function success";
   const functions = MockFactory.createTestSlsFunctionConfig();
   const functionsResponse = MockFactory.createTestFunctionsResponse(functions);
+  const getFunctionResponse = "hello function";
 
   const baseUrl = "https://management.azure.com"
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
@@ -43,6 +44,8 @@ describe("Function App Service", () => {
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
   const appSettingsUrl = `${baseUrl}/subscriptions/${subscriptionId}/resourceGroups/${config.provider.resourceGroup}` +
     `/providers/Microsoft.Web/sites/${app.name}/config/appsettings?api-version=2016-08-01`;
+  // "https://management.azure.comappId/functions/hello?api-version=2016-08-01"
+  const getFunctionUrl = `${baseUrl}${app.id}/functions/hello?api-version=2016-08-01`
 
 
   const appSettings = {
@@ -65,6 +68,8 @@ describe("Function App Service", () => {
     axiosMock.onPut(appSettingsUrl).reply(200, appSettings)
     // List Functions
     axiosMock.onGet(listFunctionsUrl).reply(200, { value: functionsResponse });
+    // Get Function
+    axiosMock.onGet(getFunctionUrl).reply(200, { value: getFunctionResponse })
     // Delete Function
     for (const funcName of Object.keys(functions)) {
       axiosMock.onDelete(`${baseUrl}${app.id}/functions/${funcName}?api-version=2016-08-01`)
@@ -187,6 +192,28 @@ describe("Function App Service", () => {
     expect(runWithRetryCalls).toHaveLength(1);
     const call = runWithRetryCalls[0];
     await expect(call[0]()).rejects.toThrow();
+    expect(call[1]).toEqual(30);
+    expect(call[2]).toEqual(30000);
+  });
+
+  it("gets function with retry", async () => {
+    const originalRunWithRetry = Utils.runWithRetry;
+    Utils.runWithRetry = jest.fn(() => {
+      return {
+        data: {
+          value: []
+        }
+      }
+    }) as any;
+
+    const service = createService();
+    await service.getFunction(app, "hello");
+    const runWithRetryCalls = (Utils.runWithRetry as any).mock.calls;
+    Utils.runWithRetry = originalRunWithRetry;
+    expect(runWithRetryCalls).toHaveLength(1);
+    const call = runWithRetryCalls[0];
+    const response = await call[0]();
+    expect(response.data.value).toEqual(getFunctionResponse);
     expect(call[1]).toEqual(30);
     expect(call[2]).toEqual(30000);
   });
@@ -410,7 +437,7 @@ describe("Function App Service", () => {
         return {
           properties: appSettings
         }
-      });
+      }) as any;
       AzureBlobStorageService.prototype.generateBlobSasTokenUrl = jest.fn(() => Promise.resolve(sasUrl));
     });
 

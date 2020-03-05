@@ -16,7 +16,7 @@ export class FuncService extends BaseService {
       return;
     }
     if (this.exists(functionName)) {
-      this.serverless.cli.log(`Function ${functionName} already exists`);
+      this.log(`Function ${functionName} already exists`);
       return;
     }
     this.createHandler(functionName);
