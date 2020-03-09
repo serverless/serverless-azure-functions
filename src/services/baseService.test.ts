@@ -5,6 +5,9 @@ import { ServerlessAzureOptions } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
 
+jest.mock("./loggingService");
+import { LoggingService, LogLevel } from "./loggingService";
+
 jest.mock("axios", () => jest.fn());
 import axios from "axios";
 
@@ -33,6 +36,22 @@ class MockService extends BaseService {
       resourceGroup: this.resourceGroup,
       deploymentName: this.deploymentName,
     };
+  }
+
+  public err(message: string) {
+    this.error(message);
+  }
+
+  public war(message: string) {
+    this.warn(message);
+  }
+
+  public inf(message: string) {
+    this.info(message);
+  }
+
+  public deb(message: string) {
+    this.debug(message);
   }
 }
 
@@ -140,5 +159,21 @@ describe("Base Service", () => {
     expect(request).toBeCalledWith(requestOptions, expect.anything());
 
     readStreamSpy.mockRestore();
+  });
+
+  it("calls LoggingService", () => {
+    const mockService = new MockService(serverless);
+    
+    mockService.err("error");
+    expect(LoggingService.prototype.error).toBeCalledWith("error");
+
+    mockService.war("warn");
+    expect(LoggingService.prototype.warn).toBeCalledWith("warn");
+
+    mockService.inf("info");
+    expect(LoggingService.prototype.info).toBeCalledWith("info");
+
+    mockService.deb("debug");
+    expect(LoggingService.prototype.debug).toBeCalledWith("debug");
   });
 });
