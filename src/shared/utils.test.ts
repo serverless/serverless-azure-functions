@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { ConfigService } from "../services/configService";
 import { MockFactory } from "../test/mockFactory";
+import { constants } from "./constants";
 import { FunctionMetadata, Utils } from "./utils";
 
 describe("utils", () => {
@@ -130,7 +131,7 @@ describe("utils", () => {
       http: true,
       "x-azure-settings": MockFactory.createTestHttpBinding("in"),
     }
-    delete expected["x-azure-settings"].direction;
+    delete expected[constants.xAzureSettings].direction;
     expect(actual).toEqual(expected);
   });
 

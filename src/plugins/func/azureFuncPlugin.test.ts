@@ -67,7 +67,7 @@ describe("Azure Func Plugin", () => {
       const functionName = "myFunction";
       options["name"] = functionName;
       const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig(false);
-      expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName, false);
+      expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName);
 
       const plugin = new AzureFuncPlugin(sls, options);
 

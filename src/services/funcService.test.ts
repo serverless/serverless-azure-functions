@@ -62,7 +62,7 @@ describe("Azure Func Service", () => {
       const functionName = "myFunction";
       options["name"] = functionName;
       const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig(false);
-      expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName, false);
+      expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName);
 
       const service = createService(sls, options);
       await service.add();
