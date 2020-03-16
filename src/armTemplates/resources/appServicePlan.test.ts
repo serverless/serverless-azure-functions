@@ -1,7 +1,8 @@
 import { AppServicePlanResource } from "./appServicePlan";
-import { ServerlessAzureConfig, FunctionAppOS, Runtime } from "../../models/serverless";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
 import { configConstants } from "../../config/constants";
+import { Runtime, FunctionAppOS } from "../../config/runtime";
 
 describe("App Service Plan Resource", () => {
   const resourceGroupName = "myResourceGroup";

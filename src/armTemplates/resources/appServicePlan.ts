@@ -1,6 +1,7 @@
 import { ArmResourceTemplate, ArmResourceTemplateGenerator, ArmParamType, ArmParameters, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
-import { ResourceConfig, ServerlessAzureConfig, FunctionAppOS } from "../../models/serverless";
+import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
+import { FunctionAppOS } from "../../config/runtime";
 
 interface AppServicePlanParams extends DefaultArmParams {
   appServicePlanName: ArmParameter;

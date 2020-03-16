@@ -1,10 +1,10 @@
+import { Vaults } from "@azure/arm-keyvault";
 import Serverless from "serverless";
+import { Runtime } from "../config/runtime";
+import { AzureKeyVaultConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { AzureKeyVaultService } from "./azureKeyVaultService";
-
-import { Vaults } from "@azure/arm-keyvault";
 import { FunctionAppService } from "./functionAppService";
-import { AzureKeyVaultConfig, Runtime } from "../models/serverless";
 
 describe("Azure Key Vault Service", () => {
   const options: Serverless.Options = MockFactory.createTestServerlessOptions();

@@ -1,4 +1,4 @@
-import { FunctionAppOS } from "../models/serverless";
+import { FunctionAppOS } from "./runtime";
 
 export const configConstants = {
   bearer: "Bearer ",

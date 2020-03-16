@@ -1,7 +1,8 @@
 import { ApimResource } from "./apim";
-import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
 import { configConstants } from "../../config/constants";
+import { Runtime } from "../../config/runtime";
 
 describe("APIM Resource", () => {
   const resourceGroupName = "myResourceGroup";

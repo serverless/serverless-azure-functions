@@ -23,7 +23,7 @@ import {
 import { AzureNamingService } from "./namingService";
 import { ApiManagementConfig, ApiIpFilterPolicy, ApiCheckHeaderPolicy } from "../models/apiManagement";
 import { ApimPolicyBuilder } from "./apimPolicyBuilder";
-import { Runtime } from "../models/serverless";
+import { Runtime } from "../config/runtime";
 
 describe("APIM Service", () => {
   let apimConfig: ApiManagementConfig;

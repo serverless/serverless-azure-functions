@@ -1,7 +1,7 @@
 import fs from "fs";
 import mockFs from "mock-fs";
 import Serverless from "serverless";
-import { ServerlessAzureOptions, Runtime } from "../models/serverless";
+import { ServerlessAzureOptions } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
 
@@ -13,6 +13,7 @@ import axios from "axios";
 
 jest.mock("request", () => MockFactory.createTestMockRequestFactory());
 import request from "request";
+import { Runtime } from "../config/runtime";
 
 class MockService extends BaseService {
   public constructor(serverless: Serverless, options?: ServerlessAzureOptions) {

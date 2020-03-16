@@ -2,13 +2,14 @@ import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ArmService } from "./armService";
 import { ArmResourceTemplate, ArmTemplateType, ArmDeployment, ArmTemplateProvisioningState, ArmParamType } from "../models/armTemplates";
-import { ArmTemplateConfig, ServerlessAzureOptions, Runtime } from "../models/serverless";
+import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
 import mockFs from "mock-fs";
 import jsonpath from "jsonpath";
 import { Deployments } from "@azure/arm-resources";
 import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
 import { ResourceService } from "./resourceService";
 import { DeploymentExtendedError } from "../models/azureProvider";
+import { Runtime } from "../config/runtime";
 
 describe("Arm Service", () => {
   let sls: Serverless

@@ -1,9 +1,10 @@
 import Serverless from "serverless";
 import { configConstants } from "../config/constants";
-import { FunctionAppOS, FunctionRuntime, ServerlessAzureConfig, ServerlessAzureProvider, SupportedRuntimeLanguage, Runtime } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureProvider } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ConfigService } from "./configService";
 import { AzureNamingService } from "./namingService";
+import { FunctionAppOS, Runtime } from "../config/runtime";
 
 describe("Config Service", () => {
   const serviceName = "my-custom-service"
@@ -199,93 +200,78 @@ describe("Config Service", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = "python2.7" as any;
         expect(() => new ConfigService(sls, {} as any))
-          .toThrowError("Runtime python2.7 is not supported.\n" + 
+          .toThrowError("Runtime python2.7 is not supported. " + 
             "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
       });
     
       it("throws error when incomplete nodejs version in defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = "nodejs" as any;
         expect(() => new ConfigService(sls, {} as any))
-          .toThrowError("Runtime nodejs is not supported.\n" + 
+          .toThrowError("Runtime nodejs is not supported. " + 
             "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
       });
     
       it("throws error when unsupported nodejs version in defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = "nodejs5.x" as any;
         expect(() => new ConfigService(sls, {} as any))
-          .toThrowError("Runtime nodejs5.x is not supported.\n" + 
+          .toThrowError("Runtime nodejs5.x is not supported. " + 
             "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
       });
     
       it("Does not throw an error when valid nodejs version is defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = Runtime.NODE10
-        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-        const expectedRuntime: FunctionRuntime = {
-          language: SupportedRuntimeLanguage.NODE,
-          version: "10"
-        }
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
+        let configService: ConfigService;
+        expect(() => configService = new ConfigService(sls, {} as any)).not.toThrow();
+        expect(configService.isLinuxTarget()).toBe(false);
+        expect(configService.isNodeTarget()).toBe(true);
       });
     
-      it("Does not throw an error when nodejs version is defined", () => {
-        const sls = MockFactory.createTestServerless();
-        sls.service.provider.runtime = Runtime.NODE10
-        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-        const expectedRuntime: FunctionRuntime = {
-          language: SupportedRuntimeLanguage.NODE,
-          version: "10"
-        }
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
-      });
-    
-      it("Does not throw an error when specific nodejs version is defined", () => {
-        const sls = MockFactory.createTestServerless();
-        sls.service.provider.runtime = Runtime.NODE10;
-        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-        const expectedRuntime: FunctionRuntime = {
-          language: SupportedRuntimeLanguage.NODE,
-          version: "10"
-        }
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toEqual(expectedRuntime);
-      });
-    
-      it("throws an error when no nodejs version is defined", () => {
+      it("throws an error when no runtime is defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = undefined;
-        expect(() => new ConfigService(sls, {} as any)).toThrowError("Runtime version not specified in serverless.yml");
-        expect((sls.service as any as ServerlessAzureConfig).provider.functionRuntime).toBeUndefined();
+        expect(() => new ConfigService(sls, {} as any))
+          .toThrowError("Runtime undefined. " +
+            "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
       });
     
       it("does not throw an error with python3.6", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = Runtime.PYTHON36;
-        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-        const expectedRuntime: FunctionRuntime = {
-          language: SupportedRuntimeLanguage.PYTHON,
-          version: "3.6"
-        }
-        const provider = sls.service.provider as ServerlessAzureProvider
-        expect(provider.functionRuntime).toEqual(expectedRuntime);
+        let configService: ConfigService;
+        expect(() => configService = new ConfigService(sls, {} as any)).not.toThrow();
+        expect(configService.isLinuxTarget()).toBe(true);
+        expect(configService.isPythonTarget()).toBe(true);
+      });
+
+      it("does not throw an error with python3.7", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = Runtime.PYTHON37;
+        let configService: ConfigService;
+        expect(() => configService = new ConfigService(sls, {} as any)).not.toThrow();
+        expect(configService.isLinuxTarget()).toBe(true);
+        expect(configService.isPythonTarget()).toBe(true);
+      });
+
+      it("does not throw an error with python3.8", () => {
+        const sls = MockFactory.createTestServerless();
+        sls.service.provider.runtime = Runtime.PYTHON38;
+        let configService: ConfigService;
+        expect(() => configService = new ConfigService(sls, {} as any)).not.toThrow();
+        expect(configService.isLinuxTarget()).toBe(true);
+        expect(configService.isPythonTarget()).toBe(true);
       });
 
       it("forces python runtime to linux OS", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = Runtime.PYTHON36;
-        sls.service.provider["os"] = "linux";
-        expect(() => new ConfigService(sls, {} as any)).not.toThrow();
-        const expectedRuntime: FunctionRuntime = {
-          language: SupportedRuntimeLanguage.PYTHON,
-          version: "3.6"
-        }
-        const provider = sls.service.provider as ServerlessAzureProvider
-        expect(provider.functionRuntime).toEqual(expectedRuntime);
-        expect(provider.os).toEqual(FunctionAppOS.LINUX);
+        sls.service.provider["os"] = "windows";
+        let configService: ConfigService;
+        expect(() => configService = new ConfigService(sls, {} as any)).not.toThrow();
+        expect(configService.isLinuxTarget()).toBe(true);
+        expect(configService.isPythonTarget()).toBe(true);
       });
     });
   });

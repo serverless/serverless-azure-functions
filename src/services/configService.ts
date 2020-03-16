@@ -1,10 +1,9 @@
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import { configConstants } from "../config/constants";
-import { supportedRuntimes } from "../config/runtime";
-import { DeploymentConfig, FunctionAppOS, FunctionRuntime, ServerlessAzureConfig, ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
+import { FunctionAppOS, isNodeRuntime, isPythonRuntime, supportedRuntimes, supportedRuntimeSet } from "../config/runtime";
+import { DeploymentConfig, ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { constants } from "../shared/constants";
-import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
 import { AzureNamingService, AzureNamingServiceOptions } from "./namingService";
 
@@ -110,13 +109,6 @@ export class ConfigService {
   }
 
   /**
-   * Function runtime configuration
-   */
-  public getRuntime(): FunctionRuntime {
-    return this.config.provider.functionRuntime;
-  }
-
-  /**
    * Operating system for function app
    */
   public getOs(): FunctionAppOS {
@@ -127,7 +119,14 @@ export class ConfigService {
    * Function app configured to run on Python
    */
   public isPythonTarget(): boolean {
-    return this.config.provider.functionRuntime.language === SupportedRuntimeLanguage.PYTHON;
+    return isPythonRuntime(this.config.provider.runtime);
+  }
+
+  /**
+   * Function app configured to run on Node
+   */
+  public isNodeTarget(): boolean {
+    return isNodeRuntime(this.config.provider.runtime);
   }
 
   /**
@@ -214,13 +213,18 @@ export class ConfigService {
       this.getOption("resourceGroup", config.provider.resourceGroup)
     ) || AzureNamingService.getResourceName(options);
 
-    const functionRuntime = this.getFunctionRuntime(runtime);
-    if (functionRuntime.language === SupportedRuntimeLanguage.PYTHON && os !== FunctionAppOS.LINUX) {
+    if (!runtime) {
+      throw new Error(`Runtime undefined. Runtimes supported: ${supportedRuntimes.join(",")}`);
+    }
+
+    if (!supportedRuntimeSet.has(runtime)) {
+      throw new Error(`Runtime ${runtime} is not supported. Runtimes supported: ${supportedRuntimes.join(",")}`)
+    }
+
+    if (isPythonRuntime(runtime) && os !== FunctionAppOS.LINUX) {
       this.serverless.cli.log("Python functions can ONLY run on Linux Function Apps. Switching now");
       config.provider.os = FunctionAppOS.LINUX;
     }
-
-    config.provider.functionRuntime = functionRuntime;
 
     config.provider.deployment = {
       ...configConstants.deploymentConfig,
@@ -229,33 +233,6 @@ export class ConfigService {
 
     this.serverless.variables[constants.variableKeys.providerConfig] = config.provider;
     return config;
-  }
-
-  private getFunctionRuntime(runtime: string): FunctionRuntime {
-    Guard.null(runtime, "runtime", "Runtime version not specified in serverless.yml");
-
-    if (!(runtime in supportedRuntimes)) {
-      const supportedRuntimeNames = Object.keys(supportedRuntimes).join(",");
-      throw new Error(`Runtime ${runtime} is not supported.\nRuntimes supported: ${supportedRuntimeNames}`);
-    }
-
-    let language: SupportedRuntimeLanguage;
-    let version: string;
-
-    runtime = runtime.toLowerCase();
-
-    if (runtime.startsWith("nodejs")) {
-      language = SupportedRuntimeLanguage.NODE;
-      version = runtime.replace("nodejs", "");
-    } else if (runtime.startsWith("python")) {
-      language = SupportedRuntimeLanguage.PYTHON;
-      version = runtime.replace("python", "");
-    }
-
-    return {
-      language,
-      version
-    }
   }
 
   /**

@@ -11,8 +11,8 @@ import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
-import { FunctionAppOS } from "../models/serverless";
 import { configConstants } from "../config/constants";
+import { FunctionAppOS } from "../config/runtime";
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;

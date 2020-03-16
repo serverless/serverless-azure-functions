@@ -1,7 +1,8 @@
-import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService } from "../../services/namingService";
 import { StorageAccountResource } from "./storageAccount";
 import md5 from "md5";
+import { Runtime } from "../../config/runtime";
 
 describe("Storage Account Resource", () => {
   const resourceGroup = "myResourceGroup";

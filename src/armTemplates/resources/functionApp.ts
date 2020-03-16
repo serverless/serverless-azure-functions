@@ -1,6 +1,6 @@
-import { dockerImages } from "../../config/runtime";
+import { dockerImages, getRuntimeLanguage, getRuntimeVersion, FunctionAppOS, isNodeRuntime } from "../../config/runtime";
 import { ArmParameter, ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams } from "../../models/armTemplates";
-import { FunctionAppConfig, FunctionAppOS, ServerlessAzureConfig, SupportedRuntimeLanguage } from "../../models/serverless";
+import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
 
 interface FunctionAppParams extends DefaultArmParams {
@@ -112,7 +112,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
     };
-    const { functionRuntime, os } = config.provider;
+    const { runtime, os } = config.provider;
     const isLinuxRuntime = os === FunctionAppOS.LINUX;
 
     const params: FunctionAppParams = {
@@ -120,9 +120,9 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         value: FunctionAppResource.getResourceName(config),
       },
       functionAppNodeVersion: {
-        value: (functionRuntime.language === SupportedRuntimeLanguage.NODE)
+        value: (isNodeRuntime(runtime))
           ?
-          `~${functionRuntime.version}`
+          `~${getRuntimeVersion(runtime)}`
           :
           undefined,
       },
@@ -139,7 +139,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         value: (isLinuxRuntime) ? this.getLinuxFxVersion(config) : undefined,
       },
       functionAppWorkerRuntime: {
-        value: functionRuntime.language,
+        value: getRuntimeLanguage(runtime),
       },
       functionAppExtensionVersion: {
         value: resourceConfig.extensionVersion,
@@ -242,7 +242,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       ])
     }
 
-    if (config.provider.functionRuntime.language === SupportedRuntimeLanguage.NODE) {
+    if (isNodeRuntime(config.provider.runtime)) {
       appSettings = appSettings.concat([
         {
           name: "WEBSITE_NODE_DEFAULT_VERSION",

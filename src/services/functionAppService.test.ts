@@ -37,7 +37,7 @@ describe("Function App Service", () => {
   const getFunctionResponse = "hello function";
 
   const baseUrl = "https://management.azure.com"
-  const masterKeyUrl = "https://management.azure.comappId/host/default/listkeys?api-version=2016-08-01"; //`https://${app.defaultHostName}/admin/host/systemkeys/_master`;
+  const masterKeyUrl = "https://management.azure.comappId/host/default/listkeys?api-version=2016-08-01";
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const syncTriggersUrl = `${baseUrl}/subscriptions/${subscriptionId}` +
     `/resourceGroups/${config.provider.resourceGroup}/providers/Microsoft.Web/sites/${app.name}` +
@@ -45,9 +45,7 @@ describe("Function App Service", () => {
   const listFunctionsUrl = `${baseUrl}${app.id}/functions?api-version=2016-08-01`;
   const appSettingsUrl = `${baseUrl}/subscriptions/${subscriptionId}/resourceGroups/${config.provider.resourceGroup}` +
     `/providers/Microsoft.Web/sites/${app.name}/config/appsettings?api-version=2016-08-01`;
-  // "https://management.azure.comappId/functions/hello?api-version=2016-08-01"
   const getFunctionUrl = `${baseUrl}${app.id}/functions/hello?api-version=2016-08-01`
-
 
   const appSettings = {
     setting1: "value1",
@@ -283,41 +281,16 @@ describe("Function App Service", () => {
     });
   });
 
-  it("publishes functions and uploads to blob storage", async () => {
-    const service = createService();
-    await service.uploadFunctions(app);
-    const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
-    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
-      slsService["artifact"],
-      configConstants.deploymentConfig.container,
-      `${expectedArtifactName}.zip`,
-    )
-    const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
-    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/);
-    const expectedUploadUrl = `https://${app.enabledHostNames[1]}/api/zipdeploy`;
-    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
-      method: "POST",
-      uri: expectedUploadUrl,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
-        Accept: "*/*",
-        ContentType: "application/octet-stream",
-        "User-Agent": "serverless_framework",
-      }
-    }, "app.zip");
-  });
-
   it("publishes functions and uploads to blob storage with default naming convention", async () => {
     const sls = MockFactory.createTestServerless();
     delete sls.service["artifact"]
     const service = createService(sls);
     await service.uploadFunctions(app);
     const defaultArtifact = path.join(".serverless", `${sls.service.getServiceName()}.zip`);
-    const expectedUploadUrl = `https://${app.enabledHostNames[1]}/api/zipdeploy`;
+    const expectedPublishUrl = `https://${app.enabledHostNames[1]}/api/zipdeploy`;
     expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
       method: "POST",
-      uri: expectedUploadUrl,
+      uri: expectedPublishUrl,
       json: true,
       headers: {
         Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
@@ -335,6 +308,31 @@ describe("Function App Service", () => {
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
     expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/);
   });
+  
+  it("publishes functions and uploads to blob storage", async () => {
+    const service = createService();
+    await service.uploadFunctions(app);
+    const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
+    expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
+      slsService["artifact"],
+      configConstants.deploymentConfig.container,
+      `${expectedArtifactName}.zip`,
+    )
+    const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
+    expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/);
+    const expectedPublishUrl = `https://${app.enabledHostNames[1]}/api/zipdeploy`;
+    expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
+      method: "POST",
+      uri: expectedPublishUrl,
+      json: true,
+      headers: {
+        Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
+        Accept: "*/*",
+        ContentType: "application/octet-stream",
+        "User-Agent": "serverless_framework",
+      }
+    }, "app.zip");
+  });
 
   it("publishes functions with custom SCM domain (aka App service environments)", async () => {
     const customApp = {
@@ -345,14 +343,14 @@ describe("Function App Service", () => {
       ],
     }
 
-    const expectedUploadUrl = `https://${customApp.enabledHostNames[1]}/api/zipdeploy`;
+    const expectedPublishUrl = `https://${customApp.enabledHostNames[1]}/api/zipdeploy`;
 
     const service = createService();
     await service.uploadFunctions(customApp);
 
     expect((FunctionAppService.prototype as any).sendFile).toBeCalledWith({
       method: "POST",
-      uri: expectedUploadUrl,
+      uri: expectedPublishUrl,
       json: true,
       headers: {
         Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,

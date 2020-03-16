@@ -1,10 +1,9 @@
+import fs from "fs";
 import mockFs from "mock-fs";
 import rimraf from "rimraf";
-import { MockFactory } from "../test/mockFactory";
 import Serverless from "serverless";
+import { MockFactory } from "../test/mockFactory";
 import { FuncService } from "./funcService";
-
-import fs from "fs";
 
 describe("Azure Func Service", () => {
 

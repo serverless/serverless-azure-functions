@@ -15,8 +15,9 @@ import { ApiCorsPolicy, ApiManagementConfig, ApiJwtValidatePolicy } from "../mod
 import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig, Runtime } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig } from "../models/serverless";
 import { configConstants } from "../config/constants";
+import { Runtime } from "../config/runtime";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {

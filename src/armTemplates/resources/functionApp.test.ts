@@ -1,5 +1,6 @@
-import { supportedRuntimes } from "../../config/runtime";
-import { FunctionAppOS, Runtime, ServerlessAzureConfig, SupportedRuntimeLanguage } from "../../models/serverless";
+import { FunctionAppOS, Runtime } from "../../config/runtime";
+import { ArmParameters } from "../../models/armTemplates";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import { FunctionAppResource } from "./functionApp";
 
 describe("Function App Resource", () => {
@@ -17,10 +18,6 @@ describe("Function App Resource", () => {
       stage,
       resourceGroup: resourceGroupName,
       runtime: Runtime.NODE10,
-      functionRuntime: {
-        language: SupportedRuntimeLanguage.NODE,
-        version: "10"
-      }
     },
     service: ""
   } as any;
@@ -153,7 +150,6 @@ describe("Function App Resource", () => {
 
   describe("Arm Parameters", () => {
     describe("Linux", () => {
-
       it("gets correct parameters - node 10", () => {
         const config = getConfig(FunctionAppOS.LINUX, Runtime.NODE10);
     
@@ -161,17 +157,13 @@ describe("Function App Resource", () => {
         
         const params = resource.getParameters(config);
         const { 
-          functionAppKind,
-          functionAppReserved,
           linuxFxVersion,
-          functionAppEnableRemoteBuild,
           functionAppNodeVersion,
         } = params;
+
+        assertLinuxParams(params);
     
-        expect(functionAppKind.value).toEqual("functionapp,linux");
-        expect(functionAppReserved.value).toBe(true)
         expect(linuxFxVersion.value).toEqual("NODE|10");
-        expect(functionAppEnableRemoteBuild.value).toBe(true);
         expect(functionAppNodeVersion.value).toEqual("~10");
       });
 
@@ -182,17 +174,13 @@ describe("Function App Resource", () => {
         
         const params = resource.getParameters(config);
         const { 
-          functionAppKind,
-          functionAppReserved,
           linuxFxVersion,
-          functionAppEnableRemoteBuild,
           functionAppNodeVersion,
         } = params;
-    
-        expect(functionAppKind.value).toEqual("functionapp,linux");
-        expect(functionAppReserved.value).toBe(true)
+        
+        assertLinuxParams(params);
+
         expect(linuxFxVersion.value).toEqual("NODE|12");
-        expect(functionAppEnableRemoteBuild.value).toBe(true);
         expect(functionAppNodeVersion.value).toEqual("~12");
       });
 
@@ -203,17 +191,13 @@ describe("Function App Resource", () => {
         
         const params = resource.getParameters(config);
         const { 
-          functionAppKind,
-          functionAppReserved,
           linuxFxVersion,
-          functionAppEnableRemoteBuild,
           functionAppNodeVersion,
         } = params;
+
+        assertLinuxParams(params);
     
-        expect(functionAppKind.value).toEqual("functionapp,linux");
-        expect(functionAppReserved.value).toBe(true)
         expect(linuxFxVersion.value).toEqual("PYTHON|3.6");
-        expect(functionAppEnableRemoteBuild.value).toBe(true);
         expect(functionAppNodeVersion.value).toBeUndefined();
       });
 
@@ -224,17 +208,13 @@ describe("Function App Resource", () => {
         
         const params = resource.getParameters(config);
         const { 
-          functionAppKind,
-          functionAppReserved,
           linuxFxVersion,
-          functionAppEnableRemoteBuild,
           functionAppNodeVersion,
         } = params;
+
+        assertLinuxParams(params);
     
-        expect(functionAppKind.value).toEqual("functionapp,linux");
-        expect(functionAppReserved.value).toBe(true)
         expect(linuxFxVersion.value).toEqual("PYTHON|3.7");
-        expect(functionAppEnableRemoteBuild.value).toBe(true);
         expect(functionAppNodeVersion.value).toBeUndefined();
       });
 
@@ -245,40 +225,73 @@ describe("Function App Resource", () => {
         
         const params = resource.getParameters(config);
         const { 
-          functionAppKind,
-          functionAppReserved,
           linuxFxVersion,
-          functionAppEnableRemoteBuild,
           functionAppNodeVersion,
         } = params;
+
+        assertLinuxParams(params);
     
-        expect(functionAppKind.value).toEqual("functionapp,linux");
-        expect(functionAppReserved.value).toBe(true)
         expect(linuxFxVersion.value).toEqual("PYTHON|3.8");
-        expect(functionAppEnableRemoteBuild.value).toBe(true);
         expect(functionAppNodeVersion.value).toBeUndefined();
       });
+
+      
+      function assertLinuxParams(parameters: ArmParameters) {
+        const { 
+          functionAppKind,
+          functionAppReserved,
+          functionAppEnableRemoteBuild,
+        } = parameters;
+
+        expect(functionAppKind.value).toEqual("functionapp,linux");
+        expect(functionAppReserved.value).toBe(true)
+        expect(functionAppEnableRemoteBuild.value).toBe(true);
+      }
     });
 
     describe("Windows", () => {
       it("gets correct parameters - node 10", () => {
-        const config = getConfig(FunctionAppOS.LINUX, Runtime.NODE10);
+        const config = getConfig(FunctionAppOS.WINDOWS, Runtime.NODE10);
     
         const resource = new FunctionAppResource();
         
         const params = resource.getParameters(config);
-        const { 
-          functionAppKind,
-          functionAppReserved,
-          linuxFxVersion,
-          functionAppEnableRemoteBuild,
+        const {
+          functionAppNodeVersion,
         } = params;
     
-        expect(functionAppKind.value).toEqual("functionapp,linux");
-        expect(functionAppReserved.value).toBe(true)
-        expect(linuxFxVersion.value).toEqual("NODE|10");
-        expect(functionAppEnableRemoteBuild.value).toBe(true);
+        assertWindowsParams(params);
+
+        expect(functionAppNodeVersion.value).toEqual("~10");
       });
+
+      it("gets correct parameters - node 12", () => {
+        const config = getConfig(FunctionAppOS.WINDOWS, Runtime.NODE12);
+    
+        const resource = new FunctionAppResource();
+        
+        const params = resource.getParameters(config);
+        
+        const { 
+          functionAppNodeVersion,
+        } = params;
+
+        assertWindowsParams(params);
+
+        expect(functionAppNodeVersion.value).toEqual("~12");
+      });
+
+      function assertWindowsParams(parameters: ArmParameters) {
+        const {
+          linuxFxVersion,
+          functionAppKind,
+          functionAppReserved,
+        } = parameters;
+
+        expect(functionAppKind.value).toBeUndefined();
+        expect(linuxFxVersion.value).toBeUndefined();
+        expect(functionAppReserved.value).toBeUndefined();
+      }
     });
   });
 
@@ -289,7 +302,6 @@ describe("Function App Resource", () => {
         ...defaultConfig.provider,
         os,
         runtime,
-        functionRuntime: supportedRuntimes[runtime],
       }
     }
   }

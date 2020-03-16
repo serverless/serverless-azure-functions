@@ -1,7 +1,8 @@
 import { VirtualNetworkResource } from "./virtualNetwork";
-import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
 import { configConstants } from "../../config/constants";
+import { Runtime } from "../../config/runtime";
 
 describe("Virtual Network Resource", () => {
   const resourceGroupName = "myResourceGroup";

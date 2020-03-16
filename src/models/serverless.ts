@@ -1,6 +1,7 @@
 import { ApiManagementConfig } from "./apiManagement";
 import Serverless from "serverless";
 import { ArmParameters } from "./armTemplates";
+import { Runtime, FunctionAppOS } from "../config/runtime";
 
 export interface ArmTemplateConfig {
   file: string;
@@ -57,32 +58,7 @@ export interface ServerlessAzureProvider {
   keyVaultConfig?: AzureKeyVaultConfig;
   /** Runtime setting within `serverless.yml` */
   runtime: Runtime;
-  /** Only to be used internally. Derived from `runtime` property */
-  functionRuntime?: FunctionRuntime;
   os?: FunctionAppOS;
-}
-
-export enum FunctionAppOS {
-  WINDOWS = "windows",
-  LINUX = "linux"
-}
-
-export enum Runtime {
-  NODE10 = "nodejs10",
-  NODE12 = "nodejs12",
-  PYTHON36 = "python3.6",
-  PYTHON37 = "python3.7",
-  PYTHON38 = "python3.8",
-}
-
-export interface FunctionRuntime {
-  language: SupportedRuntimeLanguage;
-  version: string;
-}
-
-export enum SupportedRuntimeLanguage {
-  PYTHON = "python",
-  NODE = "node"
 }
 
 /**

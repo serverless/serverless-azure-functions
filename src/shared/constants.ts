@@ -31,7 +31,7 @@ export const constants = {
     os: "os",
   },
   runtimeExtensions: {
-    node: ".js",
+    nodejs: ".js",
     python: ".py"
   }
 }

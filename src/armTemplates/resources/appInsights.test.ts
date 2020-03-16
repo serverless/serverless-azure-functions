@@ -1,7 +1,8 @@
 import { AppInsightsResource } from "./appInsights";
-import { ServerlessAzureConfig, Runtime } from "../../models/serverless";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
 import { configConstants } from "../../config/constants";
+import { Runtime } from "../../config/runtime";
 
 describe("App Insights Resource", () => {
   const resourceGroupName = "myResourceGroup";

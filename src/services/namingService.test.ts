@@ -1,6 +1,7 @@
 import { AzureNamingService, AzureNamingServiceOptions } from "./namingService"
-import { ServerlessAzureConfig, Runtime } from "../models/serverless";
+import { ServerlessAzureConfig } from "../models/serverless";
 import md5 from "md5";
+import { Runtime } from "../config/runtime";
 
 describe("Naming Service", () => {
 

@@ -5,6 +5,7 @@ import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 import { createInterface } from "readline"
 import { SpawnOptions, spawn, StdioOptions } from "child_process";
+import { getRuntimeLanguage } from "../config/runtime";
 
 export interface FunctionMetadata {
   entryPoint: string;
@@ -116,7 +117,7 @@ export class Utils {
     const entryPoint = (handlerSplit.length > 1) ? handlerSplit[handlerSplit.length - 1] : undefined;
 
     const handlerPath = ((handlerSplit.length > 1) ? handlerSplit[0] : handler) 
-      + constants.runtimeExtensions[config.provider.functionRuntime.language]
+      + constants.runtimeExtensions[getRuntimeLanguage(config.provider.runtime)]
 
     return {
       entryPoint,
@@ -170,7 +171,7 @@ export class Utils {
   /**
    * Runs an operation with auto retry policy
    * @param operation The operation to run
-   * @param maxRetries The max number or retries
+   * @param maxRetries The max number of retries
    * @param retryWaitInterval The time to wait between retries
    */
   public static async runWithRetry<T>(operation: (retry?: number) => Promise<T>, maxRetries: number = 3, retryWaitInterval: number = 1000) {

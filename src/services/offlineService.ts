@@ -3,6 +3,7 @@ import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
 import { CoreToolsService } from "./coreToolsService";
+import { getRuntimeLanguage } from "../config/runtime";
 
 export class OfflineService extends BaseService {
 
@@ -13,7 +14,7 @@ export class OfflineService extends BaseService {
       IsEncrypted: false,
       Values: {
         AzureWebJobsStorage: "UseDevelopmentStorage=true",
-        FUNCTIONS_WORKER_RUNTIME: this.config.provider.functionRuntime.language
+        FUNCTIONS_WORKER_RUNTIME: getRuntimeLanguage(this.config.provider.runtime),
       }
     }),
   }
