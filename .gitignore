@@ -6,6 +6,3 @@ node_modules/
 .idea/
 
 .vscode/launch.json
-/test/
-tream
-.gitignore
