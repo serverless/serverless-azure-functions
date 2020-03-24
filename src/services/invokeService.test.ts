@@ -87,6 +87,6 @@ describe("Invoke Service ", () => {
     const service = new InvokeService(sls, options);
     const fakeName = "fakeFunction";
     await service.invoke("GET", fakeName);
-    expect(sls.cli.log).lastCalledWith(`Function ${fakeName} does not exist`, undefined, undefined)
+    expect(sls.cli.log).lastCalledWith(`Function ${fakeName} does not exist`);
   });
 });
