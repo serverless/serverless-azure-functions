@@ -41,7 +41,7 @@ then user try to deploy
 `sls deploy -s prod -r westus`
 
 1. Do we use the environment variables / creds associated with `dev` or `prod`?
-1. Someone new to the codecase see both the `serverless.yaml` and the command in a CD script, how can they tell which resourceGroup goes where.
+2. Someone new to the codecase see both the `serverless.yaml` and the command in a CD script, how can they tell which resourceGroup goes where.
 
 #### Specifying resourceGroup in command line
 
