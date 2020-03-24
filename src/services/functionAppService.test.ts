@@ -37,7 +37,7 @@ describe("Function App Service", () => {
   const getFunctionResponse = "hello function";
 
   const baseUrl = "https://management.azure.com"
-  const masterKeyUrl = "https://management.azure.comappId/host/default/listkeys?api-version=2016-08-01";
+  const masterKeyUrl = "https://management.azure.comappId/host/default/listkeys?api-version=2019-08-01";
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const syncTriggersUrl = `${baseUrl}/subscriptions/${subscriptionId}` +
     `/resourceGroups/${config.provider.resourceGroup}/providers/Microsoft.Web/sites/${app.name}` +

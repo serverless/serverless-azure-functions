@@ -1,6 +1,6 @@
 import Serverless from "serverless";
 import { configConstants } from "../config/constants";
-import { ServerlessAzureConfig, ServerlessAzureProvider } from "../models/serverless";
+import { ServerlessAzureConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ConfigService } from "./configService";
 import { AzureNamingService } from "./namingService";

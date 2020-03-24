@@ -41,7 +41,7 @@ export class FunctionAppService extends BaseService {
 
   public async getMasterKey(functionApp?: Site) {
     functionApp = functionApp || await this.get();
-    const keyUrl = `${this.baseUrl}${functionApp.id}/host/default/listkeys?api-version=2016-08-01`;
+    const keyUrl = `${this.baseUrl}${functionApp.id}/host/default/listkeys?api-version=2019-08-01`;
     const response = await this.sendApiRequest("POST", keyUrl);
 
     return response.data.masterKey;
