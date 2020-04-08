@@ -2,7 +2,8 @@ import { CommandValidation } from "clvr";
 
 export const deployTest: CommandValidation[] = [
   {
-    command: "npm i serverless-azure-functions@beta"
+    command: "npm i serverless-azure-functions@beta",
+    silent: true,
   },
   {
     command: "sls deploy",
@@ -10,10 +11,19 @@ export const deployTest: CommandValidation[] = [
       shouldContain: [
         "Logging into Azure",
         "Deployed serverless functions:",
-        "sls-weur-dev-${serviceName}-rg",
-        "Resource Group: tmp-weur-qa-${serviceName}-rg",
-        "Deploying zip file to function app: tmp-weur-qa-${serviceName}",
-        "-> hello: [GET] tmp-weur-qa-${serviceName}.azurewebsites.net/api/hello"
+        "tmp-${region}-qa-${serviceName}-rg",
+        "Resource Group: tmp-${region}-qa-${serviceName}-rg",
+        "Deploying zip file to function app: tmp-${region}-qa-${serviceName}",
+        "-> hello: [GET] tmp-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
+      ],
+    }
+  },
+  {
+    // Deploy again to check that ARM deployment was skipped
+    command: "sls deploy",
+    stdout: {
+      shouldContain: [
+        "Generated template same as previous. Skipping ARM deployment"
       ],
     }
   },

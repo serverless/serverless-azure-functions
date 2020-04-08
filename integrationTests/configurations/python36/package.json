@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "azure-functions-core-tools": "^2.7.1585",
-    "serverless-azure-functions": "^1.0.2-23"
+    "azure-functions-core-tools": "^2.7.1585"
   }
 }

@@ -4,6 +4,8 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 [![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions)
 
+![Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Integration%20Tests/badge.svg)
+
 ## Quickstart
 
 ### Pre-requisites
@@ -306,6 +308,29 @@ We're still in the process of getting everying running 100%, but please refer to
 We use [Jest](https://jestjs.io/) for unit tests, and it is expected that every Pull Request containing code changes have accompanying unit tests.
 
 Run unit tests using `npm test` or `npm run test:coverage` to get coverage results.
+
+#### Integration Tests
+
+We run our integration tests twice per day from our GitHub workflow. These tests install the beta version of the plugin, deploy a function app (with APIM), re-deploy (to make sure ARM template deployment is skipped), invoke the function directly, invoke the APIM endpoint and then remove the resource group, making assertions on the output at each step. While the number of configurations one could use in the Serverless Framework is virtually infinite, we tried to capture the main runtimes and platforms that are supported by the tool:
+
+- Node 10 on Linux using remote build
+- Node 10 on Linux using external package
+- Node 10 on Windows
+- Node 10 on Windows using webpack
+- Node 12 on Linux using remote build
+- Node 12 on Linux using external package
+- Node 12 on Linux using remote build and premium functions
+- Node 12 on Windows
+- Node 12 on Windows using premium functions
+- Node 12 on Windows using webpack
+- Python 3.6 (Linux only)
+- Python 3.6 (Linux only) using premium functions
+- Python 3.7 (Linux only)
+- Python 3.8 (Linux only)
+
+We made these configurations as minimal as possible. If you are having problems with your project, feel free to check to see if our integration tests are passing (see badge at top of readme) and then double check our configuration inside the `integrationTests` directory. 
+
+We use [Clover](https://www.npmjs.com/package/clvr) to run the integration tests, and they run 2x per day in our GitHub Action.
 
 #### Signing commits
 

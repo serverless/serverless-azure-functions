@@ -2,12 +2,13 @@ import { CommandValidation } from "clvr";
 
 export const offlineTest: CommandValidation[] = [
   {
-    command: "npm link serverless-azure-functions",
+    command: "npm i serverless-azure-functions@beta",
     files: {
       "hello/function.json": {
         shouldExist: false
       }
-    }
+    },
+    silent: true,
   },
   {
     command: "sls offline build",
