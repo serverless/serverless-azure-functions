@@ -1249,6 +1249,77 @@
     },
     {
       "type": "cosmosDB",
+      "displayName": "$cosmosDBIn_displayName",
+      "direction": "in",
+      "enabledInTryMode": false,
+      "documentation": "$content=Documentation\\cosmosDBIn.md",
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "defaultValue": "inputDocument",
+          "required": true,
+          "label": "$cosmosDBIn_name_label",
+          "help": "$cosmosDBIn_name_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
+        },
+        {
+          "name": "databaseName",
+          "value": "string",
+          "defaultValue": "inDatabase",
+          "required": true,
+          "label": "$cosmosDBIn_databaseName_label",
+          "help": "$cosmosDBIn_databaseName_help"
+        },
+        {
+          "name": "collectionName",
+          "value": "string",
+          "defaultValue": "MyCollection",
+          "required": true,
+          "label": "$cosmosDBIn_collectionName_label",
+          "help": "$cosmosDBIn_collectionName_help"
+        },
+        {
+          "name": "connectionStringSetting",
+          "value": "string",
+          "resource": "CosmosDB",
+          "required": true,
+          "label": "$cosmosDBIn_connection_label",
+          "help": "$cosmosDBIn_connection_help",
+          "placeholder": "[variables('selectConnection')]"
+        },
+        {
+          "name": "id",
+          "value": "string",
+          "defaultValue": "",
+          "required": false,
+          "label": "$cosmosDBIn_id_label",
+          "help": "$cosmosDBIn_id_help"
+        },
+        {
+          "name": "partitionKey",
+          "value": "string",
+          "required": false,
+          "label": "$cosmosDB_partitionKey_label",
+          "help": "$cosmosDBIn_partitionKey_help"
+        },
+        {
+          "name": "sqlQuery",
+          "value": "string",
+          "defaultValue": "",
+          "required": false,
+          "label": "$cosmosDBIn_sqlQuery_label",
+          "help": "$cosmosDBIn_sqlQuery_help"
+        }
+      ]
+    },
+    {
+      "type": "cosmosDB",
       "displayName": "$cosmosDBOut_displayName",
       "direction": "out",
       "enabledInTryMode": false,
