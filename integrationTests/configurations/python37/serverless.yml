@@ -1,0 +1,34 @@
+service: py37
+
+provider:
+  name: azure
+  runtime: python3.7
+  region: West Europe
+  prefix: sls
+
+plugins:
+  - serverless-azure-functions
+
+package:
+  exclude:
+    - local.settings.json
+    - .vscode/**
+    - __pycache__/**
+    - node_modules/**
+    - .python_packages/**
+    - env/**
+    - .funcignore
+    - package.json
+    - package-lock.json
+    - data.json
+
+
+functions:
+  hello:
+    handler: hello
+    events:
+      - http: true
+        x-azure-settings:
+          methods:
+            - GET
+          authLevel: anonymous
