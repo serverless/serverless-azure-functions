@@ -6,13 +6,14 @@ import { MockFactory } from "../test/mockFactory";
 import { BaseService } from "./baseService";
 
 jest.mock("./loggingService");
-import { LoggingService, LogLevel } from "./loggingService";
+import { LoggingService } from "./loggingService";
 
 jest.mock("axios", () => jest.fn());
 import axios from "axios";
 
 jest.mock("request", () => MockFactory.createTestMockRequestFactory());
 import request from "request";
+import { Runtime } from "../config/runtime";
 
 class MockService extends BaseService {
   public constructor(serverless: Serverless, options?: ServerlessAzureOptions) {
@@ -66,7 +67,7 @@ describe("Base Service", () => {
     provider: {
       resourceGroup: "My-Resource-Group",
       deploymentName: "My-Deployment",
-      runtime: "nodejs10.x"
+      runtime: Runtime.NODE10
     },
   };
 

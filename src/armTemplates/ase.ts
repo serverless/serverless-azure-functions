@@ -6,6 +6,7 @@ import { HostingEnvironmentResource } from "./resources/hostingEnvironment";
 import { VirtualNetworkResource } from "./resources/virtualNetwork";
 import { CompositeArmTemplate } from "./compositeArmTemplate";
 import { ArmResourceTemplate } from "../models/armTemplates";
+import { ServerlessAzureConfig } from "../models/serverless";
 
 class AppServiceEnvironmentTemplate extends CompositeArmTemplate {
   public constructor() {
@@ -19,8 +20,8 @@ class AppServiceEnvironmentTemplate extends CompositeArmTemplate {
     ])
   }
 
-  public getTemplate(): ArmResourceTemplate {
-    const template = super.getTemplate();
+  public getTemplate(config: ServerlessAzureConfig): ArmResourceTemplate {
+    const template = super.getTemplate(config);
 
     template.parameters.appServicePlanSkuName.defaultValue = "I1";
     template.parameters.appServicePlanSkuTier.defaultValue = "Isolated";

@@ -1,9 +1,9 @@
 
 import Serverless from "serverless";
+import { ServerlessCliCommand } from "../../models/serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import { ServerlessCliCommand } from "../../models/serverless";
 
 export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;

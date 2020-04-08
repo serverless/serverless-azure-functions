@@ -1,4 +1,4 @@
-import configConstants from "../../config";
+import { configConstants } from "../../config/constants";
 import { ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";

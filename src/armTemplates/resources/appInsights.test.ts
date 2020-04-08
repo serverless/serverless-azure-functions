@@ -1,7 +1,8 @@
 import { AppInsightsResource } from "./appInsights";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
-import configConstants from "../../config";
+import { configConstants } from "../../config/constants";
+import { Runtime } from "../../config/runtime";
 
 describe("App Insights Resource", () => {
   const resourceGroupName = "myResourceGroup";
@@ -22,7 +23,7 @@ describe("App Insights Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x"
+        runtime: Runtime.NODE10
       },
       service: ""
     } as any;
@@ -42,7 +43,7 @@ describe("App Insights Resource", () => {
         region,
         stage,
         resourceGroup: resourceGroupName,
-        runtime: "nodejs10.x",
+        runtime: Runtime.NODE10,
         appInsights: {
           name: appInsightsName,
         },

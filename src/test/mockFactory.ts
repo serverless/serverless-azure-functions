@@ -16,7 +16,8 @@ import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmPa
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
 import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig } from "../models/serverless";
-import configConstants from "../config";
+import { configConstants } from "../config/constants";
+import { Runtime } from "../config/runtime";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -63,7 +64,11 @@ export class MockFactory {
       provider: MockFactory.createTestAzureServiceProvider(),
       service: serviceName,
       artifact: "app.zip",
-      functions
+      functions,
+      package: {
+        exclude: [],
+        include: [],
+      }
     } as any as Service;
   }
 
@@ -376,7 +381,7 @@ export class MockFactory {
       deploymentName: "myDeploymentName",
       region: "eastus2",
       stage: "dev",
-      runtime: "nodejs10.x",
+      runtime: Runtime.NODE10,
     }
   }
 
@@ -666,7 +671,7 @@ export class MockFactory {
       cliOptions: null,
       commands: null,
       deprecatedEvents: null,
-      hooks: null,
+      hooks: {},
       loadAllPlugins: jest.fn(),
       loadCommand: jest.fn(),
       loadCommands: jest.fn(),

@@ -57,7 +57,7 @@ describe("Azure Func Plugin", () => {
       const plugin = new AzureFuncPlugin(sls, options);
       await invokeHook(plugin, "func:add:add");
 
-      expect(sls.cli.log).lastCalledWith("Function hello already exists", undefined, undefined);
+      expect(sls.cli.log).lastCalledWith("Function hello already exists");
     });
 
     it("creates function handler and updates serverless.yml", async () => {

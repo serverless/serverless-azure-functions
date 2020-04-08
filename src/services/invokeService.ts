@@ -2,7 +2,7 @@ import { BaseService } from "./baseService"
 import Serverless from "serverless";
 import axios from "axios";
 import { FunctionAppService } from "./functionAppService";
-import configConstants from "../config";
+import { configConstants } from "../config/constants";
 
 export class InvokeService extends BaseService {
   public functionAppService: FunctionAppService;

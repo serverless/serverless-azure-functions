@@ -2,9 +2,10 @@ import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
 import { ArmDeployment, ArmParamType } from "../models/armTemplates";
-import { DeploymentConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
+import { configConstants } from "../config/constants";
+
 import fs from "fs";
 
 jest.mock("./azureBlobStorageService");
@@ -18,7 +19,6 @@ import { FunctionAppService } from "./functionAppService";
 
 jest.mock("./armService");
 import { ArmService } from "./armService";
-import configConstants from "../config";
 
 describe("Rollback Service", () => {
 
@@ -107,19 +107,17 @@ describe("Rollback Service", () => {
       artifactPath,
     );
     expect(FunctionAppService.prototype.get).toBeCalled();
-    expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).toBeCalledWith(
+    expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).toBeCalledWith(
       appStub,
       artifactPath
     );
     expect(unlinkSpy).toBeCalledWith(artifactPath);
+    unlinkSpy.mockRestore();
   });
 
   it("should deploy function app with SAS URL", async () => {
     const sls = MockFactory.createTestServerless();
-    const deploymentConfig: DeploymentConfig = {
-      external: true
-    }
-    sls.service.provider["deployment"] = deploymentConfig;
+    sls.service.provider["deployment"] = { external: true };
     const service = createService(sls);
     await service.rollback();
     expect(AzureBlobStorageService.prototype.initialize).toBeCalled();
@@ -139,7 +137,8 @@ describe("Rollback Service", () => {
       artifactName
     );
     expect(FunctionAppService.prototype.get).not.toBeCalled();
-    expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).not.toBeCalled();
+    expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).not.toBeCalled();
     expect(unlinkSpy).not.toBeCalled();
+    unlinkSpy.mockRestore();
   });
 });

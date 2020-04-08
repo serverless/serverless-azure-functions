@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import { constants } from "./constants";
 import axios from "axios";
-import configConstants from "../config";
+import { configConstants } from "../config/constants";
 const defaultBindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 export class BindingUtils {
