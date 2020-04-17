@@ -228,12 +228,12 @@ The getting started walkthrough illustrates the interactive login experience, wh
 
 ### Logging Verbosity
 
-You can set the logging verbosity with the `--verbose` flag (`-v` for short). If the `--verbose` flag is set with no value, logging will be as verbose as possible (debug mode). You can also provide a value with the flag to set the verbosity to a specific level:
+You can set the logging verbosity with the `--verbose` flag. If the `--verbose` flag is set with no value, logging will be as verbose as possible (debug mode). You can also provide a value with the flag to set the verbosity to a specific level:
 
-- `-v error` - Only error messages printed
-- `-v warn` - Only error and warning messages printed
-- `-v info` - Only error, warning and info messages printed
-- `-v debug` - All messages printed
+- `--verbose error` - Only error messages printed
+- `--verbose warn` - Only error and warning messages printed
+- `--verbose info` - Only error, warning and info messages printed
+- `--verbose debug` - All messages printed
 
 ### Contributing
 
