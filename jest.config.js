@@ -23,5 +23,6 @@ module.exports = {
     "json",
     "jsx",
     "node"
-  ]
+  ],
+  "setupFilesAfterEnv": ["jest-os-detection"]
 };
