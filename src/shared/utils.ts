@@ -4,7 +4,8 @@ import { ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
 import { createInterface } from "readline"
-import { SpawnOptions, spawn, StdioOptions } from "child_process";
+import { SpawnOptions, StdioOptions } from "child_process";
+import { spawn } from "cross-spawn"
 import { getRuntimeLanguage } from "../config/runtime";
 
 export interface FunctionMetadata {
@@ -235,11 +236,6 @@ export class Utils {
       ".bin",
       command
     );
-    
-    // Append .cmd if running on windows
-    if (process.platform === "win32") {
-      localCommand += ".cmd";
-    }
 
     const env = {
       // Inherit environment from current process, most importantly, the PATH
