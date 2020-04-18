@@ -14,6 +14,20 @@ By default, all functions are deploy to a stage (`dev`) and a region. The autoge
 - Create/Update app service plan, app service
 - Zipdeploy code
 
+### Tagging resource group
+
+To apply tags to your resource group, you can specify them in your provider config as such:
+
+```yaml
+...
+provider:
+  tags:
+    TAG_1: tagValue1
+    TAG_2: tagValue2
+```
+
+Existing tags with the same names will be updated. Existing tags (with different names) will **not** be removed.
+
 ### No resource group specified
 
 `sls deploy -s dev -r westus2`
