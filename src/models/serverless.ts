@@ -14,6 +14,7 @@ export interface ResourceConfig {
     name?: string;
     tier?: string;
   };
+  httpsTrafficOnly?: boolean;
   [key: string]: any;
 }
 

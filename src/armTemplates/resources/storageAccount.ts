@@ -7,6 +7,7 @@ interface StorageAccountParams extends DefaultArmParams {
   storageAccountName: ArmParameter;
   storageAccountSkuName: ArmParameter;
   storageAccountSkuTier: ArmParameter;
+  storageHttpsTrafficOnly: ArmParameter;
 }
 
 export class StorageAccountResource implements ArmResourceTemplateGenerator {
@@ -39,7 +40,11 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
       storageAccountSkuTier: {
         defaultValue: "Standard",
         type: ArmParamType.String
-      }
+      },
+      storageHttpsTrafficOnly: {
+        defaultValue: false,
+        type: ArmParamType.Bool
+      },
     }
     return {
       "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
@@ -54,7 +59,8 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
           location: "[parameters('location')]",
           kind: "Storage",
           properties: {
-            accountType: "[parameters('storageAccountSkuName')]"
+            accountType: "[parameters('storageAccountSkuName')]",
+            supportsHttpsTrafficOnly: "[parameters('storageHttpsTrafficOnly')]"
           },
           sku: {
             name: "[parameters('storageAccountSkuName')]",
@@ -80,7 +86,10 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
       },
       storageAccountSkuTier: {
         value: resourceConfig.sku.tier,
-      }
+      },
+      storageHttpsTrafficOnly: {
+        value: resourceConfig.httpsTrafficOnly
+      },
     };
 
     return params as unknown as ArmParameters;
