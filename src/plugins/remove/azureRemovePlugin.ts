@@ -16,7 +16,10 @@ export class AzureRemovePlugin extends AzureBasePlugin {
           "remove"
         ],
         options: {
-          ...constants.deployedServiceOptions
+          ...constants.deployedServiceOptions,
+          force: {
+            usage: "Force remove resource group without additional prompt"
+          },
         }
       }
     }
@@ -34,11 +37,16 @@ export class AzureRemovePlugin extends AzureBasePlugin {
       this.log(`Resource group "${rgName}" does not exist in your Azure subscription`)
       return;
     }
-    this.log(`This command will delete your ENTIRE resource group (${resourceService.getResourceGroupName()}). ` +
+    let okToDelete = this.getOption("force") !== undefined;
+    if (!okToDelete) {
+      this.log(`This command will delete your ENTIRE resource group (${resourceService.getResourceGroupName()}). ` +
       "and ALL the Azure resources that it contains " +
       "Are you sure you want to proceed? If so, enter the full name of the resource group :");
-    const input = await Utils.waitForUserInput();
-    if (input === resourceService.getResourceGroupName()) {
+      const input = await Utils.waitForUserInput();
+      okToDelete = input === resourceService.getResourceGroupName();
+    }
+    
+    if (okToDelete) {
       this.log("Deleting resource group");
       await resourceService.deleteDeployment();
       await resourceService.deleteResourceGroup();

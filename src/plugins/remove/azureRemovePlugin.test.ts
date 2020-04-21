@@ -59,4 +59,17 @@ describe("Remove Plugin", () => {
     expect(ResourceService.prototype.deleteDeployment).not.toBeCalled();
     expect(ResourceService.prototype.deleteResourceGroup).not.toBeCalled();
   });
+
+  it("deletes resource group if --force option is enabled", async () => {
+    Utils.waitForUserInput = jest.fn(() => Promise.resolve("not-my-resource-group"));
+    
+    const sls = MockFactory.createTestServerless();
+    const options = MockFactory.createTestServerlessOptions({force: ""});
+    const plugin = new AzureRemovePlugin(sls, options);
+
+    await invokeHook(plugin, "remove:remove");
+
+    expect(ResourceService.prototype.deleteDeployment).toBeCalled();
+    expect(ResourceService.prototype.deleteResourceGroup).toBeCalled();
+  });
 });

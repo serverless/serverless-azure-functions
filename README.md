@@ -190,6 +190,14 @@ If at any point you no longer need your service, you can run the following comma
 $ sls remove
 ```
 
+You will then be prompted to enter the full name of the resource group as an extra safety before deleting the entire resource group.
+
+You can bypass this check by running:
+
+```bash
+$ sls remove --force
+```
+
 ### Creating or removing Azure Functions
 
 To create a new Azure Function within your function app, run the following command from within your app's directory:
