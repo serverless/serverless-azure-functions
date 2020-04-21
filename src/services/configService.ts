@@ -147,7 +147,6 @@ export class ConfigService {
     if (!providerRegion || providerRegion === awsRegion) {
       config.provider.region = this.serverless.service.provider["location"] || region;
     }
-
     if (!config.provider.stage) {
       config.provider.stage = stage;
     }
