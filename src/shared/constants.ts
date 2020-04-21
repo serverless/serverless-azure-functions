@@ -33,5 +33,27 @@ export const constants = {
   runtimeExtensions: {
     nodejs: ".js",
     python: ".py"
+  },
+  deployedServiceOptions: {
+    resourceGroup: {
+      usage: "Resource group for the service",
+      shortcut: "g",
+    },
+    stage: {
+      usage: "Stage of service",
+      shortcut: "s"
+    },
+    region: {
+      usage: "Region of service",
+      shortcut: "r"
+    },
+    subscriptionId: {
+      usage: "Sets the Azure subscription ID",
+      shortcut: "i",
+    },
+    function: {
+      usage: "Deployment of individual function - NOT SUPPORTED",
+      shortcut: "f",
+    }
   }
 }

@@ -3,6 +3,7 @@ import path, { isAbsolute } from "path";
 import Serverless from "serverless";
 import { InvokeService } from "../../services/invokeService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { constants } from "../../shared/constants";
 
 export class AzureInvokePlugin extends AzureBasePlugin {
 
@@ -14,26 +15,7 @@ export class AzureInvokePlugin extends AzureBasePlugin {
         usage: "Invoke command",
         lifecycleEvents: ["invoke"],
         options: {
-          resourceGroup: {
-            usage: "Resource group for the service",
-            shortcut: "g",
-          },
-          stage: {
-            usage: "Stage of service",
-            shortcut: "s"
-          },
-          region: {
-            usage: "Region of service",
-            shortcut: "r"
-          },
-          subscriptionId: {
-            usage: "Sets the Azure subscription ID",
-            shortcut: "i",
-          },
-          function: {
-            usage: "Function to call",
-            shortcut: "f",
-          },
+          ...constants.deployedServiceOptions,
           path: {
             usage: "Path to file to put in body",
             shortcut: "p"

@@ -5,6 +5,8 @@ import { AzureLoginOptions } from "../../services/loginService";
 import { ResourceService } from "../../services/resourceService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 import { ApimService } from "../../services/apimService";
+import { constants } from "../../shared/constants";
+import { AzureInfoService } from "../../services/infoService";
 
 export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
   public commands: any;
@@ -18,29 +20,6 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
       "deploy:apim:apim": this.deployApim.bind(this),
     };
 
-    const deployOptions = {
-      resourceGroup: {
-        usage: "Resource group for the service",
-        shortcut: "g",
-      },
-      stage: {
-        usage: "Stage of service",
-        shortcut: "s"
-      },
-      region: {
-        usage: "Region of service",
-        shortcut: "r"
-      },
-      subscriptionId: {
-        usage: "Sets the Azure subscription ID",
-        shortcut: "i",
-      },
-      function: {
-        usage: "Deployment of individual function - NOT SUPPORTED",
-        shortcut: "f",
-      }
-    }
-
     this.commands = {
       deploy: {
         commands: {
@@ -48,7 +27,7 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
             usage: "List deployments",
             lifecycleEvents: ["list"],
             options: {
-              ...deployOptions
+              ...constants.deployedServiceOptions
             }
           },
           apim: {
@@ -57,7 +36,11 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
           }
         },
         options: {
-          ...deployOptions
+          ...constants.deployedServiceOptions,
+          dryrun: {
+            usage: "Get a summary for what the deployment would look like",
+            shortcut: "d"
+          }
         }
       }
     }
@@ -72,6 +55,11 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
 
   private async deploy() {
     this.checkForIndividualFunctionDeploy();
+    if (this.getOption("dryrun")) {
+      const infoService = new AzureInfoService(this.serverless, this.options);
+      await infoService.printInfo();
+      return;
+    }
     const resourceService = new ResourceService(this.serverless, this.options);
     const functionAppService = new FunctionAppService(this.serverless, this.options);
     const zipFile = functionAppService.getFunctionZipFile();
