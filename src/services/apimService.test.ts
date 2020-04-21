@@ -5,7 +5,6 @@ import _ from "lodash";
 import Serverless from "serverless";
 import { Runtime } from "../config/runtime";
 import { ApiCheckHeaderPolicy, ApiIpFilterPolicy, ApiManagementConfig } from "../models/apiManagement";
-import { constants } from "../shared/constants";
 import { MockFactory } from "../test/mockFactory";
 import apimGetApi200 from "../test/responses/apim-get-api-200.json";
 import apimGetApi404 from "../test/responses/apim-get-api-404.json";

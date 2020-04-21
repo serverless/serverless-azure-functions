@@ -55,5 +55,23 @@ export const constants = {
       usage: "Deployment of individual function - NOT SUPPORTED",
       shortcut: "f",
     }
+  },
+  invokeOptions: {
+    function: {
+      usage: "Function to call",
+      shortcut: "f",
+    },
+    path: {
+      usage: "Path to file to put in body",
+      shortcut: "p"
+    },
+    data: {
+      usage: "Data string for body of request",
+      shortcut: "d"
+    },
+    method: {
+      usage: "HTTP method (Default is GET)",
+      shortcut: "m"
+    },
   }
 }

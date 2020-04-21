@@ -2,13 +2,14 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { configConstants } from "../config/constants";
 import { MockFactory } from "../test/mockFactory";
-import { InvokeService } from "./invokeService";
+import { InvokeService, InvokeMode } from "./invokeService";
 
 jest.mock("@azure/arm-appservice")
 jest.mock("@azure/arm-resources")
 
 jest.mock("./functionAppService");
 import { FunctionAppService } from "./functionAppService";
+import { ApimResource } from "../armTemplates/resources/apim";
 
 
 describe("Invoke Service ", () => {
@@ -22,10 +23,13 @@ describe("Invoke Service ", () => {
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const functionName = "hello";
   const urlPOST = `http://${app.defaultHostName}/api/${functionName}`;
-  const urlGET = `http://${app.defaultHostName}/api/${functionName}?name%3D${testData}`;
-  const localUrl = `http://localhost:${configConstants.defaults.localPort}/api/${functionName}`
+  const urlGET = `http://${app.defaultHostName}/api/${functionName}?name=${testData}`;
+  const localUrl = `http://localhost:${configConstants.defaults.localPort}/api/${functionName}`;
+  const apimUrl = `https://sls-eus2-dev-d99fe2-apim.azure-api.net/api/${functionName}`;
+
   let masterKey: string;
   let sls = MockFactory.createTestServerless();
+
   let options = {
     function: functionName,
     data: JSON.stringify({name: testData}),
@@ -44,6 +48,8 @@ describe("Invoke Service ", () => {
     axiosMock.onPost(urlPOST).reply(200, testResult);
     // Mock url for local POST
     axiosMock.onPost(localUrl).reply(200, testResult);
+    // Mock url for APIM POST
+    axiosMock.onPost(apimUrl).reply(200, testResult);
   });
 
   beforeEach(() => {
@@ -77,12 +83,25 @@ describe("Invoke Service ", () => {
 
   it("Invokes a local function", async () => {
     options.method = "POST";
-    const service = new InvokeService(sls, options, true);
+    const service = new InvokeService(sls, options, InvokeMode.LOCAL);
     const response = await service.invoke(options.method, options.function, options.data);
     expect(JSON.stringify(response.data)).toEqual(JSON.stringify(testResult));
     expect(FunctionAppService.prototype.getFunctionHttpTriggerConfig).not.toBeCalled();
     expect(FunctionAppService.prototype.get).not.toBeCalled();
     expect(FunctionAppService.prototype.getMasterKey).not.toBeCalled();
+  });
+
+  it("Invokes an APIM function", async () => {
+    options.method = "POST";
+    const getResourceNameSpy = jest.spyOn(ApimResource, "getResourceName");
+    const service = new InvokeService(sls, options, InvokeMode.APIM);
+    const response = await service.invoke(options.method, options.function, options.data);
+    expect(JSON.stringify(response.data)).toEqual(JSON.stringify(testResult));
+    expect(FunctionAppService.prototype.getFunctionHttpTriggerConfig).not.toBeCalled();
+    expect(FunctionAppService.prototype.get).not.toBeCalled();
+    // Get Master Key should still be called for APIM
+    expect(FunctionAppService.prototype.getMasterKey).toBeCalled();
+    expect(getResourceNameSpy).toBeCalled();
   });
 
   it("Does not try to invoke a non-existent function", async () => {

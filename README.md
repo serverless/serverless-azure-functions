@@ -152,6 +152,12 @@ If you have your service running locally (in another terminal), you can run:
 $ sls invoke local -f hello -p data.json
 ```
 
+If you configured your function app to [run with APIM](./docs/examples/apim.md), you can run:
+
+```bash
+$ sls invoke apim -f hello -p data.json
+```
+
 ### Roll Back Your Function App
 
 To roll back your function app to a previous deployment, simply select a timestamp of a previous deployment and use `rollback` command.

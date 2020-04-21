@@ -1,7 +1,7 @@
 import fs from "fs";
 import path, { isAbsolute } from "path";
 import Serverless from "serverless";
-import { InvokeService } from "../../services/invokeService";
+import { InvokeService, InvokeMode } from "../../services/invokeService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 import { constants } from "../../shared/constants";
 
@@ -16,46 +16,27 @@ export class AzureInvokePlugin extends AzureBasePlugin {
         lifecycleEvents: ["invoke"],
         options: {
           ...constants.deployedServiceOptions,
-          path: {
-            usage: "Path to file to put in body",
-            shortcut: "p"
-          },
-          data: {
-            usage: "Data string for body of request",
-            shortcut: "d"
-          },
-          method: {
-            usage: "HTTP method (Default is GET)",
-            shortcut: "m"
-          }
+          ...constants.invokeOptions,
         },
         commands: {
           local: {
             usage: "Invoke a local function",
             options: {
-              function: {
-                usage: "Function to call",
-                shortcut: "f",
-              },
-              path: {
-                usage: "Path to file to put in body",
-                shortcut: "p"
-              },
-              data: {
-                usage: "Data string for body of request",
-                shortcut: "d"
-              },
-              method: {
-                usage: "HTTP method (Default is GET)",
-                shortcut: "m"
-              },
+              ...constants.invokeOptions,
               port: {
                 usage: "Port through which locally running service is exposed",
                 shortcut: "t"
               }
             },
             lifecycleEvents: [ "local" ],
-          }
+          },
+          apim: {
+            usage: "Invoke a function via APIM",
+            options: {
+              ...constants.invokeOptions,
+            },
+            lifecycleEvents: [ "apim" ],
+          },
         }
       }
     }
@@ -63,18 +44,23 @@ export class AzureInvokePlugin extends AzureBasePlugin {
     this.hooks = {
       "invoke:invoke": this.invokeRemote.bind(this),
       "invoke:local:local": this.invokeLocal.bind(this),
+      "invoke:apim:apim": this.invokeApim.bind(this),
     };
   }
 
   private async invokeRemote() {
-    await this.invoke();
+    await this.invoke(InvokeMode.FUNCTION);
   }
 
   private async invokeLocal() {
-    await this.invoke(true);
+    await this.invoke(InvokeMode.LOCAL);
   }
 
-  private async invoke(local: boolean = false) {
+  private async invokeApim() {
+    await this.invoke(InvokeMode.APIM);
+  }
+
+  private async invoke(mode: InvokeMode) {
     const functionName = this.options["function"];
     const method = this.options["method"] || "GET";
     if (!functionName) {
@@ -82,7 +68,7 @@ export class AzureInvokePlugin extends AzureBasePlugin {
       return;
     }
 
-    const invokeService = new InvokeService(this.serverless, this.options, local);
+    const invokeService = new InvokeService(this.serverless, this.options, mode);
     const response = await invokeService.invoke(method, functionName, this.getData());
     if (response) {
       this.log(JSON.stringify(response.data));
