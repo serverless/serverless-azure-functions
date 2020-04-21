@@ -71,7 +71,7 @@ describe("App Service Plan Resource", () => {
     const appServicePlanResource = new AppServicePlanResource();
     const params = appServicePlanResource.getParameters(config);
 
-    expect(Object.keys(params)).toHaveLength(8);
+    expect(Object.keys(params)).toHaveLength(9);
     expect(params.appServicePlanName.value).toEqual(AppServicePlanResource.getResourceName(config));
     expect(params.appServicePlanSkuName.value).toBeUndefined();
     expect(params.appServicePlanSkuTier.value).toBeUndefined();
@@ -79,6 +79,37 @@ describe("App Service Plan Resource", () => {
     expect(params.appServicePlanMinWorkerCount.value).toBeUndefined();
     expect(params.appServicePlanMaxWorkerCount.value).toBeUndefined();
     expect(params.appServicePlanHostingEnvironment.value).toBeUndefined();
+    expect(params.appServicePlanReserved.value).toBeUndefined();
+  });
+
+  it("generates correct default parameters with linux function app", () => {
+    const config: ServerlessAzureConfig = {
+      provider: {
+        name: "azure",
+        prefix,
+        region,
+        stage,
+        resourceGroup: resourceGroupName,
+        runtime: Runtime.NODE10,
+        os: FunctionAppOS.LINUX,
+      },
+      plugins: [],
+      functions: {},
+      service: "myapp",
+    };
+
+    const appServicePlanResource = new AppServicePlanResource();
+    const params = appServicePlanResource.getParameters(config);
+
+    expect(Object.keys(params)).toHaveLength(9);
+    expect(params.appServicePlanName.value).toEqual(AppServicePlanResource.getResourceName(config));
+    expect(params.appServicePlanSkuName.value).toBeUndefined();
+    expect(params.appServicePlanSkuTier.value).toBeUndefined();
+    expect(params.appServicePlanWorkerSizeId.value).toBeUndefined();
+    expect(params.appServicePlanMinWorkerCount.value).toBeUndefined();
+    expect(params.appServicePlanMaxWorkerCount.value).toBeUndefined();
+    expect(params.appServicePlanHostingEnvironment.value).toBeUndefined();
+    expect(params.appServicePlanReserved.value).toBe(true);
   });
 
   it("generates correct specified parameters", () => {
@@ -112,7 +143,7 @@ describe("App Service Plan Resource", () => {
     const appServicePlanResource = new AppServicePlanResource();
     const params = appServicePlanResource.getParameters(config);
 
-    expect(Object.keys(params)).toHaveLength(8);
+    expect(Object.keys(params)).toHaveLength(9);
     expect(params.appServicePlanName.value).toEqual(config.provider.appServicePlan.name);
     expect(params.appServicePlanSkuName.value).toEqual(config.provider.appServicePlan.sku.name);
     expect(params.appServicePlanSkuTier.value).toEqual(config.provider.appServicePlan.sku.tier);
@@ -120,6 +151,7 @@ describe("App Service Plan Resource", () => {
     expect(params.appServicePlanMinWorkerCount.value).toEqual(config.provider.appServicePlan.scale.minWorkerCount);
     expect(params.appServicePlanMaxWorkerCount.value).toEqual(config.provider.appServicePlan.scale.maxWorkerCount);
     expect(params.appServicePlanHostingEnvironment.value).toEqual(config.provider.appServicePlan.hostingEnvironment);
+    expect(params.appServicePlanReserved.value).toBeUndefined();
   });
 
   it("generates the expected template", () => {

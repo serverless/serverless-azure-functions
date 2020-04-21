@@ -99,6 +99,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
               "linuxFxVersion": "[parameters('linuxFxVersion')]",
             },
             "reserved": "[parameters('functionAppReserved')]",
+            "kind": "[parameters('functionAppKind')]",
             name: "[parameters('functionAppName')]",
             "clientAffinityEnabled": false,
             "hostingEnvironment": ""
