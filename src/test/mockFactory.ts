@@ -350,6 +350,27 @@ export class MockFactory {
     return [
       {
         "http": true,
+        "authLevel": "anonymous"
+      },
+      {
+        "http": true,
+        "direction": "out",
+        "name": "res"
+      }
+    ]
+  }
+
+  public static createTestFunctionMetadataWithXAzureSettings(name: string, xAzureSettings: boolean = true): ServerlessAzureFunctionConfig {
+    return {
+      "handler": `${name}.handler`,
+      "events": MockFactory.createTestFunctionEventsWithXAzureSettings(),
+    }
+  }
+
+  public static createTestFunctionEventsWithXAzureSettings(): ServerlessAzureFunctionBindingConfig[] {
+    return [
+      {
+        "http": true,
         "x-azure-settings": {
           "authLevel": "anonymous"
         }
@@ -431,16 +452,33 @@ export class MockFactory {
     return bindings;
   }
 
-  public static createTestAzureFunctionConfig(route?: string): ServerlessAzureFunctionConfig {
+  public static createTestAzureFunctionConfig(route?: string, excludeDirection?: boolean): ServerlessAzureFunctionConfig {
     return {
       events: [
         {
           http: true,
-          "x-azure-settings": MockFactory.createTestHttpBinding("in", route),
+          "x-azure-settings": MockFactory.createTestHttpBinding((excludeDirection) ? undefined : "in", route),
         },
         {
           http: true,
           "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+        }
+      ],
+      handler: "handler.js",
+    }
+  }
+
+  public static createTestAzureFunctionConfigWithoutXAzureSettings(
+    route?: string, excludeDirection?: boolean): ServerlessAzureFunctionConfig {
+    return {
+      events: [
+        {
+          http: true,
+          ...MockFactory.createTestHttpBinding((excludeDirection) ? undefined : "in", route)
+        },
+        {
+          http: true,
+          ...MockFactory.createTestHttpBinding("out"),
         }
       ],
       handler: "handler.js",
@@ -464,8 +502,8 @@ export class MockFactory {
     return MockFactory.createTestHttpBinding();
   }
 
-  public static createTestHttpBinding(direction: string = "in", route?: string) {
-    if (direction === "in") {
+  public static createTestHttpBinding(direction?: string, route?: string) {
+    if (!direction || direction === "in") {
       return {
         authLevel: "anonymous",
         type: "httpTrigger",

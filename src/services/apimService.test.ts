@@ -1,29 +1,21 @@
-import Serverless from "serverless";
-import _ from "lodash";
-import { MockFactory } from "../test/mockFactory";
-import { ApimService } from "./apimService";
-import { interpolateJson } from "../test/utils";
+import { Api, ApiManagementService, ApiOperation, ApiOperationPolicy, ApiPolicy, Backend, Property } from "@azure/arm-apimanagement";
+import { ApiContract, ApiCreateOrUpdateResponse, ApiGetResponse, ApiManagementServiceGetResponse, ApiManagementServiceResource, ApiOperationCreateOrUpdateResponse, ApiPolicyCreateOrUpdateResponse, ApiPolicyGetResponse, BackendContract, BackendCreateOrUpdateResponse, OperationContract, PolicyContract, PropertyContract, PropertyCreateOrUpdateResponse } from "@azure/arm-apimanagement/esm/models";
 import axios from "axios";
-import { Api, Backend, Property, ApiOperation, ApiOperationPolicy, ApiManagementService, ApiPolicy } from "@azure/arm-apimanagement";
-import apimGetService404 from "../test/responses/apim-get-service-404.json";
-import apimGetService200 from "../test/responses/apim-get-service-200.json";
+import _ from "lodash";
+import Serverless from "serverless";
+import { Runtime } from "../config/runtime";
+import { ApiCheckHeaderPolicy, ApiIpFilterPolicy, ApiManagementConfig } from "../models/apiManagement";
+import { constants } from "../shared/constants";
+import { MockFactory } from "../test/mockFactory";
 import apimGetApi200 from "../test/responses/apim-get-api-200.json";
 import apimGetApi404 from "../test/responses/apim-get-api-404.json";
-import { FunctionAppService } from "./functionAppService";
-import {
-  PropertyContract, BackendContract, BackendCreateOrUpdateResponse,
-  ApiCreateOrUpdateResponse, PropertyCreateOrUpdateResponse, ApiContract,
-  ApiOperationCreateOrUpdateResponse, ApiManagementServiceResource, ApiGetResponse,
-  ApiManagementServiceGetResponse,
-  OperationContract,
-  ApiPolicyCreateOrUpdateResponse,
-  PolicyContract,
-  ApiPolicyGetResponse
-} from "@azure/arm-apimanagement/esm/models";
-import { AzureNamingService } from "./namingService";
-import { ApiManagementConfig, ApiIpFilterPolicy, ApiCheckHeaderPolicy } from "../models/apiManagement";
+import apimGetService200 from "../test/responses/apim-get-service-200.json";
+import apimGetService404 from "../test/responses/apim-get-service-404.json";
+import { interpolateJson } from "../test/utils";
 import { ApimPolicyBuilder } from "./apimPolicyBuilder";
-import { Runtime } from "../config/runtime";
+import { ApimService } from "./apimService";
+import { FunctionAppService } from "./functionAppService";
+import { AzureNamingService } from "./namingService";
 
 describe("APIM Service", () => {
   let apimConfig: ApiManagementConfig;
@@ -602,8 +594,8 @@ describe("APIM Service", () => {
 
     it("uses GET as default HTTP method with inferred APIM operation", async () => {
       const functions = MockFactory.createTestSlsFunctionConfig();
-      functions.hello.events.forEach((event) => delete event["x-azure-settings"].methods);
-      functions.goodbye.events.forEach((event) => delete event["x-azure-settings"].methods);
+      functions.hello.events.forEach((event) => delete event.methods);
+      functions.goodbye.events.forEach((event) => delete event.methods);
       Object.assign(serverless.service, { functions });
 
       let apimResource: ApiManagementServiceResource = {

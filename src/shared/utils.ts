@@ -62,7 +62,13 @@ export class Utils {
       serverless.cli.log(`Building binding for function: ${functionName} event: ${bindingType}`);
 
       bindingUserSettings = {};
-      const azureSettings = events[eventsIndex][constants.xAzureSettings];
+
+      // Merges both the event and event.x-azure-settings for backwards compatibility
+      // Prefers the event and will override anything in x-azure-settings
+      const azureSettings = {
+        ...events[eventsIndex][constants.xAzureSettings],
+        ...events[eventsIndex]
+      };
       let bindingTypeIndex = bindingTypes.indexOf(bindingType);
       const bindingUserSettingsMetaData = BindingUtils.getBindingUserSettingsMetaData(azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames);
 
@@ -157,14 +163,14 @@ export class Utils {
 
   public static getIncomingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
     return functionConfig.events.find((event) => {
-      const settings = event["x-azure-settings"]
+      const settings = Utils.get(event, constants.xAzureSettings, event);
       return settings && (!settings.direction || settings.direction === "in");
     });
   }
 
-  public static getOutgoingBinding(functionConfig: ServerlessAzureFunctionConfig) {
+  public static getOutgoingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
     return functionConfig.events.find((event) => {
-      const settings = event["x-azure-settings"]
+      const settings = Utils.get(event, constants.xAzureSettings, event);
       return settings && settings.direction === "out";
     });
   }

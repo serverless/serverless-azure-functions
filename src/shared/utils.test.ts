@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { ConfigService } from "../services/configService";
 import { MockFactory } from "../test/mockFactory";
+import { constants } from "./constants";
 import { FunctionMetadata, Utils } from "./utils";
 
 describe("utils", () => {
@@ -105,22 +106,62 @@ describe("utils", () => {
     expect(Utils.getTimestampFromName("")).toEqual(null);
   });
 
-  it("should get incoming binding", () => {
-    expect(Utils.getIncomingBindingConfig(MockFactory.createTestAzureFunctionConfig())).toEqual(
-      {
-        http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("in"),
-      }
-    );
+  it("should get incoming binding with x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfig();
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      "x-azure-settings": MockFactory.createTestHttpBinding("in"),
+    });
   });
 
-  it("should get outgoing binding", () => {
-    expect(Utils.getOutgoingBinding(MockFactory.createTestAzureFunctionConfig())).toEqual(
-      {
-        http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("out"),
-      }
-    );
+  it("should get outgoing binding with x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfig();
+    const actual = Utils.getOutgoingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+    });
+  });
+
+  it("should get incoming binding with x-azure-settings if no direction is specified", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfig(undefined, true);
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    const expected = {
+      http: true,
+      "x-azure-settings": MockFactory.createTestHttpBinding("in"),
+    }
+    delete expected[constants.xAzureSettings].direction;
+    expect(actual).toEqual(expected);
+  });
+
+  it("should get incoming binding without x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfigWithoutXAzureSettings();
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      ...MockFactory.createTestHttpBinding("in"),
+    });
+  });  
+  
+  it("should get outgoing binding without x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfigWithoutXAzureSettings();
+    const actual = Utils.getOutgoingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      ...MockFactory.createTestHttpBinding("out"),
+    });
+  });
+
+  it("should get incoming binding without x-azure-settings if no direction is specified", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfigWithoutXAzureSettings(undefined, true);
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    const expected = {
+      http: true,
+      ...MockFactory.createTestHttpBinding("in"),
+    }
+    delete expected.direction;
+    expect(actual).toEqual(expected);
   });
 
   describe("runWithRetry", () => {

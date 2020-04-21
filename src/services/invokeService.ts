@@ -68,7 +68,7 @@ export class InvokeService extends BaseService {
 
   private getConfiguredFunctionRoute(functionName: string) {
     try {
-      const { route } = this.config.functions[functionName].events[0]["x-azure-settings"];
+      const { route } = this.config.functions[functionName].events[0];
       return route || functionName
     } catch {
       return functionName;

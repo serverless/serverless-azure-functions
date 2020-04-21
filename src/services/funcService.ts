@@ -112,16 +112,12 @@ module.exports.handler = async function (context, req) {
     return [
       {
         http: true,
-        "x-azure-settings": {
-          authLevel: "anonymous"
-        }
+        authLevel: "anonymous"
       },
       {
         http: true,
-        "x-azure-settings": {
-          direction: "out",
-          name: "res"
-        }
+        direction: "out",
+        name: "res"
       },
     ]
   }

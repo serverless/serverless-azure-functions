@@ -4,6 +4,7 @@ import rimraf from "rimraf";
 import Serverless from "serverless";
 import { FunctionMetadata, Utils } from "../shared/utils";
 import { BaseService } from "./baseService";
+import { constants } from "../shared/constants";
 
 /**
  * Adds service packing support
@@ -143,7 +144,9 @@ export class PackageService extends BaseService {
     functionJSON.scriptFile = handlerPath;
 
     const functionObject = this.configService.getFunctionConfig()[functionName];
-    const bindingAzureSettings = Utils.getIncomingBindingConfig(functionObject)["x-azure-settings"];
+    const incomingBinding = Utils.getIncomingBindingConfig(functionObject);
+    
+    const bindingAzureSettings = Utils.get(incomingBinding, constants.xAzureSettings, incomingBinding);
 
     if (bindingAzureSettings.route) {
       // Find incoming binding within functionJSON and set the route

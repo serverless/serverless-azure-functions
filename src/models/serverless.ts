@@ -156,7 +156,13 @@ export interface ServerlessAzureFunctionConfig {
 
 export interface ServerlessAzureFunctionBindingConfig {
   http?: boolean;
-  "x-azure-settings": ServerlessExtraAzureSettingsConfig;
+  direction?: string;
+  route?: string;
+  name?: string;
+  authLevel?: string;
+  methods?: string[];
+  /** Maintained for backwards compatibility */
+  "x-azure-settings"?: ServerlessExtraAzureSettingsConfig;
 }
 
 export interface ServerlessExtraAzureSettingsConfig {
