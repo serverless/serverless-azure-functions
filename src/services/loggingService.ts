@@ -25,18 +25,15 @@ export class LoggingService {
     
     // Check for 'verbose' or 'v'. Would use the sls shortcuts at the plugin level, 
     // but this will be utilized across the plugins, so we check for both
-    const logLevelStr = Utils.get(
-      options,
-      "verbose",
-      Utils.get(options, "v", "info")).toLowerCase();
-    
-    this.logLevel = Utils.get({
+    const logLevelStr = Utils.get(options, "verbose");
+
+    this.logLevel = (logLevelStr !== undefined) ? Utils.get({
       "error": LogLevel.ERROR,
       "warn": LogLevel.WARN,
       "info": LogLevel.INFO,
       "debug": LogLevel.DEBUG,
       "": LogLevel.DEBUG
-    }, logLevelStr, LogLevel.INFO);
+    }, logLevelStr.toLowerCase()) : LogLevel.INFO;
   }
 
   /**

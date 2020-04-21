@@ -51,5 +51,5 @@ describe("Logging Service", () => {
     loggingService = createService(sls, {"verbose": ""});
     loggingService.debug("Debug");
     expect(sls.cli.log).toBeCalledWith("[DEBUG] Debug");
-  })
+  });
 });
