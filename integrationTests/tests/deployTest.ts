@@ -11,9 +11,9 @@ export const deployTest: CommandValidation[] = [
         "Logging into Azure",
         "Deployed serverless functions:",
         "sls-weur-dev-${serviceName}-rg",
-        "Resource Group: sls-weur-dev-${serviceName}-rg",
-        "Deploying zip file to function app: sls-weur-dev-${serviceName}",
-        "-> hello: [GET] sls-weur-dev-${serviceName}.azurewebsites.net/api/hello"
+        "Resource Group: tmp-weur-qa-${serviceName}-rg",
+        "Deploying zip file to function app: tmp-weur-qa-${serviceName}",
+        "-> hello: [GET] tmp-weur-qa-${serviceName}.azurewebsites.net/api/hello"
       ],
     }
   },
@@ -21,8 +21,32 @@ export const deployTest: CommandValidation[] = [
     command: `sls invoke -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
     stdout: {
       shouldContain: [
-        "Hello Azure ${runtime}"
+        "Hello Azure ${runtime}",
+        "Environment variable: foo"
+      ]
+    },
+    stderr: {
+      shouldBeExactly: ""
+    }
+  },
+  {
+    command: `sls invoke apim -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
+    stdout: {
+      shouldContain: [
+        "Hello Azure ${runtime}",
+        "Environment variable: foo"
+      ]
+    },
+    stderr: {
+      shouldBeExactly: ""
+    }
+  },
+  {
+    command: "sls remove --force",
+    stdout: {
+      shouldContain: [
+        "Service successfully removed"
       ]
     }
-  }
+  },
 ]

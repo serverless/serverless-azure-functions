@@ -3,8 +3,9 @@ service: py36
 provider:
   name: azure
   runtime: python3.6
+  prefix: tmp
+  stage: qa
   region: West Europe
-  prefix: sls
   apim: true
 
 plugins:

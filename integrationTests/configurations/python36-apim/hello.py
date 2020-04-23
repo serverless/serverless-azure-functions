@@ -18,7 +18,8 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
             name = req_body.get('name')
 
     if name:
-        return func.HttpResponse(f"Hello {name} {os.environ['FUNCTIONS_WORKER_RUNTIME']} {sys.version}!")
+        return func.HttpResponse(f"Hello {name} {os.environ['FUNCTIONS_WORKER_RUNTIME']} " +
+            f"{sys.version} Environment variable: {os.environ['VARIABLE_FOO']}")
     else:
         return func.HttpResponse(
              "Please pass a name on the query string or in the request body",

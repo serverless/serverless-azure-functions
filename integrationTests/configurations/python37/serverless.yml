@@ -3,8 +3,10 @@ service: py37
 provider:
   name: azure
   runtime: python3.7
+  prefix: tmp
+  stage: qa
   region: West Europe
-  prefix: sls
+  apim: true
 
 plugins:
   - serverless-azure-functions

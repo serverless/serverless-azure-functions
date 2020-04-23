@@ -3,8 +3,10 @@ service: py38
 provider:
   name: azure
   runtime: python3.8
+  prefix: tmp
+  stage: qa
   region: West Europe
-  prefix: sls
+  apim: true
 
 plugins:
   - serverless-azure-functions
