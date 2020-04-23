@@ -31,14 +31,19 @@ export const defaultParameters: ConfigurationParameters = {
     configName: "node12-linux-external",
     runtime: "node 12.",
   },
+  "node12-linux-premium": {
+    serviceName: "nd12-lin-prem",
+    configName: "node12-linux-premium",
+    runtime: "node 12.",
+  },
   "node12-windows": {
     serviceName: "nd12-win",
     configName: "node12-windows",
     runtime: "node 12.",
   },
-  "node12-windows-apim": {
-    serviceName: "nd12-win-apim",
-    configName: "node12-windows-apim",
+  "node12-windows-premium": {
+    serviceName: "nd12-win-prem",
+    configName: "node12-windows-premium",
     runtime: "node 12.",
   },
   "node12-windows-webpack": {
@@ -51,9 +56,9 @@ export const defaultParameters: ConfigurationParameters = {
     configName: "python36",
     runtime: "python 3.6",
   },
-  "python36-apim": {
-    serviceName: "py36-apim",
-    configName: "python36-apim",
+  "python36-premium": {
+    serviceName: "py36-prem",
+    configName: "python36-premium",
     runtime: "python 3.6",
   },
   "python37": {

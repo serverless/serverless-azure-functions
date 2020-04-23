@@ -1,4 +1,4 @@
-service: py36-apim
+service: py36-prem
 
 provider:
   name: azure

@@ -1,4 +1,4 @@
-service: nd12-win-apim
+service: nd12-lin-prem
 
 provider:
   name: azure
@@ -6,8 +6,9 @@ provider:
   stage: qa
   region: West Europe
   runtime: nodejs12
-  os: windows
+  os: linux
   apim: true
+  type: premium
 
   environment:
     VARIABLE_FOO: 'foo'

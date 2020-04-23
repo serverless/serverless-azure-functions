@@ -23,4 +23,4 @@ run([
     parameters: defaultParameters,
     directories: configurations,
   }
-], Summarizers.brief);
+]);
