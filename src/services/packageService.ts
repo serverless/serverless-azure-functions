@@ -2,9 +2,9 @@ import fs from "fs";
 import path from "path";
 import rimraf from "rimraf";
 import Serverless from "serverless";
+import { constants } from "../shared/constants";
 import { FunctionMetadata, Utils } from "../shared/utils";
 import { BaseService } from "./baseService";
-import { constants } from "../shared/constants";
 
 /**
  * Adds service packing support
@@ -81,6 +81,12 @@ export class PackageService extends BaseService {
       ".funcignore"
     ]
 
+    const rootFoldersToRemove = [
+      constants.tmpBuildDir,
+      "bin",
+      "obj",
+    ]
+
     this.serverless.service.getAllFunctions().map((functionName) => {
       // Delete function.json if exists in function folder
 
@@ -115,7 +121,14 @@ export class PackageService extends BaseService {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-    }    
+    }
+    
+    for (const dir of rootFoldersToRemove) {
+      const dirPath = path.join(this.serverless.config.servicePath, dir);
+      if (fs.existsSync(dirPath)) {
+        rimraf.sync(dirPath);
+      }
+    }
 
     return Promise.resolve();
   }

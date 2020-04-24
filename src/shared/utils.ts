@@ -22,6 +22,7 @@ export interface ServerlessSpawnOptions {
   commandArgs: string[];
   silent?: boolean;
   stdio?: StdioOptions;
+  commandName?: string;
   onSigInt?: () => void;
 }
 
@@ -228,13 +229,12 @@ export class Utils {
   }
   
   /*
-   * Spawn a Node child process with predefined environment variables
+   * Spawn a Node child process from executable within node_modules/.bin
    * @param command CLI Command - NO ARGS
    * @param spawnArgs Array of arguments for CLI command
    */
-  public static spawn(options: ServerlessSpawnOptions): Promise<void> {
-    const { serverless, commandArgs, onSigInt } = options;
-    const { command } = options;
+  public static spawnLocal(options: ServerlessSpawnOptions): Promise<void> {
+    const { serverless, command } = options;
     // Run command from local node_modules
     let localCommand = join(
       serverless.config.servicePath,
@@ -242,6 +242,18 @@ export class Utils {
       ".bin",
       command
     );
+    return this.spawn({
+      ...options,
+      command: localCommand,
+      commandName: command
+    });
+  }
+
+  // public static spawn()
+
+  public static spawn(options: ServerlessSpawnOptions): Promise<void> {
+    const { command, serverless, commandArgs, onSigInt, commandName } = options;
+    // Run command from local node_modules
 
     const env = {
       // Inherit environment from current process, most importantly, the PATH
@@ -250,12 +262,12 @@ export class Utils {
       ...serverless.service.provider["environment"],
     }
     if (!options.silent) {
-      serverless.cli.log(`Spawning process '${command} ${commandArgs.join(" ")}'`);
+      serverless.cli.log(`Spawning process '${commandName || command} ${commandArgs.join(" ")}'`);
     }
     return new Promise(async (resolve, reject) => {
       const spawnOptions: SpawnOptions = { env, stdio: options.stdio || "inherit" };
 
-      const childProcess = spawn(localCommand, commandArgs, spawnOptions);
+      const childProcess = spawn(command, commandArgs, spawnOptions);
 
       if (onSigInt) {
         process.on("SIGINT", onSigInt);

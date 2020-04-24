@@ -2,8 +2,8 @@ import fs from "fs";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
-import { CoreToolsService } from "./coreToolsService";
 import { getRuntimeLanguage } from "../config/runtime";
+import { Utils } from "../shared/utils";
 
 export class OfflineService extends BaseService {
 
@@ -49,20 +49,26 @@ export class OfflineService extends BaseService {
    * Spawn `func host start` from core func tools
    */
   public async start() {
-    const args: string = this.getOption("spawnargs");
-    await CoreToolsService.start(this.serverless, async () => {
-      try {
-        if (this.getOption("nocleanup")) {
-          this.log("Skipping offline file cleanup...");
-        } else {
-          await this.cleanup();
+    const additionalArgs: string = this.getOption("spawnargs");
+    const { command, args } = this.configService.getCommand("start");
+    await Utils.spawnLocal({
+      serverless: this.serverless,
+      command: command,
+      commandArgs: (additionalArgs) ? args.concat(additionalArgs.split(" ")) : args,
+      onSigInt: async () => {
+        try {
+          if (this.getOption("nocleanup")) {
+            this.log("Skipping offline file cleanup...");
+          } else {
+            await this.cleanup();
+          }
+        } catch {
+          // Swallowing `scandir` error that gets thrown after
+          // trying to remove the same directory twice
+        } finally {
+          process.exit();
         }
-      } catch {
-        // Swallowing `scandir` error that gets thrown after
-        // trying to remove the same directory twice
-      } finally {
-        process.exit();
       }
-    }, (args) ? args.split(" ") : undefined);
+    });
   }
 }

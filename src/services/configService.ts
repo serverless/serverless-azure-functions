@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
-import { configConstants } from "../config/constants";
-import { FunctionAppOS, isNodeRuntime, isPythonRuntime, supportedRuntimes, supportedRuntimeSet } from "../config/runtime";
+import { CliCommand, CliCommandFactory } from "../config/cliCommandFactory";
+import { BuildMode, FunctionAppOS, getRuntimeLanguage, isNodeRuntime, isPythonRuntime, Runtime, RuntimeLanguage, supportedRuntimes, supportedRuntimeSet } from "../config/runtime";
 import { DeploymentConfig, ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Utils } from "../shared/utils";
@@ -15,8 +15,13 @@ export class ConfigService {
   /** Configuration for service */
   private config: ServerlessAzureConfig;
 
+  /** CLI Command Factory */
+  private cliCommandFactory: CliCommandFactory;
+
   public constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.config = this.initializeConfig(serverless.service);
+    this.cliCommandFactory = new CliCommandFactory();
+    this.registerCliCommands();
   }
 
   /**
@@ -84,7 +89,7 @@ export class ConfigService {
    */
   public getArtifactName(deploymentName?: string): string {
     deploymentName = deploymentName || this.getDeploymentName();
-    const { deployment, artifact } = configConstants.naming.suffix;
+    const { deployment, artifact } = constants.naming.suffix;
     return `${deploymentName
       .replace(`rg-${deployment}`, artifact)
       .replace(deployment, artifact)}.zip`
@@ -139,12 +144,20 @@ export class ConfigService {
     return this.getOs() === FunctionAppOS.LINUX
   }
 
+  public getCommand(key: string): CliCommand {
+    return this.cliCommandFactory.getCommand(key);
+  }
+
+  public getCompilerCommand(runtime: Runtime, mode: BuildMode): CliCommand {
+    return this.cliCommandFactory.getCommand(`${runtime}-${mode}`);
+  }
+
   /**
    * Set any default values required for service
    * @param config Current Serverless configuration
    */
   private setDefaultValues(config: ServerlessAzureConfig) {
-    const { awsRegion, region, stage, prefix, os } = configConstants.defaults;
+    const { awsRegion, region, stage, prefix, os } = constants.defaults;
     const providerRegion = config.provider.region;
 
     if (!providerRegion || providerRegion === awsRegion) {
@@ -228,13 +241,18 @@ export class ConfigService {
     }
 
     if (isPythonRuntime(runtime) && os !== FunctionAppOS.LINUX) {
-      this.serverless.cli.log("Python functions can ONLY run on Linux Function Apps. Switching now");
+      this.serverless.cli.log("Python functions can ONLY run on Linux Function Apps.");
       config.provider.os = FunctionAppOS.LINUX;
     }
 
     config.provider.deployment = {
-      ...configConstants.deploymentConfig,
+      ...constants.deploymentConfig,
       ...deployment,
+    }
+
+    if (getRuntimeLanguage(runtime) === RuntimeLanguage.DOTNET && os === FunctionAppOS.LINUX) {
+      this.serverless.cli.log("Linux .NET Function apps must run from external package")
+      config.provider.deployment.external = true
     }
 
     this.serverless.variables[constants.variableKeys.providerConfig] = config.provider;
@@ -271,5 +289,67 @@ export class ConfigService {
    */
   protected getVariable(key: string, defaultValue?: any) {
     return Utils.get(this.serverless.variables, key, defaultValue);
+  }
+
+  private registerCliCommands() {
+    // for (const key of Object.keys(cliCommands)) {
+    //   this.cliCommandFactory.registerCommand(key, this.cliCommandFactory.registerCommand(key]);
+    // }
+    this.cliCommandFactory.registerCommand(constants.cliCommandKeys.start, {
+      command: "func",
+      args: [ "host", "start" ],
+    });
+
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET22}-${BuildMode.RELEASE}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "release",
+        "--framework",
+        "netcoreapp2.2",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET22}-${BuildMode.DEBUG}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "debug",
+        "--framework",
+        "netcoreapp2.2",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET31}-${BuildMode.RELEASE}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "release",
+        "--framework",
+        "netcoreapp3.1",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET31}-${BuildMode.DEBUG}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "debug",
+        "--framework",
+        "netcoreapp3.1",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
   }
 }

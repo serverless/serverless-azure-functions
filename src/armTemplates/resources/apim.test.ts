@@ -1,7 +1,7 @@
 import { ApimResource } from "./apim";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
-import { configConstants } from "../../config/constants";
+import { constants } from "../../shared/constants";
 import { Runtime } from "../../config/runtime";
 
 describe("APIM Resource", () => {
@@ -13,7 +13,7 @@ describe("APIM Resource", () => {
   it("generates the correct resource name", () => {
     const resourceGroupHash = md5(resourceGroupName).substr(
       0,
-      configConstants.resourceGroupHashLength
+      constants.resourceGroupHashLength
     );
 
     const config: ServerlessAzureConfig = {

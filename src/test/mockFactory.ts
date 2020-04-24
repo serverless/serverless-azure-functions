@@ -11,13 +11,13 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { configConstants } from "../config/constants";
 import { Runtime } from "../config/runtime";
 import { ApiCorsPolicy, ApiJwtValidatePolicy, ApiManagementConfig } from "../models/apiManagement";
 import { ArmDeployment, ArmParameters, ArmParamType, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
 import { ServerlessAzureConfig, ServerlessAzureFunctionBindingConfig, ServerlessAzureFunctionConfig, ServerlessAzureProvider, ServerlessCliCommand } from "../models/serverless";
+import { constants } from "../shared/constants";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -186,7 +186,7 @@ export class MockFactory {
     const result = [];
     const originalTimestamp = +MockFactory.createTestTimestamp();
     for (let i = 0; i < count; i++) {
-      const name = (includeTimestamp) ? `${configConstants.naming.suffix.deployment}${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
+      const name = (includeTimestamp) ? `${constants.naming.suffix.deployment}${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
       result.push(
         MockFactory.createTestDeployment(name, i)
       )
@@ -203,7 +203,7 @@ export class MockFactory {
 
   public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
     return {
-      name: name || `${configConstants.naming.suffix.deployment}1-t${MockFactory.createTestTimestamp()}`,
+      name: name || `${constants.naming.suffix.deployment}1-t${MockFactory.createTestTimestamp()}`,
       properties: {
         timestamp: new Date(2019, 1, 1, 0, 0, second),
         parameters: MockFactory.createTestParameters(),

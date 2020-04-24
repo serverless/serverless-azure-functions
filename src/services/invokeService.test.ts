@@ -1,6 +1,6 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import { configConstants } from "../config/constants";
+import { constants } from "../shared/constants";
 import { MockFactory } from "../test/mockFactory";
 import { InvokeService, InvokeMode } from "./invokeService";
 
@@ -24,7 +24,7 @@ describe("Invoke Service ", () => {
   const functionName = "hello";
   const urlPOST = `http://${app.defaultHostName}/api/${functionName}`;
   const urlGET = `http://${app.defaultHostName}/api/${functionName}?name=${testData}`;
-  const localUrl = `http://localhost:${configConstants.defaults.localPort}/api/${functionName}`;
+  const localUrl = `http://localhost:${constants.defaults.localPort}/api/${functionName}`;
   const apimUrl = `https://sls-eus2-dev-d99fe2-apim.azure-api.net/api/${functionName}`;
 
   let masterKey: string;

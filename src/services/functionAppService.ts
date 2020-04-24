@@ -11,7 +11,7 @@ import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
-import { configConstants } from "../config/constants";
+import { constants } from "../shared/constants";
 import { FunctionAppOS } from "../config/runtime";
 
 export class FunctionAppService extends BaseService {
@@ -163,7 +163,7 @@ export class FunctionAppService extends BaseService {
 
       const response = await this.updateFunctionAppSetting(
         functionApp,
-        configConstants.runFromPackageSetting,
+        constants.runFromPackageSetting,
         sasUrl
       );
 

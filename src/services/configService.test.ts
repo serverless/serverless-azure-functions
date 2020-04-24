@@ -1,5 +1,5 @@
 import Serverless from "serverless";
-import { configConstants } from "../config/constants";
+import { constants } from "../shared/constants";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { ConfigService } from "./configService";
@@ -30,7 +30,7 @@ describe("Config Service", () => {
   describe("Configurable Variables", () => {
     it("returns default values if not specified", () => {
       const service = new ConfigService(serverless, {} as any);
-      const { prefix, region, stage } = configConstants.defaults;
+      const { prefix, region, stage } = constants.defaults;
       expect(service.getPrefix()).toEqual(prefix);
       expect(service.getStage()).toEqual(stage);
       expect(service.getRegion()).toEqual(region);

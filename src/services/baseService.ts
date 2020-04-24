@@ -4,6 +4,7 @@ import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
+import { CliCommandFactory } from "../config/cliCommandFactory";
 import { ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
@@ -23,6 +24,7 @@ export abstract class BaseService {
   protected config: ServerlessAzureConfig;
   protected configService: ConfigService;
   protected loggingService: LoggingService;
+  protected cliCommandFactory: CliCommandFactory
 
   protected constructor(
     protected serverless: Serverless,
@@ -32,6 +34,7 @@ export abstract class BaseService {
     Guard.null(serverless);
     this.configService = new ConfigService(serverless, options);
     this.loggingService = new LoggingService(serverless, options);
+    this.cliCommandFactory = new CliCommandFactory();
 
     this.config = this.configService.getConfig();
 

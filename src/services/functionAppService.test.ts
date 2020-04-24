@@ -4,7 +4,7 @@ import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
 import { FunctionAppResource } from "../armTemplates/resources/functionApp";
-import { configConstants } from "../config/constants";
+import { constants } from "../shared/constants";
 import { ArmDeployment, ArmTemplateType } from "../models/armTemplates";
 import { ServerlessAzureConfig } from "../models/serverless";
 import { Utils } from "../shared/utils";
@@ -302,7 +302,7 @@ describe("Function App Service", () => {
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
     expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
       defaultArtifact,
-      configConstants.deploymentConfig.container,
+      constants.deploymentConfig.container,
       `${expectedArtifactName}.zip`,
     )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
@@ -315,7 +315,7 @@ describe("Function App Service", () => {
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
     expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
       slsService["artifact"],
-      configConstants.deploymentConfig.container,
+      constants.deploymentConfig.container,
       `${expectedArtifactName}.zip`,
     )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];

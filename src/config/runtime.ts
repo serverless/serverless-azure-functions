@@ -5,6 +5,8 @@ export enum Runtime {
   PYTHON36 = "python3.6",
   PYTHON37 = "python3.7",
   PYTHON38 = "python3.8",
+  DOTNET22 = "dotnet2.2",
+  DOTNET31 = "dotnet3.1",
 }
 
 export const supportedRuntimes = [
@@ -13,26 +15,44 @@ export const supportedRuntimes = [
   Runtime.PYTHON36,
   Runtime.PYTHON37,
   Runtime.PYTHON38,
+  Runtime.DOTNET22,
+  Runtime.DOTNET31
 ]
 
 export const supportedRuntimeSet = new Set(supportedRuntimes);
 
-export enum RuntimeLanguages {
+export enum RuntimeLanguage {
   NODE = "nodejs",
   PYTHON = "python",
+  DOTNET = "dotnet",
 }
 
 export const supportedLanguages = [
-  RuntimeLanguages.NODE,
-  RuntimeLanguages.PYTHON,
+  RuntimeLanguage.NODE,
+  RuntimeLanguage.PYTHON,
+  RuntimeLanguage.DOTNET,
 ]
 
+export enum BuildMode {
+  RELEASE = "release",
+  DEBUG = "debug",
+}
+
+export const compiledRuntimes = new Set([
+  Runtime.DOTNET22,
+  Runtime.DOTNET31
+]);
+
+export function isCompiledRuntime(runtime: Runtime): boolean {
+  return compiledRuntimes.has(runtime);
+}
+
 export function isNodeRuntime(runtime: Runtime): boolean {
-  return getRuntimeLanguage(runtime) === RuntimeLanguages.NODE;
+  return getRuntimeLanguage(runtime) === RuntimeLanguage.NODE;
 }
 
 export function isPythonRuntime(runtime: Runtime): boolean {
-  return getRuntimeLanguage(runtime) === RuntimeLanguages.PYTHON;
+  return getRuntimeLanguage(runtime) === RuntimeLanguage.PYTHON;
 }
 
 export function getRuntimeVersion(runtime: Runtime): string {
@@ -64,4 +84,5 @@ export const dockerImages = {
   "python3.6": "PYTHON|3.6",
   "python3.7": "PYTHON|3.7",
   "python3.8": "PYTHON|3.8",
+  "dotnet3.1": "DOTNET|3.1",
 }

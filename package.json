@@ -66,7 +66,8 @@
     "request": "^2.81.0",
     "rimraf": "^2.7.1",
     "semver": "^6.3.0",
-    "xml2js": "^0.4.22"
+    "xml2js": "^0.4.22",
+    "zip-folder": "^1.0.0"
   },
   "devDependencies": {
     "@azure/ms-rest-js": "^1.8.7",
@@ -85,7 +86,7 @@
     "axios-mock-adapter": "^1.16.0",
     "babel-jest": "^24.8.0",
     "babel-preset-react-app": "^9.0.0",
-    "clvr": "^0.3.6",
+    "clvr": "^0.3.8",
     "conventional-changelog-cli": "^2.0.23",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
