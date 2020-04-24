@@ -12,6 +12,8 @@ interface AppServicePlanParams extends DefaultArmParams {
   appServicePlanMinWorkerCount: ArmParameter;
   appServicePlanMaxWorkerCount: ArmParameter;
   appServicePlanHostingEnvironment: ArmParameter;
+  /** Needs to be true for Linux App Service Plans */
+  appServicePlanReserved: ArmParameter;
 }
 
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
@@ -61,7 +63,11 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       appServicePlanHostingEnvironment: {
         defaultValue: "",
         type: ArmParamType.String
-      }
+      },
+      appServicePlanReserved: {
+        defaultValue: false,
+        type: ArmParamType.Bool,
+      },
     };
 
     return {
@@ -81,7 +87,8 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
             "workerSizeId": "[parameters('appServicePlanWorkerSizeId')]",
             "numberOfWorkers": "[parameters('appServicePlanMinWorkerCount')]",
             "maximumElasticWorkerCount": "[parameters('appServicePlanMaxWorkerCount')]",
-            "hostingEnvironment": "[parameters('appServicePlanHostingEnvironment')]"
+            "hostingEnvironment": "[parameters('appServicePlanHostingEnvironment')]",
+            "reserved": "[parameters('appServicePlanReserved')]",
           },
           "sku": {
             "name": "[parameters('appServicePlanSkuName')]",
@@ -100,6 +107,7 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
     };
 
     const { os } = config.provider;
+    const linux = os === FunctionAppOS.LINUX;
 
     const params: AppServicePlanParams = {
       appServicePlanName: {
@@ -111,7 +119,7 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
        * before deployment
        */
       kind: {
-        value: (os === FunctionAppOS.LINUX) ? "Linux" : undefined,
+        value: (linux) ? "Linux" : undefined,
       },
       appServicePlanSkuName: {
         value: resourceConfig.sku.name,
@@ -130,6 +138,9 @@ export class AppServicePlanResource implements ArmResourceTemplateGenerator {
       },
       appServicePlanHostingEnvironment: {
         value: resourceConfig.hostingEnvironment
+      },
+      appServicePlanReserved: {
+        value: (linux) ? true : undefined
       }
     }
 
