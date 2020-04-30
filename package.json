@@ -14,6 +14,9 @@
     "test": "jest",
     "test:ci": "npm run test -- --ci",
     "test:coverage": "npm run test -- --coverage",
+    "pretest:int": "npm run clean:int",
+    "test:int": "cd integrationTests && ts-node run.ts",
+    "clean:int": "rm -rf integrationTests/configurations/**/.serverless integrationTests/configurations/**/node_modules integrationTests/configurations/**/local.settings.json",
     "compile": "tsc",
     "prebuild": "shx rm -rf lib/ && npm run test",
     "build": "npm run compile",
@@ -81,6 +84,7 @@
     "axios-mock-adapter": "^1.16.0",
     "babel-jest": "^24.8.0",
     "babel-preset-react-app": "^9.0.0",
+    "clvr": "^0.3.6",
     "conventional-changelog-cli": "^2.0.23",
     "eslint": "^5.16.0",
     "jest": "^24.8.0",
@@ -90,6 +94,7 @@
     "mock-spawn": "^0.2.6",
     "serverless": "^1.44.1",
     "shx": "^0.3.2",
+    "ts-node": "^8.8.2",
     "typescript": "^3.4.5"
   },
   "optionalDependencies": {

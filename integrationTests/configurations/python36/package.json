@@ -1,0 +1,15 @@
+{
+  "name": "az-func-python",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "azure-functions-core-tools": "^2.7.1585",
+    "serverless-azure-functions": "^1.0.2-23"
+  }
+}
