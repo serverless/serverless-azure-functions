@@ -11,13 +11,13 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { ApiCorsPolicy, ApiManagementConfig, ApiJwtValidatePolicy } from "../models/apiManagement";
-import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
-import { ServicePrincipalEnvVariables } from "../models/azureProvider";
-import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig } from "../models/serverless";
 import { configConstants } from "../config/constants";
 import { Runtime } from "../config/runtime";
+import { ApiCorsPolicy, ApiJwtValidatePolicy, ApiManagementConfig } from "../models/apiManagement";
+import { ArmDeployment, ArmParameters, ArmParamType, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
+import { ServicePrincipalEnvVariables } from "../models/azureProvider";
+import { Logger } from "../models/generic";
+import { ServerlessAzureConfig, ServerlessAzureFunctionBindingConfig, ServerlessAzureFunctionConfig, ServerlessAzureProvider, ServerlessCliCommand } from "../models/serverless";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -360,7 +360,7 @@ export class MockFactory {
     ]
   }
 
-  public static createTestFunctionMetadataWithXAzureSettings(name: string, xAzureSettings: boolean = true): ServerlessAzureFunctionConfig {
+  public static createTestFunctionMetadataWithXAzureSettings(name: string): ServerlessAzureFunctionConfig {
     return {
       "handler": `${name}.handler`,
       "events": MockFactory.createTestFunctionEventsWithXAzureSettings(),
