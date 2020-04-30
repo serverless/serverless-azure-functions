@@ -19,6 +19,10 @@ interface FunctionAppParams extends DefaultArmParams {
    */
   functionAppKind: ArmParameter;
   /**
+   * Needs to be `true` for Linux function apps
+   */
+  functionAppReserved: ArmParameter;
+  /**
    * Docker image for Linux function app
    */
   linuxFxVersion: ArmParameter;
@@ -94,6 +98,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
               appSettings: this.getFunctionAppSettings(config), 
               "linuxFxVersion": "[parameters('linuxFxVersion')]",
             },
+            "reserved": "[parameters('functionAppReserved')]",
             name: "[parameters('functionAppName')]",
             "clientAffinityEnabled": false,
             "hostingEnvironment": ""
@@ -126,6 +131,9 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       },
       functionAppKind: {
         value: (isLinuxRuntime) ? "functionapp,linux" : undefined,
+      },
+      functionAppReserved: {
+        value: (isLinuxRuntime) ? true : undefined,
       },
       linuxFxVersion: {
         value: (isLinuxRuntime) ? this.getLinuxFxVersion(config) : undefined,
@@ -161,6 +169,10 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       functionAppKind: {
         defaultValue: "functionapp",
         type: ArmParamType.String,
+      },
+      functionAppReserved: {
+        defaultValue: false,
+        type: ArmParamType.Bool
       },
       linuxFxVersion: {
         defaultValue: "",

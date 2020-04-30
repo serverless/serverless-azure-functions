@@ -239,10 +239,12 @@ describe("Function App Resource", () => {
       function assertLinuxParams(parameters: ArmParameters) {
         const { 
           functionAppKind,
+          functionAppReserved,
           functionAppEnableRemoteBuild,
         } = parameters;
 
         expect(functionAppKind.value).toEqual("functionapp,linux");
+        expect(functionAppReserved.value).toBe(true);
         expect(functionAppEnableRemoteBuild.value).toBe(true);
       }
     });
@@ -283,10 +285,12 @@ describe("Function App Resource", () => {
         const {
           linuxFxVersion,
           functionAppKind,
+          functionAppReserved,
         } = parameters;
 
         expect(functionAppKind.value).toBeUndefined();
         expect(linuxFxVersion.value).toBeUndefined();
+        expect(functionAppReserved.value).toBeUndefined();
       }
     });
   });
