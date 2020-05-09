@@ -69,6 +69,21 @@ then user try to deploy
 1. always using the right resource group
 1. restrictive for user who have already defined their resources
 
+#### Specifying storage acount in serverless.yml
+
+1. can specify storage account for your Azure Functions
+1. specified storageAccount need to be unique
+1. default storageAccount is `sls<region><stage><6-char resource group hash>`
+
+```yaml
+provider:
+  stage: dev
+  region: westus
+  resourceGroup: myResourceGroup
+  storageAccount:
+    name: myStorageAccountName
+```
+
 ## Deployment Methodologies
 
 #### 1. Deployment to Function App
