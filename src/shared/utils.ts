@@ -23,6 +23,7 @@ export interface ServerlessSpawnOptions {
   silent?: boolean;
   stdio?: StdioOptions;
   commandName?: string;
+  cwd?: string;
   onSigInt?: () => void;
 }
 
@@ -235,8 +236,7 @@ export class Utils {
    */
   public static spawnLocal(options: ServerlessSpawnOptions): Promise<void> {
     const { serverless, command } = options;
-    // Run command from local node_modules
-    let localCommand = join(
+    const localCommand = join(
       serverless.config.servicePath,
       "node_modules",
       ".bin",
@@ -245,15 +245,22 @@ export class Utils {
     return this.spawn({
       ...options,
       command: localCommand,
-      commandName: command
+      commandName: command,
     });
   }
 
   // public static spawn()
 
   public static spawn(options: ServerlessSpawnOptions): Promise<void> {
-    const { command, serverless, commandArgs, onSigInt, commandName } = options;
-    // Run command from local node_modules
+    const { 
+      command,
+      serverless,
+      commandArgs,
+      onSigInt,
+      commandName,
+      stdio,
+      cwd,
+    } = options;
 
     const env = {
       // Inherit environment from current process, most importantly, the PATH
@@ -265,7 +272,11 @@ export class Utils {
       serverless.cli.log(`Spawning process '${commandName || command} ${commandArgs.join(" ")}'`);
     }
     return new Promise(async (resolve, reject) => {
-      const spawnOptions: SpawnOptions = { env, stdio: options.stdio || "inherit" };
+      const spawnOptions: SpawnOptions = { 
+        env,
+        stdio: stdio || "inherit",
+        cwd: cwd
+      };
 
       const childProcess = spawn(command, commandArgs, spawnOptions);
 
