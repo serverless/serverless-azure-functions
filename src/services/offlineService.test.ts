@@ -1,11 +1,15 @@
+import fs from "fs";
 import mockFs from "mock-fs";
 import mockSpawn from "mock-spawn";
 import path from "path";
 import Serverless from "serverless";
+import { BuildMode, Runtime } from "../config/runtime";
+import { ServerlessAzureConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { OfflineService } from "./offlineService";
 
-import fs from "fs";
+jest.mock("./compilerService");
+import { CompilerService } from "./compilerService";
 
 describe("Offline Service", () => {
   let mySpawn;
@@ -54,6 +58,14 @@ describe("Offline Service", () => {
     expect(calls.find((c) => c[0] === "local.settings.json")).toBeTruthy();
 
     writeFileSpy.mockRestore();
+  });
+
+  it("compiles files when building for compiled runtime", async () => {
+    const sls = MockFactory.createTestServerless();
+    (sls.service as any as ServerlessAzureConfig).provider.runtime = Runtime.DOTNET31;
+    const service = createService(sls);
+    await service.build();
+    expect(CompilerService.prototype.build).toBeCalledWith(BuildMode.DEBUG);
   });
 
   it("does not write files if they already exist", async () => {

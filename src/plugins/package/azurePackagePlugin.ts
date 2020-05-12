@@ -4,6 +4,8 @@ import { ServerlessCliCommand } from "../../models/serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { isCompiledRuntime, BuildMode } from "../../config/runtime";
+import { CompilerService } from "../../services/compilerService"
 
 export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;
@@ -16,6 +18,10 @@ export class AzurePackagePlugin extends AzureBasePlugin {
       "before:webpack:package:packageModules": this.webpack.bind(this),
       "after:package:finalize": this.finalize.bind(this),
     };
+    if (isCompiledRuntime(this.config.provider.runtime)) {
+      delete this.serverless.pluginManager.hooks["package:createDeploymentArtifacts"]
+      this.hooks["package:createDeploymentArtifacts"] = this.compileArtifact.bind(this);
+    }
   }
 
   private async setupProviderConfiguration(): Promise<void> {
@@ -34,6 +40,11 @@ export class AzurePackagePlugin extends AzureBasePlugin {
     this.bindingsCreated = true;
 
     return Promise.resolve();
+  }
+
+  private async compileArtifact() {
+    const compilerService = new CompilerService(this.serverless, this.options);
+    await compilerService.build(BuildMode.RELEASE);
   }
 
   private async webpack(): Promise<void> {

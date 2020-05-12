@@ -2,8 +2,11 @@ import fs from "fs";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
-import { CoreToolsService } from "./coreToolsService";
-import { getRuntimeLanguage } from "../config/runtime";
+import { getRuntimeLanguage, isCompiledRuntime, BuildMode } from "../config/runtime";
+import { Utils } from "../shared/utils";
+import { CompilerService } from "./compilerService";
+import { constants } from "../shared/constants";
+import path from "path";
 
 export class OfflineService extends BaseService {
 
@@ -27,6 +30,10 @@ export class OfflineService extends BaseService {
   public async build() {
     this.log("Building offline service");
     await this.packageService.createBindings();
+    if (isCompiledRuntime(this.config.provider.runtime)) {
+      const compilerService = new CompilerService(this.serverless, this.options);
+      await compilerService.build(BuildMode.DEBUG);
+    }
     const filenames = Object.keys(this.localFiles);
     for (const filename of filenames) {
       if (!fs.existsSync(filename)) {
@@ -49,20 +56,31 @@ export class OfflineService extends BaseService {
    * Spawn `func host start` from core func tools
    */
   public async start() {
-    const args: string = this.getOption("spawnargs");
-    await CoreToolsService.start(this.serverless, async () => {
-      try {
-        if (this.getOption("nocleanup")) {
-          this.log("Skipping offline file cleanup...");
-        } else {
-          await this.cleanup();
+    const additionalArgs: string = this.getOption("spawnargs");
+    const { command, args } = this.configService.getCommand("start");
+    const cwd = isCompiledRuntime(this.config.provider.runtime)
+      ? path.join(this.serverless.config.servicePath, constants.tmpBuildDir)
+      : undefined;
+    this.log(cwd);
+    await Utils.spawnLocal({
+      serverless: this.serverless,
+      command: command,
+      cwd,
+      commandArgs: (additionalArgs) ? args.concat(additionalArgs.split(" ")) : args,
+      onSigInt: async () => {
+        try {
+          if (this.getOption("nocleanup")) {
+            this.log("Skipping offline file cleanup...");
+          } else {
+            await this.cleanup();
+          }
+        } catch {
+          // Swallowing `scandir` error that gets thrown after
+          // trying to remove the same directory twice
+        } finally {
+          process.exit();
         }
-      } catch {
-        // Swallowing `scandir` error that gets thrown after
-        // trying to remove the same directory twice
-      } finally {
-        process.exit();
       }
-    }, (args) ? args.split(" ") : undefined);
+    });
   }
 }

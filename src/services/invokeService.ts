@@ -1,10 +1,10 @@
-import { BaseService } from "./baseService"
-import Serverless from "serverless";
 import axios from "axios";
-import { FunctionAppService } from "./functionAppService";
-import { configConstants } from "../config/constants";
+import { stringify } from "querystring";
+import Serverless from "serverless";
 import { ApimResource } from "../armTemplates/resources/apim";
-import { stringify } from "querystring"
+import { constants } from "../shared/constants";
+import { BaseService } from "./baseService";
+import { FunctionAppService } from "./functionAppService";
 
 export enum InvokeMode {
   FUNCTION,
@@ -69,7 +69,7 @@ export class InvokeService extends BaseService {
   }
 
   private getLocalHost() {
-    return `http://localhost:${this.getOption("port", configConstants.defaults.localPort)}`
+    return `http://localhost:${this.getOption("port", constants.defaults.localPort)}`
   }
 
   private getApimHost() {

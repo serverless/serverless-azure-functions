@@ -1,7 +1,7 @@
 import { AppServicePlanResource } from "./appServicePlan";
 import { ServerlessAzureConfig } from "../../models/serverless";
 import md5 from "md5";
-import { configConstants } from "../../config/constants";
+import { constants } from "../../shared/constants";
 import { Runtime, FunctionAppOS } from "../../config/runtime";
 
 describe("App Service Plan Resource", () => {
@@ -25,7 +25,7 @@ describe("App Service Plan Resource", () => {
   it("generates the correct resource name", () => {
     const resourceGroupHash = md5(resourceGroupName).substr(
       0,
-      configConstants.resourceGroupHashLength
+      constants.resourceGroupHashLength
     );
 
     const config: ServerlessAzureConfig = {

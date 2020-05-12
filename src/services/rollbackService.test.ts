@@ -4,7 +4,7 @@ import Serverless from "serverless";
 import { ArmDeployment, ArmParamType } from "../models/armTemplates";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
-import { configConstants } from "../config/constants";
+import { constants } from "../shared/constants";
 
 import fs from "fs";
 
@@ -28,7 +28,7 @@ describe("Rollback Service", () => {
   const sasURL = "sasURL";
   const containerName = "deployment-artifacts";
   const artifactName = MockFactory.createTestDeployment().name.replace(
-    configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact) + ".zip";
+    constants.naming.suffix.deployment, constants.naming.suffix.artifact) + ".zip";
   const artifactPath = path.join(".serverless", artifactName);
   const armDeployment: ArmDeployment = { template, parameters };
   const deploymentString = "deployments";

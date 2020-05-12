@@ -1,4 +1,4 @@
-import { dockerImages, getRuntimeLanguage, getRuntimeVersion, FunctionAppOS, isNodeRuntime, Runtime, RuntimeLanguages } from "../../config/runtime";
+import { dockerImages, getRuntimeLanguage, getRuntimeVersion, FunctionAppOS, isNodeRuntime, Runtime, RuntimeLanguage } from "../../config/runtime";
 import { ArmParameter, ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams } from "../../models/armTemplates";
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
@@ -256,7 +256,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
 
   private getFunctionWorkerRuntime(runtime: Runtime): string {
     const language = getRuntimeLanguage(runtime);
-    if (language === RuntimeLanguages.NODE){
+    if (language === RuntimeLanguage.NODE){
       return "node";
     }
     return language;
