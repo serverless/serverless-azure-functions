@@ -1,4 +1,3 @@
-import { Configurations } from "./configurations";
 import { InterpolateParameters } from "clvr";
 
 export interface DefaultParameters extends InterpolateParameters {
@@ -8,7 +7,7 @@ export interface DefaultParameters extends InterpolateParameters {
   region: string;
 }
 
-export interface ConfigurationParameters extends Configurations {
+export interface ConfigurationParameters {
   [config: string]: DefaultParameters
 }
 
