@@ -1,7 +1,7 @@
+import run from "clvr";
 import { defaultParameters } from "../parameters";
-import clvr from "clvr";
 
-clvr({
+run({
   name: "Offline Test",
   parameters: defaultParameters,
   validations: [
