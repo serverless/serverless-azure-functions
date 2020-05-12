@@ -7,3 +7,10 @@ node_modules/
 tmp/
 
 .vscode/launch.json
+
+# Integration Test Files
+hello/
+local.settings.json
+__pycache__/
+.python_packages/
+.serverless/

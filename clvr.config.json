@@ -1,0 +1,4 @@
+{
+  "tests": "**/*offline.clvr.ts",
+  "directories": "integrationTests/configurations/python*/"
+}
