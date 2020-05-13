@@ -1,0 +1,23 @@
+service: dt31-lin
+
+provider:
+  name: azure
+  runtime: dotnet3.1
+  region: West Europe
+  prefix: tmp
+  stage: qa
+  os: linux
+  prefix: sls
+  apim: true
+
+plugins:
+  - serverless-azure-functions
+
+functions:
+  Hello:
+    handler: hello
+    events:
+      - http: true
+        methods:
+          - GET
+        authLevel: anonymous

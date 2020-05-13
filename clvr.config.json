@@ -1,4 +1,4 @@
 {
   "tests": "integrationTests/**/*deploy.clvr.ts",
-  "directories": "integrationTests/configurations/**/"
+  "directories": "integrationTests/configurations/(dotnet|node|python)*/"
 }

@@ -1,0 +1,23 @@
+service: dt22-win
+
+provider:
+  name: azure
+  runtime: dotnet2.2
+  region: West Europe
+  prefix: tmp
+  stage: qa
+  os: windows
+  prefix: sls
+  apim: true
+
+plugins:
+  - serverless-azure-functions
+
+functions:
+  Hello:
+    handler: hello
+    events:
+      - http: true
+        methods:
+          - GET
+        authLevel: anonymous
