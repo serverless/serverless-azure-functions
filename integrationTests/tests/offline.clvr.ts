@@ -6,7 +6,8 @@ run({
   parameters: defaultParameters,
   validations: [
     {
-      command: "npm link serverless-azure-functions",
+      command: "npm i serverless-azure-functions@beta",
+      silent: true,
       files: {
         "hello/function.json": {
           shouldExist: false
