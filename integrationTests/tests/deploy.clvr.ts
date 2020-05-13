@@ -14,10 +14,10 @@ run({
         shouldContain: [
           "Logging into Azure",
           "Deployed serverless functions:",
-          "sls-weur-dev-${serviceName}-rg",
-          "Resource Group: tmp-weur-qa-${serviceName}-rg",
-          "Deploying zip file to function app: tmp-weur-qa-${serviceName}",
-          "-> hello: [GET] tmp-weur-qa-${serviceName}.azurewebsites.net/api/hello"
+          "tmp-${region}-dev-${serviceName}-rg",
+          "Resource Group: tmp-${region}-qa-${serviceName}-rg",
+          "Deploying zip file to function app: tmp-${region}-qa-${serviceName}",
+          "-> hello: [GET] tmp-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
         ],
       }
     },

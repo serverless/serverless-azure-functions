@@ -1,4 +1,4 @@
 {
   "tests": "**/*deploy.clvr.ts",
-  "directories": "integrationTests/configurations/python*/"
+  "directories": "integrationTests/configurations/**/"
 }
