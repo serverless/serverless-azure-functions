@@ -15,7 +15,7 @@ run({
         shouldContain: [
           "Logging into Azure",
           "Deployed serverless functions:",
-          "tmp-${region}-dev-${serviceName}-rg",
+          "tmp-${region}-qa-${serviceName}-rg",
           "Resource Group: tmp-${region}-qa-${serviceName}-rg",
           "Deploying zip file to function app: tmp-${region}-qa-${serviceName}",
           "-> hello: [GET] tmp-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
