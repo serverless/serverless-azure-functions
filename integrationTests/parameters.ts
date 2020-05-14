@@ -76,7 +76,7 @@ export const defaultParameters: ConfigurationParameters = {
     serviceName: "nd12-lin-prem",
     configName: "node12-linux-premium",
     runtime: "node v12.",
-    region: "eus",
+    region: "ncus",
   },
   "node12-windows": {
     serviceName: "nd12-win",

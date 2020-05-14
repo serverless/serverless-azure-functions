@@ -4,7 +4,7 @@ provider:
   name: azure
   prefix: tmp
   stage: qa
-  region: East US
+  region: North Central US
   runtime: nodejs12
   os: linux
   apim: true
