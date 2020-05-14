@@ -25,7 +25,7 @@ jobs:
     - name: build
       run: tsc
     - name: integration tests
-      run: npm run test:int
+      run: npm run test:int -- -t deploy
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}

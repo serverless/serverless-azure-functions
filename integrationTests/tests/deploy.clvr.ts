@@ -44,7 +44,7 @@ run({
       },
       stderr: {
         shouldBeExactly: ""
-      }
+      },
     },
     {
       command: "sls remove --force",
