@@ -12,30 +12,6 @@ export interface ConfigurationParameters {
 }
 
 export const defaultParameters: ConfigurationParameters = {
-  "dotnet22-linux": {
-    serviceName: "dt22-lin",
-    configName: "dotnet22-linux",
-    runtime: "dotnet",
-    region: "weur",
-  },
-  "dotnet22-windows": {
-    serviceName: "dt22-win",
-    configName: "dotnet22-windows",
-    runtime: "dotnet",
-    region: "weur",
-  },
-  "dotnet31-linux": {
-    serviceName: "dt31-lin",
-    configName: "dotnet31-linux",
-    runtime: "dotnet",
-    region: "weur",
-  },
-  "dotnet31-windows": {
-    serviceName: "dt31-win",
-    configName: "dotnet31-windows",
-    runtime: "dotnet",
-    region: "weur",
-  },
   "node10-linux": {
     serviceName: "nd10-lin",
     configName: "node10-linux",
