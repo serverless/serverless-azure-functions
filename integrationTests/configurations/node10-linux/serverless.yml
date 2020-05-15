@@ -25,9 +25,8 @@ functions:
     handler: hello.sayHello
     events:
       - http: true
-        x-azure-settings:
-          methods:
-            - GET
-          authLevel: anonymous
+        methods:
+          - GET
+        authLevel: anonymous
           
  

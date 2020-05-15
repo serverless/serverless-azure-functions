@@ -1,4 +1,4 @@
 {
-  "tests": "**/*.clvr.ts",
-  "directories": "integrationTests/configurations/python*/"
+  "testPattern": "integrationTests/**/*.clvr.ts",
+  "parentDir": "integrationTests/configurations/"
 }
