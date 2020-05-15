@@ -29,6 +29,18 @@ jobs:
     needs: build_and_install
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
+    - name: Cache node_modules
+      id: cache-modules
+      uses: actions/cache@v1
+      with:
+        path: node_modules
+        key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
+    - name: npm install
+      if: steps.cache-modules.outputs.cache-hit != 'true'
+      run: npm install
+    - name: build
+      run: tsc
     - name: node 10 integration tests
       run: npm run test:int -- -t deploy -d node10
       env:
@@ -41,6 +53,18 @@ jobs:
     needs: build_and_install
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
+    - name: Cache node_modules
+      id: cache-modules
+      uses: actions/cache@v1
+      with:
+        path: node_modules
+        key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
+    - name: npm install
+      if: steps.cache-modules.outputs.cache-hit != 'true'
+      run: npm install
+    - name: build
+      run: tsc
     - name: node 12 integration tests
       run: npm run test:int -- -t deploy -d node12
       env:
@@ -53,6 +77,18 @@ jobs:
     needs: build_and_install
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@master
+    - name: Cache node_modules
+      id: cache-modules
+      uses: actions/cache@v1
+      with:
+        path: node_modules
+        key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
+    - name: npm install
+      if: steps.cache-modules.outputs.cache-hit != 'true'
+      run: npm install
+    - name: build
+      run: tsc
     - name: python integration tests
       run: npm run test:int -- -t deploy -d python
       env:
