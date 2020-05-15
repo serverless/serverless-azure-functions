@@ -24,8 +24,22 @@ jobs:
       run: npm install
     - name: build
       run: tsc
-    - name: integration tests
-      run: npm run test:int -- -t deploy
+    - name: node 10 integration tests
+      run: npm run test:int -- -t deploy -d node10
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+    - name: node 12 integration tests
+      run: npm run test:int -- -t deploy -d node12
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+    - name: python integration tests
+      run: npm run test:int -- -t deploy -d python
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
