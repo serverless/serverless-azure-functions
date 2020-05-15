@@ -5,8 +5,10 @@ provider:
   runtime: python3.6
   prefix: tmp
   stage: qa
-  region: West Europe
+  region: Central US
   apim: true
+  environment:
+    VARIABLE_FOO: 'foo'
 
 plugins:
   - serverless-azure-functions
@@ -30,7 +32,6 @@ functions:
     handler: hello
     events:
       - http: true
-        x-azure-settings:
-          methods:
-            - GET
-          authLevel: anonymous
+        methods:
+          - GET
+        authLevel: anonymous

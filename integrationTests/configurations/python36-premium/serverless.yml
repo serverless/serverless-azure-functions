@@ -7,6 +7,8 @@ provider:
   stage: qa
   region: West Europe
   apim: true
+  environment:
+    VARIABLE_FOO: 'foo'
 
 plugins:
   - serverless-azure-functions
@@ -30,7 +32,6 @@ functions:
     handler: hello
     events:
       - http: true
-        x-azure-settings:
-          methods:
-            - GET
-          authLevel: anonymous
+        methods:
+          - GET
+        authLevel: anonymous

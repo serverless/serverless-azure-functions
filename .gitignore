@@ -4,5 +4,13 @@ node_modules/
 /coverage/
 .env*
 .idea/
+tmp/
 
 .vscode/launch.json
+
+# Integration Test Files
+hello/
+local.settings.json
+__pycache__/
+.python_packages/
+.serverless/
