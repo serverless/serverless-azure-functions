@@ -93,11 +93,21 @@ jobs:
       run: npm install
     - name: build
       run: tsc
-    - name: .net core integration tests
+    - name: .net core 2.2 integration tests
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '2.2.100'
+    - run: npm run test:int -- -t deploy -d dotnet22
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+    - name: .net core 3.1 integration tests
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.100'
-    - run: npm run test:int -- -t deploy -d dotnet
+    - run: npm run test:int -- -t deploy -d dotnet31
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}

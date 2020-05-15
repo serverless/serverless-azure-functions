@@ -7,7 +7,6 @@ provider:
   prefix: tmp
   stage: qa
   os: linux
-  prefix: sls
   apim: true
 
 plugins:
