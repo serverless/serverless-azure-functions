@@ -97,7 +97,7 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.100'
-      run: npm run test:int -- -t deploy -d dotnet
+    - run: npm run test:int -- -t deploy -d dotnet
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
