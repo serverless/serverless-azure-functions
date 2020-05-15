@@ -8,7 +8,7 @@ on:
       - '**/trigger-int-tests'
 name: Integration Tests
 jobs:
-  all:
+  build_and_install:
     name: Integration Tests
     runs-on: ubuntu-latest
     steps:
@@ -24,6 +24,11 @@ jobs:
       run: npm install
     - name: build
       run: tsc
+  int_tests_node_10:
+    name: Node 10
+    needs: build_and_install
+    runs-on: ubuntu-latest
+    steps:
     - name: node 10 integration tests
       run: npm run test:int -- -t deploy -d node10
       env:
@@ -31,6 +36,11 @@ jobs:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+  int_tests_node_12:
+    name: Node 12
+    needs: build_and_install
+    runs-on: ubuntu-latest
+    steps:
     - name: node 12 integration tests
       run: npm run test:int -- -t deploy -d node12
       env:
@@ -38,6 +48,11 @@ jobs:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+  int_tests_python:
+    name: Python
+    needs: build_and_install
+    runs-on: ubuntu-latest
+    steps:
     - name: python integration tests
       run: npm run test:int -- -t deploy -d python
       env:
