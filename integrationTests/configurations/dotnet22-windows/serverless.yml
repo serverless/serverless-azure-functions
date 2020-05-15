@@ -1,4 +1,4 @@
-service: csharp22-windows
+service: dt22-win
 
 provider:
   name: azure

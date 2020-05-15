@@ -1,4 +1,4 @@
-service: csharp31-linux
+service: dt31-lin
 
 provider:
   name: azure
