@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Tanner.Function
+namespace Company.Function
 {
     public static class Hello
     {
@@ -27,7 +27,8 @@ namespace Tanner.Function
 
             string responseMessage = string.IsNullOrEmpty(name)
                 ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello there, {name}. This HTTP triggered function executed successfully.";
+                : $"Hello {name} {Environment.GetEnvironmentVariable("FUNCTIONS_WORKER_RUNTIME")} " +
+                    $"Environment variable: {Environment.GetEnvironmentVariable("VARIABLE_FOO")}";
 
             return new OkObjectResult(responseMessage);
         }
