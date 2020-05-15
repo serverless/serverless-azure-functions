@@ -8,25 +8,8 @@ on:
       - '**/trigger-int-tests'
 name: Integration Tests
 jobs:
-  build_and_install:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Cache node_modules
-      id: cache-modules
-      uses: actions/cache@v1
-      with:
-        path: node_modules
-        key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
-    - name: npm install
-      if: steps.cache-modules.outputs.cache-hit != 'true'
-      run: npm install
-    - name: build
-      run: tsc
   int_tests_node_10:
     name: Node 10
-    needs: build_and_install
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -50,7 +33,6 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
   int_tests_node_12:
     name: Node 12
-    needs: build_and_install
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -74,7 +56,6 @@ jobs:
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
   int_tests_python:
     name: Python
-    needs: build_and_install
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
