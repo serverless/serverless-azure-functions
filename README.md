@@ -4,7 +4,7 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 [![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions)
 
-![Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Integration%20Tests/badge.svg)
+[![Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Integration+Tests%22)
 
 ## Quickstart
 
