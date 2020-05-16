@@ -8,12 +8,14 @@ provider:
   stage: qa
   os: windows
   apim: true
+  environment:
+    VARIABLE_FOO: 'foo'
 
 plugins:
   - serverless-azure-functions
 
 functions:
-  Hello:
+  hello:
     handler: hello
     events:
       - http: true
