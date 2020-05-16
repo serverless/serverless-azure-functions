@@ -9,6 +9,7 @@ on:
 name: Integration Tests
 jobs:
   multi_os_integration_tests:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         runtime: [dotnet22, dotnet31, node10, node12]
