@@ -8,9 +8,11 @@ on:
       - '**/trigger-int-tests'
 name: Integration Tests
 jobs:
-  int_tests_node_10:
-    name: Node 10
-    runs-on: ubuntu-latest
+  multi_os_integration_tests:
+    strategy:
+      matrix:
+        runtime: [dotnet22, dotnet31, node10, node12]
+        os: [linux, windows]
     steps:
     - uses: actions/checkout@master
     - name: Cache node_modules
@@ -24,36 +26,18 @@ jobs:
       run: npm install
     - name: build
       run: tsc
-    - name: node 10 integration tests
-      run: npm run test:int -- -t deploy -d node10
-      env:
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
-  int_tests_node_12:
-    name: Node 12
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Cache node_modules
-      id: cache-modules
-      uses: actions/cache@v1
+    - name: setup dotnet 2.2
+      if: ${{ matrix.runtime }} == 'dotnet22'
+      uses: actions/setup-dotnet@v1
       with:
-        path: node_modules
-        key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
-    - name: npm install
-      if: steps.cache-modules.outputs.cache-hit != 'true'
-      run: npm install
-    - name: build
-      run: tsc
-    - name: node 12 integration tests
-      run: npm run test:int -- -t deploy -d node12
-      env:
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+        dotnet-version: '2.2.100'
+    - name: setup dotnet 3.1
+      if: ${{ matrix.runtime }} == 'dotnet31'
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.100'
+    - name: integration tests ${{ matrix.runtime }}-${{ matrix.os }}
+      run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}-${{ matrix.os }}
   int_tests_python:
     name: Python
     runs-on: ubuntu-latest
@@ -77,41 +61,4 @@ jobs:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
         AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
         AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
-  int_tests_dotnet:
-    name: .NET Core
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Cache node_modules
-      id: cache-modules
-      uses: actions/cache@v1
-      with:
-        path: node_modules
-        key: ${{ runner.OS }}-build-${{ hashFiles('package.json') }}
-    - name: npm install
-      if: steps.cache-modules.outputs.cache-hit != 'true'
-      run: npm install
-    - name: build
-      run: tsc
-    - name: set up dotnet 2.2.100
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '2.2.100'
-    - name: dotnet 2.2 integration tests
-      run: npm run test:int -- -t deploy -d dotnet22
-      env:
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
-    - name: set up dotnet 3.1.100
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '3.1.100'
-    - name: dotnet 3.1 integration tests
-      run: npm run test:int -- -t deploy -d dotnet31
-      env:
-        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+  
