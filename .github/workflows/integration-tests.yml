@@ -38,7 +38,7 @@ jobs:
       if: matrix.runtime == 'dotnet31'
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.100'
+        dotnet-version: '3.1.103'
     - name: integration tests ${{ matrix.runtime }}-${{ matrix.os }}
       run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}-${{ matrix.os }}
       env:
