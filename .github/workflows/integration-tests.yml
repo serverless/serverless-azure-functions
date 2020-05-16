@@ -9,6 +9,7 @@ on:
 name: Integration Tests
 jobs:
   multi_os_integration_tests:
+    name: Integration Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
