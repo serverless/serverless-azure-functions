@@ -9,7 +9,7 @@ on:
 name: Integration Tests
 jobs:
   multi_os_integration_tests:
-    name: ''
+    name: Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,7 +41,7 @@ jobs:
     - name: integration tests ${{ matrix.runtime }}-${{ matrix.os }}
       run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}-${{ matrix.os }}
   int_tests_python:
-    name: (python, linux)
+    name: Test (python, linux)
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
