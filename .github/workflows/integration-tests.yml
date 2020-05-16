@@ -41,6 +41,11 @@ jobs:
         dotnet-version: '3.1.100'
     - name: integration tests ${{ matrix.runtime }}-${{ matrix.os }}
       run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}-${{ matrix.os }}
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
   int_tests_python:
     name: Test (python, linux)
     runs-on: ubuntu-latest
