@@ -39,8 +39,15 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.103'
-    - name: integration tests ${{ matrix.runtime }}-${{ matrix.os }}
+    - name: deploy & invoke ${{ matrix.runtime }}-${{ matrix.os }}
       run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}-${{ matrix.os }}
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+    - name: remove ${{ matrix.runtime }}-${{ matrix.os }}
+      run: npm run test:int -- -t remove -d ${{ matrix.runtime }}-${{ matrix.os }}
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
@@ -49,6 +56,9 @@ jobs:
   int_tests_python:
     name: Test (python, linux)
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runtime: [python36, python37, python38]
     steps:
     - uses: actions/checkout@master
     - name: Cache node_modules
@@ -62,8 +72,15 @@ jobs:
       run: npm install
     - name: build
       run: tsc
-    - name: python integration tests
-      run: npm run test:int -- -t deploy -d python
+    - name: deploy & invoke python
+      run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}
+      env:
+        AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+    - name: remove ${{ matrix.runtime }}
+      run: npm run test:int -- -t remove -d ${{ matrix.runtime }}
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
