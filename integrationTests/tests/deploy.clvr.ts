@@ -18,10 +18,9 @@ run({
       stdout: {
         shouldContain: [
           "Logging into Azure",
-          // "Deployed serverless functions:",
+          "Deployed serverless functions:",
           "tmp-${region}-qa-${serviceName}-rg",
-          // "Deploying zip file to function app: tmp-${region}-qa-${serviceName}",
-          // "-> hello: [GET] tmp-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
+          "-> hello: [GET] tmp-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
         ],
       }
     },
