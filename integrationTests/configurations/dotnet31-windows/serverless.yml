@@ -6,7 +6,6 @@ provider:
   region: West Europe
   prefix: tmp
   stage: qa
-  os: windows
   apim: true
   environment:
     VARIABLE_FOO: 'foo'

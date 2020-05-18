@@ -2,11 +2,10 @@ service: dt22-win
 
 provider:
   name: azure
-  runtime: dotnet2.2
+  runtime: dotnet3.1
   region: West Europe
   prefix: tmp
   stage: qa
-  os: windows
   apim: true
   environment:
     VARIABLE_FOO: 'foo'

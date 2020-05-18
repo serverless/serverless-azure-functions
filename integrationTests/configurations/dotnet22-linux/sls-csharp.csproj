@@ -4,9 +4,11 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <RootNamespace>sls_csharp</RootNamespace>
     <EnableDefaultCompileItems>False</EnableDefaultCompileItems>
+    <GenerateRuntimeConfigurationFiles>True</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.31" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.7" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="2.2.8" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -18,6 +20,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="*.cs" Exclude="node_modules\**\*.cs"/>
+    <Compile Include="*.cs" Exclude="node_modules\**\*.cs" />
   </ItemGroup>
 </Project>
