@@ -1,4 +1,4 @@
-service: nd12-win
+service: nd12-win-prem
 
 provider:
   name: azure
