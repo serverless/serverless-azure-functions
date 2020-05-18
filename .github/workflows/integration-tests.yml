@@ -40,7 +40,7 @@ jobs:
       with:
         dotnet-version: '3.1.103'
     - name: package, deploy, invoke, remove
-      run: npm run test:int -- -t deploy -d ${{ matrix.runtime }}-${{ matrix.os }}
+      run: npm run test:int -- -t deploy.* -d ${{ matrix.runtime }}-${{ matrix.os }}(-external|-webpack)?
       env:
         AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
