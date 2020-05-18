@@ -166,8 +166,8 @@ export class FunctionAppService extends BaseService {
         constants.runFromPackageSetting,
         sasUrl
       );
-
       await this.syncTriggers(functionApp, response.properties);
+      await this.logFunctions(functionApp);
     } else {
       await Promise.all([
         // Uploaded to blob storage as artifact for future reference
@@ -288,7 +288,10 @@ export class FunctionAppService extends BaseService {
 
     this.log("Deploying serverless functions...");
     await this.uploadZippedArtifactToFunctionApp(functionApp, functionZipFile);
+    await this.logFunctions(functionApp);
+  }
 
+  private async logFunctions(functionApp: Site) {
     this.log("Deployed serverless functions:");
     const serverlessFunctions = this.serverless.service.getAllFunctions();
     const deployedFunctions = await this.listFunctions(functionApp);

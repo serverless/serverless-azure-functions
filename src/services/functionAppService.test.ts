@@ -307,10 +307,12 @@ describe("Function App Service", () => {
     )
     const uploadCall = ((AzureBlobStorageService.prototype as any).uploadFile).mock.calls[0];
     expect(uploadCall[2]).toMatch(/.*-t([0-9]+)/);
+    expectLogFunctions(sls);
   });
   
   it("publishes functions and uploads to blob storage", async () => {
-    const service = createService();
+    const sls = MockFactory.createTestServerless();
+    const service = createService(sls);
     await service.uploadFunctions(app);
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
     expect((AzureBlobStorageService.prototype as any).uploadFile).toBeCalledWith(
@@ -332,6 +334,7 @@ describe("Function App Service", () => {
         "User-Agent": "serverless_framework",
       }
     }, "app.zip");
+    expectLogFunctions(sls);
   });
 
   it("publishes functions with custom SCM domain (aka App service environments)", async () => {
@@ -445,9 +448,10 @@ describe("Function App Service", () => {
       newSlsService.provider["deployment"] = {
         external: true,
       }
-      const service = createService(MockFactory.createTestServerless({
+      const sls = MockFactory.createTestServerless({
         service: newSlsService,
-      }));
+      });
+      const service = createService(sls);
       await service.uploadFunctions(app);
       expect(AzureBlobStorageService.prototype.generateBlobSasTokenUrl).toBeCalled();
       expect(FunctionAppService.prototype.updateFunctionAppSetting).toBeCalledWith(
@@ -455,6 +459,7 @@ describe("Function App Service", () => {
         "WEBSITE_RUN_FROM_PACKAGE",
         sasUrl
       );
+      expectLogFunctions(sls);
     });
 
     it("does not upload directly to function app if configured to run from blob", async () => {
@@ -500,4 +505,16 @@ describe("Function App Service", () => {
       expect(FunctionAppService.prototype.updateFunctionAppSetting).not.toBeCalled();
     });
   });
+
+  function expectLogFunctions(sls: Serverless) {
+    expectSlsLogContains(sls, "Deployed serverless functions:");
+    expectSlsLogContains(sls, "Deploying zip file to function app: Test");
+    expectSlsLogContains(sls, "-> hello: [*] myHostName.azurewebsites.net/api/hello");
+    expectSlsLogContains(sls, "-> goodbye: [*] myHostName.azurewebsites.net/api/goodbye");
+  }
+
+  function expectSlsLogContains(sls: Serverless, message: string) {
+    const calls = (sls.cli.log as any).mock.calls;
+    expect(calls.find((args) => args[0])).toBeTruthy();
+  }
 });
