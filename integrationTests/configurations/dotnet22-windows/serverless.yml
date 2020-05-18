@@ -2,7 +2,7 @@ service: dt22-win
 
 provider:
   name: azure
-  runtime: dotnet3.1
+  runtime: dotnet2.2
   region: West Europe
   prefix: tmp
   stage: qa
