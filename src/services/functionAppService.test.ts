@@ -296,7 +296,7 @@ describe("Function App Service", () => {
         Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
-        "User-Agent": "serverless_framework",
+        "User-Agent": expect.stringContaining("serverless_framework"),
       }
     }, defaultArtifact);
     const expectedArtifactName = service.getDeploymentName().replace("rg-deployment", "artifact");
@@ -331,7 +331,7 @@ describe("Function App Service", () => {
         Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
-        "User-Agent": "serverless_framework",
+        "User-Agent": expect.stringContaining("serverless_framework"),
       }
     }, "app.zip");
     expectLogFunctions(sls);
@@ -359,7 +359,7 @@ describe("Function App Service", () => {
         Authorization: `Bearer ${(await variables["azureCredentials"].getToken()).accessToken}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
-        "User-Agent": "serverless_framework",
+        "User-Agent": expect.stringContaining("serverless_framework"),
       }
     }, slsService["artifact"]);
   });
