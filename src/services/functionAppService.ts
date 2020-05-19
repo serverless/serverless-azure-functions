@@ -13,6 +13,7 @@ import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
 import { constants } from "../shared/constants";
 import { FunctionAppOS } from "../config/runtime";
+const packageJson = require("../../package.json");
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;
@@ -220,9 +221,11 @@ export class FunctionAppService extends BaseService {
         Authorization: `Bearer ${await this.getAccessToken()}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
-        "User-Agent": "serverless_framework", //TODO Underscore version name of plugin/cli
+        "User-Agent": `serverless_framework/${this.serverless.version} serverless_azure_functions/${packageJson.version}`, //TODO Underscore version name of plugin/cli
       }
     };
+
+    this.prettyPrint(requestOptions);
 
     await this.sendFile(requestOptions, functionZipFile);
     this.log("-> Function package uploaded successfully");
