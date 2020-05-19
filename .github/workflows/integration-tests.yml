@@ -18,6 +18,8 @@ jobs:
       fail-fast: false
     steps:
     - uses: actions/checkout@master
+    
+    # Install dependencies and cache them
     - name: Cache node_modules
       id: cache-modules
       uses: actions/cache@v1
@@ -27,8 +29,12 @@ jobs:
     - name: npm install
       if: steps.cache-modules.outputs.cache-hit != 'true'
       run: npm install
+    
+    # Build plugin
     - name: build
       run: tsc
+    
+    # Setup dotnet when needed
     - name: setup dotnet 2.2
       if: matrix.runtime == 'dotnet22'
       uses: actions/setup-dotnet@v1
@@ -39,6 +45,8 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '3.1.103'
+    
+    # Run the integration test
     - name: package, deploy, invoke, remove
       run: npm run test:int -- -t deploy.* -d '${{ matrix.runtime }}-${{ matrix.os }}(-external|-webpack)?'
       env:
