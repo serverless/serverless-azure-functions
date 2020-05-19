@@ -22,6 +22,12 @@ interface AppServicePlanParams extends DefaultArmParams {
   appServicePlanSkuTier: ArmParameter;
 }
 
+interface AppServicePlanParams extends DefaultArmParams {
+  appServicePlanName: ArmParameter;
+  appServicePlanSkuName: ArmParameter;
+  appServicePlanSkuTier: ArmParameter;
+}
+
 export class AppServicePlanResource implements ArmResourceTemplateGenerator {
   public static getResourceName(config: ServerlessAzureConfig) {
     const options: AzureNamingServiceOptions = {

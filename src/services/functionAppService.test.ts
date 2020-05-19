@@ -508,13 +508,16 @@ describe("Function App Service", () => {
 
   function expectLogFunctions(sls: Serverless) {
     expectSlsLogContains(sls, "Deployed serverless functions:");
-    expectSlsLogContains(sls, "Deploying zip file to function app: Test");
     expectSlsLogContains(sls, "-> hello: [*] myHostName.azurewebsites.net/api/hello");
     expectSlsLogContains(sls, "-> goodbye: [*] myHostName.azurewebsites.net/api/goodbye");
   }
 
   function expectSlsLogContains(sls: Serverless, message: string) {
     const calls = (sls.cli.log as any).mock.calls;
-    expect(calls.find((args) => args[0])).toBeTruthy();
+    const call = calls.find((args) => {
+      const equals = args[0] === message;
+      return equals;
+    });
+    expect(call).toBeDefined();
   }
 });
