@@ -1,33 +1,24 @@
-service: nd12-win-prem
+service: dt22-lin
 
 provider:
   name: azure
+  runtime: dotnet2.2
+  region: West Europe
   prefix: tmp
   stage: qa
-  region: Central US
-  runtime: nodejs12
-  os: windows
+  os: linux
   apim: true
-  type: premium
-
   environment:
     VARIABLE_FOO: 'foo'
 
 plugins:
   - serverless-azure-functions
 
-package:
-  exclude:
-    - local.settings.json
-    - .vscode/**
-
 functions:
   hello:
-    handler: hello.sayHello
+    handler: hello
     events:
       - http: true
         methods:
           - GET
         authLevel: anonymous
-
- 

@@ -7,6 +7,7 @@ provider:
   stage: qa
   region: West Europe
   apim: true
+  type: premium
   environment:
     VARIABLE_FOO: 'foo'
 
