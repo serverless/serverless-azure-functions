@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { stringify } from "querystring";
 import Serverless from "serverless";
 import { ApimResource } from "../armTemplates/resources/apim";
@@ -46,16 +46,22 @@ export class InvokeService extends BaseService {
       this.log("Needs to be an http function");
       return;
     }
+    const options: AxiosRequestConfig = await this.getRequestOptions(method, data);
 
     let url = await this.getUrl(functionName);
     if (method === "GET" && data) {
       url += `?${this.getQueryString(data)}`;
+      options.params = data;
     }
 
-    const options = await this.getRequestOptions(method, data);
     this.log(`Invocation url: ${url}`);
     this.log(`Invoking function ${functionName} with ${method} request`);
-    return await axios(url, options,);
+    try {
+      return await axios(url, options,);
+    } catch (err) {
+      const response = err.response;
+      throw new Error(`HTTP Error: ${response.status} - ${response.data}`);
+    }
   }
 
   private async getUrl(functionName: string) {

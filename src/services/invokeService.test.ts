@@ -18,6 +18,8 @@ describe("Invoke Service ", () => {
   const testData = "test-data";
   const testResult = "test result";
   const authKey = "authKey";
+  const errorCode = 400;
+  const errorData = "This was a bad request";
   const baseUrl = "https://management.azure.com"
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
@@ -29,6 +31,7 @@ describe("Invoke Service ", () => {
 
   let masterKey: string;
   let sls = MockFactory.createTestServerless();
+  const axiosMock = new MockAdapter(axios);
 
   let options = {
     function: functionName,
@@ -36,8 +39,7 @@ describe("Invoke Service ", () => {
     method: "GET"
   } as any;
 
-  beforeAll(() => {
-    const axiosMock = new MockAdapter(axios);
+  beforeEach(() => {
     // Master Key
     axiosMock.onGet(masterKeyUrl).reply(200, { value: masterKey });
     // Auth Key
@@ -109,5 +111,12 @@ describe("Invoke Service ", () => {
     const fakeName = "fakeFunction";
     await service.invoke("GET", fakeName);
     expect(sls.cli.log).lastCalledWith(`Function ${fakeName} does not exist`)
+  });
+
+  it("throws an error with status code and data", async () => {
+    // Mock url for POST
+    axiosMock.onPost(urlPOST).reply(errorCode, errorData);
+    const service = new InvokeService(sls, options);
+    await expect(service.invoke("POST", options.function, options.data)).rejects.toThrow(`HTTP Error: ${errorCode} - ${errorData}`);
   });
 });
