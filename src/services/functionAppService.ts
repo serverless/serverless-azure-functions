@@ -13,7 +13,7 @@ import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
 import { constants } from "../shared/constants";
 import { FunctionAppOS } from "../config/runtime";
-const packageJson = require("../../package.json");
+const packageJson = require("../../package.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;
