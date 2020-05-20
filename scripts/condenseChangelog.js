@@ -38,7 +38,7 @@ const compareUrl = baseUrl + "compare/";
  * 
  * ### Bug Fixes
  * * Bug Fix 2
- * * Bug FIx 1
+ * * Bug Fix 1
  * 
  * @param {string} changelog String content of changelog file 
  */
@@ -67,7 +67,6 @@ function generateMarkdown(condensed) {
     const preferredCommitTypes = [ "### Features", "### Bug Fixes" ]
 
     const commitTypes = Object.keys(condensed[releaseVersion]);
-
 
     if (!commitTypes.length) {
       result += "\n\n";
@@ -113,7 +112,7 @@ function commitsToMarkdown(commitType, commitTypeMap) {
 function groupLines(lines) {
   const condensed = {}
   /** Non-beta version */
-  let currentVersion = null;
+  let currentVersion = process.argv[2];
   /** Commit type ("### Bug Fixes", "### Features", etc.) */
   let currentCommitTypeHeader = null;
 
@@ -130,6 +129,10 @@ function groupLines(lines) {
     // Commit type line
     if (line.startsWith("### ")) {
       currentCommitTypeHeader = line;
+      if (!condensed[currentVersion]) {
+        condensed[currentVersion] = {}
+      }
+
       if (!condensed[currentVersion][currentCommitTypeHeader]) {
           condensed[currentVersion][currentCommitTypeHeader] = [];
       }
