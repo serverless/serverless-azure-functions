@@ -23,14 +23,14 @@ echo "Checked out branch: ${SOURCE_BRANCH_NAME}"
 NPM_VERSION=`npm version ${NPM_RELEASE_TYPE} -m "release: Update ${NPM_RELEASE_TYPE} version to %s ***NO_CI***"`
 echo "Set NPM version to: ${NPM_VERSION}"
 
-if [[ ${NPM_RELEASE_TYPE} == "prerelease"]];
+if [ ${NPM_RELEASE_TYPE} = "prerelease" ]
 then
   npm run changelog;
 else
   npm run changelog:condensed -- ${NPM_VERSION};
 fi
 
-git commit -a --amend
+git commit -a --amend --no-edit
 
 SHA=`git rev-parse HEAD`
 
