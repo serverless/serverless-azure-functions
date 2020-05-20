@@ -1,9 +1,11 @@
-import { spawn, SpawnOptions } from "child_process";
 import fs from "fs";
 import Serverless from "serverless";
-import configConstants from "../config";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
+import { getRuntimeLanguage, isCompiledRuntime, BuildMode } from "../config/runtime";
+import { Utils } from "../shared/utils";
+import { CompilerService } from "./compilerService";
+import { constants } from "../shared/constants";
 import path from "path";
 
 export class OfflineService extends BaseService {
@@ -15,7 +17,7 @@ export class OfflineService extends BaseService {
       IsEncrypted: false,
       Values: {
         AzureWebJobsStorage: "UseDevelopmentStorage=true",
-        FUNCTIONS_WORKER_RUNTIME: this.config.provider.functionRuntime.language
+        FUNCTIONS_WORKER_RUNTIME: getRuntimeLanguage(this.config.provider.runtime),
       }
     }),
   }
@@ -28,6 +30,10 @@ export class OfflineService extends BaseService {
   public async build() {
     this.log("Building offline service");
     await this.packageService.createBindings();
+    if (isCompiledRuntime(this.config.provider.runtime)) {
+      const compilerService = new CompilerService(this.serverless, this.options);
+      await compilerService.build(BuildMode.DEBUG);
+    }
     const filenames = Object.keys(this.localFiles);
     for (const filename of filenames) {
       if (!fs.existsSync(filename)) {
@@ -50,40 +56,18 @@ export class OfflineService extends BaseService {
    * Spawn `func host start` from core func tools
    */
   public async start() {
-    await this.spawn(configConstants.funcCoreTools, configConstants.funcCoreToolsArgs);
-  }
-
-  /**
-   * Spawn a Node child process with predefined environment variables
-   * @param command CLI Command - NO ARGS
-   * @param spawnArgs Array of arguments for CLI command
-   */
-  private spawn(command: string, spawnArgs?: string[]): Promise<void> {
-    // Run command from local node_modules
-    command = path.join(
-      this.serverless.config.servicePath,
-      "node_modules",
-      ".bin",
-      command
-    );
-    
-    // Append .cmd if running on windows
-    if (process.platform === "win32") {
-      command += ".cmd";
-    }
-
-    const env = {
-      // Inherit environment from current process, most importantly, the PATH
-      ...process.env,
-      // Environment variables from serverless config are king
-      ...this.serverless.service.provider["environment"],
-    }
-    this.log(`Spawning process '${command} ${spawnArgs.join(" ")}'`);
-    return new Promise(async (resolve, reject) => {
-      const spawnOptions: SpawnOptions = { env, stdio: "inherit" };
-      const childProcess = spawn(command, spawnArgs, spawnOptions);
-
-      process.on("SIGINT", async () => {
+    const additionalArgs: string = this.getOption("spawnargs");
+    const { command, args } = this.configService.getCommand("start");
+    const cwd = isCompiledRuntime(this.config.provider.runtime)
+      ? path.join(this.serverless.config.servicePath, constants.tmpBuildDir)
+      : undefined;
+    this.log(cwd);
+    await Utils.spawnLocal({
+      serverless: this.serverless,
+      command: command,
+      cwd,
+      commandArgs: (additionalArgs) ? args.concat(additionalArgs.split(" ")) : args,
+      onSigInt: async () => {
         try {
           if (this.getOption("nocleanup")) {
             this.log("Skipping offline file cleanup...");
@@ -96,15 +80,7 @@ export class OfflineService extends BaseService {
         } finally {
           process.exit();
         }
-      });
-
-      childProcess.on("exit", (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject();
-        }
-      });
+      }
     });
   }
 }

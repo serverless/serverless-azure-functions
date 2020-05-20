@@ -1,6 +1,7 @@
-import { ApiManagementConfig } from "./apiManagement";
 import Serverless from "serverless";
-import { ArmParameters } from "./armTemplates";
+import { FunctionAppOS, Runtime } from "../config/runtime";
+import { ApiManagementConfig } from "./apiManagement";
+import { ArmDeployment, ArmParameters } from "./armTemplates";
 
 export interface ArmTemplateConfig {
   file: string;
@@ -8,7 +9,7 @@ export interface ArmTemplateConfig {
 }
 
 export interface ResourceConfig {
-  name: string;
+  name?: string;
   sku?: {
     name?: string;
     tier?: string;
@@ -40,35 +41,24 @@ export interface ServerlessAzureProvider {
   environment?: {
     [key: string]: any;
   };
+  tags?: {
+    [tagName: string]: string;
+  };
   deployment?: DeploymentConfig;
   deploymentName?: string;
   resourceGroup?: string;
   apim?: ApiManagementConfig;
   functionApp?: FunctionAppConfig;
   appInsights?: ResourceConfig;
-  appServicePlan?: ResourceConfig;
+  appServicePlan?: AppServicePlanConfig;
   storageAccount?: ResourceConfig;
   hostingEnvironment?: ResourceConfig;
   virtualNetwork?: ResourceConfig;
   armTemplate?: ArmTemplateConfig;
   keyVaultConfig?: AzureKeyVaultConfig;
-  runtime: string;
-  functionRuntime?: FunctionRuntime;
-}
-
-export enum FunctionAppOS {
-  WINDOWS = "windows",
-  LINUX = "linux"
-}
-
-export interface FunctionRuntime {
-  language: SupportedRuntimeLanguage;
-  version: string;
-}
-
-export enum SupportedRuntimeLanguage {
-  PYTHON = "python",
-  NODE = "node"
+  /** Runtime setting within `serverless.yml` */
+  runtime: Runtime;
+  os?: FunctionAppOS;
 }
 
 /**
@@ -79,6 +69,15 @@ export interface AzureKeyVaultConfig {
   name: string;
   /** The name of the azure resource group with the key vault */
   resourceGroup: string;
+}
+
+export interface AppServicePlanConfig extends ResourceConfig {
+  scale?: {
+    minWorkerCount?: number;
+    maxWorkerCount?: number;
+    workerSizeId?: string;
+  };
+  hostingEnvironment?: string;
 }
 
 /**
@@ -141,10 +140,12 @@ export interface ServerlessAzureConfig {
   provider: ServerlessAzureProvider;
   plugins: string[];
   functions: any;
-  package: {
+  package?: {
     individually: boolean;
     artifactDirectoryName: string;
     artifact: string;
+    exclude: string[];
+    include: string[];
   };
 }
 
@@ -155,7 +156,13 @@ export interface ServerlessAzureFunctionConfig {
 
 export interface ServerlessAzureFunctionBindingConfig {
   http?: boolean;
-  "x-azure-settings": ServerlessExtraAzureSettingsConfig;
+  direction?: string;
+  route?: string;
+  name?: string;
+  authLevel?: string;
+  methods?: string[];
+  /** Maintained for backwards compatibility */
+  "x-azure-settings"?: ServerlessExtraAzureSettingsConfig;
 }
 
 export interface ServerlessExtraAzureSettingsConfig {
@@ -195,4 +202,28 @@ export interface ServerlessLogOptions {
   underline?: boolean;
   bold?: boolean;
   color?: string;
+}
+
+export interface AzureResourceInfo {
+  name: string;
+  resourceType: string;
+  region: string;
+}
+
+export interface AzureFunctionAppInfo {
+  name: string;
+  functions: string[];
+}
+
+export interface AzureFunctionInfo {
+  name: string;
+  enabled?: boolean;
+}
+
+export interface ServiceInfo {
+  resourceGroup: string;
+  isDryRun: boolean;
+  resources: AzureResourceInfo[];
+  functionApp?: AzureFunctionAppInfo;
+  deployment?: ArmDeployment;
 }

@@ -1,17 +1,19 @@
 import Serverless from "serverless";
-import xml from "xml";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { FunctionAppService } from "./functionAppService";
 import { BaseService } from "./baseService";
-import { ApiManagementConfig, ApiCorsPolicy } from "../models/apiManagement";
+import { ApiManagementConfig } from "../models/apiManagement";
+import { ApimPolicyBuilder } from "../services/apimPolicyBuilder";
 import {
   ApiContract, OperationContract,
-  PropertyContract, ApiManagementServiceResource, BackendContract,
+  PropertyContract, ApiManagementServiceResource, BackendContract, PolicyContract,
 } from "@azure/arm-apimanagement/esm/models";
 import { Site } from "@azure/arm-appservice/esm/models";
 import { Guard } from "../shared/guard";
 import { ApimResource } from "../armTemplates/resources/apim";
 import { ServerlessExtraAzureSettingsConfig } from "../models/serverless";
+import { Utils } from "../shared/utils";
+import { constants } from "../shared/constants";
 
 /**
  * APIM Service handles deployment and integration with Azure API Management
@@ -143,11 +145,11 @@ export class ApimService extends BaseService {
       return;
     }
 
-    const httpConfig: ServerlessExtraAzureSettingsConfig = httpEvent["x-azure-settings"];
+    const httpConfig: ServerlessExtraAzureSettingsConfig = Utils.get(httpEvent, constants.xAzureSettings, httpEvent);
 
     // Default to GET method if not specified
     if (!httpConfig.methods) {
-      httpConfig.methods = [ "GET" ]
+      httpConfig.methods = ["GET"]
     }
 
     // Infer APIM operation configuration from HTTP event if not already set
@@ -219,14 +221,7 @@ export class ApimService extends BaseService {
         isCurrent: true,
       });
 
-      if (this.apimConfig.cors) {
-        this.log(`-> Deploying CORS policy: ${apiContract.name}`);
-
-        await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
-          format: "rawxml",
-          value: this.createCorsXmlPolicy(this.apimConfig.cors)
-        });
-      }
+      await this.setApiPolicies(apiContract);
 
       return api;
     } catch (e) {
@@ -288,7 +283,7 @@ export class ApimService extends BaseService {
         responses: operation.responses || [],
       };
 
-      // Ensure a single path seperator in the operation path
+      // Ensure a single path separator in the operation path
       const operationPath = `/${api.path}/${operationConfig.urlTemplate}`.replace(/\/+/g, "/");
       const operationUrl = `${resource.gatewayUrl}${operationPath}`;
       this.log(`--> ${operationConfig.name}: [${operationConfig.method.toUpperCase()}] ${operationUrl}`);
@@ -301,9 +296,19 @@ export class ApimService extends BaseService {
         operationConfig,
       );
 
+      // Get any existing operation policy merge in backend service
+      const operationPolicy = await this.getApiOperationPolicy(api, operationConfig);
+      const policyBuilder = operationPolicy
+        ? await ApimPolicyBuilder.parse(operationPolicy.value)
+        : new ApimPolicyBuilder();
+
+      const policyXml = policyBuilder
+        .setBackendService(backend.name)
+        .build();
+
       await client.apiOperationPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, api.name, operationConfig.name, {
         format: "rawxml",
-        value: this.createApiOperationXmlPolicy(backend.name),
+        value: policyXml,
       });
 
       return result;
@@ -337,68 +342,84 @@ export class ApimService extends BaseService {
   }
 
   /**
-   * Creates the XML payload that defines the API operation policy to link to the configured backend
+   * Sets policies on the API from serverless configuration
+   * @param apiContract The API contract
    */
-  private createApiOperationXmlPolicy(backendId: string): string {
-    const operationPolicy = [{
-      policies: [
-        {
-          inbound: [
-            { base: null },
-            {
-              "set-backend-service": [
-                {
-                  "_attr": {
-                    "id": "apim-generated-policy",
-                    "backend-id": backendId,
-                  }
-                },
-              ],
-            },
-          ],
-        },
-        { backend: [{ base: null }] },
-        { outbound: [{ base: null }] },
-        { "on-error": [{ base: null }] },
-      ]
-    }];
+  private async setApiPolicies(apiContract: ApiContract) {
+    let requireUpdate = false;
+    const existingPolicy = await this.getApiPolicy(apiContract);
 
-    return xml(operationPolicy);
+    const builder = existingPolicy
+      ? await ApimPolicyBuilder.parse(existingPolicy.value)
+      : new ApimPolicyBuilder();
+
+    if (this.apimConfig.cors) {
+      builder.cors(this.apimConfig.cors);
+      requireUpdate = true;
+    }
+
+    if (this.apimConfig.jwtValidate) {
+      builder.jwtValidate(this.apimConfig.jwtValidate);
+      requireUpdate = true;
+    }
+
+    // Support backwards compatibility for single IP filter
+    if (this.apimConfig.ipFilter) {
+      this.apimConfig.ipFilters = [this.apimConfig.ipFilter];
+    }
+
+    if (this.apimConfig.ipFilters) {
+      this.apimConfig.ipFilters.forEach((policy) => {
+        builder.ipFilter(policy);
+        requireUpdate = true;
+      });
+    }
+
+    if (this.apimConfig.checkHeaders) {
+      this.apimConfig.checkHeaders.forEach((policy) => {
+        builder.checkHeader(policy);
+        requireUpdate = true;
+      });
+    }
+
+    if (requireUpdate) {
+      const policyXml = builder.build();
+
+      await this.apimClient.apiPolicy.createOrUpdate(this.resourceGroup, this.apimConfig.name, apiContract.name, {
+        format: "rawxml",
+        value: policyXml
+      });
+    }
   }
 
   /**
-   * Creates the XML payload that defines the specified CORS policy
-   * @param corsPolicy The CORS policy
+   * Gets the API policy associated with the specified API
+   * @param apiContract The API to query for policies
    */
-  private createCorsXmlPolicy(corsPolicy: ApiCorsPolicy): string {
-    const origins = corsPolicy.allowedOrigins ? corsPolicy.allowedOrigins.map((origin) => ({ origin })) : null;
-    const methods = corsPolicy.allowedMethods ? corsPolicy.allowedMethods.map((method) => ({ method })) : null;
-    const allowedHeaders = corsPolicy.allowedHeaders ? corsPolicy.allowedHeaders.map((header) => ({ header })) : null;
-    const exposeHeaders = corsPolicy.exposeHeaders ? corsPolicy.exposeHeaders.map((header) => ({ header })) : null;
+  private async getApiPolicy(apiContract: ApiContract): Promise<PolicyContract> {
+    Guard.null(apiContract);
 
-    const policy = [{
-      policies: [
-        {
-          inbound: [
-            { base: null },
-            {
-              cors: [
-                { "_attr": { "allow-credentials": corsPolicy.allowCredentials } },
-                { "allowed-origins": origins },
-                { "allowed-methods": methods },
-                { "allowed-headers": allowedHeaders },
-                { "expose-headers": exposeHeaders },
-              ]
-            }
-          ],
-        },
-        { backend: [{ base: null }] },
-        { outbound: [{ base: null }] },
-        { "on-error": [{ base: null }] },
-      ]
-    }];
+    try {
+      return await this.apimClient.apiPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name);
+    } catch (err) {
+      return null;
+    }
+  }
 
-    return xml(policy, { indent: "\t" });
+  /**
+   * Gets the API operation policy associated with the specified operation
+   * @param apiContract The API associated with the operation
+   * @param operationContract The API operation to query for policies
+   */
+  private async getApiOperationPolicy(apiContract: ApiContract, operationContract: OperationContract): Promise<PolicyContract> {
+    Guard.null(apiContract);
+    Guard.null(operationContract);
+
+    try {
+      return await this.apimClient.apiOperationPolicy.get(this.resourceGroup, this.apimConfig.name, apiContract.name, operationContract.name);
+    } catch (err) {
+      return null;
+    }
   }
 
   /**

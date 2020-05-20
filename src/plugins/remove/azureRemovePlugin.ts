@@ -1,6 +1,8 @@
 import Serverless from "serverless";
 import { ResourceService } from "../../services/resourceService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { Utils } from "../../shared/utils";
+import { constants } from "../../shared/constants";
 
 export class AzureRemovePlugin extends AzureBasePlugin {
 
@@ -14,21 +16,9 @@ export class AzureRemovePlugin extends AzureBasePlugin {
           "remove"
         ],
         options: {
-          resourceGroup: {
-            usage: "Resource group for the service",
-            shortcut: "g",
-          },
-          stage: {
-            usage: "Stage of service",
-            shortcut: "s"
-          },
-          region: {
-            usage: "Region of service",
-            shortcut: "r"
-          },
-          subscriptionId: {
-            usage: "Sets the Azure subscription ID",
-            shortcut: "i",
+          ...constants.deployedServiceOptions,
+          force: {
+            usage: "Force remove resource group without additional prompt"
           },
         }
       }
@@ -40,10 +30,31 @@ export class AzureRemovePlugin extends AzureBasePlugin {
   }
 
   private async remove() {
-    const resourceClient = new ResourceService(this.serverless, this.options);
-    await resourceClient.deleteDeployment();
-    await resourceClient.deleteResourceGroup();
-
-    this.log("Service successfully removed");
+    const resourceService = new ResourceService(this.serverless, this.options);
+    const rg = await resourceService.getResourceGroup();
+    const rgName = resourceService.getResourceGroupName();
+    if (!rg) {
+      this.log(`Resource group "${rgName}" does not exist in your Azure subscription`)
+      return;
+    }
+    let okToDelete = this.getOption("force") !== undefined;
+    if (!okToDelete) {
+      this.log(`This command will delete your ENTIRE resource group (${resourceService.getResourceGroupName()}). ` +
+      "and ALL the Azure resources that it contains " +
+      "Are you sure you want to proceed? If so, enter the full name of the resource group :");
+      const input = await Utils.waitForUserInput();
+      okToDelete = input === resourceService.getResourceGroupName();
+    }
+    
+    if (okToDelete) {
+      this.log("Deleting resource group");
+      await resourceService.deleteDeployment();
+      await resourceService.deleteResourceGroup();
+      this.log("Service successfully removed");
+    }
+    else {
+      this.log("Will not remove resource group.");
+      return;
+    }
   }
 }

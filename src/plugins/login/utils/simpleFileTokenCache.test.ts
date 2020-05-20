@@ -1,9 +1,9 @@
-import fs from "fs";
 import path from "path";
 import os from "os";
 import mockFs from "mock-fs";
 import { MockFactory } from "../../../test/mockFactory";
 import { SimpleFileTokenCache } from "./simpleFileTokenCache";
+import fs from "fs";
 
 describe("Simple File Token Cache", () => {
   const tokenFilePath = "slsTokenCache.json";
@@ -13,13 +13,15 @@ describe("Simple File Token Cache", () => {
     subscriptions: []
   };
 
+  beforeEach(() => {
+    mockFs();
+  });
+
   afterEach(() => {
     mockFs.restore();
   });
 
   it("Creates a load file on creation if none", () => {
-    mockFs();
-
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     new SimpleFileTokenCache(tokenFilePath);
 
@@ -37,8 +39,6 @@ describe("Simple File Token Cache", () => {
 
   it("Create .azure default directory if it doesn't exist", () => {
     const expected = path.join(os.homedir(), ".azure");
-
-    mockFs();
 
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     writeFileSpy.mockImplementation(() => undefined);
@@ -77,13 +77,12 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Saves to file after token is added", () => {
-    mockFs();
-
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const tokenCache = new SimpleFileTokenCache(tokenFilePath);
     const testEntries = MockFactory.createTestTokenCacheEntries();
-
-    tokenCache.add(testEntries);
+    
+    const callback = jest.fn();
+    tokenCache.add(testEntries, callback);
 
     const expected = {
       entries: testEntries,
@@ -95,12 +94,11 @@ describe("Simple File Token Cache", () => {
       tokenFilePath,
       JSON.stringify(expected)
     );
+    expect(callback).toBeCalled();
     writeFileSpy.mockRestore();
   });
 
   it("Saves to file after subscription is added", () => {
-    mockFs();
-
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const testFileCache = new SimpleFileTokenCache(tokenFilePath);
     const testSubs = MockFactory.createTestSubscriptions();
@@ -153,7 +151,8 @@ describe("Simple File Token Cache", () => {
     const testEntries = MockFactory.createTestTokenCacheEntries();
 
     testFileCache.addSubs(testSubs);
-    testFileCache.remove(testEntries);
+    const callback = jest.fn();
+    testFileCache.remove(testEntries, callback);
 
     const expected = {
       entries: [],
@@ -164,6 +163,7 @@ describe("Simple File Token Cache", () => {
       tokenFilePath,
       JSON.stringify(expected)
     );
+    expect(callback).toBeCalled();
     writeFileSpy.mockRestore();
   });
 
@@ -181,5 +181,34 @@ describe("Simple File Token Cache", () => {
 
     expect(cb).toBeCalledWith(null, result);
     expect(result).toEqual([]);
+  });
+
+  it("lists subscriptions", () => {
+    const testFileCache = new SimpleFileTokenCache(tokenFilePath);
+    const testSubs = MockFactory.createTestSubscriptions();
+    testFileCache.addSubs(testSubs);
+    expect(testFileCache.listSubscriptions()).toEqual(testSubs);
+  });
+
+  it("clears cache", () => {
+    const writeFileSpy = jest.spyOn(fs, "writeFileSync");
+
+    const testFileCache = new SimpleFileTokenCache(tokenFilePath);
+    const testSubs = MockFactory.createTestSubscriptions();
+    testFileCache.addSubs(testSubs);
+
+    const testEntries = MockFactory.createTestTokenCacheEntries();
+    testFileCache.add(testEntries);
+
+    expect(testFileCache.isEmpty()).toBe(false);
+    expect(testFileCache.listSubscriptions()).toEqual(testSubs);
+    
+    const callback = jest.fn();
+    testFileCache.clear(callback);
+    
+    expect(callback).toBeCalled();
+    expect(testFileCache.listSubscriptions()).toEqual([]);
+    expect(testFileCache.isEmpty()).toBe(true);
+    expect(writeFileSpy).toBeCalled();
   });
 });

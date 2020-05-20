@@ -1,14 +1,11 @@
-import semver from "semver";
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
-import configConstants from "../config";
-import { DeploymentConfig, FunctionRuntime, ServerlessAzureConfig, 
-  ServerlessAzureFunctionConfig, SupportedRuntimeLanguage } from "../models/serverless";
+import { CliCommand, CliCommandFactory } from "../config/cliCommandFactory";
+import { BuildMode, FunctionAppOS, getRuntimeLanguage, isNodeRuntime, isPythonRuntime, Runtime, RuntimeLanguage, supportedRuntimes, supportedRuntimeSet } from "../config/runtime";
+import { DeploymentConfig, ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { constants } from "../shared/constants";
-import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
 import { AzureNamingService, AzureNamingServiceOptions } from "./namingService";
-import runtimeVersionsJson from "./runtimeVersions.json";
 
 /**
  * Handles all Service Configuration
@@ -18,8 +15,13 @@ export class ConfigService {
   /** Configuration for service */
   private config: ServerlessAzureConfig;
 
+  /** CLI Command Factory */
+  private cliCommandFactory: CliCommandFactory;
+
   public constructor(private serverless: Serverless, private options: Serverless.Options) {
     this.config = this.initializeConfig(serverless.service);
+    this.cliCommandFactory = new CliCommandFactory();
+    this.registerCliCommands();
   }
 
   /**
@@ -61,7 +63,10 @@ export class ConfigService {
    * Azure Subscription ID
    */
   public getSubscriptionId(): string {
-    return this.config.provider.subscriptionId;
+    return this.getOption(constants.variableKeys.subscriptionId)
+      || process.env.AZURE_SUBSCRIPTION_ID
+      || this.config.provider.subscriptionId
+      || this.serverless.variables[constants.variableKeys.subscriptionId]
   }
 
   /**
@@ -84,7 +89,7 @@ export class ConfigService {
    */
   public getArtifactName(deploymentName?: string): string {
     deploymentName = deploymentName || this.getDeploymentName();
-    const { deployment, artifact } = configConstants.naming.suffix;
+    const { deployment, artifact } = constants.naming.suffix;
     return `${deploymentName
       .replace(`rg-${deployment}`, artifact)
       .replace(deployment, artifact)}.zip`
@@ -112,10 +117,39 @@ export class ConfigService {
   }
 
   /**
-   * Function runtime configuration
+   * Operating system for function app
    */
-  public getFunctionRuntime(): FunctionRuntime {
-    return this.config.provider.functionRuntime;
+  public getOs(): FunctionAppOS {
+    return this.config.provider.os;
+  }
+
+  /**
+   * Function app configured to run on Python
+   */
+  public isPythonTarget(): boolean {
+    return isPythonRuntime(this.config.provider.runtime);
+  }
+
+  /**
+   * Function app configured to run on Node
+   */
+  public isNodeTarget(): boolean {
+    return isNodeRuntime(this.config.provider.runtime);
+  }
+
+  /**
+   * Function app configured to run on Linux
+   */
+  public isLinuxTarget(): boolean {
+    return this.getOs() === FunctionAppOS.LINUX
+  }
+
+  public getCommand(key: string): CliCommand {
+    return this.cliCommandFactory.getCommand(key);
+  }
+
+  public getCompilerCommand(runtime: Runtime, mode: BuildMode): CliCommand {
+    return this.cliCommandFactory.getCommand(`${runtime}-${mode}`);
   }
 
   /**
@@ -123,19 +157,26 @@ export class ConfigService {
    * @param config Current Serverless configuration
    */
   private setDefaultValues(config: ServerlessAzureConfig) {
-    const { awsRegion, region, stage, prefix } = configConstants.defaults;
+    const { awsRegion, region, stage, prefix, os } = constants.defaults;
     const providerRegion = config.provider.region;
 
     if (!providerRegion || providerRegion === awsRegion) {
       config.provider.region = this.serverless.service.provider["location"] || region;
     }
- 
     if (!config.provider.stage) {
       config.provider.stage = stage;
     }
 
     if (!config.provider.prefix) {
       config.provider.prefix = prefix;
+    }
+
+    if (!config.provider.os) {
+      config.provider.os = os;
+    }
+    
+    if (!config.provider.type) {
+      config.provider.type = "consumption"
     }
   }
 
@@ -145,6 +186,12 @@ export class ConfigService {
    */
   private initializeConfig(service: Service): ServerlessAzureConfig {
     const config: ServerlessAzureConfig = service as any;
+    const providerConfig = Utils.get(this.serverless.variables, constants.variableKeys.providerConfig);
+    if (providerConfig) {
+      config.provider = providerConfig;
+      return config;
+    }
+    this.serverless.cli.log("Initializing provider configuration...");
     this.setDefaultValues(config);
 
     const {
@@ -155,7 +202,8 @@ export class ConfigService {
       tenantId,
       appId,
       deployment,
-      runtime
+      runtime,
+      os
     } = config.provider;
 
     const options: AzureNamingServiceOptions = {
@@ -178,79 +226,37 @@ export class ConfigService {
         || tenantId,
       appId: this.getOption(constants.variableKeys.appId)
         || process.env.AZURE_CLIENT_ID
-        || appId
+        || appId,
     }
     config.provider.resourceGroup = (
       this.getOption("resourceGroup", config.provider.resourceGroup)
     ) || AzureNamingService.getResourceName(options);
 
-    // Get property from `runFromBlobUrl` for backwards compatability
-    if (deployment && deployment.external === undefined && deployment["runFromBlobUrl"] !== undefined) {
-      deployment.external = deployment["runFromBlobUrl"];
+    if (!runtime) {
+      throw new Error(`Runtime undefined. Runtimes supported: ${supportedRuntimes.join(",")}`);
+    }
+
+    if (!supportedRuntimeSet.has(runtime)) {
+      throw new Error(`Runtime ${runtime} is not supported. Runtimes supported: ${supportedRuntimes.join(",")}`)
+    }
+
+    if (isPythonRuntime(runtime) && os !== FunctionAppOS.LINUX) {
+      this.serverless.cli.log("Python functions can ONLY run on Linux Function Apps.");
+      config.provider.os = FunctionAppOS.LINUX;
     }
 
     config.provider.deployment = {
-      ...configConstants.deploymentConfig,
-      ...deployment
+      ...constants.deploymentConfig,
+      ...deployment,
     }
 
-    config.provider.functionRuntime = this.getRuntime(runtime)
+    if (getRuntimeLanguage(runtime) === RuntimeLanguage.DOTNET && os === FunctionAppOS.LINUX) {
+      this.serverless.cli.log("Linux .NET Function apps must run from external package")
+      config.provider.deployment.external = true
+    }
 
+    this.serverless.variables[constants.variableKeys.providerConfig] = config.provider;
     return config;
-  }
-
-  private getRuntime(runtime: string): FunctionRuntime {
-    Guard.null(runtime, "runtime", "Runtime version not specified in serverless.yml");
-
-    const versionMatch = runtime.match(/([0-9]+\.)+[0-9]*x?/);
-    const languageMatch = runtime.match(/nodejs|python/);
-
-    let versionInput: string;
-    let languageInput: string;
-
-    // Extract version and language input
-    if (versionMatch && languageMatch) {
-      versionInput = versionMatch[0];
-      languageInput = languageMatch[0];
-    } else {
-      throw new Error(`Invalid runtime: ${runtime}. ${this.getRuntimeErrorMessage(null)}`);
-    }
-
-    const targetedVersionRegex = new RegExp(
-      `^${versionInput}`
-        .replace(".", "\.")
-        .replace("x", "[0-9]+"),
-    );
-
-    const matchingVersions: string[] = runtimeVersionsJson[languageInput]
-      .filter((item) => item.version.match(targetedVersionRegex))
-      .map((item) => item.version);
-
-    if (!matchingVersions.length) {
-      throw new Error(`Runtime ${runtime} is not supported. ${this.getRuntimeErrorMessage(null)}`);
-    }
-
-    const version = matchingVersions.sort(semver.rcompare)[0];
-
-    const language: SupportedRuntimeLanguage = {
-      "nodejs": SupportedRuntimeLanguage.NODE,
-      "python": SupportedRuntimeLanguage.PYTHON
-    }[languageInput];
-    
-    return {
-      language,
-      version
-    }
-  }
-
-  private getRuntimeErrorMessage(language: SupportedRuntimeLanguage) {
-    if (language) {
-      return `Supported versions for ${language} are: ${
-        runtimeVersionsJson[language]
-          .map((item) => item.version)
-          .join(",")}`
-    }
-    return `Supported versions: ${JSON.stringify(runtimeVersionsJson, null, 2)}`
   }
 
   /**
@@ -283,5 +289,67 @@ export class ConfigService {
    */
   protected getVariable(key: string, defaultValue?: any) {
     return Utils.get(this.serverless.variables, key, defaultValue);
+  }
+
+  private registerCliCommands() {
+    // for (const key of Object.keys(cliCommands)) {
+    //   this.cliCommandFactory.registerCommand(key, this.cliCommandFactory.registerCommand(key]);
+    // }
+    this.cliCommandFactory.registerCommand(constants.cliCommandKeys.start, {
+      command: "func",
+      args: [ "host", "start" ],
+    });
+
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET22}-${BuildMode.RELEASE}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "release",
+        "--framework",
+        "netcoreapp2.2",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET22}-${BuildMode.DEBUG}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "debug",
+        "--framework",
+        "netcoreapp2.2",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET31}-${BuildMode.RELEASE}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "release",
+        "--framework",
+        "netcoreapp3.1",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET31}-${BuildMode.DEBUG}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "debug",
+        "--framework",
+        "netcoreapp3.1",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
   }
 }

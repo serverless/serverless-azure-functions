@@ -16,7 +16,7 @@ export class FuncService extends BaseService {
       return;
     }
     if (this.exists(functionName)) {
-      this.serverless.cli.log(`Function ${functionName} already exists`);
+      this.log(`Function ${functionName} already exists`);
       return;
     }
     this.createHandler(functionName);
@@ -112,16 +112,12 @@ module.exports.handler = async function (context, req) {
     return [
       {
         http: true,
-        "x-azure-settings": {
-          authLevel: "anonymous"
-        }
+        authLevel: "anonymous"
       },
       {
         http: true,
-        "x-azure-settings": {
-          direction: "out",
-          name: "res"
-        }
+        direction: "out",
+        name: "res"
       },
     ]
   }

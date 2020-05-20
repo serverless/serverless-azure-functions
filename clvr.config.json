@@ -1,0 +1,4 @@
+{
+  "testPattern": "integrationTests/**/*.clvr.ts",
+  "parentDir": "integrationTests/configurations/"
+}

@@ -1,8 +1,8 @@
-import path from "path";
 import Serverless from "serverless";
-import { MockFactory } from "../test/mockFactory";
-import { FunctionMetadata, Utils } from "./utils";
 import { ConfigService } from "../services/configService";
+import { MockFactory } from "../test/mockFactory";
+import { constants } from "./constants";
+import { FunctionMetadata, Utils } from "./utils";
 
 describe("utils", () => {
   let sls: Serverless;
@@ -13,7 +13,7 @@ describe("utils", () => {
     Object.assign(sls.service, configService.getConfig());
   });
 
-  it("resolves handler when handler code is outside function folders", () => {
+  it("resolves handler when handler code is outside function folders", async () => {
     const handler = "src/handlers/hello.handler";
     const slsFunctions = sls.service["functions"];
     MockFactory.updateService(sls, {
@@ -26,18 +26,18 @@ describe("utils", () => {
     expect(sls.service["functions"].hello.handler).toEqual(handler);
 
     const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
+    const metadata = await Utils.getFunctionMetaData(functions[0], sls);
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: path.normalize("../src/handlers/hello.js"),
+      handlerPath: "../src/handlers/hello.js",
       params: expect.anything(),
     };
 
     expect(metadata).toEqual(expectedMetadata);
   });
 
-  it("resolves handler when code is in function folder", () => {
+  it("resolves handler when code is in function folder", async () => {
     const handler = "hello/index.handler";
     const slsFunctions = sls.service["functions"];
     MockFactory.updateService(sls, {
@@ -49,18 +49,18 @@ describe("utils", () => {
     });
 
     const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
+    const metadata = await Utils.getFunctionMetaData(functions[0], sls);
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: path.normalize("index.js"),
+      handlerPath: "index.js",
       params: expect.anything(),
     };
 
     expect(metadata).toEqual(expectedMetadata);
   });
 
-  it("resolves handler when code is at the project root", () => {
+  it("resolves handler when code is at the project root", async () => {
     const handler = "hello.handler";
     const slsFunctions = sls.service["functions"];
     MockFactory.updateService(sls, {
@@ -72,11 +72,11 @@ describe("utils", () => {
     });
 
     const functions = sls.service.getAllFunctions();
-    const metadata = Utils.getFunctionMetaData(functions[0], sls);
+    const metadata = await Utils.getFunctionMetaData(functions[0], sls);
 
     const expectedMetadata: FunctionMetadata = {
       entryPoint: "handler",
-      handlerPath: path.normalize("../hello.js"),
+      handlerPath: "../hello.js",
       params: expect.anything(),
     };
 
@@ -106,22 +106,62 @@ describe("utils", () => {
     expect(Utils.getTimestampFromName("")).toEqual(null);
   });
 
-  it("should get incoming binding", () => {
-    expect(Utils.getIncomingBindingConfig(MockFactory.createTestAzureFunctionConfig())).toEqual(
-      {
-        http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("in"),
-      }
-    );
+  it("should get incoming binding with x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfig();
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      "x-azure-settings": MockFactory.createTestHttpBinding("in"),
+    });
   });
 
-  it("should get outgoing binding", () => {
-    expect(Utils.getOutgoingBinding(MockFactory.createTestAzureFunctionConfig())).toEqual(
-      {
-        http: true,
-        "x-azure-settings": MockFactory.createTestHttpBinding("out"),
-      }
-    );
+  it("should get outgoing binding with x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfig();
+    const actual = Utils.getOutgoingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+    });
+  });
+
+  it("should get incoming binding with x-azure-settings if no direction is specified", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfig(undefined, true);
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    const expected = {
+      http: true,
+      "x-azure-settings": MockFactory.createTestHttpBinding("in"),
+    }
+    delete expected[constants.xAzureSettings].direction;
+    expect(actual).toEqual(expected);
+  });
+
+  it("should get incoming binding without x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfigWithoutXAzureSettings();
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      ...MockFactory.createTestHttpBinding("in"),
+    });
+  });  
+  
+  it("should get outgoing binding without x-azure-settings", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfigWithoutXAzureSettings();
+    const actual = Utils.getOutgoingBindingConfig(functionConfig);
+    expect(actual).toEqual({
+      http: true,
+      ...MockFactory.createTestHttpBinding("out"),
+    });
+  });
+
+  it("should get incoming binding without x-azure-settings if no direction is specified", () => {
+    const functionConfig = MockFactory.createTestAzureFunctionConfigWithoutXAzureSettings(undefined, true);
+    const actual = Utils.getIncomingBindingConfig(functionConfig);
+    const expected = {
+      http: true,
+      ...MockFactory.createTestHttpBinding("in"),
+    }
+    delete expected.direction;
+    expect(actual).toEqual(expected);
   });
 
   describe("runWithRetry", () => {

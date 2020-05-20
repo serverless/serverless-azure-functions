@@ -1,0 +1,37 @@
+service: py36
+
+provider:
+  name: azure
+  runtime: python3.6
+  prefix: tmp
+  stage: qa
+  region: Central US
+  apim: true
+  environment:
+    VARIABLE_FOO: 'foo'
+
+plugins:
+  - serverless-azure-functions
+
+package:
+  exclude:
+    - local.settings.json
+    - .vscode/**
+    - __pycache__/**
+    - node_modules/**
+    - .python_packages/**
+    - env/**
+    - .funcignore
+    - package.json
+    - package-lock.json
+    - data.json
+
+
+functions:
+  hello:
+    handler: hello
+    events:
+      - http: true
+        methods:
+          - GET
+        authLevel: anonymous

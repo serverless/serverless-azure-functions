@@ -1,16 +1,17 @@
 import Serverless from "serverless";
 import { constants } from "./constants";
-
-const bindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+const defaultBindingsJson = require("./bindings.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 export class BindingUtils {
-  public static getBindingsMetaData(serverless: Serverless) {
+  public static async getBindingsMetaData(serverless: Serverless) {
     const bindingDisplayNames = [];
     const bindingTypes = [];
     const bindingSettings = [];
     const bindingSettingsNames = [];
 
     serverless.cli.log("Parsing Azure Functions Bindings.json...");
+
+    const bindingsJson = defaultBindingsJson;
 
     for (let bindingsIndex = 0; bindingsIndex < bindingsJson[constants.bindings].length; bindingsIndex++) {
       const settingsNames = [];

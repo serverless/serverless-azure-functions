@@ -1,16 +1,25 @@
-import { BaseService } from "./baseService"
+import axios, { AxiosRequestConfig } from "axios";
+import { stringify } from "querystring";
 import Serverless from "serverless";
-import axios from "axios";
+import { ApimResource } from "../armTemplates/resources/apim";
+import { constants } from "../shared/constants";
+import { BaseService } from "./baseService";
 import { FunctionAppService } from "./functionAppService";
-import configConstants from "../config";
+
+export enum InvokeMode {
+  FUNCTION,
+  LOCAL,
+  APIM,
+}
 
 export class InvokeService extends BaseService {
   public functionAppService: FunctionAppService;
-  private local: boolean;
+  private mode: InvokeMode;
 
-  public constructor(serverless: Serverless, options: Serverless.Options, local: boolean = false) {
+  public constructor(serverless: Serverless, options: Serverless.Options, mode: InvokeMode = InvokeMode.FUNCTION) {
+    const local = mode === InvokeMode.LOCAL;
     super(serverless, options, !local);
-    this.local = local;
+    this.mode = mode;
     if (!local) {
       this.functionAppService = new FunctionAppService(serverless, options);
     }
@@ -27,7 +36,7 @@ export class InvokeService extends BaseService {
     const functionObject = this.configService.getFunctionConfig()[functionName];
     /* accesses the admin key */
     if (!functionObject) {
-      this.serverless.cli.log(`Function ${functionName} does not exist`);
+      this.log(`Function ${functionName} does not exist`);
       return;
     }
 
@@ -37,24 +46,27 @@ export class InvokeService extends BaseService {
       this.log("Needs to be an http function");
       return;
     }
+    const options: AxiosRequestConfig = await this.getRequestOptions(method, data);
 
     let url = await this.getUrl(functionName);
-
     if (method === "GET" && data) {
-      const queryString = this.getQueryString(data);
-      url += `?${queryString}`
+      url += `?${this.getQueryString(data)}`;
+      options.params = data;
     }
 
-    this.log(`URL for invocation: ${url}`);
-
-    const options = await this.getRequestOptions(method, data);
+    this.log(`Invocation url: ${url}`);
     this.log(`Invoking function ${functionName} with ${method} request`);
-    return await axios(url, options);
+    try {
+      return await axios(url, options,);
+    } catch (err) {
+      const response = err.response;
+      throw new Error(`HTTP Error: ${response.status} - ${response.data}`);
+    }
   }
 
   private async getUrl(functionName: string) {
-    if (this.local) {
-      return `${this.getLocalHost()}/api/${this.getConfiguredFunctionRoute(functionName)}`
+    if (this.mode === InvokeMode.LOCAL || this.mode === InvokeMode.APIM) {
+      return `${this.getHost()}/api/${this.getConfiguredFunctionRoute(functionName)}`
     }
     const functionApp = await this.functionAppService.get();
     const functionConfig = await this.functionAppService.getFunction(functionApp, functionName);
@@ -63,31 +75,33 @@ export class InvokeService extends BaseService {
   }
 
   private getLocalHost() {
-    return `http://localhost:${this.getOption("port", configConstants.defaults.localPort)}`
+    return `http://localhost:${this.getOption("port", constants.defaults.localPort)}`
+  }
+
+  private getApimHost() {
+    return `https://${ApimResource.getResourceName(this.config)}.azure-api.net`
   }
 
   private getConfiguredFunctionRoute(functionName: string) {
     try {
-      const { route } = this.config.functions[functionName].events[0]["x-azure-settings"];
+      const { route } = this.config.functions[functionName].events[0];
       return route || functionName
     } catch {
       return functionName;
     }
   }
 
-  private getQueryString(eventData: any) {
+  private getQueryString(eventData: any): string {
     if (typeof eventData === "string") {
       try {
         eventData = JSON.parse(eventData);
       }
       catch (error) {
-        return Promise.reject("The specified input data isn't a valid JSON string. " +
+        throw new Error("The specified input data isn't a valid JSON string. " +
         "Please correct it and try invoking the function again.");
       }
     }
-    return encodeURIComponent(Object.keys(eventData)
-      .map((key) => `${key}=${eventData[key]}`)
-      .join("&"));
+    return stringify(eventData);
   }
 
   /**
@@ -96,19 +110,29 @@ export class InvokeService extends BaseService {
    * @param data Data to use as body or query params
    */
   private async getRequestOptions(method: string, data?: any) {
-    const host = (this.local) ? this.getLocalHost() : await this.functionAppService.get();
+    const host = (this.mode === InvokeMode.LOCAL) ? this.getLocalHost() 
+      : (this.mode === InvokeMode.APIM) ? this.getApimHost() 
+        : await this.functionAppService.get();
     const options: any = {
       host,
       method,
       data,
     };
 
-    if (!this.local) {
+    if (this.mode !== InvokeMode.LOCAL) {
       options.headers = {
         "x-functions-key": await this.functionAppService.getMasterKey(),
       }
     }
 
     return options;
+  }
+
+  private getHost() {
+    if (this.mode === InvokeMode.LOCAL) {
+      return this.getLocalHost();
+    } else if (this.mode === InvokeMode.APIM) {
+      return this.getApimHost();
+    }
   }
 }

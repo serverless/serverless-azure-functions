@@ -11,12 +11,13 @@ import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import Utils from "serverless/classes/Utils";
 import PluginManager from "serverless/lib/classes/PluginManager";
-import { ApiCorsPolicy, ApiManagementConfig } from "../models/apiManagement";
-import { ArmDeployment, ArmResourceTemplate, ArmTemplateProvisioningState, ArmParameters, ArmParamType } from "../models/armTemplates";
+import { Runtime } from "../config/runtime";
+import { ApiCorsPolicy, ApiJwtValidatePolicy, ApiManagementConfig } from "../models/apiManagement";
+import { ArmDeployment, ArmParameters, ArmParamType, ArmResourceTemplate, ArmTemplateProvisioningState } from "../models/armTemplates";
 import { ServicePrincipalEnvVariables } from "../models/azureProvider";
 import { Logger } from "../models/generic";
-import { ServerlessAzureConfig, ServerlessAzureProvider, ServerlessAzureFunctionConfig, ServerlessCliCommand, ServerlessAzureFunctionBindingConfig } from "../models/serverless";
-import configConstants from "../config";
+import { ServerlessAzureConfig, ServerlessAzureFunctionBindingConfig, ServerlessAzureFunctionConfig, ServerlessAzureProvider, ServerlessCliCommand } from "../models/serverless";
+import { constants } from "../shared/constants";
 
 function getAttribute(object: any, prop: string, defaultValue: any): any {
   if (object && object[prop]) {
@@ -63,7 +64,11 @@ export class MockFactory {
       provider: MockFactory.createTestAzureServiceProvider(),
       service: serviceName,
       artifact: "app.zip",
-      functions
+      functions,
+      package: {
+        exclude: [],
+        include: [],
+      }
     } as any as Service;
   }
 
@@ -181,7 +186,7 @@ export class MockFactory {
     const result = [];
     const originalTimestamp = +MockFactory.createTestTimestamp();
     for (let i = 0; i < count; i++) {
-      const name = (includeTimestamp) ? `${configConstants.naming.suffix.deployment}${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
+      const name = (includeTimestamp) ? `${constants.naming.suffix.deployment}${i + 1}-t${originalTimestamp + i}` : `deployment${i + 1}`;
       result.push(
         MockFactory.createTestDeployment(name, i)
       )
@@ -198,7 +203,7 @@ export class MockFactory {
 
   public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
     return {
-      name: name || `${configConstants.naming.suffix.deployment}1-t${MockFactory.createTestTimestamp()}`,
+      name: name || `${constants.naming.suffix.deployment}1-t${MockFactory.createTestTimestamp()}`,
       properties: {
         timestamp: new Date(2019, 1, 1, 0, 0, second),
         parameters: MockFactory.createTestParameters(),
@@ -345,6 +350,27 @@ export class MockFactory {
     return [
       {
         "http": true,
+        "authLevel": "anonymous"
+      },
+      {
+        "http": true,
+        "direction": "out",
+        "name": "res"
+      }
+    ]
+  }
+
+  public static createTestFunctionMetadataWithXAzureSettings(name: string): ServerlessAzureFunctionConfig {
+    return {
+      "handler": `${name}.handler`,
+      "events": MockFactory.createTestFunctionEventsWithXAzureSettings(),
+    }
+  }
+
+  public static createTestFunctionEventsWithXAzureSettings(): ServerlessAzureFunctionBindingConfig[] {
+    return [
+      {
+        "http": true,
         "x-azure-settings": {
           "authLevel": "anonymous"
         }
@@ -376,7 +402,7 @@ export class MockFactory {
       deploymentName: "myDeploymentName",
       region: "eastus2",
       stage: "dev",
-      runtime: "nodejs10.x",
+      runtime: Runtime.NODE10,
     }
   }
 
@@ -426,16 +452,33 @@ export class MockFactory {
     return bindings;
   }
 
-  public static createTestAzureFunctionConfig(route?: string): ServerlessAzureFunctionConfig {
+  public static createTestAzureFunctionConfig(route?: string, excludeDirection?: boolean): ServerlessAzureFunctionConfig {
     return {
       events: [
         {
           http: true,
-          "x-azure-settings": MockFactory.createTestHttpBinding("in", route),
+          "x-azure-settings": MockFactory.createTestHttpBinding((excludeDirection) ? undefined : "in", route),
         },
         {
           http: true,
           "x-azure-settings": MockFactory.createTestHttpBinding("out"),
+        }
+      ],
+      handler: "handler.js",
+    }
+  }
+
+  public static createTestAzureFunctionConfigWithoutXAzureSettings(
+    route?: string, excludeDirection?: boolean): ServerlessAzureFunctionConfig {
+    return {
+      events: [
+        {
+          http: true,
+          ...MockFactory.createTestHttpBinding((excludeDirection) ? undefined : "in", route)
+        },
+        {
+          http: true,
+          ...MockFactory.createTestHttpBinding("out"),
         }
       ],
       handler: "handler.js",
@@ -459,8 +502,8 @@ export class MockFactory {
     return MockFactory.createTestHttpBinding();
   }
 
-  public static createTestHttpBinding(direction: string = "in", route?: string) {
-    if (direction === "in") {
+  public static createTestHttpBinding(direction?: string, route?: string) {
+    if (!direction || direction === "in") {
       return {
         authLevel: "anonymous",
         type: "httpTrigger",
@@ -616,6 +659,17 @@ export class MockFactory {
     };
   }
 
+  public static createTestMockApiJwtPolicy(): ApiJwtValidatePolicy {
+    return {
+      headerName: "authorization",
+      scheme: "bearer",
+      audiences: ["audience1"],
+      issuers: ["issuer1"],
+      failedStatusCode: 401,
+      failedErrorMessage: "Authorization required!"
+    };
+  }
+
   public static createTestArmDeployment(): ArmDeployment {
     return {
       template: MockFactory.createTestArmTemplate(),
@@ -655,7 +709,7 @@ export class MockFactory {
       cliOptions: null,
       commands: null,
       deprecatedEvents: null,
-      hooks: null,
+      hooks: {},
       loadAllPlugins: jest.fn(),
       loadCommand: jest.fn(),
       loadCommands: jest.fn(),

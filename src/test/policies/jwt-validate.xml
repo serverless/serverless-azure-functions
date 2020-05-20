@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<policies>
+  <inbound>
+    <base/>
+    <validate-jwt header-name="authorization" failed-validation-httpcode="401" failed-validation-error-message="Authorization required!" require-scheme="bearer">
+      <openid-config url="https://someurl"/>
+      <audiences>
+        <audience>audience1</audience>
+      </audiences>
+      <issuers>
+        <issuer>issuer1</issuer>
+      </issuers>
+      <required-claims>
+        <claim name="aud" match="all" separator=":">
+          <value>value1</value>
+          <value>value2</value>
+          <value>value3</value>
+        </claim>
+        <claim name="sub" match="any" separator=":">
+          <value>value4</value>
+          <value>value5</value>
+          <value>value6</value>
+        </claim>
+      </required-claims>
+    </validate-jwt>
+  </inbound>
+  <backend>
+    <base/>
+  </backend>
+  <outbound>
+    <base/>
+  </outbound>
+  <on-error>
+    <base/>
+  </on-error>
+</policies>

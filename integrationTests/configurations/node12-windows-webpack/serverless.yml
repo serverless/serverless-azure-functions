@@ -1,0 +1,33 @@
+service: nd12-win-web
+
+provider:
+  name: azure
+  prefix: tmp
+  stage: qa
+  region: West Europe
+  runtime: nodejs12
+  os: windows
+  apim: true
+
+  environment:
+    VARIABLE_FOO: 'foo'
+
+plugins:
+  - serverless-azure-functions
+  - serverless-webpack
+
+package:
+  exclude:
+    - local.settings.json
+    - .vscode/**
+
+functions:
+  hello:
+    handler: hello.sayHello
+    events:
+      - http: true
+        methods:
+          - GET
+        authLevel: anonymous
+
+ 

@@ -36,7 +36,7 @@ export class AzureLoginPlugin extends AzureBasePlugin<AzureLoginOptions> {
       }
       subId = subId || authResult.subscriptions[0].id;
       this.serverless.variables["subscriptionId"] = subId;
-      this.serverless.cli.log(`Using subscription ID: ${subId}`);
+      this.log(`Using subscription ID: ${subId}`);
     }
     catch (e) {
       this.log("Error logging into azure");

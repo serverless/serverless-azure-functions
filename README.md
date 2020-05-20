@@ -2,7 +2,7 @@
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
-[![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions)
+[![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions) [![Node Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Node%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Node+Integration+Tests%22) [![Python Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Python%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Python+Integration+Tests%22) [![.NET Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/.NET%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22.NET+Integration+Tests%22)
 
 ## Quickstart
 
@@ -22,6 +22,8 @@ $ cd <appName>
 # Install dependencies (including this plugin)
 $ npm install
 ```
+
+The `serverless.yml` file contains the configuration for your service. For more details on its configuration, see [the docs](docs/CONFIG.md).
 
 ### Running Function App Locally (`offline` plugin)
 
@@ -57,7 +59,32 @@ $ sls offline build
 To clean up files generated from the build, run:
 
 ```bash
-sls offline cleanup
+$ sls offline cleanup
+```
+
+To pass additional arguments to the spawned `func host start` process, add them as the option `spawnargs` (shortcut `a`). Example:
+
+```bash
+$ sls offline -a "--cors *"
+```
+
+This works for `sls offline` or `sls offline start`
+
+### Dry-Run Deployment
+
+Before you deploy your new function app, you may want to double check the resources that will be created, their generated names and other basic configuration info. You can run:
+
+```bash
+# -d is short for --dryrun
+$ sls deploy --dryrun
+```
+
+This will print out a basic summary of what your deployed service will look like.
+
+For a more detailed look into the generated ARM template for your resource group, add the `--arm` (or `-a`) flag:
+
+```bash
+$ sls deploy --dryrun --arm
 ```
 
 ### Deploy Your Function App
@@ -69,6 +96,26 @@ $ sls deploy
 ```
 
 For more advanced deployment scenarios, see our [deployment docs](docs/DEPLOY.md)
+
+### Get a Summary of Your Deployed Function App
+
+To see a basic summary of your application (same format as the dry-run summary above), run:
+
+```bash
+$ sls info
+```
+
+To look at the ARM template for the last successful deployment, add the `--arm` (or `-a`) flag:
+
+```bash
+$ sls info --arm
+```
+
+You can also get information services with different stages, regions or resource groups by passing any of those flags. Example:
+
+```bash
+$ sls info --stage prod --region westus2
+```
 
 ### Test Your Function App
 
@@ -103,6 +150,12 @@ If you have your service running locally (in another terminal), you can run:
 
 ```bash
 $ sls invoke local -f hello -p data.json
+```
+
+If you configured your function app to [run with APIM](./docs/examples/apim.md), you can run:
+
+```bash
+$ sls invoke apim -f hello -p data.json
 ```
 
 ### Roll Back Your Function App
@@ -141,6 +194,14 @@ If at any point you no longer need your service, you can run the following comma
 
 ```bash
 $ sls remove
+```
+
+You will then be prompted to enter the full name of the resource group as an extra safety before deleting the entire resource group.
+
+You can bypass this check by running:
+
+```bash
+$ sls remove --force
 ```
 
 ### Creating or removing Azure Functions
@@ -216,6 +277,15 @@ The getting started walkthrough illustrates the interactive login experience, wh
 - **[Visit our sample repos](docs/examples/samples.md) for full projects with different use cases**
 - [Configuring API Management](docs/examples/apim.md) that sits in front of function app
 
+### Logging Verbosity
+
+You can set the logging verbosity with the `--verbose` flag. If the `--verbose` flag is set with no value, logging will be as verbose as possible (debug mode). You can also provide a value with the flag to set the verbosity to a specific level:
+
+- `--verbose error` - Only error messages printed
+- `--verbose warn` - Only error and warning messages printed
+- `--verbose info` - Only error, warning and info messages printed
+- `--verbose debug` - All messages printed
+
 ### Contributing
 
 Please create issues in this repo for any problems or questions you find. Before sending a PR for any major changes, please create an issue to discuss.
@@ -236,6 +306,29 @@ We're still in the process of getting everying running 100%, but please refer to
 We use [Jest](https://jestjs.io/) for unit tests, and it is expected that every Pull Request containing code changes have accompanying unit tests.
 
 Run unit tests using `npm test` or `npm run test:coverage` to get coverage results.
+
+#### Integration Tests
+
+We run our integration tests twice per day from our GitHub workflow. These tests install the beta version of the plugin, deploy a function app (with APIM), re-deploy (to make sure ARM template deployment is skipped), invoke the function directly, invoke the APIM endpoint and then remove the resource group, making assertions on the output at each step. While the number of configurations one could use in the Serverless Framework is virtually infinite, we tried to capture the main runtimes and platforms that are supported by the tool:
+
+- Node 10 on Linux using remote build
+- Node 10 on Linux using external package
+- Node 10 on Windows
+- Node 10 on Windows using webpack
+- Node 12 on Linux using remote build
+- Node 12 on Linux using external package
+- Node 12 on Linux using remote build and premium functions
+- Node 12 on Windows
+- Node 12 on Windows using premium functions
+- Node 12 on Windows using webpack
+- Python 3.6 (Linux only)
+- Python 3.6 (Linux only) using premium functions
+- Python 3.7 (Linux only)
+- Python 3.8 (Linux only)
+
+We made these configurations as minimal as possible. If you are having problems with your project, feel free to check to see if our integration tests are passing (see badge at top of readme) and then double check our configuration inside the `integrationTests` directory. 
+
+We use [Clover](https://www.npmjs.com/package/clvr) to run the integration tests, and they run 2x per day in our GitHub Action.
 
 #### Signing commits
 

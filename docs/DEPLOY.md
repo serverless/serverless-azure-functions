@@ -14,6 +14,20 @@ By default, all functions are deploy to a stage (`dev`) and a region. The autoge
 - Create/Update app service plan, app service
 - Zipdeploy code
 
+### Tagging resource group
+
+To apply tags to your resource group, you can specify them in your provider config as such:
+
+```yaml
+...
+provider:
+  tags:
+    TAG_1: tagValue1
+    TAG_2: tagValue2
+```
+
+Existing tags with the same names will be updated. Existing tags (with different names) will **not** be removed.
+
 ### No resource group specified
 
 `sls deploy -s dev -r westus2`
@@ -41,7 +55,7 @@ then user try to deploy
 `sls deploy -s prod -r westus`
 
 1. Do we use the environment variables / creds associated with `dev` or `prod`?
-1. Someone new to the codecase see both the `serverless.yaml` and the command in a CD script, how can they tell which resourceGroup goes where.
+2. Someone new to the codecase see both the `serverless.yaml` and the command in a CD script, how can they tell which resourceGroup goes where.
 
 #### Specifying resourceGroup in command line
 
@@ -54,6 +68,21 @@ then user try to deploy
 
 1. always using the right resource group
 1. restrictive for user who have already defined their resources
+
+#### Specifying storage acount in serverless.yml
+
+1. can specify storage account for your Azure Functions
+1. specified storageAccount need to be unique
+1. default storageAccount is `sls<region><stage><6-char resource group hash>`
+
+```yaml
+provider:
+  stage: dev
+  region: westus
+  resourceGroup: myResourceGroup
+  storageAccount:
+    name: myStorageAccountName
+```
 
 ## Deployment Methodologies
 

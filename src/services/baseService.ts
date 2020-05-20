@@ -4,11 +4,13 @@ import fs from "fs";
 import request from "request";
 import Serverless from "serverless";
 import { StorageAccountResource } from "../armTemplates/resources/storageAccount";
-import { ServerlessAzureConfig, ServerlessAzureOptions, ServerlessLogOptions } from "../models/serverless";
+import { CliCommandFactory } from "../config/cliCommandFactory";
+import { ServerlessAzureConfig, ServerlessAzureOptions } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Guard } from "../shared/guard";
 import { Utils } from "../shared/utils";
 import { ConfigService } from "./configService";
+import { LoggingService, LogLevel } from "./loggingService";
 
 export abstract class BaseService {
   protected baseUrl: string;
@@ -21,6 +23,8 @@ export abstract class BaseService {
   protected storageAccountName: string;
   protected config: ServerlessAzureConfig;
   protected configService: ConfigService;
+  protected loggingService: LoggingService;
+  protected cliCommandFactory: CliCommandFactory
 
   protected constructor(
     protected serverless: Serverless,
@@ -29,12 +33,15 @@ export abstract class BaseService {
   ) {
     Guard.null(serverless);
     this.configService = new ConfigService(serverless, options);
+    this.loggingService = new LoggingService(serverless, options);
+    this.cliCommandFactory = new CliCommandFactory();
+
     this.config = this.configService.getConfig();
 
     this.baseUrl = "https://management.azure.com";
     this.serviceName = this.configService.getServiceName();
     this.credentials = serverless.variables[constants.variableKeys.azureCredentials];
-    this.subscriptionId = this.config.provider.subscriptionId;
+    this.subscriptionId = this.configService.getSubscriptionId();
     this.resourceGroup = this.configService.getResourceGroupName();
     this.deploymentName = this.configService.getDeploymentName();
     this.artifactName = this.configService.getArtifactName(this.deploymentName);
@@ -105,9 +112,41 @@ export abstract class BaseService {
    * Log message to Serverless CLI
    * @param message Message to log
    */
-  protected log(message: string, options?: ServerlessLogOptions, entity?: string) {
-    (this.serverless.cli.log as any)(message, entity, options);
-  }  
+  protected log(message: string, logLevel?: LogLevel) {
+    this.loggingService.log(message, logLevel);
+  }
+
+  /**
+   * Log error message to Serverless CLI
+   * @param message Error message to log
+   */
+  protected error(message: string) {
+    this.loggingService.error(message);
+  }
+
+  /**
+   * Log warning message to Serverless CLI
+   * @param message Warning message to log
+   */
+  protected warn(message: string) {
+    this.loggingService.warn(message);
+  }
+
+  /**
+   * Log info message to Serverless CLI
+   * @param message Info message to log
+   */
+  protected info(message: string) {
+    this.loggingService.info(message);
+  }
+
+  /**
+   * Log debug message to Serverless CLI
+   * @param message Debug message to log
+   */
+  protected debug(message: string) {
+    this.loggingService.debug(message);
+  }
 
   protected prettyPrint(object: any) {
     this.log(this.stringify(object));

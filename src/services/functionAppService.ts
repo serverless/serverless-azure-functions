@@ -11,7 +11,9 @@ import { Utils } from "../shared/utils";
 import { ArmService } from "./armService";
 import { AzureBlobStorageService } from "./azureBlobStorageService";
 import { BaseService } from "./baseService";
-import configConstants from "../config";
+import { constants } from "../shared/constants";
+import { FunctionAppOS } from "../config/runtime";
+const packageJson = require("../../package.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 export class FunctionAppService extends BaseService {
   private static readonly retryCount: number = 30;
@@ -29,9 +31,9 @@ export class FunctionAppService extends BaseService {
   public async get(): Promise<Site> {
     const response: any = await this.webClient.webApps.get(this.resourceGroup, FunctionAppResource.getResourceName(this.config));
     if (response.error && (response.error.code === "ResourceNotFound" || response.error.code === "ResourceGroupNotFound")) {
-      this.serverless.cli.log(this.resourceGroup);
-      this.serverless.cli.log(FunctionAppResource.getResourceName(this.config));
-      this.serverless.cli.log(JSON.stringify(response));
+      this.log(this.resourceGroup);
+      this.log(FunctionAppResource.getResourceName(this.config));
+      this.log(JSON.stringify(response));
       return null;
     }
 
@@ -40,17 +42,10 @@ export class FunctionAppService extends BaseService {
 
   public async getMasterKey(functionApp?: Site) {
     functionApp = functionApp || await this.get();
-    const adminToken = await this.getAuthKey(functionApp);
-    const keyUrl = `https://${functionApp.defaultHostName}/admin/host/systemkeys/_master`;
+    const keyUrl = `${this.baseUrl}${functionApp.id}/host/default/listkeys?api-version=2019-08-01`;
+    const response = await this.sendApiRequest("POST", keyUrl);
 
-    const response = await this.sendApiRequest("GET", keyUrl, {
-      json: true,
-      headers: {
-        "Authorization": `Bearer ${adminToken}`
-      }
-    });
-
-    return response.data.value;
+    return response.data.masterKey;
   }
 
   public async deleteFunction(functionApp: Site, functionName: string) {
@@ -157,11 +152,7 @@ export class FunctionAppService extends BaseService {
 
   public async uploadFunctions(functionApp: Site): Promise<any> {
     Guard.null(functionApp, "functionApp");
-
-    this.log("Deploying serverless functions...");
-
     const functionZipFile = this.getFunctionZipFile();
-
     if (this.config.provider.deployment.external) {
       this.log("Updating function app setting to run from external package...");
       await this.uploadZippedArtifactToBlobStorage(functionZipFile);
@@ -173,35 +164,18 @@ export class FunctionAppService extends BaseService {
 
       const response = await this.updateFunctionAppSetting(
         functionApp,
-        configConstants.runFromPackageSetting,
+        constants.runFromPackageSetting,
         sasUrl
       );
-
       await this.syncTriggers(functionApp, response.properties);
+      await this.logFunctions(functionApp);
     } else {
       await Promise.all([
-        // Can run in parallel if also uploading to function app
-        // Needs to happen first if `external` is true
+        // Uploaded to blob storage as artifact for future reference
         this.uploadZippedArtifactToBlobStorage(functionZipFile),
-        this.uploadZippedArfifactToFunctionApp(functionApp, functionZipFile)
+        this.publish(functionApp, functionZipFile),
       ]);
     }
-
-    this.log("Deployed serverless functions:")
-    const serverlessFunctions = this.serverless.service.getAllFunctions();
-    const deployedFunctions = await this.listFunctions(functionApp);
-
-    // List functions that are part of the serverless yaml config
-    deployedFunctions.forEach((functionConfig) => {
-      if (serverlessFunctions.includes(functionConfig.name)) {
-        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
-
-        if (httpConfig) {
-          const method = httpConfig.methods[0].toUpperCase();
-          this.log(`-> ${functionConfig.name}: [${method}] ${httpConfig.url}`);
-        }
-      }
-    });
   }
 
   /**
@@ -223,7 +197,7 @@ export class FunctionAppService extends BaseService {
     return await this.get();
   }
 
-  public async uploadZippedArfifactToFunctionApp(functionApp: Site, functionZipFile: string) {
+  public async uploadZippedArtifactToFunctionApp(functionApp: Site, functionZipFile: string) {
     const scmDomain = this.getScmDomain(functionApp);
 
     this.log(`Deploying zip file to function app: ${functionApp.name}`);
@@ -234,17 +208,24 @@ export class FunctionAppService extends BaseService {
 
     this.log(`-> Deploying service package @ ${functionZipFile}`);
 
+    const isLinux = this.configService.getOs() === FunctionAppOS.LINUX;
+    const uri = `https://${scmDomain}/api/zipdeploy${isLinux ? "?syncTriggers=true" : ""}`
+    this.log("Publishing to URI: " + uri);
+
     // https://github.com/projectkudu/kudu/wiki/Deploying-from-a-zip-file-or-url
     const requestOptions = {
       method: "POST",
-      uri: `https://${scmDomain}/api/zipdeploy/`,
+      uri,
       json: true,
       headers: {
         Authorization: `Bearer ${await this.getAccessToken()}`,
         Accept: "*/*",
         ContentType: "application/octet-stream",
+        "User-Agent": `serverless_framework/${this.serverless.version} serverless_azure_functions/${packageJson.version}`, //TODO Underscore version name of plugin/cli
       }
     };
+
+    this.prettyPrint(requestOptions);
 
     await this.sendFile(requestOptions, functionZipFile);
     this.log("-> Function package uploaded successfully");
@@ -280,19 +261,6 @@ export class FunctionAppService extends BaseService {
     }
   }
 
-  /**
-   * Uploads artifact file to blob storage container
-   */
-  private async uploadZippedArtifactToBlobStorage(functionZipFile: string): Promise<void> {
-    await this.blobService.initialize();
-    await this.blobService.createContainerIfNotExists(this.config.provider.deployment.container);
-    await this.blobService.uploadFile(
-      functionZipFile,
-      this.config.provider.deployment.container,
-      this.artifactName,
-    );
-  }
-
   public getFunctionHttpTriggerConfig(functionApp: Site, functionConfig: FunctionEnvelope): FunctionAppHttpTriggerConfig {
     const httpTrigger = functionConfig.config.bindings.find((binding) => {
       return binding.type === "httpTrigger";
@@ -315,13 +283,46 @@ export class FunctionAppService extends BaseService {
   }
 
   /**
-   * Gets a short lived admin token used to retrieve function keys
+   * Publish function app
+   * @param functionApp Function App
+   * @param functionZipFile Path to zipped function app file
    */
-  private async getAuthKey(functionApp: Site) {
-    const adminTokenUrl = `${this.baseUrl}${functionApp.id}/functions/admin/token?api-version=2016-08-01`;
-    const response = await this.sendApiRequest("GET", adminTokenUrl);
+  private async publish(functionApp: Site, functionZipFile: string) {
 
-    return response.data.replace(/"/g, "");
+    this.log("Deploying serverless functions...");
+    await this.uploadZippedArtifactToFunctionApp(functionApp, functionZipFile);
+    await this.logFunctions(functionApp);
+  }
+
+  private async logFunctions(functionApp: Site) {
+    this.log("Deployed serverless functions:");
+    const serverlessFunctions = this.serverless.service.getAllFunctions();
+    const deployedFunctions = await this.listFunctions(functionApp);
+
+    // List functions that are part of the serverless yaml config
+    deployedFunctions.forEach((functionConfig) => {
+      if (serverlessFunctions.includes(functionConfig.name)) {
+        const httpConfig = this.getFunctionHttpTriggerConfig(functionApp, functionConfig);
+
+        if (httpConfig) {
+          const method = httpConfig.methods[0].toUpperCase();
+          this.log(`-> ${functionConfig.name}: [${method}] ${httpConfig.url}`);
+        }
+      }
+    });
+  }
+
+  /**
+   * Uploads artifact file to blob storage container
+   */
+  private async uploadZippedArtifactToBlobStorage(functionZipFile: string): Promise<void> {
+    await this.blobService.initialize();
+    await this.blobService.createContainerIfNotExists(this.config.provider.deployment.container);
+    await this.blobService.uploadFile(
+      functionZipFile,
+      this.config.provider.deployment.container,
+      this.artifactName,
+    );
   }
 
   /**

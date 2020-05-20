@@ -16,6 +16,7 @@ import { AzureFuncPlugin } from "./plugins/func/azureFuncPlugin";
 import { AzureOfflinePlugin } from "./plugins/offline/azureOfflinePlugin"
 import { AzureRollbackPlugin } from "./plugins/rollback/azureRollbackPlugin"
 import { AzureKeyVaultPlugin } from "./plugins/identity/azureKeyVaultPlugin"
+import { AzureInfoPlugin } from "./plugins/info/azureInfoPlugin";
 
 export default class AzureIndex {
   public constructor(private serverless: Serverless, private options) {
@@ -33,6 +34,7 @@ export default class AzureIndex {
     this.serverless.pluginManager.addPlugin(AzureOfflinePlugin);
     this.serverless.pluginManager.addPlugin(AzureRollbackPlugin);
     this.serverless.pluginManager.addPlugin(AzureKeyVaultPlugin);
+    this.serverless.pluginManager.addPlugin(AzureInfoPlugin);
   }
 }
 

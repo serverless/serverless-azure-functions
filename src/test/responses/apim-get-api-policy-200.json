@@ -1,0 +1,14 @@
+{
+  "value": [
+    {
+      "id": "/subscriptions/d36d0808-a967-4f73-9fdc-32ea232fc81d/resourceGroups/${resourceGroup.name}/providers/Microsoft.ApiManagement/service/${resource.name}/apis/example-api/policies/policy",
+      "type": "Microsoft.ApiManagement/service/apis/policies",
+      "name": "policy",
+      "properties": {
+        "value": "<policies><inbound><base /></inbound><backend><base /></backend><outbound><base /></outbound><on-error><base /></on-error></policies>",
+        "format": "xml"
+      }
+    }
+  ],
+  "count": 1
+}

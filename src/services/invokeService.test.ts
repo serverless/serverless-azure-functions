@@ -1,12 +1,16 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
+import { constants } from "../shared/constants";
 import { MockFactory } from "../test/mockFactory";
-import { InvokeService } from "./invokeService";
+import { InvokeService, InvokeMode } from "./invokeService";
+
 jest.mock("@azure/arm-appservice")
 jest.mock("@azure/arm-resources")
-jest.mock("./functionAppService")
+
+jest.mock("./functionAppService");
 import { FunctionAppService } from "./functionAppService";
-import configConstants from "../config";
+import { ApimResource } from "../armTemplates/resources/apim";
+
 
 describe("Invoke Service ", () => {
   const app = MockFactory.createTestSite();
@@ -14,23 +18,28 @@ describe("Invoke Service ", () => {
   const testData = "test-data";
   const testResult = "test result";
   const authKey = "authKey";
+  const errorCode = 400;
+  const errorData = "This was a bad request";
   const baseUrl = "https://management.azure.com"
   const masterKeyUrl = `https://${app.defaultHostName}/admin/host/systemkeys/_master`;
   const authKeyUrl = `${baseUrl}${app.id}/functions/admin/token?api-version=2016-08-01`;
   const functionName = "hello";
   const urlPOST = `http://${app.defaultHostName}/api/${functionName}`;
-  const urlGET = `http://${app.defaultHostName}/api/${functionName}?name%3D${testData}`;
-  const localUrl = `http://localhost:${configConstants.defaults.localPort}/api/${functionName}`
+  const urlGET = `http://${app.defaultHostName}/api/${functionName}?name=${testData}`;
+  const localUrl = `http://localhost:${constants.defaults.localPort}/api/${functionName}`;
+  const apimUrl = `https://sls-eus2-dev-d99fe2-apim.azure-api.net/api/${functionName}`;
+
   let masterKey: string;
   let sls = MockFactory.createTestServerless();
+  const axiosMock = new MockAdapter(axios);
+
   let options = {
     function: functionName,
     data: JSON.stringify({name: testData}),
     method: "GET"
   } as any;
 
-  beforeAll(() => {
-    const axiosMock = new MockAdapter(axios);
+  beforeEach(() => {
     // Master Key
     axiosMock.onGet(masterKeyUrl).reply(200, { value: masterKey });
     // Auth Key
@@ -41,6 +50,8 @@ describe("Invoke Service ", () => {
     axiosMock.onPost(urlPOST).reply(200, testResult);
     // Mock url for local POST
     axiosMock.onPost(localUrl).reply(200, testResult);
+    // Mock url for APIM POST
+    axiosMock.onPost(apimUrl).reply(200, testResult);
   });
 
   beforeEach(() => {
@@ -74,11 +85,38 @@ describe("Invoke Service ", () => {
 
   it("Invokes a local function", async () => {
     options.method = "POST";
-    const service = new InvokeService(sls, options, true);
+    const service = new InvokeService(sls, options, InvokeMode.LOCAL);
     const response = await service.invoke(options.method, options.function, options.data);
     expect(JSON.stringify(response.data)).toEqual(JSON.stringify(testResult));
     expect(FunctionAppService.prototype.getFunctionHttpTriggerConfig).not.toBeCalled();
     expect(FunctionAppService.prototype.get).not.toBeCalled();
     expect(FunctionAppService.prototype.getMasterKey).not.toBeCalled();
+  });
+
+  it("Invokes an APIM function", async () => {
+    options.method = "POST";
+    const getResourceNameSpy = jest.spyOn(ApimResource, "getResourceName");
+    const service = new InvokeService(sls, options, InvokeMode.APIM);
+    const response = await service.invoke(options.method, options.function, options.data);
+    expect(JSON.stringify(response.data)).toEqual(JSON.stringify(testResult));
+    expect(FunctionAppService.prototype.getFunctionHttpTriggerConfig).not.toBeCalled();
+    expect(FunctionAppService.prototype.get).not.toBeCalled();
+    // Get Master Key should still be called for APIM
+    expect(FunctionAppService.prototype.getMasterKey).toBeCalled();
+    expect(getResourceNameSpy).toBeCalled();
+  });
+
+  it("Does not try to invoke a non-existent function", async () => {
+    const service = new InvokeService(sls, options);
+    const fakeName = "fakeFunction";
+    await service.invoke("GET", fakeName);
+    expect(sls.cli.log).lastCalledWith(`Function ${fakeName} does not exist`)
+  });
+
+  it("throws an error with status code and data", async () => {
+    // Mock url for POST
+    axiosMock.onPost(urlPOST).reply(errorCode, errorData);
+    const service = new InvokeService(sls, options);
+    await expect(service.invoke("POST", options.function, options.data)).rejects.toThrow(`HTTP Error: ${errorCode} - ${errorData}`);
   });
 });

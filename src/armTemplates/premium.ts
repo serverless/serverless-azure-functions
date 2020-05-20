@@ -4,6 +4,7 @@ import { StorageAccountResource } from "./resources/storageAccount";
 import { AppServicePlanResource } from "./resources/appServicePlan";
 import { ArmResourceTemplate } from "../models/armTemplates";
 import { CompositeArmTemplate } from "./compositeArmTemplate";
+import { ServerlessAzureConfig } from "../models/serverless";
 
 class PremiumPlanTemplate extends CompositeArmTemplate {
   public constructor() {
@@ -15,8 +16,8 @@ class PremiumPlanTemplate extends CompositeArmTemplate {
     ])
   }
 
-  public getTemplate(): ArmResourceTemplate {
-    const template = super.getTemplate();
+  public getTemplate(config: ServerlessAzureConfig): ArmResourceTemplate {
+    const template = super.getTemplate(config);
 
     template.parameters.appServicePlanSkuName.defaultValue = "EP1";
     template.parameters.appServicePlanSkuTier.defaultValue = "ElasticPremium";

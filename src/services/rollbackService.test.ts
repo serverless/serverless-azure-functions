@@ -2,9 +2,10 @@ import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
 import { ArmDeployment, ArmParamType } from "../models/armTemplates";
-import { DeploymentConfig } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
+import { constants } from "../shared/constants";
+
 import fs from "fs";
 
 jest.mock("./azureBlobStorageService");
@@ -18,7 +19,6 @@ import { FunctionAppService } from "./functionAppService";
 
 jest.mock("./armService");
 import { ArmService } from "./armService";
-import configConstants from "../config";
 
 describe("Rollback Service", () => {
 
@@ -28,7 +28,7 @@ describe("Rollback Service", () => {
   const sasURL = "sasURL";
   const containerName = "deployment-artifacts";
   const artifactName = MockFactory.createTestDeployment().name.replace(
-    configConstants.naming.suffix.deployment, configConstants.naming.suffix.artifact) + ".zip";
+    constants.naming.suffix.deployment, constants.naming.suffix.artifact) + ".zip";
   const artifactPath = path.join(".serverless", artifactName);
   const armDeployment: ArmDeployment = { template, parameters };
   const deploymentString = "deployments";
@@ -88,7 +88,7 @@ describe("Rollback Service", () => {
     const service = createService(sls, options);
     await service.rollback();
     const calls = (sls.cli.log as any).mock.calls;
-    expect(calls[0][0]).toEqual(`Couldn't find deployment with timestamp: ${timestamp}`);
+    expect(calls[1][0]).toEqual(`Couldn't find deployment with timestamp: ${timestamp}`);
   });
 
   it("should deploy blob package directly to function app", async () => {
@@ -107,19 +107,17 @@ describe("Rollback Service", () => {
       artifactPath,
     );
     expect(FunctionAppService.prototype.get).toBeCalled();
-    expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).toBeCalledWith(
+    expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).toBeCalledWith(
       appStub,
       artifactPath
     );
     expect(unlinkSpy).toBeCalledWith(artifactPath);
+    unlinkSpy.mockRestore();
   });
 
   it("should deploy function app with SAS URL", async () => {
     const sls = MockFactory.createTestServerless();
-    const deploymentConfig: DeploymentConfig = {
-      external: true
-    }
-    sls.service.provider["deployment"] = deploymentConfig;
+    sls.service.provider["deployment"] = { external: true };
     const service = createService(sls);
     await service.rollback();
     expect(AzureBlobStorageService.prototype.initialize).toBeCalled();
@@ -139,7 +137,8 @@ describe("Rollback Service", () => {
       artifactName
     );
     expect(FunctionAppService.prototype.get).not.toBeCalled();
-    expect(FunctionAppService.prototype.uploadZippedArfifactToFunctionApp).not.toBeCalled();
+    expect(FunctionAppService.prototype.uploadZippedArtifactToFunctionApp).not.toBeCalled();
     expect(unlinkSpy).not.toBeCalled();
+    unlinkSpy.mockRestore();
   });
 });

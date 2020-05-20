@@ -4,7 +4,7 @@ import { BaseService } from "./baseService";
 import { Utils } from "../shared/utils";
 import { AzureNamingService } from "./namingService";
 import { ArmDeployment, ArmTemplateProvisioningState } from "../models/armTemplates";
-import { DeploymentExtended } from "@azure/arm-resources/esm/models";
+import { DeploymentExtended, ResourceGroupsGetResponse } from "@azure/arm-resources/esm/models";
 
 export class ResourceService extends BaseService {
   private resourceClient: ResourceManagementClient;
@@ -13,6 +13,13 @@ export class ResourceService extends BaseService {
     super(serverless, options);
 
     this.resourceClient = new ResourceManagementClient(this.credentials, this.subscriptionId);
+  }
+
+  /**
+   * Name of configured resource group
+   */
+  public getResourceGroupName(): string {
+    return this.resourceGroup;
   }
 
   /**
@@ -87,10 +94,32 @@ export class ResourceService extends BaseService {
 
   public async deployResourceGroup() {
     this.log(`Creating resource group: ${this.resourceGroup}`);
+    
+    const resourceGroup = await this.getResourceGroup();
 
     return await this.resourceClient.resourceGroups.createOrUpdate(this.resourceGroup, {
       location: AzureNamingService.getNormalizedRegionName(this.configService.getRegion()),
+      tags: {
+        ...((resourceGroup) ? resourceGroup.tags : undefined),
+        ...this.config.provider.tags
+      }
     });
+  }
+
+  public async getResourceGroup(): Promise<ResourceGroupsGetResponse> {
+    try {
+      return await this.resourceClient.resourceGroups.get(this.resourceGroup);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  public async getResources() {
+    try {
+      return await this.resourceClient.resources.listByResourceGroup(this.resourceGroup);
+    } catch (e) {
+      return undefined;
+    }
   }
 
   public async deleteDeployment() {

@@ -1,4 +1,4 @@
-import configConstants from "../../config";
+import { constants } from "../../shared/constants";
 import { ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams, ArmParameter } from "../../models/armTemplates";
 import { ResourceConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
@@ -18,7 +18,7 @@ export class StorageAccountResource implements ArmResourceTemplateGenerator {
     };
     return AzureNamingService.getSafeResourceName({
       ...options,
-      maxLength: configConstants.naming.maxLength.storageAccount
+      maxLength: constants.naming.maxLength.storageAccount
     });
   }
 

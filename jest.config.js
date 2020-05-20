@@ -2,7 +2,7 @@ module.exports = {
   "collectCoverageFrom": [
     "src/**/*.{js,jsx,ts,tsx}",
     "!src/**/*.d.ts",
-    "!/src/test/"
+    "!src/test/*.ts"
   ],
   "testEnvironment": "node",
   "transform": {
@@ -23,5 +23,6 @@ module.exports = {
     "json",
     "jsx",
     "node"
-  ]
+  ],
+  "setupFilesAfterEnv": ["jest-os-detection"]
 };

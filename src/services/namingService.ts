@@ -1,6 +1,6 @@
 import { ServerlessAzureConfig, ResourceConfig } from "../models/serverless"
 import { Guard } from "../shared/guard"
-import configConstants from "../config";
+import { constants } from "../shared/constants";
 import md5 from "md5";
 
 export interface AzureNamingServiceOptions {
@@ -39,7 +39,7 @@ export class AzureNamingService {
     ].join("-");
 
     if(options.includeHash) {
-      name += `-${md5(options.config.provider.resourceGroup).substr(0, configConstants.resourceGroupHashLength)}`
+      name += `-${md5(options.config.provider.resourceGroup).substr(0, constants.resourceGroupHashLength)}`
     }
 
     if (options.suffix) {
@@ -86,7 +86,7 @@ export class AzureNamingService {
     let safeStage = this.createShortStageName(stage);
     let safeSuffix = options.suffix.replace(nonAlphaNumeric, "");
 
-    const hashLength = (options.includeHash) ? configConstants.resourceGroupHashLength : 0;
+    const hashLength = (options.includeHash) ? constants.resourceGroupHashLength : 0;
     const remaining = options.maxLength - (safePrefix.length + safeRegion.length + safeStage.length + safeSuffix.length + hashLength);
 
     // Dynamically adjust the substring based on space needed
@@ -120,8 +120,8 @@ export class AzureNamingService {
    * @param timestamp The timestamp of the deployment
    */
   public static getDeploymentName(config: ServerlessAzureConfig, timestamp?: string) {
-    let maxLength = configConstants.naming.maxLength.deploymentName;
-    const suffix = configConstants.naming.suffix.deployment;
+    let maxLength = constants.naming.maxLength.deploymentName;
+    const suffix = constants.naming.suffix.deployment;
 
     const { deploymentName } = config.provider
 

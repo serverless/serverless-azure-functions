@@ -1,6 +1,7 @@
 import Serverless from "serverless";
 import { RollbackService } from "../../services/rollbackService";
 import { AzureBasePlugin } from "../azureBasePlugin";
+import { constants } from "../../shared/constants";
 
 /**
  * Plugin for rolling back Function App Service to previous deployment
@@ -21,22 +22,7 @@ export class AzureRollbackPlugin extends AzureBasePlugin {
             usage: "Timestamp of previous deployment",
             shortcut: "t",
           },
-          resourceGroup: {
-            usage: "Resource group for the service",
-            shortcut: "g",
-          },
-          stage: {
-            usage: "Stage of service",
-            shortcut: "s"
-          },
-          region: {
-            usage: "Region of service",
-            shortcut: "r"
-          },
-          subscriptionId: {
-            usage: "Sets the Azure subscription ID",
-            shortcut: "i",
-          },
+          ...constants.deployedServiceOptions
         }
       }
     }

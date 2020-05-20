@@ -1,24 +1,41 @@
-import { relative } from "path";
+import { relative, join } from "path";
 import Serverless from "serverless";
-import { ServerlessAzureFunctionConfig, ServerlessAzureConfig } from "../models/serverless";
+import { ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { BindingUtils } from "./bindings";
 import { constants } from "./constants";
+import { createInterface } from "readline"
+import { SpawnOptions, StdioOptions } from "child_process";
+import { spawn } from "cross-spawn"
+import { getRuntimeLanguage } from "../config/runtime";
 
 export interface FunctionMetadata {
-  entryPoint: any;
-  handlerPath: any;
-  params: any;
+  entryPoint: string;
+  handlerPath: string;
+  params: {
+    functionJson: any;
+  };
+}
+
+export interface ServerlessSpawnOptions {
+  serverless: Serverless;
+  command: string;
+  commandArgs: string[];
+  silent?: boolean;
+  stdio?: StdioOptions;
+  commandName?: string;
+  cwd?: string;
+  onSigInt?: () => void;
 }
 
 export class Utils {
-  public static getFunctionMetaData(functionName: string, serverless: Serverless): FunctionMetadata {
+  public static async getFunctionMetaData(functionName: string, serverless: Serverless): Promise<FunctionMetadata> {
     const config: ServerlessAzureConfig = serverless.service as any;
     const bindings = [];
     let bindingSettingsNames = [];
     let bindingSettings = [];
     let bindingUserSettings = {};
     let bindingType;
-    const functionsJson = { disabled: false, bindings: [] };
+    const functionJson = { disabled: false, bindings: [] };
     const functionObject = serverless.service.getFunction(functionName);
     const handler = functionObject.handler;
     const events = functionObject["events"];
@@ -26,7 +43,7 @@ export class Utils {
       functionJson: null
     };
 
-    const parsedBindings = BindingUtils.getBindingsMetaData(serverless);
+    const parsedBindings = await BindingUtils.getBindingsMetaData(serverless);
 
     const bindingTypes = parsedBindings.bindingTypes;
     const bindingDisplayNames = parsedBindings.bindingDisplayNames;
@@ -47,7 +64,13 @@ export class Utils {
       serverless.cli.log(`Building binding for function: ${functionName} event: ${bindingType}`);
 
       bindingUserSettings = {};
-      const azureSettings = events[eventsIndex][constants.xAzureSettings];
+
+      // Merges both the event and event.x-azure-settings for backwards compatibility
+      // Prefers the event and will override anything in x-azure-settings
+      const azureSettings = {
+        ...events[eventsIndex][constants.xAzureSettings],
+        ...events[eventsIndex]
+      };
       let bindingTypeIndex = bindingTypes.indexOf(bindingType);
       const bindingUserSettingsMetaData = BindingUtils.getBindingUserSettingsMetaData(azureSettings, bindingType, bindingTypeIndex, bindingDisplayNames);
 
@@ -82,8 +105,8 @@ export class Utils {
       bindings.push(BindingUtils.getHttpOutBinding());
     }
 
-    functionsJson.bindings = bindings;
-    params.functionsJson = functionsJson;
+    functionJson.bindings = bindings;
+    params.functionJson = functionJson;
 
     let { handlerPath, entryPoint } = Utils.getEntryPointAndHandlerPath(handler, config);
     if (functionObject["scriptFile"]) {
@@ -92,7 +115,7 @@ export class Utils {
 
     return {
       entryPoint,
-      handlerPath: relative(functionName, handlerPath),
+      handlerPath: relative(functionName, handlerPath).replace(/\\/g, "/"),
       params: params
     };
   }
@@ -103,7 +126,7 @@ export class Utils {
     const entryPoint = (handlerSplit.length > 1) ? handlerSplit[handlerSplit.length - 1] : undefined;
 
     const handlerPath = ((handlerSplit.length > 1) ? handlerSplit[0] : handler) 
-      + constants.runtimeExtensions[config.provider.functionRuntime.language]
+      + constants.runtimeExtensions[getRuntimeLanguage(config.provider.runtime)]
 
     return {
       entryPoint,
@@ -142,14 +165,14 @@ export class Utils {
 
   public static getIncomingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
     return functionConfig.events.find((event) => {
-      const settings = event["x-azure-settings"]
+      const settings = Utils.get(event, constants.xAzureSettings, event);
       return settings && (!settings.direction || settings.direction === "in");
     });
   }
 
-  public static getOutgoingBinding(functionConfig: ServerlessAzureFunctionConfig) {
+  public static getOutgoingBindingConfig(functionConfig: ServerlessAzureFunctionConfig) {
     return functionConfig.events.find((event) => {
-      const settings = event["x-azure-settings"]
+      const settings = Utils.get(event, constants.xAzureSettings, event);
       return settings && settings.direction === "out";
     });
   }
@@ -157,7 +180,7 @@ export class Utils {
   /**
    * Runs an operation with auto retry policy
    * @param operation The operation to run
-   * @param maxRetries The max number or retreis
+   * @param maxRetries The max number of retries
    * @param retryWaitInterval The time to wait between retries
    */
   public static async runWithRetry<T>(operation: (retry?: number) => Promise<T>, maxRetries: number = 3, retryWaitInterval: number = 1000) {
@@ -186,6 +209,89 @@ export class Utils {
   public static wait(time: number = 1000) {
     return new Promise((resolve) => {
       setTimeout(resolve, time);
+    });
+  }
+
+  /**
+   * Wait for user input and return it
+   */
+  public static async waitForUserInput(): Promise<string> {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    return new Promise((resolve) => {
+      rl.question("", (answer: string) => {
+        rl.close();
+        resolve(answer);
+      })
+    });
+  }
+  
+  /*
+   * Spawn a Node child process from executable within node_modules/.bin
+   * @param command CLI Command - NO ARGS
+   * @param spawnArgs Array of arguments for CLI command
+   */
+  public static spawnLocal(options: ServerlessSpawnOptions): Promise<void> {
+    const { serverless, command } = options;
+    const localCommand = join(
+      serverless.config.servicePath,
+      "node_modules",
+      ".bin",
+      command
+    );
+    return this.spawn({
+      ...options,
+      command: localCommand,
+      commandName: command,
+    });
+  }
+
+  // public static spawn()
+
+  public static spawn(options: ServerlessSpawnOptions): Promise<void> {
+    const { 
+      command,
+      serverless,
+      commandArgs,
+      onSigInt,
+      commandName,
+      stdio,
+      cwd,
+    } = options;
+
+    const env = {
+      // Inherit environment from current process, most importantly, the PATH
+      ...process.env,
+      // Environment variables from serverless config are king
+      ...serverless.service.provider["environment"],
+    }
+    if (!options.silent) {
+      serverless.cli.log(`Spawning process '${commandName || command} ${commandArgs.join(" ")}'`);
+    }
+    return new Promise(async (resolve, reject) => {
+      const spawnOptions: SpawnOptions = { 
+        env,
+        stdio: stdio || "inherit",
+        cwd: cwd
+      };
+
+      const childProcess = spawn(command, commandArgs, spawnOptions);
+
+      if (onSigInt) {
+        process.on("SIGINT", onSigInt);
+      }
+
+      childProcess.on("exit", (code, signal) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          serverless.cli.log("Got an exit")
+          reject(`${code} ${signal}`);
+        }
+      });
     });
   }
 }

@@ -1,0 +1,23 @@
+service: dt31-win
+
+provider:
+  name: azure
+  runtime: dotnet3.1
+  region: West Europe
+  prefix: tmp
+  stage: qa
+  apim: true
+  environment:
+    VARIABLE_FOO: 'foo'
+
+plugins:
+  - serverless-azure-functions
+
+functions:
+  hello:
+    handler: hello
+    events:
+      - http: true
+        methods:
+          - GET
+        authLevel: anonymous

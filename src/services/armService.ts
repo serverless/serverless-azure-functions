@@ -39,7 +39,7 @@ export class ArmService extends BaseService {
       throw new Error(`Unable to find template with name ${type} `);
     }
 
-    const mergedTemplate = template.getTemplate();
+    const mergedTemplate = template.getTemplate(this.config);
     let parameters = template.getParameters(this.config);
 
     if (this.config.provider.apim) {
@@ -101,6 +101,8 @@ export class ArmService extends BaseService {
       return;
     }
 
+    deployment.parameters = deployment.parameters || {};
+    
     for (const key of Object.keys(deployment.parameters)) {
       if (!deployment.parameters[key].value) {
         delete deployment.parameters[key];
@@ -160,6 +162,9 @@ export class ArmService extends BaseService {
 
     const paramsNormalizer = (params: ArmParameters): ArmParameters => {
       const normalized = {};
+      if (!params) {
+        return normalized;
+      }
       const keys = Object.keys(params);
       for (const key of keys) {
         const original = params[key];
@@ -207,6 +212,8 @@ export class ArmService extends BaseService {
    */
   private mergeDefaultParams(parameters: ArmParameters, defaultParameters: ArmParameters): ArmParameters {
     const mergedParams: ArmParameters = {}
+    parameters = parameters || {};
+    defaultParameters = defaultParameters || {};
     Object.keys(defaultParameters).forEach((key) => {
       const defaultParam = defaultParameters[key];
       const param = parameters[key];
@@ -227,11 +234,11 @@ export class ArmService extends BaseService {
     // added to the ARM template used in the deployment.
     const environmentVariables = this.config.provider.environment;
     if (environmentVariables) {
-      this.serverless.cli.log("-> Merging environment configuration");
+      this.log("-> Merging environment configuration");
 
       // This is a json path expression
       // Learn more @ https://goessner.net/articles/JsonPath/index.html#e2
-      const appSettingsPath = "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings";
+      const appSettingsPath = "$.resources[?(@.type==\"Microsoft.Web/sites\")].properties.siteConfig.appSettings";
 
       // Merges serverless yaml environment configuration into the app settings of the template
       jsonpath.apply(deployment.template, appSettingsPath, function (appSettingsList) {

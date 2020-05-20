@@ -9,6 +9,7 @@ import { Deployments } from "@azure/arm-resources";
 import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
 import { ResourceService } from "./resourceService";
 import { DeploymentExtendedError } from "../models/azureProvider";
+import { Runtime } from "../config/runtime";
 
 describe("Arm Service", () => {
   let sls: Serverless
@@ -68,7 +69,7 @@ describe("Arm Service", () => {
     });
 
     it("Creates a custom ARM template from well-known type", async () => {
-      sls.service.provider.runtime = "nodejs6.9.x";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType("premium");
 
       expect(deployment).not.toBeNull();
@@ -78,7 +79,7 @@ describe("Arm Service", () => {
 
     it("Creates a custom ARM template (with APIM support) from well-known type", async () => {
       sls.service.provider["apim"] = MockFactory.createTestApimConfig();
-      sls.service.provider.runtime = "nodejs10.6.x";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Premium);
 
       expect(deployment).not.toBeNull();
@@ -93,7 +94,7 @@ describe("Arm Service", () => {
     });
 
     it("Premium template includes correct resources", async () => {
-      sls.service.provider.runtime = "nodejs10.14.1";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Premium);
 
       expect(deployment.template.parameters.appServicePlanSkuTier.defaultValue).toEqual("ElasticPremium");
@@ -116,7 +117,7 @@ describe("Arm Service", () => {
     });
 
     it("ASE template includes correct resources", async () => {
-      sls.service.provider.runtime = "nodejs10.14.1";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType(ArmTemplateType.AppServiceEnvironment);
 
       expect(deployment.template.parameters.appServicePlanSkuTier.defaultValue).toEqual("Isolated");
@@ -142,7 +143,7 @@ describe("Arm Service", () => {
     });
 
     it("Consumption template includes correct resources", async () => {
-      sls.service.provider.runtime = "nodejs10.x";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
 
       expect(deployment.template.resources.find((resource) => resource.type === "Microsoft.Web/hostingEnvironments")).toBeUndefined();
@@ -167,7 +168,16 @@ describe("Arm Service", () => {
         template: MockFactory.createTestArmTemplate()
       };
       await service.deployTemplate(deployment);
-      expect(Deployments.prototype.createOrUpdate).not.toBeCalled()
+      expect(Deployments.prototype.createOrUpdate).not.toBeCalled();
+    });
+
+    it("Does not crash if deployment parameters are undefined", async () => {
+      const deployment: ArmDeployment = {
+        parameters: undefined,
+        template: MockFactory.createTestArmTemplate(),
+      };
+      await service.deployTemplate(deployment);
+      expect(Deployments.prototype.createOrUpdate).toBeCalled();
     });
 
     it("Does not deploy if identity is only difference between deployments", async () => {
@@ -257,19 +267,21 @@ describe("Arm Service", () => {
       };
 
       sls.service.provider["environment"] = environmentConfig
-      sls.service.provider.runtime = "nodejs10.x";
+      sls.service.provider.runtime = Runtime.NODE10;
+      sls.service.provider["os"] = "windows";
 
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
       await service.deployTemplate(deployment);
 
-      const appSettings: any[] = jsonpath.query(deployment.template, "$.resources[?(@.kind==\"functionapp\")].properties.siteConfig.appSettings[*]");
+      const appSettings: any[] = jsonpath.query(deployment.template, "$.resources[?(@.type==\"Microsoft.Web/sites\")].properties.siteConfig.appSettings[*]");
+     
       expect(appSettings.find((setting) => setting.name === "PARAM_1")).toEqual({ name: "PARAM_1", value: environmentConfig.PARAM_1 });
       expect(appSettings.find((setting) => setting.name === "PARAM_2")).toEqual({ name: "PARAM_2", value: environmentConfig.PARAM_2 });
       expect(appSettings.find((setting) => setting.name === "PARAM_3")).toEqual({ name: "PARAM_3", value: environmentConfig.PARAM_3 });
     });
 
     it("Deploys ARM template via resources REST API", async () => {
-      sls.service.provider.runtime = "nodejs10.x";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
 
       await service.deployTemplate(deployment);
@@ -333,7 +345,7 @@ describe("Arm Service", () => {
     });
 
     it("Does not try to include paramaters with a value that is undefined", async () => {
-      sls.service.provider.runtime = "nodejs10.x";
+      sls.service.provider.runtime = Runtime.NODE10;
       const deployment = await service.createDeploymentFromType(ArmTemplateType.Consumption);
 
       expect(deployment.parameters.functionAppExtensionVersion).not.toBeUndefined();
