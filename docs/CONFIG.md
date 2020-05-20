@@ -16,13 +16,52 @@ This document serves as a basic outline for configuring your Azure Function App 
     - `python3.6` (forced to use `linux`)
     - `python3.7` (forced to use `linux`)
     - `python3.8` (forced to use `linux`)
+    - `dotnet2.2`
+    - `dotnet3.1`
 - `provider.region` - [Azure region](https://azure.microsoft.com/en-us/global-infrastructure/regions/) for resources
 - `provider.prefix` - Prefix used in naming convention for resources. Default `sls`
 - `provider.subscriptionId` - Subscription ID to be used in deployment. Can also be set via:
    - Command-line argument (`--subscriptionId {SUB_ID}`)
    - Environment variable (`AZURE_SUBSCRIPTION_ID`)
 - `provider.stage` - Stage for resources. Default `dev`
- <!-- TODO - provider.type -->
+- `provider.type` - Type of Azure Function app
+  - `consumption` (default)
+  - `premium`
+  - `ase`
+- `provider.subscriptionId` - Azure subscription ID. Can also be specified by environment variable (`AZURE_SUBSCRIPTION_ID`) or command-line args (`--subscriptionId`)
+- `provider.tenantId` - Azure subscription ID. Can also be specified by environment variable (`AZURE_TENANT_ID`) or command-line args (`--tenantId`)
+- `provider.appId` - Azure subscription ID. Can also be specified by environment variable (`AZURE_CLIENT_ID`) or command-line args (`--appId`)
+- `provider.tags` - Tags to apply to resource group
+  ```yaml
+  provider:
+    tags:
+      tagName: tagValue
+  ```
+- `provider.deployment` - Deployment configuration
+  - `provider.deployment.external` - Publishes function app by uploading to blob storage and executes a sync triggers command
+  - `provider.deployment.rollback` - Enables the rollback scenario by timestamping deployments and artifacts. (Default true)
+  - `provider.deployment.container` - Optional specification of container name for zipped code artifacts
+- `provider.{resource}.name` - Specify name of resource for the Azure resource types
+- `provider.{resource}.sku.name` - Specify name of the sku for the Azure resource types
+- `provider.{resource}.sku.tier` - Specify tier of the sku for the Azure resource types
+- Azure resource types 👆
+  - `functionApp`
+  - `appInsights`
+  - `appServicePlan`
+  - `storageAccount`
+  - `hostingEnvironment`
+  - `virtualNetwork`
+  - `keyVaultConfig` (can only specify `name` or `resourceGroup`)
+- `provider.deploymentName` - Specification of deployment name
+- `provider.armTemplate` - Specification of ARM template to use
+    ```yaml
+    provider:
+      armTemplate:
+        file: "pathToArmTemplate.json"
+        parameters:
+          param1: value1
+          param2: value2
+    ```
 - `provider.environment` - Key value pairs to set as app settings (environment variables) within function app. Example:
     ```yaml
     provider:

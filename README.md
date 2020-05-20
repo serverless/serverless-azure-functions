@@ -2,13 +2,13 @@
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
-[![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions) [![Node Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Node%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Node+Integration+Tests%22) [![Python Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Python%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Python+Integration+Tests%22) [![.NET Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/.NET%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22.NET+Integration+Tests%22)
+[![Build Status](https://dev.azure.com/serverless-inc/serverless-azure-functions/_apis/build/status/Publish%20Release?branchName=master)](https://dev.azure.com/serverless-inc/serverless-azure-functions/_build/latest?definitionId=13&branchName=master) [![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions) [![npm version](https://badge.fury.io/js/serverless-azure-functions.svg)](https://www.npmjs.com/package/serverless-azure-functions) [![Node Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Node%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Node+Integration+Tests%22) [![Python Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Python%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Python+Integration+Tests%22) [![.NET Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/.NET%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22.NET+Integration+Tests%22)
 
 ## Quickstart
 
 ### Pre-requisites
 
-1. Node.js 8.x or 10.x *(this is the runtime version supported by Azure Functions)*
+1. Node.js 8.x or above
 2. Serverless CLI `v1.9.0+`. You can run `npm i -g serverless` if you don't already have it.
 3. An Azure account. If you don't already have one, you can sign up for a [free trial](https://azure.microsoft.com/en-us/free/) that includes $200 of free credit.
 
@@ -16,6 +16,7 @@ This plugin enables Azure Functions support within the Serverless Framework.
 
 ```bash
 # Create Azure Function App from template
+# Templates include: azure-nodejs, azure-python, azure-dotnet
 $ sls create -t azure-nodejs -p <appName>
 # Move into project directory
 $ cd <appName>
@@ -27,13 +28,7 @@ The `serverless.yml` file contains the configuration for your service. For more 
 
 ### Running Function App Locally (`offline` plugin)
 
-In order to run a Azure Function App locally, the `azure-functions-core-tools` package needs to be installed from NPM. Since it is only used for local development, we did not include it in the `devDependencies` of `package.json`. To install globally, run:
-
-```bash
-$ npm i azure-functions-core-tools -g
-```
-
-Then, at the root of your project directory, run:
+At the root of your project directory, run:
 
 ```bash
 # Builds necessary function bindings files and starts the function app
@@ -44,16 +39,16 @@ The `offline` process will generate a directory for each of your functions, whic
 
 After the necessary files are generated, it will start the function app from within the same shell. For HTTP functions, the local URLs will be displayed in the console when the function app is initialized.
 
-To simply start the function app *without* building the files, run:
-
-```bash
-$ sls offline start
-```
-
 To build the files *without* spawning the process to start the function app, run:
 
 ```bash
 $ sls offline build
+```
+
+To simply start the function app *without* building the files, run:
+
+```bash
+$ sls offline start
 ```
 
 To clean up files generated from the build, run:
@@ -325,10 +320,14 @@ We run our integration tests twice per day from our GitHub workflow. These tests
 - Python 3.6 (Linux only) using premium functions
 - Python 3.7 (Linux only)
 - Python 3.8 (Linux only)
+- .NET Core 2.2 on Linux
+- .NET Core 2.2 on Windows
+- .NET Core 3.1 on Linux
+- .NET Core 3.1 on Windows
 
 We made these configurations as minimal as possible. If you are having problems with your project, feel free to check to see if our integration tests are passing (see badge at top of readme) and then double check our configuration inside the `integrationTests` directory. 
 
-We use [Clover](https://www.npmjs.com/package/clvr) to run the integration tests, and they run 2x per day in our GitHub Action.
+We use [Clover](https://www.npmjs.com/package/clvr) to run the integration tests, and they run 2x per day in our GitHub Action, split out by runtime language.
 
 #### Signing commits
 
