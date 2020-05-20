@@ -1,4 +1,2 @@
-## 1.0.2-39 (2020-05-20)
-
-
+# [2.0.0](https://github.com/serverless/serverless-azure-functions/releases/tag/v2.0.0)
 
