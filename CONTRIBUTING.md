@@ -53,13 +53,17 @@ Must be one of the following:
 * **build**: Changes that affect the build system or external dependencies
 * **ci**: Changes to our CI configuration files and scripts
 * **docs**: Documentation only changes
-* **feat**: A new feature
+* **feat**: A new feature (triggers a **minor** release)
 * **fix**: A bug fix
 * **perf**: A code change that improves performance
 * **refactor**: A code change that neither fixes a bug nor adds a feature
 * **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
 * **test**: Adding missing tests or correcting existing tests
 * **chore**: Updating dependencies
+* **major**: Breaking change - merge to master will trigger a **major** release
+* **beta**: Beta feature - merge to master will trigger a **pre-release** to NPM
+
+All commit messages that do not have a specified release above will trigger a **patch** release.
 
 #### Short Description
 
