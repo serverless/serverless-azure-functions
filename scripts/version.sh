@@ -13,8 +13,8 @@ SOURCE_BRANCH_NAME=${SOURCE_BRANCH/refs\/heads\/}
 
 # Configure git to commit as SLS Azure Functions Service Account
 echo "Configuring git to use service account..."
-git config --local user.email "Serverless Azure Functions"
-git config --local user.name "sls-az@microsoft.com"
+git config --local user.name "Serverless Azure Functions"
+git config --local user.email "sls-az@microsoft.com"
 
 git pull origin ${SOURCE_BRANCH_NAME}
 git checkout ${SOURCE_BRANCH_NAME}
@@ -22,6 +22,15 @@ echo "Checked out branch: ${SOURCE_BRANCH_NAME}"
 
 NPM_VERSION=`npm version ${NPM_RELEASE_TYPE} -m "release: Update ${NPM_RELEASE_TYPE} version to %s ***NO_CI***"`
 echo "Set NPM version to: ${NPM_VERSION}"
+
+if [ ${NPM_RELEASE_TYPE} = "prerelease" ]
+then
+  npm run changelog;
+else
+  npm run changelog:condensed -- ${NPM_VERSION};
+fi
+
+git commit -a --amend --no-edit
 
 SHA=`git rev-parse HEAD`
 
