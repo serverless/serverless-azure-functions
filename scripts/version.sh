@@ -6,7 +6,25 @@ set -euo pipefail
 # GITHUB_ACCESS_TOKEN
 
 PACKAGE_NAME=$1
-NPM_RELEASE_TYPE=${2-"prerelease"}
+
+LAST_COMMIT=`git log -1 --pretty=%B`
+
+# Get NPM release type based on last commit message
+# major: My commit = major release
+# feat: My commit = minor release
+# beta: My commit = prerelease
+# anything else = patch release
+if [[ ${LAST_COMMIT} == major* ]]
+then
+  NPM_RELEASE_TYPE="major"
+elif [[ ${LAST_COMMIT} == feat* ]]
+then
+  NPM_RELEASE_TYPE="minor"
+elif [[ ${LAST_COMMIT} == beta* ]]
+then
+  NPM_RELEASE_TYPE="prerelease"
+else NPM_RELEASE_TYPE="patch"
+fi
 
 # Get full branch name excluding refs/head from the env var SOURCE_BRANCH
 SOURCE_BRANCH_NAME=${SOURCE_BRANCH/refs\/heads\/}
@@ -20,19 +38,8 @@ git pull origin ${SOURCE_BRANCH_NAME}
 git checkout ${SOURCE_BRANCH_NAME}
 echo "Checked out branch: ${SOURCE_BRANCH_NAME}"
 
-npm install
-
 NPM_VERSION=`npm version ${NPM_RELEASE_TYPE} -m "release: Update ${NPM_RELEASE_TYPE} version to %s ***NO_CI***"`
 echo "Set NPM version to: ${NPM_VERSION}"
-
-if [ ${NPM_RELEASE_TYPE} = "prerelease" ]
-then
-  npm run changelog;
-else
-  npm run changelog:condensed -- ${NPM_VERSION};
-fi
-
-git commit -a --amend --no-edit
 
 SHA=`git rev-parse HEAD`
 
