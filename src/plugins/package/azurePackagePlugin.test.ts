@@ -1,9 +1,15 @@
 import Serverless from "serverless";
+import { FunctionAppOS, Runtime, BuildMode } from "../../config/runtime";
+import { ServerlessAzureConfig } from "../../models/serverless";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzurePackagePlugin } from "./azurePackagePlugin";
+
 jest.mock("../../services/packageService");
 import { PackageService } from "../../services/packageService";
+
+jest.mock("../../services/compilerService");
+import { CompilerService } from "../../services/compilerService";
 
 describe("Azure Package Plugin", () => {
   let sls: Serverless;
@@ -15,6 +21,18 @@ describe("Azure Package Plugin", () => {
     const options = MockFactory.createTestServerlessOptions();
 
     plugin = new AzurePackagePlugin(sls, options);
+  });
+
+  it("replaces default packaging hook if running dotnet on windows", async () => {
+    const service = MockFactory.createTestService();
+    (service as any as ServerlessAzureConfig).provider.runtime = Runtime.DOTNET31;
+    (service as any as ServerlessAzureConfig).provider.os = FunctionAppOS.WINDOWS;
+    const dotnetSls = MockFactory.createTestServerless({ service })
+    const dotnetWindowsPlugin = new AzurePackagePlugin(dotnetSls, MockFactory.createTestServerlessOptions());
+    await invokeHook(dotnetWindowsPlugin, "package:createDeploymentArtifacts");
+    expect(CompilerService.prototype.build).toBeCalledWith(BuildMode.RELEASE);
+    // Default plugins should have this hook undefined because it's created by sls core
+    expect(plugin.hooks["package:createDeploymentArtifacts"]).toBeUndefined();
   });
 
   it("sets creates function bindings before package:setupProviderConfiguration life cycle event", async () => {
