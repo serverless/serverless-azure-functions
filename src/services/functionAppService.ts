@@ -225,8 +225,6 @@ export class FunctionAppService extends BaseService {
       }
     };
 
-    this.prettyPrint(requestOptions);
-
     await this.sendFile(requestOptions, functionZipFile);
     this.log("-> Function package uploaded successfully");
   }
