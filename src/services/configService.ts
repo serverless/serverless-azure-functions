@@ -250,11 +250,6 @@ export class ConfigService {
       ...deployment,
     }
 
-    if (getRuntimeLanguage(runtime) === RuntimeLanguage.DOTNET && os === FunctionAppOS.LINUX) {
-      this.serverless.cli.log("Linux .NET Function apps must run from external package")
-      config.provider.deployment.external = true
-    }
-
     this.serverless.variables[constants.variableKeys.providerConfig] = config.provider;
     return config;
   }

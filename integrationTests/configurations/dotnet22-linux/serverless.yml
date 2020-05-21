@@ -14,6 +14,16 @@ provider:
 plugins:
   - serverless-azure-functions
 
+package:
+  exclude:
+    - local.settings.json
+    - .vscode/**
+    - node_modules/**
+    - .funcignore
+    - package.json
+    - package-lock.json
+    - data.json
+
 functions:
   hello:
     handler: hello

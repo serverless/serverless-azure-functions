@@ -4,7 +4,7 @@ import { ServerlessCliCommand } from "../../models/serverless";
 import AzureProvider from "../../provider/azureProvider";
 import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import { isCompiledRuntime, BuildMode } from "../../config/runtime";
+import { isCompiledRuntime, BuildMode, FunctionAppOS } from "../../config/runtime";
 import { CompilerService } from "../../services/compilerService"
 
 export class AzurePackagePlugin extends AzureBasePlugin {
@@ -18,7 +18,7 @@ export class AzurePackagePlugin extends AzureBasePlugin {
       "before:webpack:package:packageModules": this.webpack.bind(this),
       "after:package:finalize": this.finalize.bind(this),
     };
-    if (isCompiledRuntime(this.config.provider.runtime)) {
+    if (isCompiledRuntime(this.config.provider.runtime) && this.config.provider.os === FunctionAppOS.WINDOWS) {
       delete this.serverless.pluginManager.hooks["package:createDeploymentArtifacts"]
       this.hooks["package:createDeploymentArtifacts"] = this.compileArtifact.bind(this);
     }
