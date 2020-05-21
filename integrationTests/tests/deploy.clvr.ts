@@ -6,7 +6,7 @@ run({
   parameters: defaultParameters,
   validations: [
     {
-      command: "npm i serverless-azure-functions@beta",
+      command: "npm i serverless-azure-functions@latest",
       silent: true,
     },
     {
