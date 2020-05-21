@@ -1,4 +1,4 @@
-import { dockerImages, getRuntimeLanguage, getRuntimeVersion, FunctionAppOS, isNodeRuntime, Runtime, RuntimeLanguage } from "../../config/runtime";
+import { dockerImages, getRuntimeLanguage, getRuntimeVersion, FunctionAppOS, isNodeRuntime, Runtime, RuntimeLanguage, getFunctionWorkerRuntime } from "../../config/runtime";
 import { ArmParameter, ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams } from "../../models/armTemplates";
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
@@ -139,7 +139,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
         value: (isLinuxRuntime) ? this.getLinuxFxVersion(config) : undefined,
       },
       functionAppWorkerRuntime: {
-        value: this.getFunctionWorkerRuntime(runtime),
+        value: getFunctionWorkerRuntime(runtime),
       },
       functionAppExtensionVersion: {
         value: resourceConfig.extensionVersion,
@@ -252,14 +252,6 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     }
 
     return appSettings;
-  }
-
-  private getFunctionWorkerRuntime(runtime: Runtime): string {
-    const language = getRuntimeLanguage(runtime);
-    if (language === RuntimeLanguage.NODE){
-      return "node";
-    }
-    return language;
   }
 
   private getLinuxFxVersion(config: ServerlessAzureConfig): string {

@@ -2,7 +2,7 @@ import fs from "fs";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
-import { getRuntimeLanguage, isCompiledRuntime, BuildMode } from "../config/runtime";
+import { getRuntimeLanguage, isCompiledRuntime, BuildMode, getFunctionWorkerRuntime } from "../config/runtime";
 import { Utils } from "../shared/utils";
 import { CompilerService } from "./compilerService";
 import { constants } from "../shared/constants";
@@ -17,7 +17,7 @@ export class OfflineService extends BaseService {
       IsEncrypted: false,
       Values: {
         AzureWebJobsStorage: "UseDevelopmentStorage=true",
-        FUNCTIONS_WORKER_RUNTIME: getRuntimeLanguage(this.config.provider.runtime),
+        FUNCTIONS_WORKER_RUNTIME: getFunctionWorkerRuntime(this.config.provider.runtime),
       }
     }),
   }
