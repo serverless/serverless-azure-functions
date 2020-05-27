@@ -35,6 +35,18 @@ describe("Azure Package Plugin", () => {
     expect(plugin.hooks["package:createDeploymentArtifacts"]).toBeUndefined();
   });
 
+  it("replaces default packaging hook if running dotnet without specifying os", async () => {
+    const service = MockFactory.createTestService();
+    (service as any as ServerlessAzureConfig).provider.runtime = Runtime.DOTNET31;
+    (service as any as ServerlessAzureConfig).provider.os = undefined;
+    const dotnetSls = MockFactory.createTestServerless({ service })
+    const dotnetWindowsPlugin = new AzurePackagePlugin(dotnetSls, MockFactory.createTestServerlessOptions());
+    await invokeHook(dotnetWindowsPlugin, "package:createDeploymentArtifacts");
+    expect(CompilerService.prototype.build).toBeCalledWith(BuildMode.RELEASE);
+    // Default plugins should have this hook undefined because it's created by sls core
+    expect(plugin.hooks["package:createDeploymentArtifacts"]).toBeUndefined();
+  });
+
   it("sets creates function bindings before package:setupProviderConfiguration life cycle event", async () => {
     await invokeHook(plugin, "before:package:setupProviderConfiguration");
     expect(PackageService.prototype.createBindings).toBeCalled();

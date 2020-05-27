@@ -152,6 +152,30 @@ describe("Config Service", () => {
       new ConfigService(serverless, {} as any);
       expect(setDefaultValues).not.toBeCalled();
     });
+
+    it("indicates that a configuration with default OS should compile before publish", () => {
+      const sls = MockFactory.createTestServerless();
+      sls.service.provider.runtime = Runtime.DOTNET31;
+      sls.service.provider["os"] = undefined;
+      const service = new ConfigService(sls, {} as any);
+      expect(service.shouldCompileBeforePublish()).toBe(true);
+    });
+
+    it("indicates that a configuration with windows OS should compile before publish", () => {
+      const sls = MockFactory.createTestServerless();
+      sls.service.provider.runtime = Runtime.DOTNET31;
+      sls.service.provider["os"] = FunctionAppOS.WINDOWS;
+      const service = new ConfigService(sls, {} as any);
+      expect(service.shouldCompileBeforePublish()).toBe(true);
+    });
+
+    it("indicates that a configuration with linux OS should not compile before publish", () => {
+      const sls = MockFactory.createTestServerless();
+      sls.service.provider.runtime = Runtime.DOTNET31;
+      sls.service.provider["os"] = FunctionAppOS.LINUX;
+      const service = new ConfigService(sls, {} as any);
+      expect(service.shouldCompileBeforePublish()).toBe(false);
+    });
   
     describe("Service Principal Configuration", () => {
       const cliSubscriptionId = "cli sub id";
