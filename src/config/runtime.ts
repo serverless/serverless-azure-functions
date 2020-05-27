@@ -73,6 +73,14 @@ export function getRuntimeLanguage(runtime: Runtime): string {
   throw new Error(`Runtime ${runtime} not included in supportedRuntimes`);
 }
 
+export function getFunctionWorkerRuntime(runtime: Runtime): string {
+  const language = getRuntimeLanguage(runtime);
+  if (language === RuntimeLanguage.NODE){
+    return "node";
+  }
+  return language;
+}
+
 export enum FunctionAppOS {
   WINDOWS = "windows",
   LINUX = "linux"
