@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import { CliCommand, CliCommandFactory } from "../config/cliCommandFactory";
-import { BuildMode, FunctionAppOS, getRuntimeLanguage, isNodeRuntime, isPythonRuntime, Runtime, RuntimeLanguage, supportedRuntimes, supportedRuntimeSet } from "../config/runtime";
+import { BuildMode, FunctionAppOS, getRuntimeLanguage, isNodeRuntime, isPythonRuntime, Runtime, RuntimeLanguage, supportedRuntimes, supportedRuntimeSet, isCompiledRuntime } from "../config/runtime";
 import { DeploymentConfig, ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Utils } from "../shared/utils";
@@ -150,6 +150,10 @@ export class ConfigService {
 
   public getCompilerCommand(runtime: Runtime, mode: BuildMode): CliCommand {
     return this.cliCommandFactory.getCommand(`${runtime}-${mode}`);
+  }
+
+  public shouldCompileBeforePublish(): boolean {
+    return isCompiledRuntime(this.config.provider.runtime) && this.config.provider.os === FunctionAppOS.WINDOWS;
   }
 
   /**

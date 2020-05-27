@@ -6,6 +6,7 @@ import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 import { isCompiledRuntime, BuildMode, FunctionAppOS } from "../../config/runtime";
 import { CompilerService } from "../../services/compilerService"
+import { ConfigService } from "../../services/configService";
 
 export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;
@@ -18,7 +19,8 @@ export class AzurePackagePlugin extends AzureBasePlugin {
       "before:webpack:package:packageModules": this.webpack.bind(this),
       "after:package:finalize": this.finalize.bind(this),
     };
-    if (isCompiledRuntime(this.config.provider.runtime) && this.config.provider.os === FunctionAppOS.WINDOWS) {
+    const configService = new ConfigService(serverless, options);
+    if (configService.shouldCompileBeforePublish()) {
       delete this.serverless.pluginManager.hooks["package:createDeploymentArtifacts"]
       this.hooks["package:createDeploymentArtifacts"] = this.compileArtifact.bind(this);
     }
