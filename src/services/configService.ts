@@ -1,7 +1,7 @@
 import Serverless from "serverless";
 import Service from "serverless/classes/Service";
 import { CliCommand, CliCommandFactory } from "../config/cliCommandFactory";
-import { BuildMode, FunctionAppOS, getRuntimeLanguage, isNodeRuntime, isPythonRuntime, Runtime, RuntimeLanguage, supportedRuntimes, supportedRuntimeSet, isCompiledRuntime } from "../config/runtime";
+import { BuildMode, FunctionAppOS, isNodeRuntime, isPythonRuntime, Runtime, supportedRuntimes, supportedRuntimeSet, isCompiledRuntime } from "../config/runtime";
 import { DeploymentConfig, ServerlessAzureConfig, ServerlessAzureFunctionConfig } from "../models/serverless";
 import { constants } from "../shared/constants";
 import { Utils } from "../shared/utils";

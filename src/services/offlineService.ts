@@ -2,7 +2,7 @@ import fs from "fs";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
-import { getRuntimeLanguage, isCompiledRuntime, BuildMode, getFunctionWorkerRuntime } from "../config/runtime";
+import { isCompiledRuntime, BuildMode, getFunctionWorkerRuntime } from "../config/runtime";
 import { Utils } from "../shared/utils";
 import { CompilerService } from "./compilerService";
 import { constants } from "../shared/constants";
