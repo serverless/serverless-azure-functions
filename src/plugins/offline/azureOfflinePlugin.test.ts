@@ -26,17 +26,22 @@ describe("Azure Offline Plugin", () => {
   });
 
   it("create function bindings when calling build", async () => {
+    await invokeHook(plugin, "offline:build");
+    expect(OfflineService.prototype.build).toBeCalled();
+  });
+
+  it("create function bindings when calling build:build", async () => {
     await invokeHook(plugin, "offline:build:build");
     expect(OfflineService.prototype.build).toBeCalled();
   });
 
-  it("create function bindings before offline:offline lifecyle event", async () => {
-    await invokeHook(plugin, "before:offline:offline");
-    expect(OfflineService.prototype.build).toBeCalled();
+  it("create function bindings when calling start", async () => {
+    await invokeHook(plugin, "offline:start");
+    expect(OfflineService.prototype.start).toBeCalled();
   });
 
-  it("call offline service's start method when invoking offline command ", async () => {
-    await invokeHook(plugin, "offline:offline");
+  it("create function bindings when calling start:start", async () => {
+    await invokeHook(plugin, "offline:start:start");
     expect(OfflineService.prototype.start).toBeCalled();
   });
 

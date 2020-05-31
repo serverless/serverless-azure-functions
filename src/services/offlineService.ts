@@ -29,7 +29,7 @@ export class OfflineService extends BaseService {
 
   public async build() {
     this.log("Building offline service");
-    await this.packageService.createBindings();
+    await this.packageService.createBindings(true);
     if (isCompiledRuntime(this.config.provider.runtime)) {
       const compilerService = new CompilerService(this.serverless, this.options);
       await compilerService.build(BuildMode.DEBUG);
