@@ -2,7 +2,7 @@ import fs from "fs";
 import Serverless from "serverless";
 import { BaseService } from "./baseService";
 import { PackageService } from "./packageService";
-import { getRuntimeLanguage, isCompiledRuntime, BuildMode, getFunctionWorkerRuntime } from "../config/runtime";
+import { isCompiledRuntime, BuildMode, getFunctionWorkerRuntime } from "../config/runtime";
 import { Utils } from "../shared/utils";
 import { CompilerService } from "./compilerService";
 import { constants } from "../shared/constants";
@@ -29,7 +29,7 @@ export class OfflineService extends BaseService {
 
   public async build() {
     this.log("Building offline service");
-    await this.packageService.createBindings();
+    await this.packageService.createBindings(true);
     if (isCompiledRuntime(this.config.provider.runtime)) {
       const compilerService = new CompilerService(this.serverless, this.options);
       await compilerService.build(BuildMode.DEBUG);

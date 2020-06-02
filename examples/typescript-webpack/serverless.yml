@@ -1,0 +1,32 @@
+service: service-name
+
+plugins:
+  - serverless-webpack
+  - serverless-azure-functions
+
+provider:
+  name: azure
+  location: East US
+  runtime: nodejs12
+
+package:
+  individually: false
+  exclude:
+    - package.json
+
+functions:
+  func1:
+    handler: src/func1.handler
+    events:
+      - http: true
+        authLevel: anonymous
+        methods:
+          - get
+  func2:
+    handler: src/func2.default
+    events:
+      - http: true
+        authLevel: anonymous
+        methods:
+          - get
+
