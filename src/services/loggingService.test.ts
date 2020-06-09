@@ -46,9 +46,9 @@ describe("Logging Service", () => {
     expect(sls.cli.log).lastCalledWith("[ERROR] Error");
   });
 
-  it("empty string as option value sets logging level to debug", () => {
+  it("boolean as option value sets logging level to debug", () => {
     const sls = MockFactory.createTestServerless();
-    loggingService = createService(sls, {"verbose": ""});
+    loggingService = createService(sls, {"verbose": true});
     loggingService.debug("Debug");
     expect(sls.cli.log).toBeCalledWith("[DEBUG] Debug");
   });

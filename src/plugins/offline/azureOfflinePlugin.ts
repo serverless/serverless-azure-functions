@@ -8,9 +8,9 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
     super(serverless, options);
 
     this.hooks = {
-      "before:offline:offline": this.azureOfflineBuild.bind(this),
+      "offline:build": this.azureOfflineBuild.bind(this),
       "offline:build:build": this.azureOfflineBuild.bind(this),
-      "offline:offline": this.azureOfflineStart.bind(this),
+      "offline:start": this.azureOfflineStart.bind(this),
       "offline:start:start": this.azureOfflineStart.bind(this),
       "offline:cleanup:cleanup": this.azureOfflineCleanup.bind(this),
     };
@@ -19,7 +19,8 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
       offline: {
         usage: "Start Azure Function App offline",
         lifecycleEvents: [
-          "offline",
+          "build",
+          "start",
         ],
         commands: {
           start: {

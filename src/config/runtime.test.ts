@@ -1,4 +1,4 @@
-import { Runtime, isNodeRuntime, isPythonRuntime, getRuntimeVersion, getRuntimeLanguage } from "./runtime";
+import { Runtime, isNodeRuntime, isPythonRuntime, getRuntimeVersion, getRuntimeLanguage, getFunctionWorkerRuntime } from "./runtime";
 
 
 describe("Runtime", () => {
@@ -32,5 +32,15 @@ describe("Runtime", () => {
     expect(getRuntimeLanguage(Runtime.PYTHON36)).toBe("python");
     expect(getRuntimeLanguage(Runtime.PYTHON37)).toBe("python");
     expect(getRuntimeLanguage(Runtime.PYTHON38)).toBe("python");
+  });
+
+  it("gets function worker runtime", () => {
+    expect(getFunctionWorkerRuntime(Runtime.NODE10)).toBe("node");
+    expect(getFunctionWorkerRuntime(Runtime.NODE12)).toBe("node");
+    expect(getFunctionWorkerRuntime(Runtime.PYTHON36)).toBe("python");
+    expect(getFunctionWorkerRuntime(Runtime.PYTHON37)).toBe("python");
+    expect(getFunctionWorkerRuntime(Runtime.PYTHON38)).toBe("python");
+    expect(getFunctionWorkerRuntime(Runtime.DOTNET31)).toBe("dotnet");
+    expect(getFunctionWorkerRuntime(Runtime.DOTNET22)).toBe("dotnet");
   });
 });

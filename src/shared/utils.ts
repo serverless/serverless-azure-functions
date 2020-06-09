@@ -28,7 +28,7 @@ export interface ServerlessSpawnOptions {
 }
 
 export class Utils {
-  public static async getFunctionMetaData(functionName: string, serverless: Serverless): Promise<FunctionMetadata> {
+  public static async getFunctionMetaData(functionName: string, serverless: Serverless, offlineMode: boolean = false): Promise<FunctionMetadata> {
     const config: ServerlessAzureConfig = serverless.service as any;
     const bindings = [];
     let bindingSettingsNames = [];
@@ -109,8 +109,13 @@ export class Utils {
     params.functionJson = functionJson;
 
     let { handlerPath, entryPoint } = Utils.getEntryPointAndHandlerPath(handler, config);
+
     if (functionObject["scriptFile"]) {
       handlerPath = functionObject["scriptFile"];
+    }
+
+    if (offlineMode && config.plugins && config.plugins.includes("serverless-webpack")) {
+      handlerPath = join(".webpack", "service", handlerPath)
     }
 
     return {
