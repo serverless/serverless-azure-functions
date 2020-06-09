@@ -22,18 +22,25 @@ export class LoggingService {
   private logLevel: LogLevel;
 
   public constructor(private serverless: Serverless, private options: ServerlessAzureOptions) {
-    
-    // Check for 'verbose' or 'v'. Would use the sls shortcuts at the plugin level, 
-    // but this will be utilized across the plugins, so we check for both
-    const logLevelStr = Utils.get(options, "verbose");
+    const verbosity = Utils.get(options, "verbose");
+    const defaultLogLevel = LogLevel.INFO;
 
-    this.logLevel = (logLevelStr !== undefined) ? Utils.get({
-      "error": LogLevel.ERROR,
-      "warn": LogLevel.WARN,
-      "info": LogLevel.INFO,
-      "debug": LogLevel.DEBUG,
-      "": LogLevel.DEBUG
-    }, logLevelStr.toLowerCase()) : LogLevel.INFO;
+    if (verbosity === true) {
+      // --verbose flag is passed with no specified level
+      this.logLevel = LogLevel.DEBUG;
+    } else if (typeof verbosity === "string") {
+      // --verbose {level} is passed
+      this.logLevel = Utils.get({
+        "error": LogLevel.ERROR,
+        "warn": LogLevel.WARN,
+        "info": LogLevel.INFO,
+        "debug": LogLevel.DEBUG,
+        "": LogLevel.DEBUG
+      }, verbosity.toLowerCase(), defaultLogLevel);
+    } else {
+      // --verbose not passed, use default
+      this.logLevel = defaultLogLevel;
+    }    
   }
 
   /**
