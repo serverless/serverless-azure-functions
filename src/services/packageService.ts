@@ -151,8 +151,10 @@ export class PackageService extends BaseService {
     if (this.configService.isPythonTarget()) {
       const index = (functionJSON.bindings as any[])
         .findIndex((binding) => (!binding.direction || binding.direction === "out"));
-      functionJSON.bindings[index].name = "$return";
-    } else {
+
+      if (functionJSON.bindings[index]) {
+        functionJSON.bindings[index].name = "$return";
+      }
     }
     functionJSON.scriptFile = handlerPath;
 
