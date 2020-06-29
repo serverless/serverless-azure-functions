@@ -3,7 +3,7 @@ service: py38
 provider:
   name: azure
   runtime: python3.8
-  prefix: tmp
+  prefix: int
   stage: qa
   region: West Europe
   apim: true
