@@ -3,7 +3,7 @@ service: py37
 provider:
   name: azure
   runtime: python3.7
-  prefix: tmp
+  prefix: int
   stage: qa
   region: West Europe
   apim: true
