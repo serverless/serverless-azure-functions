@@ -3,7 +3,7 @@ service: py36-prem
 provider:
   name: azure
   runtime: python3.6
-  prefix: tmp
+  prefix: int
   stage: qa
   region: West Europe
   apim: true

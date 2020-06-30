@@ -2,7 +2,7 @@ service: nd12-win-prem
 
 provider:
   name: azure
-  prefix: tmp
+  prefix: int
   stage: qa
   region: Central US
   runtime: nodejs12
