@@ -108,7 +108,7 @@ export class PackageService extends BaseService {
           rimraf.sync(folderPath);
         }
       });
-      
+
       // Delete function folder if empty
       const items = fs.readdirSync(functionName);
       if (items.length === 0) {
@@ -122,7 +122,7 @@ export class PackageService extends BaseService {
         fs.unlinkSync(filePath);
       }
     }
-    
+
     for (const dir of rootFoldersToRemove) {
       const dirPath = path.join(this.serverless.config.servicePath, dir);
       if (fs.existsSync(dirPath)) {
@@ -160,7 +160,7 @@ export class PackageService extends BaseService {
 
     const functionObject = this.configService.getFunctionConfig()[functionName];
     const incomingBinding = Utils.getIncomingBindingConfig(functionObject);
-    
+
     const bindingAzureSettings = Utils.get(incomingBinding, constants.xAzureSettings, incomingBinding);
 
     if (bindingAzureSettings.route) {
@@ -168,7 +168,9 @@ export class PackageService extends BaseService {
       const index = (functionJSON.bindings as any[])
         .findIndex((binding) => (!binding.direction || binding.direction === "in"));
 
-      functionJSON.bindings[index].route = bindingAzureSettings.route;
+      if (functionJSON.bindings[index]) {
+        functionJSON.bindings[index].route = bindingAzureSettings.route;
+      }
     }
 
     return functionJSON;
