@@ -5,6 +5,7 @@ import Serverless from "serverless";
 import { FunctionMetadata } from "../shared/utils";
 import { MockFactory } from "../test/mockFactory";
 import { PackageService } from "./packageService";
+import { Runtime } from "../config/runtime";
 
 jest.mock("rimraf");
 import rimraf from "rimraf";
@@ -226,6 +227,32 @@ describe("Package Service", () => {
 
     mkdirSpy.mockRestore();
     writeFileSpy.mockRestore();
+  });
+
+  it("createBinding should be able to create function.json without bindings", async () => {
+    // Create service provider with python 3.8 runtime
+    const provider = MockFactory.createTestAzureServiceProvider()
+    provider.runtime = Runtime.PYTHON38
+    sls = MockFactory.createTestServerless({"service": { "provider": provider }});
+    sls.config.servicePath = process.cwd();
+    sls.service["functions"] = {
+      hello: MockFactory.createTestAzureFunctionConfig(functionRoute),
+      eventhubHandler: MockFactory.createTestEventHubFunctionConfig(),
+    }
+
+    const functionName = "hello";
+    const functionMetadata: FunctionMetadata = {
+      entryPoint: "handler",
+      handlerPath: "src/handlers/hello",
+      params: {
+        functionJson: {
+          bindings: []
+        },
+      },
+    };
+
+    packageService = new PackageService(sls, MockFactory.createTestServerlessOptions());
+    await packageService.createBinding(functionName, functionMetadata);
   });
 
   it("webpack copies required", async () => {

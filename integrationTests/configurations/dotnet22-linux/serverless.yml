@@ -4,7 +4,7 @@ provider:
   name: azure
   runtime: dotnet2.2
   region: West Europe
-  prefix: tmp
+  prefix: int
   stage: qa
   os: linux
   apim: true

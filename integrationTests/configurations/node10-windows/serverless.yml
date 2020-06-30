@@ -2,7 +2,7 @@ service: nd10-win
 
 provider:
   name: azure
-  prefix: tmp
+  prefix: int
   stage: qa
   region: West Europe
   runtime: nodejs10
