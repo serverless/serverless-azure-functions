@@ -19,8 +19,8 @@ run({
         shouldContain: [
           "Logging into Azure",
           "Deployed serverless functions:",
-          "tmp-${region}-qa-${serviceName}-rg",
-          "-> hello: [GET] tmp-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
+          "int-${region}-qa-${serviceName}-rg",
+          "-> hello: [GET] int-${region}-qa-${serviceName}.azurewebsites.net/api/hello"
         ],
       }
     },
