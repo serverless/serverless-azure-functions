@@ -1,4 +1,4 @@
-import { dockerImages, getRuntimeLanguage, getRuntimeVersion, FunctionAppOS, isNodeRuntime, Runtime, RuntimeLanguage, getFunctionWorkerRuntime } from "../../config/runtime";
+import { dockerImages, FunctionAppOS, getFunctionWorkerRuntime, getRuntimeVersion, isNodeRuntime } from "../../config/runtime";
 import { ArmParameter, ArmParameters, ArmParamType, ArmResourceTemplate, ArmResourceTemplateGenerator, DefaultArmParams } from "../../models/armTemplates";
 import { FunctionAppConfig, ServerlessAzureConfig } from "../../models/serverless";
 import { AzureNamingService, AzureNamingServiceOptions } from "../../services/namingService";
@@ -206,6 +206,9 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
   }
 
   private getFunctionAppSettings(config: ServerlessAzureConfig): FunctionAppSetting[] {
+    const { appInsights } = config.provider;
+    const instrumentationKey = appInsights ? appInsights.instrumentationKey : undefined;
+
     let appSettings: FunctionAppSetting[] = [
       {
         name: "FUNCTIONS_WORKER_RUNTIME",
@@ -221,7 +224,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
       },
       {
         name: "APPINSIGHTS_INSTRUMENTATIONKEY",
-        value: "[reference(concat('microsoft.insights/components/', parameters('appInsightsName'))).InstrumentationKey]"
+        value: instrumentationKey || "[reference(concat('microsoft.insights/components/', parameters('appInsightsName'))).InstrumentationKey]"
       }
     ];
 

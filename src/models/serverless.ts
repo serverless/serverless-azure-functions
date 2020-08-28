@@ -23,6 +23,10 @@ export interface FunctionAppConfig extends ResourceConfig {
   extensionVersion?;
 }
 
+export interface AppInsightsConfig extends ResourceConfig {
+  instrumentationKey?: string;
+}
+
 export interface DeploymentConfig {
   rollback?: boolean;
   container?: string;
@@ -49,7 +53,7 @@ export interface ServerlessAzureProvider {
   resourceGroup?: string;
   apim?: ApiManagementConfig;
   functionApp?: FunctionAppConfig;
-  appInsights?: ResourceConfig;
+  appInsights?: AppInsightsConfig;
   appServicePlan?: AppServicePlanConfig;
   storageAccount?: ResourceConfig;
   hostingEnvironment?: ResourceConfig;
