@@ -45,6 +45,36 @@ describe("Function App Resource", () => {
   });
 
   describe("App Settings", () => {
+    describe("General", () => {
+      it("uses custom app insights instrumentation key", () => {
+        const instrumentationKey = "myInstrumentationKey"
+        const config = getConfig(FunctionAppOS.LINUX, Runtime.PYTHON36);
+        config.provider.appInsights = {
+          instrumentationKey,
+        }
+
+        const resource = new FunctionAppResource();
+        const { appSettings } = resource.getTemplate(config).resources[0].properties.siteConfig;
+        expect(appSettings).toEqual([
+          {
+            name: "FUNCTIONS_WORKER_RUNTIME",
+            value: "[parameters('functionAppWorkerRuntime')]"
+          },
+          {
+            name: "FUNCTIONS_EXTENSION_VERSION",
+            value: "[parameters('functionAppExtensionVersion')]"
+          },
+          {
+            name: "AzureWebJobsStorage",
+            value: "[concat('DefaultEndpointsProtocol=https;AccountName=',parameters('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2016-01-01').keys[0].value)]"
+          },
+          {
+            name: "APPINSIGHTS_INSTRUMENTATIONKEY",
+            value: instrumentationKey
+          }
+        ]);
+      });
+    })
     describe("Linux", () => {
       it("gets correct app settings - python", () => {
         const config = getConfig(FunctionAppOS.LINUX, Runtime.PYTHON36);
