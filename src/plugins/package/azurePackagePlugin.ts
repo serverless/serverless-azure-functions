@@ -1,12 +1,12 @@
 
 import Serverless from "serverless";
+import { BuildMode } from "../../config/runtime";
 import { ServerlessCliCommand } from "../../models/serverless";
 import AzureProvider from "../../provider/azureProvider";
+import { CompilerService } from "../../services/compilerService";
+import { ConfigService } from "../../services/configService";
 import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
-import { isCompiledRuntime, BuildMode, FunctionAppOS } from "../../config/runtime";
-import { CompilerService } from "../../services/compilerService"
-import { ConfigService } from "../../services/configService";
 
 export class AzurePackagePlugin extends AzureBasePlugin {
   private bindingsCreated: boolean = false;
