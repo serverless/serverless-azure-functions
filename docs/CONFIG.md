@@ -20,9 +20,6 @@ This document serves as a basic outline for configuring your Azure Function App 
     - `dotnet3.1`
 - `provider.region` - [Azure region](https://azure.microsoft.com/en-us/global-infrastructure/regions/) for resources
 - `provider.prefix` - Prefix used in naming convention for resources. Default `sls`
-- `provider.subscriptionId` - Subscription ID to be used in deployment. Can also be set via:
-   - Command-line argument (`--subscriptionId {SUB_ID}`)
-   - Environment variable (`AZURE_SUBSCRIPTION_ID`)
 - `provider.stage` - Stage for resources. Default `dev`
 - `provider.type` - Type of Azure Function app
   - `consumption` (default)
