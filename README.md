@@ -316,6 +316,9 @@ We run our integration tests twice per day from our GitHub workflow. These tests
 - Node 12 on Windows
 - Node 12 on Windows using premium functions
 - Node 12 on Windows using webpack
+- Node 14 on Windows
+- Node 14 on Windows using premium functions
+- Node 14 on Windows using webpack
 - Python 3.6 (Linux only)
 - Python 3.6 (Linux only) using premium functions
 - Python 3.7 (Linux only)
@@ -325,7 +328,7 @@ We run our integration tests twice per day from our GitHub workflow. These tests
 - .NET Core 3.1 on Linux
 - .NET Core 3.1 on Windows
 
-We made these configurations as minimal as possible. If you are having problems with your project, feel free to check to see if our integration tests are passing (see badge at top of readme) and then double check our configuration inside the `integrationTests` directory. 
+We made these configurations as minimal as possible. If you are having problems with your project, feel free to check to see if our integration tests are passing (see badge at top of readme) and then double check our configuration inside the `integrationTests` directory.
 
 We use [Clover](https://www.npmjs.com/package/clvr) to run the integration tests, and they run 2x per day in our GitHub Action, split out by runtime language.
 
