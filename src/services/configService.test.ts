@@ -41,7 +41,7 @@ describe("Config Service", () => {
       const prefix = "prefix";
       const config = (serverless.service as any as ServerlessAzureConfig);
       delete config.provider.resourceGroup;
-      config.provider.prefix = "not the prefix";    
+      config.provider.prefix = "not the prefix";
       expect(serverless.service.provider["prefix"]).not.toEqual(prefix);
       const service = new ConfigService(serverless, { prefix } as any);
       expect(service.getPrefix()).toEqual(prefix);
@@ -107,11 +107,11 @@ describe("Config Service", () => {
       delete slsService.provider.region;
       const location = "East US";
       slsService.provider["location"] = location;
-  
+
       const sls = MockFactory.createTestServerless({
         service: slsService
       });
-  
+
       const service = new ConfigService(sls, {} as any);
       expect(service.getRegion()).toEqual(location);
     });
@@ -121,7 +121,7 @@ describe("Config Service", () => {
       const service = new ConfigService(serverless, { } as any);
       expect(service.getOs()).toEqual(FunctionAppOS.LINUX);
     });
-  
+
     it("Generates resource group from convention when NOT defined in sls yaml", () => {
       serverless.service.provider["resourceGroup"] = null;
       const service = new ConfigService(serverless, { } as any);
@@ -176,13 +176,13 @@ describe("Config Service", () => {
       const service = new ConfigService(sls, {} as any);
       expect(service.shouldCompileBeforePublish()).toBe(false);
     });
-  
+
     describe("Service Principal Configuration", () => {
       const cliSubscriptionId = "cli sub id";
       const envVarSubscriptionId = "env var sub id";
       const configSubscriptionId = "config sub id";
       const loginResultSubscriptionId = "ABC123";
-    
+
       it("use subscription ID from the CLI", () => {
         process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
         serverless.service.provider["subscriptionId"] = configSubscriptionId;
@@ -191,7 +191,7 @@ describe("Config Service", () => {
         expect(service.getSubscriptionId()).toEqual(cliSubscriptionId);
         expect(serverless.service.provider["subscriptionId"]).toEqual(cliSubscriptionId);
       });
-    
+
       it("use subscription ID from environment variable", () => {
         process.env.AZURE_SUBSCRIPTION_ID = envVarSubscriptionId;
         serverless.service.provider["subscriptionId"] = configSubscriptionId;
@@ -200,7 +200,7 @@ describe("Config Service", () => {
         expect(service.getSubscriptionId()).toEqual(envVarSubscriptionId);
         expect(serverless.service.provider["subscriptionId"]).toEqual(envVarSubscriptionId);
       });
-    
+
       it("use subscription ID from config", () => {
         delete process.env.AZURE_SUBSCRIPTION_ID;
         serverless.service.provider["subscriptionId"] = configSubscriptionId;
@@ -209,7 +209,7 @@ describe("Config Service", () => {
         expect(service.getSubscriptionId()).toEqual(configSubscriptionId);
         expect(serverless.service.provider["subscriptionId"]).toEqual(configSubscriptionId);
       });
-    
+
       it("use subscription ID from login result", () => {
         delete process.env.AZURE_SUBSCRIPTION_ID;
         serverless.variables["subscriptionId"] = loginResultSubscriptionId
@@ -224,26 +224,26 @@ describe("Config Service", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = "python2.7" as any;
         expect(() => new ConfigService(sls, {} as any))
-          .toThrowError("Runtime python2.7 is not supported. " + 
-            "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
+          .toThrowError("Runtime python2.7 is not supported. " +
+            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
       });
-    
+
       it("throws error when incomplete nodejs version in defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = "nodejs" as any;
         expect(() => new ConfigService(sls, {} as any))
-          .toThrowError("Runtime nodejs is not supported. " + 
-            "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
+          .toThrowError("Runtime nodejs is not supported. " +
+            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
       });
-    
+
       it("throws error when unsupported nodejs version in defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = "nodejs5.x" as any;
         expect(() => new ConfigService(sls, {} as any))
-          .toThrowError("Runtime nodejs5.x is not supported. " + 
-            "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
+          .toThrowError("Runtime nodejs5.x is not supported. " +
+            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
       });
-    
+
       it("Does not throw an error when valid nodejs version is defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = Runtime.NODE10
@@ -252,15 +252,15 @@ describe("Config Service", () => {
         expect(configService.isLinuxTarget()).toBe(false);
         expect(configService.isNodeTarget()).toBe(true);
       });
-    
+
       it("throws an error when no runtime is defined", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = undefined;
         expect(() => new ConfigService(sls, {} as any))
           .toThrowError("Runtime undefined. " +
-            "Runtimes supported: nodejs10,nodejs12,python3.6,python3.7,python3.8");
+            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
       });
-    
+
       it("does not throw an error with python3.6", () => {
         const sls = MockFactory.createTestServerless();
         sls.service.provider.runtime = Runtime.PYTHON36;
