@@ -1022,7 +1022,7 @@
           "name": "queueName",
           "value": "string",
           "defaultValue": "outqueue",
-          "required": true,
+          "required": false,
           "label": "$serviceBusOut_queueName_label",
           "help": "$serviceBusOut_queueName_help",
           "validators": [
@@ -1036,7 +1036,7 @@
           "name": "topicName",
           "value": "string",
           "defaultValue": "outtopic",
-          "required": true,
+          "required": false,
           "label": "$serviceBusOut_topicName_label",
           "help": "$serviceBusOut_topicName_help",
           "validators": [
