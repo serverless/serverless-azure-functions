@@ -39,7 +39,8 @@ export class AzureDeployPlugin extends AzureBasePlugin<AzureLoginOptions> {
           ...constants.deployedServiceOptions,
           dryrun: {
             usage: "Get a summary for what the deployment would look like",
-            shortcut: "d"
+            shortcut: "d",
+            type: "boolean",
           }
         }
       }

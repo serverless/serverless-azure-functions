@@ -23,10 +23,12 @@ export class AzureInfoPlugin extends AzureBasePlugin {
           dryrun: {
             usage: "Get a summary for what the deployment would look like",
             shortcut: "d",
+            type: "boolean",
           },
           arm: {
             usage: "Inspect the ARM template of either the last successful deployment or the generated template",
             shortcut: "a",
+            type: "boolean",
           }
         }
       }
