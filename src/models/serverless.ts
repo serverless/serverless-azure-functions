@@ -63,6 +63,7 @@ export interface ServerlessAzureProvider {
   /** Runtime setting within `serverless.yml` */
   runtime: Runtime;
   os?: FunctionAppOS;
+  use32BitWorkerProcess?: boolean;
 }
 
 /**

@@ -97,6 +97,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
             "siteConfig": {
               appSettings: this.getFunctionAppSettings(config), 
               "linuxFxVersion": "[parameters('linuxFxVersion')]",
+              "use32BitWorkerProcess": "[parameters('functionUse32BitWorkerProcess')]",
             },
             "reserved": "[parameters('functionAppReserved')]",
             name: "[parameters('functionAppName')]",
@@ -112,7 +113,7 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
     const resourceConfig: FunctionAppConfig = {
       ...config.provider.functionApp,
     };
-    const { runtime, os } = config.provider;
+    const { runtime, os, use32BitWorkerProcess } = config.provider;
     const isLinuxRuntime = os === FunctionAppOS.LINUX;
 
     const params: FunctionAppParams = {
@@ -125,6 +126,9 @@ export class FunctionAppResource implements ArmResourceTemplateGenerator {
           `~${getRuntimeVersion(runtime)}`
           :
           undefined,
+      },
+      functionUse32BitWorkerProcess: {
+        value: (use32BitWorkerProcess === false) ? false : true,
       },
       functionAppRunFromPackage: {
         value: (isLinuxRuntime) ? "0" : "1",

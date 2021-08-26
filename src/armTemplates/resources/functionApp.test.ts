@@ -323,7 +323,51 @@ describe("Function App Resource", () => {
         expect(functionAppReserved.value).toBeUndefined();
       }
     });
+
+    describe("use32BitWorkerProcess", () => {
+      it("gets correct parameters - default", () => {
+        const config = getConfig(FunctionAppOS.WINDOWS, Runtime.NODE10);
+    
+        const resource = new FunctionAppResource();
+        
+        const params = resource.getParameters(config);
+        const {
+          functionUse32BitWorkerProcess,
+        } = params;
+    
+        expect(functionUse32BitWorkerProcess.value).toEqual(true);
+      });
+
+      it("gets correct parameters - true", () => {
+        const config = getConfig(FunctionAppOS.WINDOWS, Runtime.NODE12);
+        config.provider.use32BitWorkerProcess = true;
+    
+        const resource = new FunctionAppResource();
+        
+        const params = resource.getParameters(config);
+        const {
+          functionUse32BitWorkerProcess,
+        } = params;
+    
+        expect(functionUse32BitWorkerProcess.value).toEqual(true);
+      });
+
+      it("gets correct parameters - false", () => {
+        const config = getConfig(FunctionAppOS.WINDOWS, Runtime.NODE12);
+        config.provider.use32BitWorkerProcess = false;
+    
+        const resource = new FunctionAppResource();
+        
+        const params = resource.getParameters(config);
+        const {
+          functionUse32BitWorkerProcess,
+        } = params;
+    
+        expect(functionUse32BitWorkerProcess.value).toEqual(false);
+      });
+    });
   });
+
 
   function getConfig(os: FunctionAppOS, runtime: Runtime): ServerlessAzureConfig {
     return {
