@@ -50,6 +50,24 @@ describe("Bindings", () => {
     });
   });
 
+  it("Gets the warmup binding with default settings", async () => {
+    const serverless = MockFactory.createTestServerless();
+    const parsedBindings = await BindingUtils.getBindingsMetaData(serverless);
+    const bindingType = "warmupTrigger";
+
+    const bindingTypes = parsedBindings.bindingTypes;
+    const bindingTypeIndex = bindingTypes.indexOf(bindingType);
+    const bindingSettings = parsedBindings.bindingSettings[bindingTypeIndex];
+
+    const binding = BindingUtils.getBinding(bindingType, bindingSettings, {});
+
+    expect(binding).toMatchObject({
+      type: "warmupTrigger",
+      direction: "in",
+      name: "warmupContext",
+    });
+  });
+
   it("Gets the http binding with custom name", async () => {
     const serverless = MockFactory.createTestServerless();
     const parsedBindings = await BindingUtils.getBindingsMetaData(serverless);
