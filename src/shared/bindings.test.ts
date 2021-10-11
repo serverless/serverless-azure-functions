@@ -58,7 +58,6 @@ describe("Bindings", () => {
     const bindingTypes = parsedBindings.bindingTypes;
     const bindingTypeIndex = bindingTypes.indexOf(bindingType);
     const bindingSettings = parsedBindings.bindingSettings[bindingTypeIndex];
-
     const binding = BindingUtils.getBinding(bindingType, bindingSettings, {});
 
     expect(binding).toMatchObject({
