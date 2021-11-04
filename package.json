@@ -53,7 +53,7 @@
     "@azure/ms-rest-nodeauth": "^1.0.1",
     "@azure/storage-blob": "^10.3.0",
     "acorn": "^7.0.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.2",
     "azure-functions-core-tools": "^3.0.2245",
     "cross-spawn": "^7.0.2",
     "deep-equal": "^1.0.1",
