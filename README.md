@@ -1,8 +1,12 @@
-# Azure Functions Serverless Plugin
+# Azure Functions Serverless Plugin - *Currently looking for active maintainers*
+
+Reach out to [@medikoo](https://github.com/medikoo) to discuss becoming a maintainer if interested.
 
 This plugin enables Azure Functions support within the Serverless Framework.
 
-[![Build Status](https://dev.azure.com/serverless-inc/serverless-azure-functions/_apis/build/status/Publish%20Release?branchName=master)](https://dev.azure.com/serverless-inc/serverless-azure-functions/_build/latest?definitionId=13&branchName=master) [![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions) [![npm version](https://badge.fury.io/js/serverless-azure-functions.svg)](https://www.npmjs.com/package/serverless-azure-functions) [![Node Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Node%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Node+Integration+Tests%22) [![Python Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Python%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Python+Integration+Tests%22) [![.NET Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/.NET%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22.NET+Integration+Tests%22)
+[![Build Status](https://dev.azure.com/serverless-inc/serverless-azure-functions/_apis/build/status/Publish%20Release?branchName=master)](https://dev.azure.com/serverless-inc/serverless-azure-functions/_build/latest?definitionId=13&branchName=master) [![Code Coverage](https://codecov.io/gh/serverless/serverless-azure-functions/branch/dev/graph/badge.svg)](https://codecov.io/gh/serverless/serverless-azure-functions) [![npm version](https://badge.fury.io/js/serverless-azure-functions.svg)](https://www.npmjs.com/package/serverless-azure-functions)
+
+<!-- [![Node Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Node%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Node+Integration+Tests%22) [![Python Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/Python%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22Python+Integration+Tests%22) [![.NET Integration Tests](https://github.com/serverless/serverless-azure-functions/workflows/.NET%20Integration%20Tests/badge.svg)](https://github.com/serverless/serverless-azure-functions/actions?query=workflow%3A%22.NET+Integration+Tests%22) -->
 
 ## Quickstart
 
