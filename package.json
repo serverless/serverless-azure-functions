@@ -50,7 +50,7 @@
     "@azure/arm-keyvault": "^1.2.1",
     "@azure/arm-resources": "^1.0.1",
     "@azure/arm-storage": "^9.0.1",
-    "@azure/ms-rest-nodeauth": "^1.0.1",
+    "@azure/ms-rest-nodeauth": "^3.0.8",
     "@azure/storage-blob": "^10.3.0",
     "acorn": "^7.0.0",
     "axios": "^0.18.0",
