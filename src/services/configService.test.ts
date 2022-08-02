@@ -225,7 +225,7 @@ describe("Config Service", () => {
         sls.service.provider.runtime = "python2.7" as any;
         expect(() => new ConfigService(sls, {} as any))
           .toThrowError("Runtime python2.7 is not supported. " +
-            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
+            "Runtimes supported: nodejs12,nodejs14,nodejs16,python3.6,python3.7,python3.8");
       });
 
       it("throws error when incomplete nodejs version in defined", () => {
@@ -233,7 +233,7 @@ describe("Config Service", () => {
         sls.service.provider.runtime = "nodejs" as any;
         expect(() => new ConfigService(sls, {} as any))
           .toThrowError("Runtime nodejs is not supported. " +
-            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
+            "Runtimes supported: nodejs12,nodejs14,nodejs16,python3.6,python3.7,python3.8");
       });
 
       it("throws error when unsupported nodejs version in defined", () => {
@@ -241,12 +241,12 @@ describe("Config Service", () => {
         sls.service.provider.runtime = "nodejs5.x" as any;
         expect(() => new ConfigService(sls, {} as any))
           .toThrowError("Runtime nodejs5.x is not supported. " +
-            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
+            "Runtimes supported: nodejs12,nodejs14,nodejs16,python3.6,python3.7,python3.8");
       });
 
       it("Does not throw an error when valid nodejs version is defined", () => {
         const sls = MockFactory.createTestServerless();
-        sls.service.provider.runtime = Runtime.NODE10
+        sls.service.provider.runtime = Runtime.NODE12
         let configService: ConfigService;
         expect(() => configService = new ConfigService(sls, {} as any)).not.toThrow();
         expect(configService.isLinuxTarget()).toBe(false);
@@ -258,7 +258,7 @@ describe("Config Service", () => {
         sls.service.provider.runtime = undefined;
         expect(() => new ConfigService(sls, {} as any))
           .toThrowError("Runtime undefined. " +
-            "Runtimes supported: nodejs10,nodejs12,nodejs14,python3.6,python3.7,python3.8");
+            "Runtimes supported: nodejs12,nodejs14,nodejs16,python3.6,python3.7,python3.8");
       });
 
       it("does not throw an error with python3.6", () => {
