@@ -310,10 +310,6 @@ Run unit tests using `npm test` or `npm run test:coverage` to get coverage resul
 
 We run our integration tests twice per day from our GitHub workflow. These tests install the beta version of the plugin, deploy a function app (with APIM), re-deploy (to make sure ARM template deployment is skipped), invoke the function directly, invoke the APIM endpoint and then remove the resource group, making assertions on the output at each step. While the number of configurations one could use in the Serverless Framework is virtually infinite, we tried to capture the main runtimes and platforms that are supported by the tool:
 
-- Node 10 on Linux using remote build
-- Node 10 on Linux using external package
-- Node 10 on Windows
-- Node 10 on Windows using webpack
 - Node 12 on Linux using remote build
 - Node 12 on Linux using external package
 - Node 12 on Linux using remote build and premium functions
