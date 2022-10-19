@@ -51,6 +51,8 @@ export class Utils {
     for (let eventsIndex = 0; eventsIndex < events.length; eventsIndex++) {
       bindingType = Object.keys(functionObject["events"][eventsIndex])[0];
 
+      // Durable Functions triggers have "trigger" part in the by default, so we do not need
+      // to add "trigger" part here.
       if (eventsIndex === 0 && !constants.durableFunctionTriggers.includes(bindingType)) {
         bindingType += constants.trigger;
       }
