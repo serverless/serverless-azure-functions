@@ -1919,6 +1919,20 @@
               "errorText": "[variables('parameterName')]"
             }
           ]
+        },
+        {
+          "name": "orchestration",
+          "value": "string",
+          "defaultValue": "Orchestrator",
+          "required": true,
+          "label": "$orchestrationTrigger_orchestration_label",
+          "help": "$orchestrationTrigger_orchestration_help",
+          "validators": [
+            {
+              "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
+              "errorText": "[variables('parameterName')]"
+            }
+          ]
         }
       ]
     }
