@@ -121,4 +121,5 @@ export const constants = {
   },
   bindingsJsonUrl: "https://raw.githubusercontent.com/Azure/azure-functions-templates/master/Functions.Templates/Bindings/bindings.json",
   tmpBuildDir: "tmp_build",
+  durableFunctionTriggers: ["orchestrationTrigger", "entityTrigger", "activityTrigger"]
 }

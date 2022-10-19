@@ -51,7 +51,7 @@ export class Utils {
     for (let eventsIndex = 0; eventsIndex < events.length; eventsIndex++) {
       bindingType = Object.keys(functionObject["events"][eventsIndex])[0];
 
-      if (eventsIndex === 0) {
+      if (eventsIndex === 0 && !constants.durableFunctionTriggers.includes(bindingType)) {
         bindingType += constants.trigger;
       }
 
@@ -130,7 +130,7 @@ export class Utils {
 
     const entryPoint = (handlerSplit.length > 1) ? handlerSplit[handlerSplit.length - 1] : undefined;
 
-    const handlerPath = ((handlerSplit.length > 1) ? handlerSplit[0] : handler) 
+    const handlerPath = ((handlerSplit.length > 1) ? handlerSplit[0] : handler)
       + constants.runtimeExtensions[getRuntimeLanguage(config.provider.runtime)]
 
     return {
@@ -233,7 +233,7 @@ export class Utils {
       })
     });
   }
-  
+
   /*
    * Spawn a Node child process from executable within node_modules/.bin
    * @param command CLI Command - NO ARGS
@@ -257,7 +257,7 @@ export class Utils {
   // public static spawn()
 
   public static spawn(options: ServerlessSpawnOptions): Promise<void> {
-    const { 
+    const {
       command,
       serverless,
       commandArgs,
@@ -277,7 +277,7 @@ export class Utils {
       serverless.cli.log(`Spawning process '${commandName || command} ${commandArgs.join(" ")}'`);
     }
     return new Promise(async (resolve, reject) => {
-      const spawnOptions: SpawnOptions = { 
+      const spawnOptions: SpawnOptions = {
         env,
         stdio: stdio || "inherit",
         cwd: cwd
