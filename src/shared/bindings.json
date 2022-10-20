@@ -1864,7 +1864,7 @@
           "name": "activity",
           "value": "string",
           "defaultValue": "Activity1",
-          "required": true,
+          "required": false,
           "label": "$activity_name_label",
           "help": "$activity_name_help",
           "validators": [
@@ -1924,7 +1924,7 @@
           "name": "orchestration",
           "value": "string",
           "defaultValue": "Orchestrator",
-          "required": true,
+          "required": false,
           "label": "$orchestrationTrigger_orchestration_label",
           "help": "$orchestrationTrigger_orchestration_help",
           "validators": [
