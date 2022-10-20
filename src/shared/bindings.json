@@ -1817,19 +1817,19 @@
       ]
     },
     {
-      "type": "durableClient",
-      "displayName": "$durableClientin_displayName",
+      "type": "orchestrationClient",
+      "displayName": "$orchestrationClientin_displayName",
       "direction": "in",
       "enabledInTryMode": true,
-      "documentation": "$content=Documentation\\durableClientIn.md",
+      "documentation": "$content=Documentation\\orchestrationClientIn.md",
       "settings": [
         {
           "name": "name",
           "value": "string",
           "defaultValue": "starter",
           "required": true,
-          "label": "$durableClientin_name_label",
-          "help": "$durableClientin_name_help",
+          "label": "$orchestrationClientin_name_label",
+          "help": "$orchestrationClientin_name_help",
           "validators": [
             {
               "expression": "^[a-zA-Z][a-zA-Z0-9]{0,127}$",
