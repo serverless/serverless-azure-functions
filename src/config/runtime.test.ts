@@ -47,5 +47,6 @@ describe("Runtime", () => {
     expect(getFunctionWorkerRuntime(Runtime.PYTHON38)).toBe("python");
     expect(getFunctionWorkerRuntime(Runtime.DOTNET31)).toBe("dotnet");
     expect(getFunctionWorkerRuntime(Runtime.DOTNET22)).toBe("dotnet");
+    expect(getFunctionWorkerRuntime(Runtime.DOTNET60)).toBe("dotnet");
   });
 });

@@ -8,6 +8,7 @@ export enum Runtime {
   PYTHON38 = "python3.8",
   DOTNET22 = "dotnet2.2",
   DOTNET31 = "dotnet3.1",
+  DOTNET60 = "dotnet6.0",
 }
 
 export const supportedRuntimes = [
@@ -18,7 +19,8 @@ export const supportedRuntimes = [
   Runtime.PYTHON37,
   Runtime.PYTHON38,
   Runtime.DOTNET22,
-  Runtime.DOTNET31
+  Runtime.DOTNET31,
+  Runtime.DOTNET60
 ]
 
 export const supportedRuntimeSet = new Set(supportedRuntimes);
@@ -42,7 +44,8 @@ export enum BuildMode {
 
 export const compiledRuntimes = new Set([
   Runtime.DOTNET22,
-  Runtime.DOTNET31
+  Runtime.DOTNET31,
+  Runtime.DOTNET60,
 ]);
 
 export function isCompiledRuntime(runtime: Runtime): boolean {
@@ -96,4 +99,5 @@ export const dockerImages = {
   "python3.7": "PYTHON|3.7",
   "python3.8": "PYTHON|3.8",
   "dotnet3.1": "DOTNET|3.1",
+  "dotnet6.0": "DOTNET|6.0",
 }
