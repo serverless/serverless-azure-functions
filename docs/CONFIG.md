@@ -89,6 +89,18 @@ functions:
   hello:
     # Handler is in src/handlers/hello.js and function sayHello
     handler: src/handlers/hello.sayHello
+    apim:
+        api: your-api
+        backend: your-backend
+        operations:
+            - method: get # post | patch | delete | put
+              urlTemplate: /your/template/url/{parameter}
+              displayName: Function name
+              templateParameters: # Only if you're using {parameter}
+                - name: parameter
+                  type: string
+                  required: false
+                  description: Your description
     events:
       # Http Triggered function
       - http: true
@@ -96,6 +108,7 @@ functions:
         methods:
           - GET
         authLevel: anonymous # can also be `function` or `admin`
+        route: /your/route/{param} # if functions.hello.apim is not defined, this will be used to infer the route parameters and build the templateParameters section
 ```
 
 ## Full Example Config
@@ -178,6 +191,15 @@ package:
 functions:
   hello:
     handler: src/handlers/hello.sayHello
+    apim:
+      api: your-api
+      backend: your-backend
+      urlTemplate: /hello/{name}
+      templateParameters:
+        - name: name
+          type: string
+          required: true
+          description: person's name
     events:
       - http: true
         methods:
@@ -188,6 +210,7 @@ functions:
     handler: src/handlers/goodbye.sayGoodbye
     events:
       - http: true
+        route: /goodbye
         methods:
           - GET
         authLevel: anonymous
