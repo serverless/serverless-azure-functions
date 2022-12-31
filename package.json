@@ -101,7 +101,7 @@
   },
   "optionalDependencies": {
     "serverless-webpack": "^4.2.0",
-    "webpack": "^3.10.0"
+    "webpack": "^5.75.0"
   },
   "engines": {
     "node": ">= 6.5.0"
