@@ -323,9 +323,6 @@ We run our integration tests twice per day from our GitHub workflow. These tests
 - Node 14 on Windows
 - Node 14 on Windows using premium functions
 - Node 14 on Windows using webpack
-- Node 14 on Linux using remote build
-- Node 14 on Linux using external package
-- Node 14 on Linux using remote build and premium functions
 - Python 3.6 (Linux only)
 - Python 3.6 (Linux only) using premium functions
 - Python 3.7 (Linux only)
