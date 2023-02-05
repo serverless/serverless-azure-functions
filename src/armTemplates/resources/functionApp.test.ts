@@ -201,7 +201,7 @@ describe("Function App Resource", () => {
         const config = getConfig(FunctionAppOS.LINUX, Runtime.NODE12);
     
         const resource = new FunctionAppResource();
-
+        
         const params = resource.getParameters(config);
         const { 
           linuxFxVersion,

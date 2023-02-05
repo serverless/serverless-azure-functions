@@ -1,5 +1,6 @@
 import { Runtime, isNodeRuntime, isPythonRuntime, getRuntimeVersion, getRuntimeLanguage, getFunctionWorkerRuntime } from "./runtime";
 
+
 describe("Runtime", () => {
   it("identifies node runtimes correctly", () => {
     expect(isNodeRuntime(Runtime.NODE10)).toBe(true);
