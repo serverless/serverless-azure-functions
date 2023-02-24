@@ -214,6 +214,23 @@ describe("Function App Resource", () => {
         expect(functionAppNodeVersion.value).toEqual("~12");
       });
 
+      it("gets correct parameters - node 16", () => {
+        const config = getConfig(FunctionAppOS.LINUX, Runtime.NODE16);
+
+        const resource = new FunctionAppResource();
+
+        const params = resource.getParameters(config);
+        const {
+          linuxFxVersion,
+          functionAppNodeVersion,
+        } = params;
+
+        assertLinuxParams(params);
+
+        expect(linuxFxVersion.value).toEqual("NODE|16");
+        expect(functionAppNodeVersion.value).toEqual("~16");
+      });
+
       it("gets correct parameters - python 3.6", () => {
         const config = getConfig(FunctionAppOS.LINUX, Runtime.PYTHON36);
     
