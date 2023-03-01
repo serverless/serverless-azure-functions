@@ -1,0 +1,20 @@
+{
+  "name": "node18-linux-webpack",
+  "version": "1.0.0",
+  "description": "Azure Functions sample for the Serverless framework",
+  "scripts": {
+    "test": "echo \"No tests yet...\"",
+    "start": "func host start"
+  },
+  "keywords": [
+    "azure",
+    "serverless"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-azure-functions": "file:../../..",
+    "serverless-webpack": "^5.3.1",
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.11"
+  }
+}
