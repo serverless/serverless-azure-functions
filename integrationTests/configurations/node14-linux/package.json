@@ -10,8 +10,7 @@
     "azure",
     "serverless"
   ],
-  "dependencies": {},
   "devDependencies": {
-    "serverless-azure-functions": "^1.0.0"
+    "serverless-azure-functions": "file:../../.."
   }
 }
