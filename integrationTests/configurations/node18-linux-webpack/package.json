@@ -10,11 +10,10 @@
     "azure",
     "serverless"
   ],
-  "dependencies": {},
   "devDependencies": {
     "serverless-azure-functions": "file:../../..",
-    "serverless-webpack": "^5.3.1",
-    "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11"
+    "serverless-webpack": "^5.11.0",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }
