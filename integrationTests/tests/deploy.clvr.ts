@@ -12,6 +12,13 @@ run({
     },
     {
       command: "sls package",
+      stdout: {
+        shouldContain: [
+          "Serverless: Initializing provider configuration...",
+          "Serverless: Parsing Azure Functions Bindings.json...",
+          "Serverless: Building binding for function: hello event: httpTrigger",
+        ],
+      }
     },
     // {
     //   command: "sls deploy -p .serverless/${serviceName}.zip",
