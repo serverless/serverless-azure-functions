@@ -6,7 +6,7 @@ run({
   parameters: defaultParameters,
   validations: [
     {
-      command: "npm i serverless-azure-functions@latest",
+      command: "npm i ../../../", // relative path to package.json (local package)
       silent: true,
     },
     {
