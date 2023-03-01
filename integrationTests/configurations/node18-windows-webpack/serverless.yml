@@ -11,6 +11,7 @@ provider:
 
   environment:
     VARIABLE_FOO: 'foo'
+    NODE_OPTIONS: '--openssl-legacy-provider'
 
 plugins:
   - serverless-azure-functions

@@ -11,8 +11,7 @@ run({
       silent: true,
     },
     {
-      // use openssl-legacy-provider flag until we update webpack
-      command: "export NODE_OPTIONS=--openssl-legacy-provider sls package",
+      command: "sls package",
     },
     // {
     //   command: "sls deploy -p .serverless/${serviceName}.zip",
