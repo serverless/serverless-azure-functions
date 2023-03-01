@@ -14,7 +14,7 @@ run({
     },
     {
       command: "sls deploy -p .serverless/${serviceName}.zip",
-      retries: 3,
+      retries: 0,
       stdout: {
         shouldContain: [
           "Logging into Azure",
@@ -26,7 +26,7 @@ run({
     },
     {
       command: `sls invoke -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
-      retries: 3,
+      retries: 0,
       stdout: {
         shouldContain: [
           "Hello Azure ${runtime}",
@@ -39,7 +39,7 @@ run({
     },
     {
       command: `sls invoke apim -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
-      retries: 3,
+      retries: 0,
       stdout: {
         shouldContain: [
           "Hello Azure ${runtime}",
@@ -52,7 +52,7 @@ run({
     },
     {
       command: "sls remove --force",
-      retries: 3,
+      retries: 0,
       stdout: {
         shouldContain: [
           "Service successfully removed"
