@@ -44,10 +44,19 @@ jobs:
       - name: Compile
         run: npm run compile
 
+      - name: Set node options
+        id: nodeOptions
+        run: |
+          if [ ${{ matrix.version }} > 16 ]; then
+            echo "NODE_OPTIONS=--max_old_space_size=8192 --openssl-legacy-provider" >> $GITHUB_OUTPUT
+          else
+            echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run integration tests
         run: npm run test:int -- -t deploy.* -d 'node${{ matrix.version }}-${{ matrix.os }}(-webpack)?'
         env:
-          NODE_OPTIONS: "--max_old_space_size=8192 --openssl-legacy-provider"
+          NODE_OPTIONS: ${{ steps.nodeOptions.outputs.NODE_OPTIONS }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
