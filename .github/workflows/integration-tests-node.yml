@@ -47,7 +47,7 @@ jobs:
       - name: Set node options
         id: nodeOptions
         run: |
-          if [ ${{ matrix.version }} > 16 ]; then
+          if (( ${{ matrix.version }} > 16 )); then
             echo "NODE_OPTIONS=--max_old_space_size=8192 --openssl-legacy-provider" >> $GITHUB_OUTPUT
           else
             echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
