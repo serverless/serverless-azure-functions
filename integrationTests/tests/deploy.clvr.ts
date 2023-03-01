@@ -6,15 +6,17 @@ run({
   parameters: defaultParameters,
   validations: [
     {
-      command: "npm i ../../../", // relative path to package.json (local package)
+      // relative path to package.json so that we run the rest of the tests using the updated package
+      command: "npm i ../../../",
       silent: true,
     },
     {
-      command: "sls package",
+      // use openssl-legacy-provider flag until we update webpack
+      command: "export NODE_OPTIONS=--openssl-legacy-provider sls package",
     },
     // {
     //   command: "sls deploy -p .serverless/${serviceName}.zip",
-    //   retries: 0,
+    //   retries: 3,
     //   stdout: {
     //     shouldContain: [
     //       "Logging into Azure",
@@ -26,7 +28,7 @@ run({
     // },
     // {
     //   command: `sls invoke -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
-    //   retries: 0,
+    //   retries: 3,
     //   stdout: {
     //     shouldContain: [
     //       "Hello Azure ${runtime}",
@@ -39,7 +41,7 @@ run({
     // },
     // {
     //   command: `sls invoke apim -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
-    //   retries: 0,
+    //   retries: 3,
     //   stdout: {
     //     shouldContain: [
     //       "Hello Azure ${runtime}",
@@ -52,7 +54,7 @@ run({
     // },
     // {
     //   command: "sls remove --force",
-    //   retries: 0,
+    //   retries: 3,
     //   stdout: {
     //     shouldContain: [
     //       "Service successfully removed"
