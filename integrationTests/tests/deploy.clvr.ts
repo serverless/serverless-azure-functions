@@ -11,7 +11,7 @@ run({
       silent: true,
     },
     {
-      command: "sls package",
+      command: "serverless package",
       stdout: {
         shouldContain: [
           "Serverless: Initializing provider configuration...",
@@ -21,7 +21,7 @@ run({
       }
     },
     // {
-    //   command: "sls deploy -p .serverless/${serviceName}.zip",
+    //   command: "serverless deploy -p .serverless/${serviceName}.zip",
     //   retries: 3,
     //   stdout: {
     //     shouldContain: [
@@ -33,7 +33,7 @@ run({
     //   }
     // },
     // {
-    //   command: `sls invoke -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
+    //   command: `serverless invoke -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
     //   retries: 3,
     //   stdout: {
     //     shouldContain: [
@@ -46,7 +46,7 @@ run({
     //   }
     // },
     // {
-    //   command: `sls invoke apim -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
+    //   command: `serverless invoke apim -f hello -d ${JSON.stringify({name: "Azure"}).replace(" ", "")}`,
     //   retries: 3,
     //   stdout: {
     //     shouldContain: [
@@ -59,7 +59,7 @@ run({
     //   },
     // },
     // {
-    //   command: "sls remove --force",
+    //   command: "serverless remove --force",
     //   retries: 3,
     //   stdout: {
     //     shouldContain: [
