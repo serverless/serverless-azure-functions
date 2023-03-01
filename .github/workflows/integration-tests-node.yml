@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        runtime: [node12, node14, node16, node18]
+        version: [12, 14, 16, 18]
         os: [linux, windows]
       fail-fast: false
 
@@ -45,7 +45,7 @@ jobs:
         run: npm run compile
 
       - name: Run integration tests
-        run: npm run test:int -- -t deploy.* -d '${{ matrix.runtime }}-${{ matrix.os }}(-webpack)?'
+        run: npm run test:int -- -t deploy.* -d 'node${{ matrix.version }}-${{ matrix.os }}(-webpack)?'
         env:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
