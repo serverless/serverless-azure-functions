@@ -1,5 +1,5 @@
 {
-  "name": "node12-windows-webpack",
+  "name": "node16-windows-webpack",
   "version": "1.0.0",
   "description": "Azure Functions sample for the Serverless framework",
   "scripts": {
