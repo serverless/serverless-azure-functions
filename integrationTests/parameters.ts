@@ -114,21 +114,9 @@ export const defaultParameters: ConfigurationParameters = {
     runtime: "node v18.",
     region: "weur",
   },
-  "node18-linux-webpack": {
-    serviceName: "nd18-lin-web",
-    configName: "node18-linux-webpack",
-    runtime: "node v18.",
-    region: "weur",
-  },
   "node18-windows": {
     serviceName: "nd18-win",
     configName: "node18-windows",
-    runtime: "node v18.",
-    region: "weur",
-  },
-  "node18-windows-webpack": {
-    serviceName: "nd18-win-web",
-    configName: "node18-windows-webpack",
     runtime: "node v18.",
     region: "weur",
   },
