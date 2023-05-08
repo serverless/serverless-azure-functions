@@ -32,9 +32,6 @@ jobs:
             ~/.npm
             node_modules
           key: npm-v${{ env.NODE_VERSION }}-${{ runner.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
-          restore-keys: |
-            npm-v${{ env.NODE_VERSION }}-${{ runner.os }}-${{ github.ref }}-
-            npm-v${{ env.NODE_VERSION }}-${{ runner.os }}-refs/heads/master-
 
       - name: Install Node.js and npm
         uses: actions/setup-node@v3
