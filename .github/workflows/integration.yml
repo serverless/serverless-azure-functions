@@ -193,3 +193,17 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+
+  tag-new-version:
+    runs-on: ubuntu-latest
+    needs: [node-integration-tests, python-integration-tests, dotnet-integration-tests]
+
+    steps:
+      - name: Tag if new version
+        run: |
+          NEW_VERSION=`git diff -U0 ${{ github.event.before }} package.json | grep '"version": "' | tail -n 1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+"` || :
+          if [ -n "$NEW_VERSION" ];
+          then
+            git tag v$NEW_VERSION
+            git push --tags
+          fi
