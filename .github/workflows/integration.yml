@@ -2,8 +2,7 @@ name: Integration tests
 
 on:
   push:
-    branches:
-      - integration-test-possible-fix
+    branches: [master]
 
 jobs:
   node-integration-tests:
