@@ -192,7 +192,7 @@ jobs:
 #          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
 #          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
 
-  tag-new-version:
+  tag-if-new-version:
     runs-on: ubuntu-latest
     needs: [node-integration-tests, python-integration-tests]
 
