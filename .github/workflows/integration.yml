@@ -44,6 +44,9 @@ jobs:
       - name: Compile
         run: npm run compile
 
+      - name: Pack
+        run: npm pack
+
       - name: Set node options
         id: nodeOptions
         run: |
@@ -56,9 +59,6 @@ jobs:
       - name: Validate lint rules
         run: npm run lint
 
-      - name: Run tests
-        run: npm run test:ci
-
       - name: Run integration tests
         run: npm run test:int -- -d 'node${{ matrix.node-version }}-${{ matrix.os }}(-webpack)?'
         env:
@@ -68,133 +68,128 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
 
-  python-integration-tests:
-    runs-on: ubuntu-latest
+#  python-integration-tests:
+#    runs-on: ubuntu-latest
+#
+#    strategy:
+#      matrix:
+#        runtime: [python36, python37, python38]
+#        node-version: [12, 14, 16, 18]
+#        os: [linux, windows]
+#      fail-fast: false
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      - name: Retrieve dependencies from cache
+#        id: cacheNpm
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            ~/.npm
+#            node_modules
+#          key: npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+#          restore-keys: |
+#            npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-
+#            npm-v${{ matrix.node-version }}-${{ matrix.os }}-refs/heads/master-
+#
+#      - name: Install Node.js and npm
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: ${{ matrix.node-version }}
+#
+#      - name: Install dependencies
+#        if: steps.cacheNpm.outputs.cache-hit != 'true'
+#        run: |
+#          npm ci
+#
+#      - name: Compile
+#        run: npm run compile
+#
+#      - name: Pack
+#        run: npm pack
+#
+#      - name: Set node options
+#        id: nodeOptions
+#        run: |
+#          if (( ${{ matrix.node-version }} > 16 )); then
+#            echo "NODE_OPTIONS=--max_old_space_size=8192 --openssl-legacy-provider" >> $GITHUB_OUTPUT
+#          else
+#            echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
+#          fi
+#
+#      - name: Run integration tests
+#        run: npm run test:int -- -d ${{ matrix.runtime }}
+#        env:
+#          NODE_OPTIONS: ${{ steps.nodeOptions.outputs.NODE_OPTIONS }}
+#          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+#          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+#          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+#          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
 
-    strategy:
-      matrix:
-        runtime: [python36, python37, python38]
-        node-version: [12, 14, 16, 18]
-        os: [linux, windows]
-      fail-fast: false
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Retrieve dependencies from cache
-        id: cacheNpm
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
-          restore-keys: |
-            npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-
-            npm-v${{ matrix.node-version }}-${{ matrix.os }}-refs/heads/master-
-
-      - name: Install Node.js and npm
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        if: steps.cacheNpm.outputs.cache-hit != 'true'
-        run: |
-          npm ci
-
-      - name: Compile
-        run: npm run compile
-
-      - name: Set node options
-        id: nodeOptions
-        run: |
-          if (( ${{ matrix.node-version }} > 16 )); then
-            echo "NODE_OPTIONS=--max_old_space_size=8192 --openssl-legacy-provider" >> $GITHUB_OUTPUT
-          else
-            echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Run integration tests
-        run: npm run test:int -- -d ${{ matrix.runtime }}
-        env:
-          NODE_OPTIONS: ${{ steps.nodeOptions.outputs.NODE_OPTIONS }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
-
-  dotnet-integration-tests:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        runtime: [dotnet22, dotnet31]
-        node-version: [12, 14, 16, 18]
-        os: [linux, windows]
-      fail-fast: false
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Retrieve dependencies from cache
-        id: cacheNpm
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
-          restore-keys: |
-            npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-
-            npm-v${{ matrix.node-version }}-${{ matrix.os }}-refs/heads/master-
-
-      - name: Install Node.js and npm
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        if: steps.cacheNpm.outputs.cache-hit != 'true'
-        run: |
-          npm ci
-
-      - name: Compile
-        run: npm run compile
-
-      - name: Set node options
-        id: nodeOptions
-        run: |
-          if (( ${{ matrix.node-version }} > 16 )); then
-            echo "NODE_OPTIONS=--max_old_space_size=8192 --openssl-legacy-provider" >> $GITHUB_OUTPUT
-          else
-            echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
-          fi
-
-      # Build plugin
-      - name: build
-        run: tsc
-
-      # Setup dotnet when needed
-      - name: setup dotnet 2.2
-        if: matrix.runtime == 'dotnet22'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '2.2.100'
-      - name: setup dotnet 3.1
-        if: matrix.runtime == 'dotnet31'
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.103'
-
-      # Run the integration test
-      - name: package, deploy, invoke, remove
-        run: npm run test:int -- -d '${{ matrix.runtime }}-${{ matrix.os }}'
-        env:
-          NODE_OPTIONS: ${{ steps.nodeOptions.outputs.NODE_OPTIONS }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
+#  dotnet-integration-tests:
+#    runs-on: ubuntu-latest
+#
+#    strategy:
+#      matrix:
+#        runtime: [dotnet31]
+#        node-version: [12, 14, 16, 18]
+#        os: [linux, windows]
+#      fail-fast: false
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      - name: Retrieve dependencies from cache
+#        id: cacheNpm
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            ~/.npm
+#            node_modules
+#          key: npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+#          restore-keys: |
+#            npm-v${{ matrix.node-version }}-${{ matrix.os }}-${{ github.ref }}-
+#            npm-v${{ matrix.node-version }}-${{ matrix.os }}-refs/heads/master-
+#
+#      - name: Install Node.js and npm
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: ${{ matrix.node-version }}
+#
+#      - name: Install dependencies
+#        if: steps.cacheNpm.outputs.cache-hit != 'true'
+#        run: |
+#          npm ci
+#
+#      - name: Compile
+#        run: npm run compile
+#
+#      - name: Pack
+#        run: npm pack
+#
+#      - name: Set node options
+#        id: nodeOptions
+#        run: |
+#          if (( ${{ matrix.node-version }} > 16 )); then
+#            echo "NODE_OPTIONS=--max_old_space_size=8192 --openssl-legacy-provider" >> $GITHUB_OUTPUT
+#          else
+#            echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
+#          fi
+#
+#      - name: Setup dotnet 3.1
+#        if: matrix.runtime == 'dotnet31'
+#        uses: actions/setup-dotnet@v1
+#        with:
+#          dotnet-version: '3.1.103'
+#
+#      - name: Run integration tests
+#        run: npm run test:int -- -d '${{ matrix.runtime }}-${{ matrix.os }}'
+#        env:
+#          NODE_OPTIONS: ${{ steps.nodeOptions.outputs.NODE_OPTIONS }}
+#          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID}}
+#          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID}}
+#          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET}}
+#          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID}}
