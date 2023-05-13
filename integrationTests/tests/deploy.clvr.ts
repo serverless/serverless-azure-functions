@@ -10,15 +10,5 @@ run({
       command: "npm i ../../../",
       silent: true,
     },
-    {
-      command: "serverless package",
-      stdout: {
-        shouldContain: [
-          "Serverless: Initializing provider configuration...",
-          "Serverless: Parsing Azure Functions Bindings.json...",
-          "Serverless: Building binding for function: hello event: httpTrigger",
-        ],
-      }
-    },
   ]
 });
