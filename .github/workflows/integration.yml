@@ -179,6 +179,9 @@ jobs:
             echo "NODE_OPTIONS=--max_old_space_size=8192" >> $GITHUB_OUTPUT
           fi
 
+      - name: Build
+        run: tsc
+
       - name: Setup dotnet 3.1
         if: matrix.runtime == 'dotnet31'
         uses: actions/setup-dotnet@v1
