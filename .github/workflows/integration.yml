@@ -196,6 +196,16 @@ jobs:
     needs: [node-integration-tests, python-integration-tests]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # Ensure to have complete history of commits pushed with given push operation
+          # It's loose and imperfect assumption that no more than 30 commits will be pushed at once
+          fetch-depth: 30
+          # Tag needs to be pushed with real user token, otherwise pushed tag won't trigger the actions workflow
+          # Hence we're passing 'serverless-ci' user authentication token
+          token: ${{ secrets.USER_GITHUB_TOKEN }}
+
       - name: Tag if new version
         run: |
           NEW_VERSION=`git diff -U0 ${{ github.event.before }} package.json | grep '"version": "' | tail -n 1 | grep -oE "[0-9]+\.[0-9]+\.[0-9]+"` || :
