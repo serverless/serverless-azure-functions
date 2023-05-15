@@ -1,0 +1,33 @@
+service: nd16-lin-web
+
+provider:
+  name: azure
+  prefix: int
+  stage: qa
+  region: West Europe
+  runtime: nodejs16
+  os: linux
+  apim: true
+
+  environment:
+    VARIABLE_FOO: 'foo'
+
+plugins:
+  - serverless-azure-functions
+  - serverless-webpack
+
+package:
+  exclude:
+    - local.settings.json
+    - .vscode/**
+
+functions:
+  hello:
+    handler: hello.sayHello
+    events:
+      - http: true
+        methods:
+          - GET
+        authLevel: anonymous
+
+
