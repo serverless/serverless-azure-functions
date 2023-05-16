@@ -44,6 +44,9 @@ jobs:
         run: |
           npm ci
 
+      - name: Build local package
+        run: npm pack
+
       - name: Publish new version
         # Note: Setting NODE_AUTH_TOKEN as job|workspace wide env var won't work
         #       as it appears actions/setup-node sets own value
