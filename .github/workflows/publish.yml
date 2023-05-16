@@ -54,6 +54,6 @@ jobs:
       - name: Create and publish a release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${GITHUB_REF##*/}
+          tag_name: ${{ github.ref_name }}
           prerelease: false
           generate_release_notes: true
