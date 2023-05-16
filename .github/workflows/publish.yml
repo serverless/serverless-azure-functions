@@ -44,6 +44,9 @@ jobs:
         run: |
           npm ci
 
+      - name: Build local package
+        run: npm run build
+
       - name: Publish new version
         # Note: Setting NODE_AUTH_TOKEN as job|workspace wide env var won't work
         #       as it appears actions/setup-node sets own value
@@ -54,6 +57,6 @@ jobs:
       - name: Create and publish a release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${GITHUB_REF##*/}
+          tag_name: ${{ github.ref_name }}
           prerelease: false
           generate_release_notes: true

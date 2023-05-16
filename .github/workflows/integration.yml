@@ -194,6 +194,7 @@ jobs:
   tag-if-new-version:
     runs-on: ubuntu-latest
     needs: [node-integration-tests, python-integration-tests]
+    if: github.repository_owner == 'serverless'
 
     steps:
       - name: Checkout repository
