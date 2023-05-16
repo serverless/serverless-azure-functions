@@ -45,7 +45,7 @@ jobs:
           npm ci
 
       - name: Build local package
-        run: npm pack
+        run: npm run build
 
       - name: Publish new version
         # Note: Setting NODE_AUTH_TOKEN as job|workspace wide env var won't work
