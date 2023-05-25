@@ -713,7 +713,7 @@ describe("APIM Service", () => {
 
       const createOperationCall = ApiOperation.prototype.createOrUpdate as jest.Mock;
       createOperationCall.mock.calls.forEach((args, index) => {
-        const expected = slsFunctions[index].apim.operations[0] as OperationContract;
+        const expected = (slsFunctions[index] as any).apim.operations[0] as OperationContract;
         const actual = args[4] as OperationContract;
 
         expect(actual).toMatchObject({
