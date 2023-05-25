@@ -526,7 +526,7 @@ describe("APIM Service", () => {
 
       Object.assign(serverless.service, { functions });
 
-      let apimResource: ApiManagementServiceResource = {
+      const apimResource: ApiManagementServiceResource = {
         name: apimConfig.name,
         location: "West US",
         gatewayUrl: "https://you.url.com",
@@ -596,7 +596,7 @@ describe("APIM Service", () => {
       functions.goodbye.events.forEach((event) => delete event.methods);
       Object.assign(serverless.service, { functions });
 
-      let apimResource: ApiManagementServiceResource = {
+      const apimResource: ApiManagementServiceResource = {
         name: apimConfig.name,
         location: "West US",
         gatewayUrl: "https://you.url.com",

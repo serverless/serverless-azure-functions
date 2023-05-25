@@ -192,7 +192,7 @@ export class AzureBlobStorageService extends BaseService {
    * @param blobName Name of blob to generate SAS token for
    * @param days Number of days from current date until expiry of SAS token. Defaults to 1 year
    */
-  public async generateBlobSasTokenUrl(containerName: string, blobName: string, days: number = 365): Promise<string> {
+  public async generateBlobSasTokenUrl(containerName: string, blobName: string, days = 365): Promise<string> {
     this.checkInitialization();
     if (this.authType !== AzureStorageAuthType.SharedKey) {
       throw new Error("Need to authenticate with shared key in order to generate SAS tokens. " +

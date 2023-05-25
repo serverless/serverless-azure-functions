@@ -28,7 +28,7 @@ export interface ServerlessSpawnOptions {
 }
 
 export class Utils {
-  public static async getFunctionMetaData(functionName: string, serverless: Serverless, offlineMode: boolean = false): Promise<FunctionMetadata> {
+  public static async getFunctionMetaData(functionName: string, serverless: Serverless, offlineMode = false): Promise<FunctionMetadata> {
     const config: ServerlessAzureConfig = serverless.service as any;
     const bindings = [];
     let bindingSettingsNames = [];
@@ -188,7 +188,7 @@ export class Utils {
    * @param maxRetries The max number of retries
    * @param retryWaitInterval The time to wait between retries
    */
-  public static async runWithRetry<T>(operation: (retry?: number) => Promise<T>, maxRetries: number = 3, retryWaitInterval: number = 1000) {
+  public static async runWithRetry<T>(operation: (retry?: number) => Promise<T>, maxRetries = 3, retryWaitInterval = 1000) {
     let retry = 0;
     let error = null;
 
@@ -211,7 +211,7 @@ export class Utils {
    * Waits for the specified amount of time.
    * @param time The amount of time to wait (default = 1000ms)
    */
-  public static wait(time: number = 1000) {
+  public static wait(time = 1000) {
     return new Promise((resolve) => {
       setTimeout(resolve, time);
     });
