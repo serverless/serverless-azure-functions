@@ -1,7 +1,6 @@
 import { Api, ApiManagementService, ApiOperation, ApiOperationPolicy, ApiPolicy, Backend, Property } from "@azure/arm-apimanagement";
 import { ApiContract, ApiCreateOrUpdateResponse, ApiGetResponse, ApiManagementServiceGetResponse, ApiManagementServiceResource, ApiOperationCreateOrUpdateResponse, ApiPolicyCreateOrUpdateResponse, ApiPolicyGetResponse, BackendContract, BackendCreateOrUpdateResponse, OperationContract, PolicyContract, PropertyContract, PropertyCreateOrUpdateResponse } from "@azure/arm-apimanagement/esm/models";
 import axios from "axios";
-import _ from "lodash";
 import Serverless from "serverless";
 import { Runtime } from "../config/runtime";
 import { ApiCheckHeaderPolicy, ApiIpFilterPolicy, ApiManagementConfig } from "../models/apiManagement";
@@ -676,7 +675,7 @@ describe("APIM Service", () => {
     });
 
     it("ensures all serverless functions have been deployed into specified API", async () => {
-      const slsFunctions = _.values(serverless.service["functions"]);
+      const slsFunctions = Object.values(serverless.service["functions"]);
 
       let apimResource: ApiManagementServiceResource = {
         name: apimConfig.name,
