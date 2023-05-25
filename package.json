@@ -98,9 +98,17 @@
     "ts-node": "^8.8.2",
     "typescript": "^3.4.5"
   },
-  "optionalDependencies": {
+  "peerDependencies": {
     "serverless-webpack": "^4.2.0",
     "webpack": "^3.10.0"
+  },
+  "peerDependenciesMeta": {
+    "serverless-webpack": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">= 6.5.0"
