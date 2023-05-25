@@ -1,0 +1,45 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  validate:
+    strategy:
+      matrix:
+        version: [12, 14, 16, 18]
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Retrieve dependencies from cache
+        id: cacheNpm
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: npm-v${{ matrix.version }}-${{ matrix.os }}-${{ github.ref }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            npm-v${{ matrix.version }}-${{ matrix.os }}-${{ github.ref }}-
+            npm-v${{ matrix.version }}-${{ matrix.os }}-refs/heads/master-
+
+      - name: Install Node.js and npm
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }}
+
+      - name: Install dependencies
+        if: steps.cacheNpm.outputs.cache-hit != 'true'
+        run: |
+          npm ci
+
+      - name: Validate lint rules
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:ci

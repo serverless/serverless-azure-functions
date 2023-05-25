@@ -1,5 +1,5 @@
 {
-  "name": "node12-windows",
+  "name": "node14-linux",
   "version": "1.0.0",
   "description": "Azure Functions sample for the Serverless framework",
   "scripts": {
@@ -10,7 +10,6 @@
     "azure",
     "serverless"
   ],
-  "dependencies": {},
   "devDependencies": {
     "serverless-azure-functions": "file:../../.."
   }

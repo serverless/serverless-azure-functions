@@ -6,15 +6,6 @@ run({
   parameters: defaultParameters,
   validations: [
     {
-      command: "npm link serverless-azure-functions",
-      silent: true,
-      files: {
-        "hello/function.json": {
-          shouldExist: false
-        }
-      }
-    },
-    {
       command: "sls offline build",
       stdout: {
         shouldContain: [
