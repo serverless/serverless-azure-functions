@@ -289,11 +289,14 @@ export class MockFactory {
     return Promise.resolve(response);
   }
 
-  public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessAzureConfig {
+  public static createTestServerlessYml(asYaml = false, functionMetadata?): ServerlessAzureConfig | string {
     const data = {
+      service: "my-service",
       provider: {
         name: "azure",
-        region: "West US 2"
+        region: "West US 2",
+        stage: "my-stage",
+        runtime: Runtime.NODE10
       },
       plugins: [
         "serverless-azure-functions"
