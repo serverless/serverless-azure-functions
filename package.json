@@ -86,7 +86,7 @@
     "babel-preset-react-app": "^9.0.0",
     "clvr": "^0.7.1",
     "conventional-changelog-cli": "^2.0.23",
-    "eslint": "^5.16.0",
+    "eslint": "^6.0.0",
     "jest": "^24.8.0",
     "jest-cli": "^24.8.0",
     "jest-os-detection": "^1.1.1",
