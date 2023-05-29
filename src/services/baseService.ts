@@ -29,7 +29,7 @@ export abstract class BaseService {
   protected constructor(
     protected serverless: Serverless,
     protected options: ServerlessAzureOptions = { stage: null, region: null },
-    authenticate: boolean = true
+    authenticate = true
   ) {
     Guard.null(serverless);
     this.configService = new ConfigService(serverless, options);

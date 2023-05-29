@@ -42,7 +42,7 @@ export class SimpleFileTokenCache implements adal.TokenCache {
   }
 
   public find(query: any, callback: (err?: Error, result?: any[]) => void) {
-    let result = (this.entries)
+    const result = (this.entries)
       ?
       this.entries.filter(e => {
         return Object.keys(query).every(key => e[key] === query[key]);

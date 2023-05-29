@@ -187,7 +187,7 @@ export class FunctionAppService extends BaseService {
 
     const armService = new ArmService(this.serverless, this.options);
     const { armTemplate, type } = this.config.provider;
-    let deployment: ArmDeployment = armTemplate
+    const deployment: ArmDeployment = armTemplate
       ? await armService.createDeploymentFromConfig(armTemplate)
       : await armService.createDeploymentFromType(type || "consumption");
 

@@ -62,11 +62,11 @@ describe("Azure Func Plugin", () => {
 
     it("creates function handler and updates serverless.yml", async () => {
       const sls = MockFactory.createTestServerless();
-      MockFactory.updateService(sls, MockFactory.createTestSlsFunctionConfig(false))
+      MockFactory.updateService(sls, MockFactory.createTestSlsFunctionConfig())
       const options = MockFactory.createTestServerlessOptions();
       const functionName = "myFunction";
       options["name"] = functionName;
-      const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig(false);
+      const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig();
       expectedFunctionsYml[functionName] = MockFactory.createTestFunctionMetadata(functionName);
 
       const plugin = new AzureFuncPlugin(sls, options);

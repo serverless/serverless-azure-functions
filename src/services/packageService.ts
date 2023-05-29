@@ -25,7 +25,7 @@ export class PackageService extends BaseService {
   /**
    * Creates the function.json binding files required for the serverless service
    */
-  public async createBindings(offlineMode: boolean = false): Promise<void> {
+  public async createBindings(offlineMode = false): Promise<void> {
     const createEventsPromises = this.serverless.service.getAllFunctions()
       .map(async (functionName) => {
         const metaData = await Utils.getFunctionMetaData(functionName, this.serverless, offlineMode);
