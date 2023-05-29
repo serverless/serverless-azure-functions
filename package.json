@@ -73,7 +73,6 @@
     "@types/jest": "^24.0.13",
     "@types/jsonpath": "^0.2.0",
     "@types/mock-fs": "^3.6.30",
-    "@types/open": "^6.1.0",
     "@types/request": "^2.48.1",
     "@types/serverless": "^1.18.2",
     "@types/xml2js": "^0.4.5",
