@@ -20,6 +20,23 @@
   },
   "bindings": [
     {
+      "type": "warmupTrigger",
+      "displayName": "$warmupTrigger_displayName",
+      "direction": "trigger",
+      "enabledInTryMode": true,
+      "documentation": "$content=Documentation\\warmupTrigger.md",
+      "settings": [
+        {
+          "name": "name",
+          "value": "string",
+          "required": true,
+          "defaultValue": "warmupContext",
+          "label": "$warmupTrigger_name_label",
+          "help": "$warmupTrigger_name_help"
+        }
+      ]
+    },
+    {
       "type": "timerTrigger",
       "displayName": "$timerTrigger_displayName",
       "direction": "trigger",
