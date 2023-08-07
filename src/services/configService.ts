@@ -350,5 +350,31 @@ export class ConfigService {
         constants.tmpBuildDir
       ],
     });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET60}-${BuildMode.RELEASE}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "release",
+        "--framework",
+        "net6.0",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
+    
+    this.cliCommandFactory.registerCommand(`${Runtime.DOTNET60}-${BuildMode.DEBUG}`, {
+      command: "dotnet",
+      args: [
+        "build",
+        "--configuration",
+        "debug",
+        "--framework",
+        "net6.0",
+        "--output",
+        constants.tmpBuildDir
+      ],
+    });
   }
 }
