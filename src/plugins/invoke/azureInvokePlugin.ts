@@ -25,7 +25,8 @@ export class AzureInvokePlugin extends AzureBasePlugin {
               ...constants.invokeOptions,
               port: {
                 usage: "Port through which locally running service is exposed",
-                shortcut: "t"
+                shortcut: "t",
+                type: "string",
               }
             },
             lifecycleEvents: [ "local" ],

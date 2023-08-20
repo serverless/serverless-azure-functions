@@ -40,40 +40,49 @@ export const constants = {
     resourceGroup: {
       usage: "Resource group for the service",
       shortcut: "g",
+      type: "string",
     },
     stage: {
       usage: "Stage of service",
-      shortcut: "s"
+      shortcut: "s",
+      type: "string",
     },
     region: {
       usage: "Region of service",
-      shortcut: "r"
+      shortcut: "r",
+      type: "string",
     },
     subscriptionId: {
       usage: "Sets the Azure subscription ID",
       shortcut: "i",
+      type: "string",
     },
     function: {
       usage: "Deployment of individual function - NOT SUPPORTED",
       shortcut: "f",
+      type: "string",
     }
   },
   invokeOptions: {
     function: {
       usage: "Function to call",
       shortcut: "f",
+      type: "string",
     },
     path: {
       usage: "Path to file to put in body",
-      shortcut: "p"
+      shortcut: "p",
+      type: "string",
     },
     data: {
       usage: "Data string for body of request",
-      shortcut: "d"
+      shortcut: "d",
+      type: "string",
     },
     method: {
       usage: "HTTP method (Default is GET)",
-      shortcut: "m"
+      shortcut: "m",
+      type: "string",
     },
   },
   bearer: "Bearer ",

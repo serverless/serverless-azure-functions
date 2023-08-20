@@ -18,7 +18,8 @@ export class AzureRemovePlugin extends AzureBasePlugin {
         options: {
           ...constants.deployedServiceOptions,
           force: {
-            usage: "Force remove resource group without additional prompt"
+            usage: "Force remove resource group without additional prompt",
+            type: "boolean"
           },
         }
       }
