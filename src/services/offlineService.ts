@@ -61,7 +61,6 @@ export class OfflineService extends BaseService {
     const cwd = isCompiledRuntime(this.config.provider.runtime)
       ? path.join(this.serverless.config.servicePath, constants.tmpBuildDir)
       : undefined;
-    this.log(cwd);
     await Utils.spawnLocal({
       serverless: this.serverless,
       command: command,
