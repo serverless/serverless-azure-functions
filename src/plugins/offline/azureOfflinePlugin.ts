@@ -32,10 +32,12 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
               nocleanup: {
                 usage: "Do not clean up offline files after finishing process",
                 shortcut: "n",
+                type: "boolean",
               },
               spawnargs: {
                 usage: "Arguments to add to spawned 'func host start' process",
-                shortcut: "a"
+                shortcut: "a",
+                type: "string",
               }
             }
           },
@@ -56,10 +58,12 @@ export class AzureOfflinePlugin extends AzureBasePlugin {
           nocleanup: {
             usage: "Do not clean up offline files after finishing process",
             shortcut: "n",
+            type: "boolean",
           },
           spawnargs: {
             usage: "Arguments to add to spawned 'func host start' process",
-            shortcut: "a"
+            shortcut: "a",
+            type: "string",
           }
         }
       }

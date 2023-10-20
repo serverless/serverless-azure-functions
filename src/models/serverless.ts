@@ -184,6 +184,7 @@ export interface ServerlessCommand {
     [key: string]: {
       usage: string;
       shortcut?: string;
+      type: string;
     };
   };
   commands?: ServerlessCommandMap;

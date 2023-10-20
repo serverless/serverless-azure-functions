@@ -21,6 +21,7 @@ export class AzureRollbackPlugin extends AzureBasePlugin {
           timestamp: {
             usage: "Timestamp of previous deployment",
             shortcut: "t",
+            type: "string",
           },
           ...constants.deployedServiceOptions
         }

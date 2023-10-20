@@ -29,6 +29,7 @@ export class AzureFuncPlugin extends AzureBasePlugin {
               name: {
                 usage: "Name of function to add",
                 shortcut: "n",
+                type: "string",
               }
             }
           },
@@ -41,6 +42,7 @@ export class AzureFuncPlugin extends AzureBasePlugin {
               name: {
                 usage: "Name of function to remove",
                 shortcut: "n",
+                type: "string",
               }
             }
           }
