@@ -1,6 +1,6 @@
 # Azure Functions Serverless Plugin - *Currently looking for active maintainers*
 
-Reach out to [@medikoo](https://github.com/medikoo) to discuss becoming a maintainer if interested.
+Reach out to contactATserverless.com to discuss becoming a maintainer if interested.
 
 This plugin enables Azure Functions support within the Serverless Framework.
 

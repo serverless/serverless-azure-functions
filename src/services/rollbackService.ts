@@ -109,7 +109,7 @@ export class RollbackService extends BaseService {
    * Lists deployments if no timestamp is provided
    */
   private async getDeployment(): Promise<DeploymentExtended> {
-    let timestamp = Utils.get(this.options, "timestamp");
+    const timestamp = Utils.get(this.options, "timestamp");
     if (!timestamp) {
       this.log("Need to specify a timestamp for rollback.\n\n" +
         "Example usage:\n\nsls rollback -t 1562014362\n\n" +

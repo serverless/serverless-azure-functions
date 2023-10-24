@@ -129,7 +129,7 @@ export class MockFactory {
     return functions;
   }
 
-  public static createTestFunction(name: string = "TestFunction") {
+  public static createTestFunction(name = "TestFunction") {
     return {
       properties: {
         name,
@@ -153,7 +153,7 @@ export class MockFactory {
     return credentials;
   }
 
-  public static createTestTokenCacheEntries(count: number = 1): TokenResponse[] {
+  public static createTestTokenCacheEntries(count = 1): TokenResponse[] {
     const token: TokenResponse = {
       tokenType: "Bearer",
       accessToken: "ABC123",
@@ -164,7 +164,7 @@ export class MockFactory {
     return result;
   }
 
-  public static createTestSubscriptions(count: number = 1): any[] {
+  public static createTestSubscriptions(count = 1): any[] {
     const sub = {
       id: "abc-1234-5678",
       state: "Enabled",
@@ -182,7 +182,7 @@ export class MockFactory {
     return "1562184492";
   }
 
-  public static createTestDeployments(count: number = 5, includeTimestamp = false): DeploymentsListByResourceGroupResponse {
+  public static createTestDeployments(count = 5, includeTimestamp = false): DeploymentsListByResourceGroupResponse {
     const result = [];
     const originalTimestamp = +MockFactory.createTestTimestamp();
     for (let i = 0; i < count; i++) {
@@ -201,7 +201,7 @@ export class MockFactory {
     }
   }
 
-  public static createTestDeployment(name?: string, second: number = 0): DeploymentExtended {
+  public static createTestDeployment(name?: string, second = 0): DeploymentExtended {
     return {
       name: name || `${constants.naming.suffix.deployment}1-t${MockFactory.createTestTimestamp()}`,
       properties: {
@@ -215,7 +215,7 @@ export class MockFactory {
   public static createTestAxiosResponse<T>(
     config: AxiosRequestConfig,
     responseJson: T,
-    statusCode: number = 200,
+    statusCode = 200,
   ): Promise<AxiosResponse> {
     let statusText;
     switch (statusCode) {
@@ -240,7 +240,7 @@ export class MockFactory {
     return Promise.resolve(response);
   }
 
-  public static createTestAzureContainers(count: number = 5): ServiceListContainersSegmentResponse {
+  public static createTestAzureContainers(count = 5): ServiceListContainersSegmentResponse {
     const result = [];
     for (let i = 0; i < count; i++) {
       result.push({
@@ -251,7 +251,7 @@ export class MockFactory {
     return { containerItems: result } as ServiceListContainersSegmentResponse;
   }
 
-  public static createTestBlockBlobUrl(containerName: string, blobName: string, contents: string = "test") {
+  public static createTestBlockBlobUrl(containerName: string, blobName: string, contents = "test") {
     return {
       containerName,
       blobName,
@@ -263,7 +263,7 @@ export class MockFactory {
     }
   }
 
-  public static createTestAzureBlobItems(id: number = 1, count: number = 5) {
+  public static createTestAzureBlobItems(id = 1, count = 5) {
     const result = [];
     for (let i = 0; i < count; i++) {
       result.push(MockFactory.createTestAzureBlobItem(id, i));
@@ -271,13 +271,13 @@ export class MockFactory {
     return { segment: { blobItems: result } };
   }
 
-  public static createTestAzureBlobItem(id: number = 1, index: number = 1, ext: string = ".zip") {
+  public static createTestAzureBlobItem(id = 1, index = 1, ext = ".zip") {
     return {
       name: `blob-${id}-${index}${ext}`
     }
   }
 
-  public static createTestAzureClientResponse<T>(responseJson: T, statusCode: number = 200): Promise<HttpOperationResponse> {
+  public static createTestAzureClientResponse<T>(responseJson: T, statusCode = 200): Promise<HttpOperationResponse> {
     const response: HttpOperationResponse = {
       request: new WebResource(),
       parsedBody: responseJson,
@@ -303,7 +303,7 @@ export class MockFactory {
     return (asYaml) ? yaml.dump(data) : data;
   }
 
-  public static createTestApimConfig(generateName: boolean = false): ApiManagementConfig {
+  public static createTestApimConfig(generateName = false): ApiManagementConfig {
     return {
       name: generateName ? null : "test-apim-resource",
       apis: [{
@@ -332,7 +332,7 @@ export class MockFactory {
     };
   }
 
-  public static createTestKeyVaultConfig(name: string = "testVault") {
+  public static createTestKeyVaultConfig(name = "testVault") {
     return {
       name: name,
       resourceGroup: "testGroup",
@@ -422,7 +422,7 @@ export class MockFactory {
     }
   }
 
-  public static createTestSite(name: string = "Test"): Site {
+  public static createTestSite(name = "Test"): Site {
     return {
       id: "appId",
       name: name,
@@ -435,7 +435,7 @@ export class MockFactory {
     };
   }
 
-  public static createTestFunctionEnvelope(name: string = "TestFunction"): FunctionEnvelope {
+  public static createTestFunctionEnvelope(name = "TestFunction"): FunctionEnvelope {
     return {
       name,
       config: {
@@ -520,7 +520,7 @@ export class MockFactory {
     }
   }
 
-  public static createTestEventHubBinding(direction: string = "in") {
+  public static createTestEventHubBinding(direction = "in") {
     return {
       event: "eventHubTrigger",
       direction,
@@ -530,7 +530,7 @@ export class MockFactory {
       connection: "EventHubsConnection"
     }
   }
-  public static createTestBindingsObject(name: string = "index.js") {
+  public static createTestBindingsObject(name = "index.js") {
     return {
       scriptFile: name,
       entryPoint: "handler",
@@ -578,7 +578,7 @@ export class MockFactory {
     return apis;
   }
 
-  public static createTestApimApi(index: number = 1): ApiContract {
+  public static createTestApimApi(index = 1): ApiContract {
     return {
       displayName: `API ${index}`,
       description: `Description for API ${index}`,
@@ -597,7 +597,7 @@ export class MockFactory {
     return backends;
   }
 
-  public static createTestApimBackend(index: number = 1): BackendContract {
+  public static createTestApimBackend(index = 1): BackendContract {
     return {
       name: `backend-${index}`,
       description: `Description for Backend ${index}`,

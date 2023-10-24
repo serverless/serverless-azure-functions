@@ -8,7 +8,7 @@ import fs from "fs";
 describe("Simple File Token Cache", () => {
   const tokenFilePath = "slsTokenCache.json";
 
-  let fileContent = {
+  const fileContent = {
     entries: [],
     subscriptions: []
   };

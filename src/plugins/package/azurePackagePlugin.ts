@@ -9,7 +9,7 @@ import { PackageService } from "../../services/packageService";
 import { AzureBasePlugin } from "../azureBasePlugin";
 
 export class AzurePackagePlugin extends AzureBasePlugin {
-  private bindingsCreated: boolean = false;
+  private bindingsCreated = false;
   public provider: AzureProvider;
 
   public constructor(serverless: Serverless, options: Serverless.Options) {

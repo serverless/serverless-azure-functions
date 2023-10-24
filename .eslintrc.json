@@ -6,6 +6,7 @@
   "plugins": ["@typescript-eslint"],
   "extends": ["plugin:@typescript-eslint/recommended"],
   "rules": {
+    "prefer-const": ["error", { "destructuring": "all" }],
     "quotes": ["error", "double"],
     "@typescript-eslint/indent": [
       "error",
