@@ -248,7 +248,7 @@ describe("Function App Resource", () => {
       });
 
       it("gets correct parameters - node 20", () => {
-        const config = getConfig(FunctionAppOS.LINUX, Runtime.NODE18);
+        const config = getConfig(FunctionAppOS.LINUX, Runtime.NODE20);
 
         const resource = new FunctionAppResource();
 
