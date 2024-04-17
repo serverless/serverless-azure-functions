@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12, 14, 16, 18]
+        node-version: [12, 14, 16, 18, 20]
         os: [linux, windows]
       fail-fast: false
 
@@ -73,7 +73,7 @@ jobs:
     strategy:
       matrix:
         runtime: [python36, python37, python38]
-        node-version: [12, 14, 16, 18]
+        node-version: [12, 14, 16, 18, 20]
         os: [linux, windows]
       fail-fast: false
 
