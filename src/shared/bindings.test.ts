@@ -1,13 +1,13 @@
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
 import { BindingUtils } from "./bindings";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
 
 describe("Bindings", () => {
   let sls: Serverless;
 
   afterEach(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   beforeEach(() => {

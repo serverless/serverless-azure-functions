@@ -3,7 +3,7 @@ import { MockFactory } from "../test/mockFactory";
 import { ArmService } from "./armService";
 import { ArmResourceTemplate, ArmTemplateType, ArmDeployment, ArmTemplateProvisioningState, ArmParamType } from "../models/armTemplates";
 import { ArmTemplateConfig, ServerlessAzureOptions } from "../models/serverless";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
 import jsonpath from "jsonpath";
 import { Deployments } from "@azure/arm-resources";
 import { Deployment, DeploymentExtended } from "@azure/arm-resources/esm/models";
@@ -41,7 +41,7 @@ describe("Arm Service", () => {
   })
 
   afterEach(() => {
-    mockFs.restore();
+    vol.reset();
   })
 
   describe("Creating Templates", () => {
@@ -53,7 +53,7 @@ describe("Arm Service", () => {
 
       const testTemplate: ArmResourceTemplate = MockFactory.createTestArmTemplate();
 
-      mockFs({
+      vol.fromNestedJSON({
         "armTemplates": {
           "custom-template.json": JSON.stringify(testTemplate),
         },

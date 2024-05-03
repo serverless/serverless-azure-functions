@@ -1,6 +1,7 @@
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
+import fs from "fs"
 import { AzureInvokePlugin } from "./azureInvokePlugin";
 jest.mock("../../services/functionAppService");
 jest.mock("../../services/resourceService");
@@ -16,12 +17,12 @@ describe("Azure Invoke Plugin", () => {
   })
 
   beforeAll(() => {
-    mockFs({
+    vol.fromNestedJSON({
       "testFile.json": fileContent,
-    }, { createCwd: true, createTmp: true });
+    }, process.cwd());
   });
   afterAll(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   it("calls invoke hook", async () => {
@@ -42,6 +43,8 @@ describe("Azure Invoke Plugin", () => {
   });
 
   it("calls the invoke hook with file path", async () => {
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => true)
     const expectedResult = { data: "test" };
     const invoke = jest.fn(() => expectedResult);
     InvokeService.prototype.invoke = invoke as any;
