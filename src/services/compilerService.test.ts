@@ -22,6 +22,8 @@ describe("Compiler Service", () => {
   });
   
   (it as any).onWindows("spawns a release build process on windows", async () => {
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => true);
     const service = createService();
     await service.build(BuildMode.RELEASE);
     const calls = mySpawn.calls;
