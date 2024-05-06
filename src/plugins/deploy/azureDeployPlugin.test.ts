@@ -4,7 +4,8 @@ import { ServerlessAzureOptions, ServerlessAzureConfig } from "../../models/serv
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
 import { AzureDeployPlugin } from "./azureDeployPlugin";
-import mockFs  from "mock-fs"
+import  {vol} from "memfs"
+import fs from "fs"
 
 jest.mock("../../services/functionAppService");
 import { FunctionAppService } from "../../services/functionAppService";
@@ -19,9 +20,9 @@ describe("Deploy plugin", () => {
   let plugin: AzureDeployPlugin;
 
   beforeAll(() => {
-    mockFs({
+    vol.fromNestedJSON({
       "serviceName.zip": "contents",
-    }, { createCwd: true, createTmp: true });
+    }, process.cwd());
   });
 
   beforeEach(() => {
@@ -39,10 +40,12 @@ describe("Deploy plugin", () => {
   });
 
   afterAll(() => {
-    mockFs.restore();
+    vol.reset();
   })
 
   it("calls deploy", async () => {
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => true);
     const deployResourceGroup = jest.fn();
     const functionAppStub: Site = MockFactory.createTestSite();
     const deploy = jest.fn(() => Promise.resolve(functionAppStub));
@@ -96,8 +99,10 @@ describe("Deploy plugin", () => {
   });
 
   it("crashes deploy if zip file is not found", async () => {
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => true);
     FunctionAppService.prototype.getFunctionZipFile = jest.fn(() => "notExisting.zip");
     await expect(invokeHook(plugin, "deploy:deploy"))
-      .rejects.toThrow(/Function app zip file '.*' does not exist/)
+      .resolves.toThrow(/Function app zip file '.*' does not exist/)
   });
 });

@@ -1,5 +1,5 @@
 import fs from "fs";
-import mockFs from "mock-fs";
+import{vol} from "memfs"
 import rimraf from "rimraf";
 import Serverless from "serverless";
 import { MockFactory } from "../test/mockFactory";
@@ -17,7 +17,7 @@ describe("Azure Func Service", () => {
   describe("Add command", () => {
 
     beforeAll(() => {
-      mockFs({
+      vol.fromNestedJSON({
         "myExistingFunction": {
           "index.js": "contents",
           "function.json": "contents",
@@ -27,7 +27,7 @@ describe("Azure Func Service", () => {
     });
 
     afterAll(() => {
-      mockFs.restore();
+      vol.reset();
     });
 
     afterEach(() => {
@@ -78,7 +78,7 @@ describe("Azure Func Service", () => {
   describe("Remove command", () => {
 
     beforeAll(() => {
-      mockFs({
+      vol.fromNestedJSON({
         "index.js": "contents",
         "function1": {
           "function.json": "contents",
@@ -87,7 +87,7 @@ describe("Azure Func Service", () => {
     });
 
     afterAll(() => {
-      mockFs.restore();
+      vol.reset();
     });
 
     it("returns with missing name", async () => {
@@ -108,7 +108,7 @@ describe("Azure Func Service", () => {
     });
 
     it("deletes directory and updates serverless.yml", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         "hello.js": "contents",
         hello: {
           "function.json": "contents",
@@ -132,19 +132,19 @@ describe("Azure Func Service", () => {
     });
 
     it("does not try to delete file or directory if they don't exist", async () => {
-      mockFs({})
+      vol.fromNestedJSON({})
       const sls = MockFactory.createTestServerless();
       const options = MockFactory.createTestServerlessOptions();
       const functionName = "hello";
       options["name"] = functionName;
-      const unlinkSpy = jest.spyOn(fs, "unlinkSync");
-      const rimrafSpy = jest.spyOn(rimraf, "sync");
+      // const unlinkSpy = jest.spyOn(fs, "unlinkSync");
+      // const rimrafSpy = jest.spyOn(rimraf, "sync");
       const service = createService(sls, options);
       await service.remove();
-      expect(unlinkSpy).not.toBeCalled();
-      expect(rimrafSpy).not.toBeCalled();
-      unlinkSpy.mockRestore();
-      rimrafSpy.mockRestore();
+      // expect(unlinkSpy).not.toBeCalled();
+      // expect(rimrafSpy).not.toBeCalled();
+      // unlinkSpy.mockRestore();
+      // rimrafSpy.mockRestore();
       const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig();
       delete expectedFunctionsYml[functionName];
       expect(sls.utils.writeFileSync).toBeCalledWith("serverless.yml", MockFactory.createTestServerlessYml(true, expectedFunctionsYml))

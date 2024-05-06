@@ -1,6 +1,7 @@
 import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
+import fs from "fs"
 import path from "path";
 import Serverless from "serverless";
 import { FunctionAppResource } from "../armTemplates/resources/functionApp";
@@ -75,12 +76,12 @@ describe("Function App Service", () => {
         .reply(200, deleteFunctionMessage);
     }
 
-    mockFs({
+    vol.fromNestedJSON({
       "app.zip": "contents",
       ".serverless": {
         "serviceName.zip": "contents",
       }
-    }, { createCwd: true, createTmp: true });
+    }, process.cwd());
 
     WebSiteManagementClient.prototype.webApps = {
       get: jest.fn(() => app),
@@ -96,7 +97,7 @@ describe("Function App Service", () => {
   })
 
   afterAll(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   function createService(sls?: Serverless, options?: Serverless.Options) {
@@ -311,6 +312,8 @@ describe("Function App Service", () => {
   });
   
   it("publishes functions and uploads to blob storage", async () => {
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => true);
     const sls = MockFactory.createTestServerless();
     const service = createService(sls);
     await service.uploadFunctions(app);
@@ -338,6 +341,8 @@ describe("Function App Service", () => {
   });
 
   it("publishes functions with custom SCM domain (aka App service environments)", async () => {
+    const existsSpy = jest.spyOn(fs, "existsSync");
+    existsSpy.mockImplementation(() => true);
     const customApp = {
       ...MockFactory.createTestSite("CustomAppWithinASE"),
       enabledHostNames: [

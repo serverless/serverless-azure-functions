@@ -1,5 +1,5 @@
 import fs from "fs";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
 import Serverless from "serverless";
 import { ServerlessAzureOptions } from "../models/serverless";
 import { MockFactory } from "../test/mockFactory";
@@ -72,7 +72,7 @@ describe("Base Service", () => {
   };
 
   afterAll(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   function createMockService(sls: Serverless, options?: Serverless.Options) {
@@ -134,7 +134,7 @@ describe("Base Service", () => {
   });
 
   it("POST a file to a HTTP endpoint", async () => {
-    mockFs({
+    vol.fromNestedJSON({
       ".serverless": {
         "project.zip": "contents",
       },
