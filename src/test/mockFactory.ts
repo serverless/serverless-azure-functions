@@ -178,6 +178,18 @@ export class MockFactory {
     return result;
   }
 
+  public static createTestSubscription(count = 1): any[] {
+    const sub = {
+      tokenType: "Bearer",
+      accessToken: "ABC123",
+      userId: "example@user.com",
+      expiresOn: "1970-01-01T00:00:00.000Z"
+    };
+    const result = Array(count).fill(sub);
+    return result;
+  }
+
+
   public static createTestTimestamp(): string {
     return "1562184492";
   }

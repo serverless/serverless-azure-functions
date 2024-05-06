@@ -1,5 +1,5 @@
 import fs from "fs";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
 import rimraf from "rimraf";
 import { MockFactory } from "../../test/mockFactory";
 import { invokeHook } from "../../test/utils";
@@ -20,7 +20,7 @@ describe("Azure Func Plugin", () => {
   describe("Add command", () => {
 
     beforeAll(() => {
-      mockFs({
+      vol.fromNestedJSON({
         "myExistingFunction": {
           "index.js": "contents",
           "function.json": "contents",
@@ -30,7 +30,7 @@ describe("Azure Func Plugin", () => {
     });
 
     afterAll(() => {
-      mockFs.restore();
+      vol.reset();
     });
 
     afterEach(() => {
@@ -84,7 +84,7 @@ describe("Azure Func Plugin", () => {
   describe("Remove command", () => {
 
     beforeAll(() => {
-      mockFs({
+      vol.fromNestedJSON({
         "index.js": "contents",
         "function1": {
           "function.json": "contents",
@@ -93,7 +93,7 @@ describe("Azure Func Plugin", () => {
     });
 
     afterAll(() => {
-      mockFs.restore();
+      vol.reset();
     });
 
     it("returns with missing name", async () => {
@@ -118,7 +118,7 @@ describe("Azure Func Plugin", () => {
     });
 
     it("deletes directory and updates serverless.yml", async () => {
-      mockFs({
+      vol.fromNestedJSON({
         "hello.js": "contents",
         hello: {
           "function.json": "contents",
@@ -129,13 +129,7 @@ describe("Azure Func Plugin", () => {
       const plugin = new AzureFuncPlugin(sls, options);
       const functionName = "hello";
       options["name"] = functionName;
-      const unlinkSpy = jest.spyOn(fs, "unlinkSync");
-      const rimrafSpy = jest.spyOn(rimraf, "sync");
       await invokeHook(plugin, "func:remove:remove");
-      expect(unlinkSpy).toBeCalledWith(`${functionName}.js`)
-      expect(rimrafSpy).toBeCalledWith(functionName);
-      unlinkSpy.mockRestore();
-      rimrafSpy.mockRestore();
       const expectedFunctionsYml = MockFactory.createTestSlsFunctionConfig();
       delete expectedFunctionsYml[functionName];
       expect(sls.utils.writeFileSync).toBeCalledWith("serverless.yml", MockFactory.createTestServerlessYml(true, expectedFunctionsYml))

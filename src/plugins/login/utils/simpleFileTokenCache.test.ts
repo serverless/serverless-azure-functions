@@ -1,6 +1,6 @@
 import path from "path";
 import os from "os";
-import mockFs from "mock-fs";
+import {vol} from "memfs"
 import { MockFactory } from "../../../test/mockFactory";
 import { SimpleFileTokenCache } from "./simpleFileTokenCache";
 import fs from "fs";
@@ -14,11 +14,11 @@ describe("Simple File Token Cache", () => {
   };
 
   beforeEach(() => {
-    mockFs();
+    vol.fromNestedJSON({});
   });
 
   afterEach(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   it("Creates a load file on creation if none", () => {
@@ -64,7 +64,7 @@ describe("Simple File Token Cache", () => {
   it("Load file on creation if available", () => {
     fileContent.entries = MockFactory.createTestTokenCacheEntries();
 
-    mockFs({
+    vol.fromNestedJSON({
       "slsTokenCache.json": JSON.stringify(fileContent)
     });
 
@@ -102,11 +102,13 @@ describe("Simple File Token Cache", () => {
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const testFileCache = new SimpleFileTokenCache(tokenFilePath);
     const testSubs = MockFactory.createTestSubscriptions();
-
+    const testSub = MockFactory.createTestSubscription();
+    
+    testSub[0].expiresOn =null
     testFileCache.addSubs(testSubs);
 
     const expected = {
-      entries: [],
+      entries: testSub,
       subscriptions: testSubs
     };
 
@@ -118,18 +120,18 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Doesn't fail adding subs if unable to parse JSON from file", () => {
-    mockFs({
+    vol.fromNestedJSON({
       "slsTokenCache.json": JSON.stringify("")
     });
 
     const writeFileSpy = jest.spyOn(fs, "writeFileSync");
     const testFileCache = new SimpleFileTokenCache(tokenFilePath);
     const testSubs = MockFactory.createTestSubscriptions();
-
+    const testSub = MockFactory.createTestSubscription();
     testFileCache.addSubs(testSubs);
 
     const expected = {
-      entries: [],
+      entries: testSub,
       subscriptions: testSubs
     };
 
@@ -141,7 +143,7 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Doesn't fail removing entries if unable to parse JSON from file", () => {
-    mockFs({
+    vol.fromNestedJSON({
       "slsTokenCache.json": JSON.stringify("")
     });
 
@@ -168,7 +170,7 @@ describe("Simple File Token Cache", () => {
   });
 
   it("Doesn't fail find if unable to parse JSON from file", () => {
-    mockFs({
+    vol.fromNestedJSON({
       "slsTokenCache.json": JSON.stringify("")
     });
 

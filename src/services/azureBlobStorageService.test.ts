@@ -1,4 +1,4 @@
-import mockFs from "mock-fs";
+import {vol}from "memfs"
 import { MockFactory } from "../test/mockFactory";
 import { AzureBlobStorageService, AzureStorageAuthType } from "./azureBlobStorageService";
 
@@ -61,13 +61,13 @@ describe("Azure Blob Storage Service", () => {
   });
 
   beforeAll(() => {
-    mockFs({
+    vol.fromNestedJSON({
       "deployments/deployment.zip": fileContents
     })
   });
 
   afterAll(() => {
-    mockFs.restore();
+    vol.reset();
   });
 
   beforeEach( async () => {

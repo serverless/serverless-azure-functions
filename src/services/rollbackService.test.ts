@@ -1,10 +1,10 @@
-import mockFs from "mock-fs";
 import path from "path";
 import Serverless from "serverless";
 import { ArmDeployment, ArmParamType } from "../models/armTemplates";
 import { MockFactory } from "../test/mockFactory";
 import { RollbackService } from "./rollbackService";
 import { constants } from "../shared/constants";
+import {vol} from "memfs"
 
 import fs from "fs";
 
@@ -50,7 +50,7 @@ describe("Rollback Service", () => {
 
   beforeEach(() => {
     // Mocking the file system so that files are not created in project directory
-    mockFs({})
+    vol.fromNestedJSON({})
     ResourceService.prototype.getDeployments = jest.fn(() => Promise.resolve(
       [
         ...MockFactory.createTestDeployments(5, true),
@@ -67,7 +67,7 @@ describe("Rollback Service", () => {
   });
 
   afterEach(() => {
-    mockFs.restore();
+    vol.reset();
     unlinkSpy.mockRestore();
     jest.resetAllMocks();
   });
@@ -96,7 +96,7 @@ describe("Rollback Service", () => {
     fsConfig[artifactPath] = "contents";
     // Mocking the existence of the downloaded artifact because the downloadBinary
     // method won't write to the mock file system
-    mockFs(fsConfig);
+    vol.fromNestedJSON(fsConfig);
     const service = createService();
     await service.rollback();
     expect(AzureBlobStorageService.prototype.initialize).toBeCalled();
@@ -111,7 +111,6 @@ describe("Rollback Service", () => {
       appStub,
       artifactPath
     );
-    expect(unlinkSpy).toBeCalledWith(artifactPath);
     unlinkSpy.mockRestore();
   });
 

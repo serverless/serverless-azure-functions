@@ -8,7 +8,7 @@ jobs:
   validate:
     strategy:
       matrix:
-        version: [12, 14, 16, 18]
+        version: [12, 14, 16, 18, 20]
         os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
