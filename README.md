@@ -1,3 +1,7 @@
+**📦 Archived - This repository is archived and preserved for reference only. No updates, issues, or pull requests will be accepted. If you have questions, please reach out to our support team.**
+
+---
+
 # Azure Functions Serverless Plugin - *Currently looking for active maintainers*
 
 Reach out to contactATserverless.com to discuss becoming a maintainer if interested.
